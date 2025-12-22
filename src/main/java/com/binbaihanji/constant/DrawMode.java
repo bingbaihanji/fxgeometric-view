@@ -40,5 +40,10 @@ public enum DrawMode {
     /**
      * 多边形（边数可配置）
      */
-    POLYGON
+    POLYGON,
+    
+    /**
+     * 手绘线
+     */
+    FREEHAND
 }

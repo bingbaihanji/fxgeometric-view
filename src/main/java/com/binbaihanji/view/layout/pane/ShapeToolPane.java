@@ -51,7 +51,8 @@ public class ShapeToolPane extends VBox {
                 createTool("线段", DrawMode.LINE, group),
                 createTool("圆", DrawMode.CIRCLE, group),
                 createTool("三角形", DrawMode.TRIANGLE, group),
-                createTool("矩形", DrawMode.RECTANGLE, group)
+                createTool("矩形", DrawMode.RECTANGLE, group),
+                createTool("手绘线", DrawMode.FREEHAND, group)
         );
 
         // 分隔线

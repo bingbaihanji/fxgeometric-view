@@ -3,7 +3,7 @@ package com.binbaihanji.view.layout.draw.geometry.impl;
 import com.binbaihanji.view.layout.core.WorldTransform;
 import com.binbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color; // 添加导入
+import javafx.scene.paint.Color;
 
 public class CircleGeo implements WorldObject {
 
@@ -18,6 +18,19 @@ public class CircleGeo implements WorldObject {
         this.cx = cx;
         this.cy = cy;
         this.r = r;
+    }
+
+    // Getter methods for intersection calculations
+    public double getCx() {
+        return cx;
+    }
+
+    public double getCy() {
+        return cy;
+    }
+
+    public double getR() {
+        return r;
     }
 
     @Override
@@ -46,6 +59,10 @@ public class CircleGeo implements WorldObject {
         gc.setFill(hover ? Color.ORANGE : Color.RED);
         double pointRadius = hover ? 4 : 3;
         gc.fillOval(sx - pointRadius, sy - pointRadius, pointRadius * 2, pointRadius * 2);
+        
+        // TODO: 优化建议 - 当前圆心点的颜色和大小是固定的，可以考虑与预览阶段保持一致
+        // 预览阶段的圆心点使用浅灰色，而这里是红色，可能会让用户感到困惑
+        // 建议在预览阶段和最终绘制阶段使用一致的视觉表现
     }
 
     @Override

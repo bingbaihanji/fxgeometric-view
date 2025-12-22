@@ -1,16 +1,27 @@
 package com.binbaihanji.controller;
 
 import com.binbaihanji.constant.DrawMode;
+import com.binbaihanji.util.IntersectionUtils;
+import com.binbaihanji.util.SpecialPointManager;
+import com.binbaihanji.util.SpecialPointManager.SpecialPoint;
 import com.binbaihanji.view.layout.core.GridChartPane;
+import com.binbaihanji.view.layout.draw.geometry.WorldObject;
 import com.binbaihanji.view.layout.draw.geometry.impl.CircleGeo;
 import com.binbaihanji.view.layout.draw.geometry.impl.PointGeo;
 import com.binbaihanji.view.layout.draw.geometry.impl.LineGeo;
 import com.binbaihanji.view.layout.draw.geometry.impl.RectangleGeo;
+import com.binbaihanji.view.layout.draw.tools.CircleDrawingTool;
+import com.binbaihanji.view.layout.draw.tools.FreehandDrawingTool;
+
+import javafx.geometry.Point2D;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.canvas.GraphicsContext;
 import com.binbaihanji.view.layout.core.WorldTransform;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 图形绘制控制器
@@ -64,8 +75,15 @@ public class DrawingController {
     private double currentMouseX;
     private double currentMouseY;
 
+    private CircleDrawingTool circleTool;
+    private FreehandDrawingTool freehandTool;
+
     public DrawingController(GridChartPane gridChartPane) {
         this.gridChartPane = gridChartPane;
+        // CircleDrawingTool现在可以正确地与DrawingController协同工作
+        // 通过添加setPreviewParams和reset方法，实现了与DrawingController的状态同步
+        this.circleTool = new CircleDrawingTool();
+        this.freehandTool = new FreehandDrawingTool();
         initMouseHandlers();
     }
 
@@ -75,6 +93,9 @@ public class DrawingController {
     private void initMouseHandlers() {
         gridChartPane.setOnMouseClicked(this::handleMouseClicked);
         gridChartPane.setOnMouseMoved(this::handleMouseMoved);
+        gridChartPane.setOnMousePressed(this::handleMousePressed);
+        gridChartPane.setOnMouseDragged(this::handleMouseDragged);
+        gridChartPane.setOnMouseReleased(this::handleMouseReleased);
     }
 
     /**
@@ -103,20 +124,38 @@ public class DrawingController {
             return;
         }
 
-        double worldX = gridChartPane.screenToWorldX(e.getX());
-        double worldY = gridChartPane.screenToWorldY(e.getY());
+        double rawX = gridChartPane.screenToWorldX(e.getX());
+        double rawY = gridChartPane.screenToWorldY(e.getY());
+        
+        // 应用特殊点磁性吸附
+        double worldX = rawX;
+        double worldY = rawY;
+        SpecialPoint nearestPoint = findNearestSpecialPoint(rawX, rawY);
+        if (nearestPoint != null) {
+            worldX = nearestPoint.getX();
+            worldY = nearestPoint.getY();
+        }
 
         if (drawMode == DrawMode.POINT) {
             // 点模式：直接绘制
-            gridChartPane.addObject(new PointGeo(worldX, worldY));
+            PointGeo newPoint = new PointGeo(worldX, worldY);
+            gridChartPane.addObject(newPoint);
             state = DrawingState.IDLE;
             // 消费点绘制事件
             e.consume();
+            // 检查新点与其他图形的交点
+            checkIntersections(newPoint);
         } else if (state == DrawingState.IDLE) {
             // 第一次点击：记录起点，进入预览状态
             firstPointX = worldX;
             firstPointY = worldY;
             state = DrawingState.FIRST_CLICK;
+            
+            // 对于圆形绘制，初始化预览参数
+            if (drawMode == DrawMode.CIRCLE) {
+                circleTool.setPreviewParams(firstPointX, firstPointY, 0);
+            }
+            
             // 消费第一次点击事件
             e.consume();
         } else if (state == DrawingState.FIRST_CLICK) {
@@ -126,14 +165,24 @@ public class DrawingController {
                     double radius = Math.sqrt(
                             Math.pow(worldX - firstPointX, 2) + Math.pow(worldY - firstPointY, 2)
                     );
-                    gridChartPane.addObject(new CircleGeo(firstPointX, firstPointY, radius));
+                    CircleGeo newCircle = new CircleGeo(firstPointX, firstPointY, radius);
+                    gridChartPane.addObject(newCircle);
+                    // 重置CircleDrawingTool状态
+                    circleTool.reset();
+                    // 检查新圆与其他图形的交点
+                    checkIntersections(newCircle);
                 }
                 case LINE -> {
                     // 添加起点和终点的点
-                    gridChartPane.addObject(new PointGeo(firstPointX, firstPointY));
-                    gridChartPane.addObject(new PointGeo(worldX, worldY));
+                    PointGeo startPoint = new PointGeo(firstPointX, firstPointY);
+                    PointGeo endPoint = new PointGeo(worldX, worldY);
+                    gridChartPane.addObject(startPoint);
+                    gridChartPane.addObject(endPoint);
                     // 创建线段对象并添加到画布
-                    gridChartPane.addObject(new LineGeo(firstPointX, firstPointY, worldX, worldY));
+                    LineGeo newLine = new LineGeo(firstPointX, firstPointY, worldX, worldY);
+                    gridChartPane.addObject(newLine);
+                    // 检查新线段与其他图形的交点
+                    checkIntersections(newLine);
                 }
                 case TRIANGLE -> {
                     // 三角形绘制可以后续实现
@@ -146,7 +195,10 @@ public class DrawingController {
                     double rectHeight = Math.abs(worldY - firstPointY);
                     
                     // 创建矩形对象并添加到画布
-                    gridChartPane.addObject(new RectangleGeo(rectX, rectY, rectWidth, rectHeight));
+                    RectangleGeo newRectangle = new RectangleGeo(rectX, rectY, rectWidth, rectHeight);
+                    gridChartPane.addObject(newRectangle);
+                    // 检查新矩形与其他图形的交点
+                    checkIntersections(newRectangle);
                 }
                 case POLYGON -> {
                     // 多边形绘制可以后续实现
@@ -167,8 +219,17 @@ public class DrawingController {
      */
     public void handleMouseMoved(MouseEvent e) {
         if (state == DrawingState.FIRST_CLICK) {
-            double worldX = gridChartPane.screenToWorldX(e.getX());
-            double worldY = gridChartPane.screenToWorldY(e.getY());
+            double rawX = gridChartPane.screenToWorldX(e.getX());
+            double rawY = gridChartPane.screenToWorldY(e.getY());
+            
+            // 应用特殊点磁性吸附
+            double worldX = rawX;
+            double worldY = rawY;
+            SpecialPoint nearestPoint = findNearestSpecialPoint(rawX, rawY);
+            if (nearestPoint != null) {
+                worldX = nearestPoint.getX();
+                worldY = nearestPoint.getY();
+            }
             
             // 保存当前鼠标位置用于预览
             currentMouseX = worldX;
@@ -179,6 +240,8 @@ public class DrawingController {
                 previewRadius = Math.sqrt(
                         Math.pow(worldX - firstPointX, 2) + Math.pow(worldY - firstPointY, 2)
                 );
+                // 更新CircleDrawingTool的预览参数
+                circleTool.setPreviewParams(firstPointX, firstPointY, previewRadius);
             }
             
             // 重绘以显示预览
@@ -187,77 +250,123 @@ public class DrawingController {
     }
 
     /**
+     * 鼠标按下事件
+     */
+    public void handleMousePressed(MouseEvent e) {
+        if (drawMode == DrawMode.FREEHAND) {
+            freehandTool.onMousePressed(gridChartPane, e);
+            e.consume();
+        }
+    }
+
+    /**
+     * 鼠标拖拽事件
+     */
+    public void handleMouseDragged(MouseEvent e) {
+        if (drawMode == DrawMode.FREEHAND) {
+            freehandTool.onMouseDragged(gridChartPane, e);
+            e.consume();
+        } else if (state == DrawingState.FIRST_CLICK) {
+            double rawX = gridChartPane.screenToWorldX(e.getX());
+            double rawY = gridChartPane.screenToWorldY(e.getY());
+            
+            // 应用特殊点磁性吸附
+            double worldX = rawX;
+            double worldY = rawY;
+            SpecialPoint nearestPoint = findNearestSpecialPoint(rawX, rawY);
+            if (nearestPoint != null) {
+                worldX = nearestPoint.getX();
+                worldY = nearestPoint.getY();
+            }
+            
+            // 保存当前鼠标位置用于预览
+            currentMouseX = worldX;
+            currentMouseY = worldY;
+            
+            if (drawMode == DrawMode.CIRCLE) {
+                // 计算预览半径
+                previewRadius = Math.sqrt(
+                        Math.pow(worldX - firstPointX, 2) + Math.pow(worldY - firstPointY, 2)
+                );
+                // 更新CircleDrawingTool的预览参数
+                circleTool.setPreviewParams(firstPointX, firstPointY, previewRadius);
+            }
+            
+            // 重绘以显示预览
+            gridChartPane.redraw();
+        }
+    }
+
+    /**
+     * 鼠标释放事件
+     */
+    public void handleMouseReleased(MouseEvent e) {
+        if (drawMode == DrawMode.FREEHAND) {
+            freehandTool.onMouseReleased(gridChartPane, e);
+            e.consume();
+        }
+    }
+
+    /**
      * 绘制预览图形
      */
     public void paintPreview(GraphicsContext gc, WorldTransform transform) {
-        if (state == DrawingState.FIRST_CLICK && previewRadius > 0) {
+        if (state == DrawingState.FIRST_CLICK) {
+            // 修复：移除了previewRadius > 0的条件，确保在首次点击时也能显示预览
+            // 这样可以在点击时立即显示圆心点，与线段绘制行为保持一致
             if (drawMode == DrawMode.CIRCLE) {
-                double sx = transform.worldToScreenX(firstPointX);
-                double sy = transform.worldToScreenY(firstPointY);
-                double sr = previewRadius * transform.getScale();
-
-                // 设置浅色虚线样式用于预览
-                gc.setStroke(Color.LIGHTGRAY);
-                gc.setLineWidth(1);
-                gc.setLineDashes(6);
-
-                gc.strokeOval(
-                        sx - sr,
-                        sy - sr,
-                        sr * 2,
-                        sr * 2
-                );
-
-                // 清除虚线设置
-                gc.setLineDashes(null);
+                // 圆形预览现在可以正确显示，包括首次点击时的圆心点
+                circleTool.paintPreview(gc, transform);
+            } else {
+                // 绘制线段或矩形的预览
+                if (drawMode == DrawMode.LINE) {
+                    double sx1 = transform.worldToScreenX(firstPointX);
+                    double sy1 = transform.worldToScreenY(firstPointY);
+                    double sx2 = transform.worldToScreenX(currentMouseX);
+                    double sy2 = transform.worldToScreenY(currentMouseY);
+                    
+                    // 设置浅色虚线样式用于预览
+                    gc.setStroke(Color.valueOf("#759eb2"));
+                    gc.setLineWidth(1);
+                    gc.setLineDashes(6);
+                    
+                    gc.strokeLine(sx1, sy1, sx2, sy2);
+                    
+                    // 绘制端点
+                    gc.setFill(Color.LIGHTGRAY);
+                    double pointRadius = 3;
+                    gc.fillOval(sx1 - pointRadius, sy1 - pointRadius, pointRadius * 2, pointRadius * 2);
+                    gc.fillOval(sx2 - pointRadius, sy2 - pointRadius, pointRadius * 2, pointRadius * 2);
+                    
+                    // 清除虚线设置
+                    gc.setLineDashes(null);
+                } else if (drawMode == DrawMode.RECTANGLE) {
+                    double rectX = Math.min(firstPointX, currentMouseX);
+                    double rectY = Math.min(firstPointY, currentMouseY);
+                    double rectWidth = Math.abs(currentMouseX - firstPointX);
+                    double rectHeight = Math.abs(currentMouseY - firstPointY);
+                    
+                    double sx = transform.worldToScreenX(rectX);
+                    double sy = transform.worldToScreenY(rectY);
+                    double sw = rectWidth * transform.getScale();
+                    double sh = rectHeight * transform.getScale();
+                    
+                    // 矩形需要根据坐标系方向调整绘制方式
+                    double screenY = sy - sh; // 调整Y坐标
+                    
+                    // 设置浅色虚线样式用于预览
+                    gc.setStroke(Color.LIGHTGRAY);
+                    gc.setLineWidth(1);
+                    gc.setLineDashes(6);
+                    
+                    gc.strokeRect(sx, screenY, sw, sh);
+                    
+                    // 清除虚线设置
+                    gc.setLineDashes(null);
+                }
             }
-        } else if (state == DrawingState.FIRST_CLICK) {
-            // 绘制线段或矩形的预览
-            if (drawMode == DrawMode.LINE) {
-                double sx1 = transform.worldToScreenX(firstPointX);
-                double sy1 = transform.worldToScreenY(firstPointY);
-                double sx2 = transform.worldToScreenX(currentMouseX);
-                double sy2 = transform.worldToScreenY(currentMouseY);
-                
-                // 设置浅色虚线样式用于预览
-                gc.setStroke(Color.LIGHTGRAY);
-                gc.setLineWidth(1);
-                gc.setLineDashes(6);
-                
-                gc.strokeLine(sx1, sy1, sx2, sy2);
-                
-                // 绘制端点
-                gc.setFill(Color.LIGHTGRAY);
-                double pointRadius = 3;
-                gc.fillOval(sx1 - pointRadius, sy1 - pointRadius, pointRadius * 2, pointRadius * 2);
-                gc.fillOval(sx2 - pointRadius, sy2 - pointRadius, pointRadius * 2, pointRadius * 2);
-                
-                // 清除虚线设置
-                gc.setLineDashes(null);
-            } else if (drawMode == DrawMode.RECTANGLE) {
-                double rectX = Math.min(firstPointX, currentMouseX);
-                double rectY = Math.min(firstPointY, currentMouseY);
-                double rectWidth = Math.abs(currentMouseX - firstPointX);
-                double rectHeight = Math.abs(currentMouseY - firstPointY);
-                
-                double sx = transform.worldToScreenX(rectX);
-                double sy = transform.worldToScreenY(rectY);
-                double sw = rectWidth * transform.getScale();
-                double sh = rectHeight * transform.getScale();
-                
-                // 矩形需要根据坐标系方向调整绘制方式
-                double screenY = sy - sh; // 调整Y坐标
-                
-                // 设置浅色虚线样式用于预览
-                gc.setStroke(Color.LIGHTGRAY);
-                gc.setLineWidth(1);
-                gc.setLineDashes(6);
-                
-                gc.strokeRect(sx, screenY, sw, sh);
-                
-                // 清除虚线设置
-                gc.setLineDashes(null);
-            }
+        } else if (drawMode == DrawMode.FREEHAND) {
+            freehandTool.paintPreview(gc, transform);
         }
     }
 
@@ -266,5 +375,78 @@ public class DrawingController {
      */
     public void clearAll() {
         gridChartPane.clearAllObjects();
+    }
+
+    /**
+     * 检查新添加的图形与其他图形的交点，并绘制交点
+     * @param newObject 新添加的图形对象
+     */
+    private void checkIntersections(Object newObject) {
+        List<WorldObject> allObjects = new ArrayList<>(gridChartPane.getObjects()); // 创建副本避免并发修改
+        List<PointGeo> intersectionPoints = new ArrayList<>(); // 收集所有交点
+        
+        for (WorldObject obj : allObjects) {
+            // 跳过自身
+            if (obj == newObject) continue;
+            
+            // 检查不同类型的图形组合
+            if (newObject instanceof LineGeo && obj instanceof LineGeo) {
+                // 线段与线段的交点
+                List<Point2D> intersections = IntersectionUtils.getLineLineIntersections((LineGeo) newObject, (LineGeo) obj);
+                for (Point2D point : intersections) {
+                    // 使用特殊颜色绘制交点
+                    PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
+                    intersectionPoint.setColor(Color.PURPLE); // 设置交点颜色
+                    intersectionPoints.add(intersectionPoint); // 先收集起来
+                }
+            } else if (newObject instanceof LineGeo && obj instanceof CircleGeo) {
+                // 线段与圆的交点
+                List<Point2D> intersections = IntersectionUtils.getLineCircleIntersections((LineGeo) newObject, (CircleGeo) obj);
+                for (Point2D point : intersections) {
+                    PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
+                    intersectionPoint.setColor(Color.PURPLE);
+                    intersectionPoints.add(intersectionPoint);
+                }
+            } else if (newObject instanceof CircleGeo && obj instanceof LineGeo) {
+                // 圆与线段的交点
+                List<Point2D> intersections = IntersectionUtils.getLineCircleIntersections((LineGeo) obj, (CircleGeo) newObject);
+                for (Point2D point : intersections) {
+                    PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
+                    intersectionPoint.setColor(Color.PURPLE);
+                    intersectionPoints.add(intersectionPoint);
+                }
+            } else if (newObject instanceof CircleGeo && obj instanceof CircleGeo) {
+                // 圆与圆的交点
+                List<Point2D> intersections = IntersectionUtils.getCircleCircleIntersections((CircleGeo) newObject, (CircleGeo) obj);
+                for (Point2D point : intersections) {
+                    PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
+                    intersectionPoint.setColor(Color.PURPLE);
+                    intersectionPoints.add(intersectionPoint);
+                }
+            }
+        }
+        
+        // 在遍历结束后统一添加所有交点
+        for (PointGeo point : intersectionPoints) {
+            gridChartPane.addObject(point);
+        }
+    }
+    
+    /**
+     * 查找最近的特殊点（用于磁性吸附）
+     * @param x 当前鼠标x坐标（世界坐标）
+     * @param y 当前鼠标y坐标（世界坐标）
+     * @return 最近的特殊点，如果没有找到则返回null
+     */
+    private SpecialPoint findNearestSpecialPoint(double x, double y) {
+        // 获取所有特殊点
+        List<SpecialPoint> specialPoints = SpecialPointManager.extractSpecialPoints(gridChartPane.getObjects());
+        
+        // 计算吸附阈值（像素距离转换为世界坐标距离）
+        double scale = gridChartPane.getTransform().getScale();
+        double threshold = 15.0 / scale; // 15像素的吸附范围
+        
+        // 查找最近的特殊点
+        return SpecialPointManager.findNearestSpecialPoint(x, y, specialPoints, threshold);
     }
 }

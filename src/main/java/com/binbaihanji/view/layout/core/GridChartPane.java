@@ -1,22 +1,28 @@
 package com.binbaihanji.view.layout.core;
 
 import com.binbaihanji.constant.GridMode;
+import com.binbaihanji.util.SpecialPointManager;
+import com.binbaihanji.util.SpecialPointManager.SpecialPoint;
 import com.binbaihanji.view.layout.draw.geometry.WorldObject;
 import com.binbaihanji.view.layout.draw.geometry.WorldPainter;
 import com.binbaihanji.view.layout.draw.geometry.impl.AxesPainter;
 import com.binbaihanji.view.layout.draw.geometry.impl.GridPainter;
 import com.binbaihanji.view.layout.draw.tools.CircleDrawingTool;
 import javafx.animation.PauseTransition;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BiConsumer;
 
 /**
@@ -65,6 +71,9 @@ public class GridChartPane extends Pane {
 
     private double lastHoverX;
     private double lastHoverY;
+    
+    // 当前鼠标附近的特殊点（用于视觉反馈）
+    private SpecialPoint nearbySpecialPoint = null;
 
     // 判定
     private static final double HOVER_MOVE_THRESHOLD = 3; // 像素
@@ -125,15 +134,24 @@ public class GridChartPane extends Pane {
         double rawX = screenToWorldX(screenX);
         double rawY = screenToWorldY(screenY);
 
-        double step = chooseAxisStep();
+        // 应用磁性吸附效果
+        SpecialPoint nearestSpecialPoint = findNearestSpecialPoint(rawX, rawY);
+        double x, y;
+        if (nearestSpecialPoint != null) {
+            x = nearestSpecialPoint.getX();
+            y = nearestSpecialPoint.getY();
+        } else {
+            // 如果没有特殊点吸附，则应用原有的吸附逻辑
+            double step = chooseAxisStep();
 
-        double x = snapToInteger(rawX);
-        x = snapToGrid(x, step);
-        x = stabilize(x);
+            x = snapToInteger(rawX);
+            x = snapToGrid(x, step);
+            x = stabilize(x);
 
-        double y = snapToInteger(rawY);
-        y = snapToGrid(y, step);
-        y = stabilize(y);
+            y = snapToInteger(rawY);
+            y = snapToGrid(y, step);
+            y = stabilize(y);
+        }
 
         String text = String.format("(%.2f, %.2f)", x, y);
         hoverTooltip.setText(text);
@@ -265,8 +283,7 @@ public class GridChartPane extends Pane {
 
         cancelHoverTooltip();
 
-        double oldScale = transform.getScale();
-        double newScale = oldScale;
+        double newScale = transform.getScale();
 
         if (e.getDeltaY() > 0) {
             newScale *= 1.1;
@@ -356,8 +373,39 @@ public class GridChartPane extends Pane {
 
         // ：交互预览
         if (circleTool != null) {
+            // 现在CircleDrawingTool可以正确地与DrawingController协同工作
+            // 预览绘制逻辑已经修复，可以正常显示圆形预览
             circleTool.paintPreview(gc, transform);
         }
+        
+        // 绘制特殊点吸附提示
+        if (nearbySpecialPoint != null) {
+            drawSpecialPointHint(gc);
+        }
+    }
+    
+    /**
+     * 绘制特殊点吸附提示（高亮圈）
+     */
+    private void drawSpecialPointHint(GraphicsContext gc) {
+        double sx = transform.worldToScreenX(nearbySpecialPoint.getX());
+        double sy = transform.worldToScreenY(nearbySpecialPoint.getY());
+        
+        // 绘制吸附提示圈
+        gc.setStroke(Color.rgb(255, 165, 0, 0.8)); // 橙色半透明
+        gc.setLineWidth(2);
+        gc.setLineDashes(null);
+        
+        // 绘制两个同心圆作为吸附提示
+        double radius1 = 8;
+        double radius2 = 12;
+        gc.strokeOval(sx - radius1, sy - radius1, radius1 * 2, radius1 * 2);
+        gc.strokeOval(sx - radius2, sy - radius2, radius2 * 2, radius2 * 2);
+        
+        // 绘制中心点
+        gc.setFill(Color.rgb(255, 165, 0, 0.6));
+        double centerRadius = 3;
+        gc.fillOval(sx - centerRadius, sy - centerRadius, centerRadius * 2, centerRadius * 2);
     }
 
 
@@ -392,9 +440,32 @@ public class GridChartPane extends Pane {
             double worldX = screenToWorldX(e.getX());
             double worldY = screenToWorldY(e.getY());
 
-            double tolerance = 5 / transform.getScale();
+            // 应用磁性吸附效果
+            SpecialPoint nearestSpecialPoint = findNearestSpecialPoint(worldX, worldY);
+            if (nearestSpecialPoint != null) {
+                worldX = nearestSpecialPoint.getX();
+                worldY = nearestSpecialPoint.getY();
+            } else {
+                // 如果没有特殊点吸附，则应用原有的吸附逻辑
+                double step = chooseAxisStep();
+
+                worldX = stabilize(
+                        snapToGrid(
+                                snapToInteger(worldX),
+                                step
+                        )
+                );
+
+                worldY = stabilize(
+                        snapToGrid(
+                                snapToInteger(worldY),
+                                step
+                        )
+                );
+            }
 
             // 优先命中对象
+            double tolerance = 5 / transform.getScale();
             for (int i = objects.size() - 1; i >= 0; i--) {
                 WorldObject obj = objects.get(i);
 
@@ -405,26 +476,9 @@ public class GridChartPane extends Pane {
                 }
             }
 
-            // 否则输出世界坐标
-            double step = chooseAxisStep();
-
-            double x = stabilize(
-                    snapToGrid(
-                            snapToInteger(worldX),
-                            step
-                    )
-            );
-
-            double y = stabilize(
-                    snapToGrid(
-                            snapToInteger(worldY),
-                            step
-                    )
-            );
-
             System.out.printf(
                     "point(x = %.2f, y = %.2f)%n",
-                    x, y
+                    worldX, worldY
             );
         });
     }
@@ -436,6 +490,15 @@ public class GridChartPane extends Pane {
 
             double worldX = screenToWorldX(e.getX());
             double worldY = screenToWorldY(e.getY());
+
+            // 应用磁性吸附效果，并更新附近的特殊点用于视觉反馈
+            SpecialPoint nearestSpecialPoint = findNearestSpecialPoint(worldX, worldY);
+            nearbySpecialPoint = nearestSpecialPoint; // 保存用于绘制提示
+            
+            if (nearestSpecialPoint != null) {
+                worldX = nearestSpecialPoint.getX();
+                worldY = nearestSpecialPoint.getY();
+            }
 
             double tolerance = 5 / transform.getScale();
 
@@ -464,6 +527,9 @@ public class GridChartPane extends Pane {
                 }
 
                 redraw();
+            } else if (nearbySpecialPoint != null) {
+                // 即使hover对象没变，如果附近有特殊点，也需要重绘以显示提示
+                redraw();
             }
         });
 
@@ -474,7 +540,31 @@ public class GridChartPane extends Pane {
                 hoverObject = null;
                 redraw();
             }
+            
+            // 清除特殊点提示
+            if (nearbySpecialPoint != null) {
+                nearbySpecialPoint = null;
+                redraw();
+            }
         });
+    }
+
+    /**
+     * 查找最近的特殊点（用于磁性吸附）
+     * @param x 当前鼠标x坐标（世界坐标）
+     * @param y 当前鼠标y坐标（世界坐标）
+     * @return 最近的特殊点，如果没有找到则返回null
+     */
+    private SpecialPoint findNearestSpecialPoint(double x, double y) {
+        // 获取所有特殊点
+        List<SpecialPoint> specialPoints = SpecialPointManager.extractSpecialPoints(objects);
+        
+        // 计算吸附阈值（像素距离转换为世界坐标距离）
+        double scale = transform.getScale();
+        double threshold = 10.0 / scale; // 10像素的吸附范围
+        
+        // 查找最近的特殊点
+        return SpecialPointManager.findNearestSpecialPoint(x, y, specialPoints, threshold);
     }
 
 
@@ -598,6 +688,14 @@ public class GridChartPane extends Pane {
     public void clearAllObjects() {
         objects.clear();
         redraw();
+    }
+
+    /**
+     * 获取所有图形对象的副本
+     * @return 图形对象列表的副本
+     */
+    public List<WorldObject> getObjects() {
+        return new ArrayList<>(objects);
     }
 
     /**

@@ -42,6 +42,21 @@ public class CircleDrawingTool {
         pane.redraw();
     }
 
+    // 添加公共方法，允许外部设置预览参数
+    public void setPreviewParams(double centerX, double centerY, double radius) {
+        this.cx = centerX;
+        this.cy = centerY;
+        this.previewRadius = radius;
+        // 确保预览可以正确显示
+        this.hasCenter = true;
+    }
+
+    // 添加公共方法，重置工具状态
+    public void reset() {
+        this.hasCenter = false;
+        this.previewRadius = 0;
+    }
+
     public void paintPreview(GraphicsContext gc, WorldTransform transform) {
 
         if (!hasCenter) return;
@@ -54,6 +69,10 @@ public class CircleDrawingTool {
         gc.setLineDashes(6);
         gc.strokeOval(sx - sr, sy - sr, sr * 2, sr * 2);
         gc.setLineDashes(null);
+        
+        // 添加圆心点的预览显示，与线段绘制保持一致
+        gc.setFill(Color.LIGHTGRAY);
+        double pointRadius = 3;
+        gc.fillOval(sx - pointRadius, sy - pointRadius, pointRadius * 2, pointRadius * 2);
     }
 }
-

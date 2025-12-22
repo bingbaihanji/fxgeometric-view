@@ -11,10 +11,25 @@ public class PointGeo implements WorldObject {
     private final double y;
 
     private boolean hover = false;
+    private Color color = Color.RED; // 默认颜色为红色
 
     public PointGeo(double x, double y) {
         this.x = x;
         this.y = y;
+    }
+
+    // Getter methods
+    public double getX() {
+        return x;
+    }
+
+    public double getY() {
+        return y;
+    }
+
+    // 设置点的颜色
+    public void setColor(Color color) {
+        this.color = color;
     }
 
     @Override
@@ -23,7 +38,7 @@ public class PointGeo implements WorldObject {
         double sx = t.worldToScreenX(x);
         double sy = t.worldToScreenY(y);
 
-        gc.setFill(hover ? Color.ORANGE : Color.RED);
+        gc.setFill(hover ? Color.ORANGE : color);
 
         double r = hover ? 6 : 4;
         gc.fillOval(sx - r, sy - r, r * 2, r * 2);
