@@ -7,6 +7,8 @@ import javafx.scene.paint.Color;
 
 public class CircleGeo implements WorldObject {
 
+
+
     private final double cx;
     private final double cy;
     private final double r;

@@ -4,7 +4,9 @@ import com.binbaihanji.controller.DrawingController;
 import com.binbaihanji.util.I18nUtil;
 import com.binbaihanji.view.layout.core.GridChartPane;
 import com.binbaihanji.view.layout.pane.ShapeToolPane;
+import javafx.application.Platform;
 import javafx.scene.Scene;
+import javafx.scene.control.SplitPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
@@ -47,12 +49,26 @@ public class InitView {
             drawingController.setPolygonSides(newSides.intValue());
         });
 
-        // 清除按钮
-        toolPane.setClearAllCallback(drawingController::clearAll);
-
         // 5. 设置布局
-        root.setLeft(toolPane);
-        root.setCenter(gridChartPane);
+        SplitPane central = new SplitPane(toolPane, gridChartPane);
+        central.setOrientation(javafx.geometry.Orientation.HORIZONTAL);
+        central.setDividerPositions(0.23);
+
+        // 监听整个SplitPane的分隔条位置变化
+        central.getDividers().forEach(div -> {
+            div.positionProperty().addListener((obs, oldPos, newPos) -> {
+                // 如果是第一个分隔条（索引0）
+                if (central.getDividers().indexOf(div) == 0) {
+                    if (newPos.doubleValue() < 0.23) {
+                        Platform.runLater(() -> div.setPosition(0.23));
+                    } else if (newPos.doubleValue() > 0.33) {
+                        Platform.runLater(() -> div.setPosition(0.33));
+                    }
+                }
+            });
+        });
+
+        root.setCenter(central);
 
         // 6. 设置预览绘制回调
         gridChartPane.setPreviewPainter(drawingController::paintPreview);
