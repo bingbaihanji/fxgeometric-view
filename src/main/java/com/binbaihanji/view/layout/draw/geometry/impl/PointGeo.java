@@ -1,0 +1,46 @@
+package com.binbaihanji.view.layout.draw.geometry.impl;
+
+import com.binbaihanji.view.layout.core.WorldTransform;
+import com.binbaihanji.view.layout.draw.geometry.WorldObject;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+
+public class PointGeo implements WorldObject {
+
+    private final double x;
+    private final double y;
+
+    private boolean hover = false;
+
+    public PointGeo(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    @Override
+    public void paint(GraphicsContext gc, WorldTransform t, double w, double h) {
+
+        double sx = t.worldToScreenX(x);
+        double sy = t.worldToScreenY(y);
+
+        gc.setFill(hover ? Color.ORANGE : Color.RED);
+
+        double r = hover ? 6 : 4;
+        gc.fillOval(sx - r, sy - r, r * 2, r * 2);
+    }
+
+    @Override
+    public boolean hitTest(double wx, double wy, double tol) {
+        return Math.hypot(wx - x, wy - y) < tol;
+    }
+
+    @Override
+    public void setHover(boolean hover) {
+        this.hover = hover;
+    }
+
+    @Override
+    public void onClick(double wx, double wy) {
+        System.out.println("点被点击：" + x + ", " + y);
+    }
+}
