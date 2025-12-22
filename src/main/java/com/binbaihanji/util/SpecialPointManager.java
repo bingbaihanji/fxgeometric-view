@@ -72,17 +72,14 @@ public class SpecialPointManager {
         
         // 收集圆、线段端点和独立点
         for (WorldObject obj : objects) {
-            if (obj instanceof CircleGeo) {
-                CircleGeo circle = (CircleGeo) obj;
+            if (obj instanceof CircleGeo circle) {
                 // 添加圆心点
                 specialPointsSet.add(new SpecialPoint(circle.getCx(), circle.getCy(), "CENTER"));
-            } else if (obj instanceof LineGeo) {
-                LineGeo line = (LineGeo) obj;
+            } else if (obj instanceof LineGeo line) {
                 // 添加线段的两个端点
                 specialPointsSet.add(new SpecialPoint(line.getStartX(), line.getStartY(), "ENDPOINT"));
                 specialPointsSet.add(new SpecialPoint(line.getEndX(), line.getEndY(), "ENDPOINT"));
-            } else if (obj instanceof PointGeo) {
-                PointGeo point = (PointGeo) obj;
+            } else if (obj instanceof PointGeo point) {
                 // 添加点对象的坐标（包括交点）
                 specialPointsSet.add(new SpecialPoint(point.getX(), point.getY(), "INTERSECTION"));
             }

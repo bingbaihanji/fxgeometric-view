@@ -20,6 +20,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import java.io.InputStream;
+import java.net.URL;
 
 /**
  * 图形工具面板（左侧）
@@ -256,31 +257,33 @@ public class ShapeToolPane extends VBox {
      * 加载图标节点
      */
     private Node loadIconNode(String textKey) {
+        String iconPath = getIconPath(textKey);
+
         ImageView iconView = new ImageView();
-        iconView.setFitHeight(24);
         iconView.setFitWidth(24);
+        iconView.setFitHeight(24);
         iconView.setPreserveRatio(true);
         iconView.setSmooth(true);
 
-        String iconPath = getIconPath(textKey);
         if (iconPath != null) {
-            try (InputStream is = getClass().getClassLoader()
-                    .getResourceAsStream(iconPath)) {
-                if (is != null) {
-                    Image image = new Image(is);
-                    iconView.setImage(image);
+            try {
+                URL url = getClass().getResource("/" + iconPath);
+                if (url != null) {
+                    iconView.setImage(new Image(url.toExternalForm()));
                     return iconView;
+                } else {
+                    System.err.println("Icon not found: /" + iconPath);
                 }
             } catch (Exception e) {
-                System.err.println("Failed to load icon: " + iconPath);
+                e.printStackTrace();
             }
         }
 
-        // 降级方案：使用符号
         Label fallback = new Label("◉");
         fallback.setStyle("-fx-font-size: 20px; -fx-text-fill: #333;");
         return fallback;
     }
+
 
     /**
      * 获取图标文件路径
