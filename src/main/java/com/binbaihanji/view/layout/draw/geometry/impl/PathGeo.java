@@ -1,10 +1,13 @@
 package com.binbaihanji.view.layout.draw.geometry.impl;
 
+import com.binbaihanji.util.PointNameManager;
 import com.binbaihanji.view.layout.core.WorldTransform;
 import com.binbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +28,8 @@ public class PathGeo implements WorldObject {
     private final List<Point> pathPoints;
 
     private boolean hover = false;
+    private String startPointName; // 起点名称
+    private String endPointName;   // 终点名称
 
     /**
      * 构造函数
@@ -40,6 +45,13 @@ public class PathGeo implements WorldObject {
         for (Point2D p : points) {
             this.pathPoints.add(new Point(p.getX(), p.getY()));
         }
+
+        // 为起点和终点分配名称
+        PointNameManager manager = PointNameManager.getInstance();
+        Point2D startPoint = points.get(0);
+        Point2D endPoint = points.get(points.size() - 1);
+        this.startPointName = manager.assignName(startPoint.getX(), startPoint.getY());
+        this.endPointName = manager.assignName(endPoint.getX(), endPoint.getY());
     }
 
     @Override
@@ -75,6 +87,17 @@ public class PathGeo implements WorldObject {
         double pointRadius = hover ? 5 : 4;
         gc.fillOval(sx1 - pointRadius, sy1 - pointRadius, pointRadius * 2, pointRadius * 2);
         gc.fillOval(sx2 - pointRadius, sy2 - pointRadius, pointRadius * 2, pointRadius * 2);
+
+        // 绘制起点和终点名称
+        gc.setFill(Color.BLACK);
+        gc.setFont(Font.font(12));
+        gc.setTextAlign(TextAlignment.LEFT);
+        if (startPointName != null && !startPointName.isEmpty()) {
+            gc.fillText(startPointName, sx1 + 8, sy1 - 8);
+        }
+        if (endPointName != null && !endPointName.isEmpty()) {
+            gc.fillText(endPointName, sx2 + 8, sy2 - 8);
+        }
     }
 
     @Override

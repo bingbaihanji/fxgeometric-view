@@ -1,9 +1,12 @@
 package com.binbaihanji.view.layout.draw.geometry.impl;
 
+import com.binbaihanji.util.PointNameManager;
 import com.binbaihanji.view.layout.core.WorldTransform;
 import com.binbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 
 import java.util.List;
 
@@ -23,12 +26,18 @@ public class InfiniteLineGeo implements WorldObject {
     private double point2Y;
 
     private boolean hover = false;
+    private String point1Name; // 定义点1名称
+    private String point2Name; // 定义点2名称
 
     public InfiniteLineGeo(double point1X, double point1Y, double point2X, double point2Y) {
         this.point1X = point1X;
         this.point1Y = point1Y;
         this.point2X = point2X;
         this.point2Y = point2Y;
+        // 为定义点分配名称
+        PointNameManager manager = PointNameManager.getInstance();
+        this.point1Name = manager.assignName(point1X, point1Y);
+        this.point2Name = manager.assignName(point2X, point2Y);
     }
 
     public double getPoint1X() {
@@ -71,6 +80,17 @@ public class InfiniteLineGeo implements WorldObject {
         double pointRadius = hover ? 5 : 4;
         gc.fillOval(sx1 - pointRadius, sy1 - pointRadius, pointRadius * 2, pointRadius * 2);
         gc.fillOval(sx2 - pointRadius, sy2 - pointRadius, pointRadius * 2, pointRadius * 2);
+
+        // 绘制定义点名称
+        gc.setFill(Color.BLACK);
+        gc.setFont(Font.font(12));
+        gc.setTextAlign(TextAlignment.LEFT);
+        if (point1Name != null && !point1Name.isEmpty()) {
+            gc.fillText(point1Name, sx1 + 8, sy1 - 8);
+        }
+        if (point2Name != null && !point2Name.isEmpty()) {
+            gc.fillText(point2Name, sx2 + 8, sy2 - 8);
+        }
     }
 
     /**

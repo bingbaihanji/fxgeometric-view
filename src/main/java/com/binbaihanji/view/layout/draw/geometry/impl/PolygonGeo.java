@@ -1,9 +1,12 @@
 package com.binbaihanji.view.layout.draw.geometry.impl;
 
+import com.binbaihanji.util.PointNameManager;
 import com.binbaihanji.view.layout.core.WorldTransform;
 import com.binbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +27,7 @@ public class PolygonGeo implements WorldObject {
     private final List<Point> vertices;
 
     private boolean hover = false;
+    private final List<String> vertexNames; // 顶点名称列表
 
     /**
      * 构造函数
@@ -39,8 +43,12 @@ public class PolygonGeo implements WorldObject {
         }
 
         this.vertices = new ArrayList<>();
+        this.vertexNames = new ArrayList<>();
+        PointNameManager manager = PointNameManager.getInstance();
         for (int i = 0; i < vertices.length; i += 2) {
             this.vertices.add(new Point(vertices[i], vertices[i + 1]));
+            // 为每个顶点分配名称
+            this.vertexNames.add(manager.assignName(vertices[i], vertices[i + 1]));
         }
     }
 
@@ -55,8 +63,12 @@ public class PolygonGeo implements WorldObject {
         }
 
         this.vertices = new ArrayList<>();
+        this.vertexNames = new ArrayList<>();
+        PointNameManager manager = PointNameManager.getInstance();
         for (javafx.geometry.Point2D p : points) {
             this.vertices.add(new Point(p.getX(), p.getY()));
+            // 为每个顶点分配名称
+            this.vertexNames.add(manager.assignName(p.getX(), p.getY()));
         }
     }
 
@@ -85,6 +97,17 @@ public class PolygonGeo implements WorldObject {
         for (int i = 0; i < vertices.size(); i++) {
             gc.fillOval(xPoints[i] - pointRadius, yPoints[i] - pointRadius,
                     pointRadius * 2, pointRadius * 2);
+        }
+
+        // 绘制顶点名称
+        gc.setFill(Color.BLACK);
+        gc.setFont(Font.font(12));
+        gc.setTextAlign(TextAlignment.LEFT);
+        for (int i = 0; i < vertices.size(); i++) {
+            String name = vertexNames.get(i);
+            if (name != null && !name.isEmpty()) {
+                gc.fillText(name, xPoints[i] + 8, yPoints[i] - 8);
+            }
         }
     }
 

@@ -1,9 +1,12 @@
 package com.binbaihanji.view.layout.draw.geometry.impl;
 
+import com.binbaihanji.util.PointNameManager;
 import com.binbaihanji.view.layout.core.WorldTransform;
 import com.binbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 
 import java.util.List;
 
@@ -14,10 +17,22 @@ public class PointGeo implements WorldObject {
 
     private boolean hover = false;
     private Color color = Color.RED; // 默认颜色为红色
+    private String name; // 点的名称
 
     public PointGeo(double x, double y) {
         this.x = x;
         this.y = y;
+        // 自动分配名称
+        this.name = PointNameManager.getInstance().assignName(x, y);
+    }
+
+    public PointGeo(double x, double y, boolean autoName) {
+        this.x = x;
+        this.y = y;
+        // 根据参数决定是否自动命名
+        if (autoName) {
+            this.name = PointNameManager.getInstance().assignName(x, y);
+        }
     }
 
     // Getter methods
@@ -34,6 +49,21 @@ public class PointGeo implements WorldObject {
         this.color = color;
     }
 
+    // 获取点的颜色
+    public Color getColor() {
+        return color;
+    }
+
+    // 获取点的名称
+    public String getName() {
+        return name;
+    }
+
+    // 设置点的名称
+    public void setName(String name) {
+        this.name = name;
+    }
+
     @Override
     public void paint(GraphicsContext gc, WorldTransform t, double w, double h) {
 
@@ -44,6 +74,15 @@ public class PointGeo implements WorldObject {
 
         double r = hover ? 6 : 4;
         gc.fillOval(sx - r, sy - r, r * 2, r * 2);
+
+        // 绘制点的名称
+        if (name != null && !name.isEmpty()) {
+            gc.setFill(Color.BLACK);
+            gc.setFont(Font.font(12));
+            gc.setTextAlign(TextAlignment.LEFT);
+            // 在点的右上方显示名称
+            gc.fillText(name, sx + 8, sy - 8);
+        }
     }
 
     @Override

@@ -1,9 +1,12 @@
 package com.binbaihanji.view.layout.draw.geometry.impl;
 
+import com.binbaihanji.util.PointNameManager;
 import com.binbaihanji.view.layout.core.WorldTransform;
 import com.binbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 
 import java.util.List;
 
@@ -15,12 +18,18 @@ public class LineGeo implements WorldObject {
     private double endY;
 
     private boolean hover = false;
+    private String startPointName; // 起点名称
+    private String endPointName;   // 终点名称
 
     public LineGeo(double startX, double startY, double endX, double endY) {
         this.startX = startX;
         this.startY = startY;
         this.endX = endX;
         this.endY = endY;
+        // 为起点和终点分配名称
+        PointNameManager manager = PointNameManager.getInstance();
+        this.startPointName = manager.assignName(startX, startY);
+        this.endPointName = manager.assignName(endX, endY);
     }
 
 
@@ -56,6 +65,17 @@ public class LineGeo implements WorldObject {
         double pointRadius = hover ? 5 : 4;
         gc.fillOval(sx1 - pointRadius, sy1 - pointRadius, pointRadius * 2, pointRadius * 2);
         gc.fillOval(sx2 - pointRadius, sy2 - pointRadius, pointRadius * 2, pointRadius * 2);
+
+        // 绘制端点名称
+        gc.setFill(Color.BLACK);
+        gc.setFont(Font.font(12));
+        gc.setTextAlign(TextAlignment.LEFT);
+        if (startPointName != null && !startPointName.isEmpty()) {
+            gc.fillText(startPointName, sx1 + 8, sy1 - 8);
+        }
+        if (endPointName != null && !endPointName.isEmpty()) {
+            gc.fillText(endPointName, sx2 + 8, sy2 - 8);
+        }
     }
 
     @Override

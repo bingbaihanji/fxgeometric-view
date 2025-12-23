@@ -64,7 +64,7 @@ public class ShapeToolPane extends VBox {
         VBox content = new VBox(12);
         content.setStyle("-fx-padding: 0;");
 
-        /* ================= 基本工具 ================= */
+        /*  基本工具  */
 
         TilePane basicTools = createToolGrid();
         basicTools.getChildren().addAll(
@@ -80,7 +80,7 @@ public class ShapeToolPane extends VBox {
                 createSection("geo.section.basic", basicTools)
         );
 
-        /* ================= 编辑 ================= */
+        /*  编辑  */
 
         TilePane editTools = createToolGrid();
         editTools.getChildren().addAll(
@@ -93,7 +93,7 @@ public class ShapeToolPane extends VBox {
                 createSection("geo.section.edit", editTools)
         );
 
-        /* ================= 作图 ================= */
+        /*  作图  */
 
         TilePane drawTools = createToolGrid();
         drawTools.getChildren().addAll(
@@ -109,7 +109,7 @@ public class ShapeToolPane extends VBox {
                 createSection("geo.section.draw", drawTools)
         );
 
-        /* ================= Scroll ================= */
+        /*  Scroll  */
 
         ScrollPane scrollPane = new ScrollPane(content);
         scrollPane.setFitToWidth(true);
