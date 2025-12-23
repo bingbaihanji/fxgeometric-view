@@ -101,7 +101,6 @@ public class ShapeToolPane extends VBox {
                 createTool("geo.perpendicular", DrawMode.NONE, group),
                 createTool("geo.perpendicularBisector", DrawMode.NONE, group),
                 createTool("geo.parallel", DrawMode.NONE, group),
-                createTool("geo.angleBisector", DrawMode.NONE, group),
                 createTool("geo.tangent", DrawMode.NONE, group)
         );
 
@@ -135,6 +134,11 @@ public class ShapeToolPane extends VBox {
             case "geo.empty" -> "icon/empty.png";
             case "geo.line" -> "icon/line.png";
             case "geo.handpainted" -> "icon/handpainted.png";
+            case "geo.midpoint" -> "icon/midpoint.png";
+            case "geo.perpendicular" -> "icon/perpendicular.png";
+            case "geo.perpendicularBisector" -> "icon/perpendicularBisector.png";
+            case "geo.parallel" -> "icon/parallel.png";
+            case "geo.tangent" -> "icon/tangent.png";
             default -> null;
         };
     }
