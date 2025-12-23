@@ -21,7 +21,7 @@ public class LineGeo implements WorldObject {
         this.endY = endY;
     }
 
-    // Getter methods for intersection calculations
+
     public double getStartX() {
         return startX;
     }

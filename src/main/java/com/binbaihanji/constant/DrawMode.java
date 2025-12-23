@@ -28,17 +28,7 @@ public enum DrawMode {
     CIRCLE,
 
     /**
-     * 三角形
-     */
-    TRIANGLE,
-
-    /**
-     * 矩形
-     */
-    RECTANGLE,
-
-    /**
-     * 多边形（边数可配置）
+     * 多边形（依次选点绘制，终点与起点重合时完成）
      */
     POLYGON,
     

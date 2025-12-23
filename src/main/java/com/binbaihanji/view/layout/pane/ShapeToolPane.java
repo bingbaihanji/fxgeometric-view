@@ -34,11 +34,7 @@ public class ShapeToolPane extends VBox {
     private final ObjectProperty<DrawMode> drawMode =
             new SimpleObjectProperty<>(DrawMode.NONE);
 
-    /**
-     * 多边形边数
-     */
-    private final IntegerProperty polygonSides =
-            new SimpleIntegerProperty(5);
+
 
     /* ======================= 构造 ======================= */
 
@@ -68,7 +64,7 @@ public class ShapeToolPane extends VBox {
                 createTool("geo.segment", DrawMode.LINE, group),
                 createTool("geo.line", DrawMode.LINE, group),
                 createTool("geo.circle", DrawMode.CIRCLE, group),
-                createTool("geo.rectangle", DrawMode.RECTANGLE, group)
+                createTool("geo.polygon", DrawMode.POLYGON, group)
         );
 
         content.getChildren().add(
@@ -293,8 +289,7 @@ public class ShapeToolPane extends VBox {
             case "geo.point" -> "icon/point.png";
             case "geo.segment", "geo.line" -> "icon/segment.png";
             case "geo.circle" -> "icon/circle.png";
-            case "geo.triangle" -> "icon/triangle.png";
-            case "geo.rectangle", "geo.polygon" -> "icon/rectangle.png";
+            case "geo.polygon" -> "icon/rectangle.png";
             default -> null;
         };
     }
@@ -308,11 +303,5 @@ public class ShapeToolPane extends VBox {
         return drawMode.get();
     }
 
-    public IntegerProperty polygonSidesProperty() {
-        return polygonSides;
-    }
 
-    public int getPolygonSides() {
-        return polygonSides.get();
-    }
 }

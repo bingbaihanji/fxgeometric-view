@@ -44,11 +44,6 @@ public class InitView {
             drawingController.setDrawMode(newMode);
         });
 
-        // 多边形边数切换
-        toolPane.polygonSidesProperty().addListener((obs, oldSides, newSides) -> {
-            drawingController.setPolygonSides(newSides.intValue());
-        });
-
         // 5. 设置布局
         SplitPane central = new SplitPane(toolPane, gridChartPane);
         central.setOrientation(javafx.geometry.Orientation.HORIZONTAL);
