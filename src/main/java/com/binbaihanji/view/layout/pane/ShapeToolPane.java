@@ -64,7 +64,8 @@ public class ShapeToolPane extends VBox {
                 createTool("geo.segment", DrawMode.LINE, group),
                 createTool("geo.line", DrawMode.LINE, group),
                 createTool("geo.circle", DrawMode.CIRCLE, group),
-                createTool("geo.polygon", DrawMode.POLYGON, group)
+                createTool("geo.polygon", DrawMode.POLYGON, group),
+                createTool("geo.freehand", DrawMode.FREEHAND, group)
         );
 
         content.getChildren().add(

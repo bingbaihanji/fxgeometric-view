@@ -10,6 +10,7 @@ import com.binbaihanji.view.layout.draw.geometry.impl.CircleGeo;
 import com.binbaihanji.view.layout.draw.geometry.impl.PointGeo;
 import com.binbaihanji.view.layout.draw.geometry.impl.LineGeo;
 import com.binbaihanji.view.layout.draw.geometry.impl.PolygonGeo;
+import com.binbaihanji.view.layout.draw.geometry.impl.PathGeo;
 import com.binbaihanji.view.layout.draw.tools.CircleDrawingTool;
 import com.binbaihanji.view.layout.draw.tools.FreehandDrawingTool;
 
@@ -403,6 +404,17 @@ public class DrawingController {
     public void handleMouseReleased(MouseEvent e) {
         if (drawMode == DrawMode.FREEHAND) {
             freehandTool.onMouseReleased(gridChartPane, e);
+            // 获取手绘路径点并创建 PathGeo 对象
+            List<Point2D> points = freehandTool.getPoints();
+            // 立即清空路径点，防止预览显示
+            freehandTool.clearPoints();
+            if (points.size() >= 2) {
+                PathGeo newPath = new PathGeo(new ArrayList<>(points));
+                gridChartPane.addObject(newPath);
+                // 检查交点
+                checkIntersections(newPath);
+            }
+            gridChartPane.redraw();
             e.consume();
         } else if (draggingPoint != null) {
             // 结束拖动
@@ -421,6 +433,12 @@ public class DrawingController {
      * 绘制预览图形
      */
     public void paintPreview(GraphicsContext gc, WorldTransform transform) {
+        // 手绘线模式：不检查state，直接绘制
+        if (drawMode == DrawMode.FREEHAND) {
+            freehandTool.paintPreview(gc, transform);
+            return;
+        }
+        
         if (state == DrawingState.FIRST_CLICK) {
             // 修复：移除了previewRadius > 0的条件，确保在首次点击时也能显示预览
             // 这样可以在点击时立即显示圆心点，与线段绘制行为保持一致
@@ -512,8 +530,6 @@ public class DrawingController {
                 
                 gc.setLineDashes(null);
             }
-        } else if (drawMode == DrawMode.FREEHAND) {
-            freehandTool.paintPreview(gc, transform);
         } else if (drawMode == DrawMode.NONE && draggingPoint == null) {
             // 非绘制模式下，高亮显示可拖动的控制点
             double mouseWorldX = currentMouseX;
@@ -610,6 +626,54 @@ public class DrawingController {
                     } else if (obj instanceof PolygonGeo otherPolygon) {
                         // 多边形与多边形的交点：遍历两个多边形的所有边
                         for (LineGeo otherEdge : otherPolygon.getEdges()) {
+                            List<Point2D> intersections = IntersectionUtils.getLineLineIntersections(edge, otherEdge);
+                            for (Point2D point : intersections) {
+                                PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
+                                intersectionPoint.setColor(Color.PURPLE);
+                                intersectionPoints.add(intersectionPoint);
+                            }
+                        }
+                    } else if (obj instanceof PathGeo path) {
+                        // 多边形与手绘路径的交点
+                        for (LineGeo pathEdge : path.getEdges()) {
+                            List<Point2D> intersections = IntersectionUtils.getLineLineIntersections(edge, pathEdge);
+                            for (Point2D point : intersections) {
+                                PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
+                                intersectionPoint.setColor(Color.PURPLE);
+                                intersectionPoints.add(intersectionPoint);
+                            }
+                        }
+                    }
+                }
+            } else if (newObject instanceof PathGeo path) {
+                // 手绘路径与其他图形的交点
+                for (LineGeo edge : path.getEdges()) {
+                    if (obj instanceof LineGeo line) {
+                        List<Point2D> intersections = IntersectionUtils.getLineLineIntersections(edge, line);
+                        for (Point2D point : intersections) {
+                            PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
+                            intersectionPoint.setColor(Color.PURPLE);
+                            intersectionPoints.add(intersectionPoint);
+                        }
+                    } else if (obj instanceof CircleGeo circle) {
+                        List<Point2D> intersections = IntersectionUtils.getLineCircleIntersections(edge, circle);
+                        for (Point2D point : intersections) {
+                            PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
+                            intersectionPoint.setColor(Color.PURPLE);
+                            intersectionPoints.add(intersectionPoint);
+                        }
+                    } else if (obj instanceof PolygonGeo polygon) {
+                        for (LineGeo polyEdge : polygon.getEdges()) {
+                            List<Point2D> intersections = IntersectionUtils.getLineLineIntersections(edge, polyEdge);
+                            for (Point2D point : intersections) {
+                                PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
+                                intersectionPoint.setColor(Color.PURPLE);
+                                intersectionPoints.add(intersectionPoint);
+                            }
+                        }
+                    } else if (obj instanceof PathGeo otherPath) {
+                        // 手绘路径与手绘路径的交点
+                        for (LineGeo otherEdge : otherPath.getEdges()) {
                             List<Point2D> intersections = IntersectionUtils.getLineLineIntersections(edge, otherEdge);
                             for (Point2D point : intersections) {
                                 PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
@@ -747,6 +811,36 @@ public class DrawingController {
                     intersections.addAll(IntersectionUtils.getLineLineIntersections(line, edge));
                 } else if (obj1 instanceof CircleGeo circle) {
                     intersections.addAll(IntersectionUtils.getLineCircleIntersections(edge, circle));
+                }
+            }
+        } else if (obj1 instanceof PathGeo path) {
+            // 手绘路径与其他图形的交点
+            for (LineGeo edge : path.getEdges()) {
+                if (obj2 instanceof LineGeo line) {
+                    intersections.addAll(IntersectionUtils.getLineLineIntersections(edge, line));
+                } else if (obj2 instanceof CircleGeo circle) {
+                    intersections.addAll(IntersectionUtils.getLineCircleIntersections(edge, circle));
+                } else if (obj2 instanceof PolygonGeo polygon) {
+                    for (LineGeo polyEdge : polygon.getEdges()) {
+                        intersections.addAll(IntersectionUtils.getLineLineIntersections(edge, polyEdge));
+                    }
+                } else if (obj2 instanceof PathGeo otherPath) {
+                    for (LineGeo otherEdge : otherPath.getEdges()) {
+                        intersections.addAll(IntersectionUtils.getLineLineIntersections(edge, otherEdge));
+                    }
+                }
+            }
+        } else if (obj2 instanceof PathGeo path) {
+            // 其他图形与手绘路径的交点
+            for (LineGeo edge : path.getEdges()) {
+                if (obj1 instanceof LineGeo line) {
+                    intersections.addAll(IntersectionUtils.getLineLineIntersections(line, edge));
+                } else if (obj1 instanceof CircleGeo circle) {
+                    intersections.addAll(IntersectionUtils.getLineCircleIntersections(edge, circle));
+                } else if (obj1 instanceof PolygonGeo polygon) {
+                    for (LineGeo polyEdge : polygon.getEdges()) {
+                        intersections.addAll(IntersectionUtils.getLineLineIntersections(polyEdge, edge));
+                    }
                 }
             }
         }
