@@ -7,12 +7,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Tooltip;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Priority;
@@ -43,6 +38,11 @@ public class ShapeToolPane extends VBox {
      */
     private Runnable onRedo;
 
+    /**
+     * 清空回调
+     */
+    private Runnable onClear;
+
 
 
     /* ======================= 构造 ======================= */
@@ -68,7 +68,6 @@ public class ShapeToolPane extends VBox {
 
         TilePane basicTools = createToolGrid();
         basicTools.getChildren().addAll(
-                createTool("geo.move", DrawMode.NONE, group),
                 createTool("geo.point", DrawMode.POINT, group),
                 createTool("geo.segment", DrawMode.LINE, group),
                 createTool("geo.line", DrawMode.LINE, group),
@@ -87,8 +86,7 @@ public class ShapeToolPane extends VBox {
         editTools.getChildren().addAll(
                 createActionButton("geo.revoke", this::handleUndo),
                 createActionButton("geo.restore", this::handleRedo),
-                createTool("geo.hideObject", DrawMode.NONE, group),
-                createTool("geo.delete", DrawMode.NONE, group)
+                createActionButton("geo.empty", this::handleClear)
         );
 
         content.getChildren().add(
@@ -227,7 +225,7 @@ public class ShapeToolPane extends VBox {
 
         return button;
     }
-    
+
     /**
      * 单个工具按钮（图标 + 文本）
      */
@@ -370,6 +368,7 @@ public class ShapeToolPane extends VBox {
             case "geo.polygon" -> "icon/rectangle.png";
             case "geo.restore" -> "icon/restore.png";
             case "geo.revoke" -> "icon/revoke.png";
+            case "geo.empty" -> "icon/empty.png";
             default -> null;
         };
     }
@@ -412,6 +411,22 @@ public class ShapeToolPane extends VBox {
     private void handleRedo() {
         if (onRedo != null) {
             onRedo.run();
+        }
+    }
+
+    /**
+     * 设置清空回调
+     */
+    public void setOnClear(Runnable callback) {
+        this.onClear = callback;
+    }
+
+    /**
+     * 处理清空
+     */
+    private void handleClear() {
+        if (onClear != null) {
+            onClear.run();
         }
     }
 

@@ -46,9 +46,10 @@ public class InitView {
             drawingController.setDrawMode(newMode);
         });
         
-        // 绑定撤销/恢复按钮
+        // 绑定撤销/恢复/清空按钮
         toolPane.setOnUndo(() -> drawingController.undo());
         toolPane.setOnRedo(() -> drawingController.redo());
+        toolPane.setOnClear(() -> drawingController.clearAll());
 
         // 5. 设置布局
         SplitPane central = new SplitPane(toolPane, gridChartPane);
