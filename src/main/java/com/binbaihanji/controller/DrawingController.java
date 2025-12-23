@@ -1,6 +1,7 @@
 package com.binbaihanji.controller;
 
 import com.binbaihanji.constant.DrawMode;
+import com.binbaihanji.util.CommandHistory;
 import com.binbaihanji.util.IntersectionUtils;
 import com.binbaihanji.util.SpecialPointManager;
 import com.binbaihanji.util.SpecialPointManager.SpecialPoint;
@@ -40,6 +41,11 @@ public class DrawingController {
     private final GridChartPane gridChartPane;
 
     /**
+     * 命令历史管理器
+     */
+    private final CommandHistory commandHistory = new CommandHistory();
+
+    /**
      * 当前绘制模式
      */
     private DrawMode drawMode = DrawMode.NONE;
@@ -59,6 +65,18 @@ public class DrawingController {
      */
     private double dragOffsetX = 0;
     private double dragOffsetY = 0;
+    
+    /**
+     * 拖动开始时的坐标（用于撤销）
+     */
+    private double dragStartX = 0;
+    private double dragStartY = 0;
+    
+    /**
+     * 拖动结束时的实际坐标（用于恢复）
+     */
+    private double dragEndX = 0;
+    private double dragEndY = 0;
 
     /**
      * 绘制状态
@@ -147,7 +165,17 @@ public class DrawingController {
         if (drawMode == DrawMode.POINT) {
             // 点模式：直接绘制
             PointGeo newPoint = new PointGeo(worldX, worldY);
-            gridChartPane.addObject(newPoint);
+            commandHistory.execute(new CommandHistory.Command() {
+                @Override
+                public void execute() {
+                    gridChartPane.addObject(newPoint);
+                }
+
+                @Override
+                public void undo() {
+                    gridChartPane.removeObject(newPoint);
+                }
+            });
             state = DrawingState.IDLE;
             // 消费点绘制事件
             e.consume();
@@ -178,7 +206,17 @@ public class DrawingController {
                             Math.pow(worldX - firstPointX, 2) + Math.pow(worldY - firstPointY, 2)
                     );
                     CircleGeo newCircle = new CircleGeo(firstPointX, firstPointY, radius);
-                    gridChartPane.addObject(newCircle);
+                    commandHistory.execute(new CommandHistory.Command() {
+                        @Override
+                        public void execute() {
+                            gridChartPane.addObject(newCircle);
+                        }
+
+                        @Override
+                        public void undo() {
+                            gridChartPane.removeObject(newCircle);
+                        }
+                    });
                     // 重置CircleDrawingTool状态
                     circleTool.reset();
                     // 检查新圆与其他图形的交点
@@ -187,7 +225,17 @@ public class DrawingController {
                 case LINE -> {
                     // 只创建线段对象，不创建独立的端点
                     LineGeo newLine = new LineGeo(firstPointX, firstPointY, worldX, worldY);
-                    gridChartPane.addObject(newLine);
+                    commandHistory.execute(new CommandHistory.Command() {
+                        @Override
+                        public void execute() {
+                            gridChartPane.addObject(newLine);
+                        }
+
+                        @Override
+                        public void undo() {
+                            gridChartPane.removeObject(newLine);
+                        }
+                    });
                     // 检查新线段与其他图形的交点
                     checkIntersections(newLine);
                 }
@@ -242,7 +290,17 @@ public class DrawingController {
         
         // 只创建多边形对象，不创建独立的点和线段
         PolygonGeo polygon = new PolygonGeo(new ArrayList<>(polygonVertices));
-        gridChartPane.addObject(polygon);
+        commandHistory.execute(new CommandHistory.Command() {
+            @Override
+            public void execute() {
+                gridChartPane.addObject(polygon);
+            }
+
+            @Override
+            public void undo() {
+                gridChartPane.removeObject(polygon);
+            }
+        });
         
         // 检查交点
         checkIntersections(polygon);
@@ -332,6 +390,14 @@ public class DrawingController {
                         draggingPoint = point;
                         dragOffsetX = worldX - point.getX();
                         dragOffsetY = worldY - point.getY();
+                        
+                        // 保存拖动前的坐标，用于撤销
+                        dragStartX = point.getX();
+                        dragStartY = point.getY();
+                        // 初始化结束位置为起始位置
+                        dragEndX = dragStartX;
+                        dragEndY = dragStartY;
+                        
                         e.consume();
                         return;
                     }
@@ -361,8 +427,16 @@ public class DrawingController {
                 worldY = nearestPoint.getY();
             }
             
-            // 更新控制点位置（减去偏移量）
-            draggingPoint.updatePosition(worldX - dragOffsetX, worldY - dragOffsetY);
+            // 计算实际更新后的位置
+            double newX = worldX - dragOffsetX;
+            double newY = worldY - dragOffsetY;
+            
+            // 更新控制点位置
+            draggingPoint.updatePosition(newX, newY);
+            
+            // 实时记录当前拖动位置（用于撤销/恢复）
+            dragEndX = newX;
+            dragEndY = newY;
             
             // 重绘
             gridChartPane.redraw();
@@ -410,7 +484,17 @@ public class DrawingController {
             freehandTool.clearPoints();
             if (points.size() >= 2) {
                 PathGeo newPath = new PathGeo(new ArrayList<>(points));
-                gridChartPane.addObject(newPath);
+                commandHistory.execute(new CommandHistory.Command() {
+                    @Override
+                    public void execute() {
+                        gridChartPane.addObject(newPath);
+                    }
+
+                    @Override
+                    public void undo() {
+                        gridChartPane.removeObject(newPath);
+                    }
+                });
                 // 检查交点
                 checkIntersections(newPath);
             }
@@ -418,9 +502,42 @@ public class DrawingController {
             e.consume();
         } else if (draggingPoint != null) {
             // 结束拖动
+            // 只有位置实际改变才记录命令
+            if (Math.abs(dragStartX - dragEndX) > 1e-10 || 
+                Math.abs(dragStartY - dragEndY) > 1e-10) {
+                
+                // 保存对点的持久引用和坐标
+                final WorldObject.DraggablePoint pointRef = draggingPoint;
+                final double startX = dragStartX;
+                final double startY = dragStartY;
+                final double endX = dragEndX;
+                final double endY = dragEndY;
+                
+                // 使用addCommand而不是execute，因为拖动已经完成了
+                commandHistory.addCommand(new CommandHistory.Command() {
+                    @Override
+                    public void execute() {
+                        // 恢复操作：移动到结束位置
+                        pointRef.updatePosition(endX, endY);
+                        recalculateAllIntersections();
+                    }
+
+                    @Override
+                    public void undo() {
+                        // 撤销操作：移动回起始位置
+                        pointRef.updatePosition(startX, startY);
+                        recalculateAllIntersections();
+                    }
+                });
+            }
+            
             draggingPoint = null;
             dragOffsetX = 0;
             dragOffsetY = 0;
+            dragStartX = 0;
+            dragStartY = 0;
+            dragEndX = 0;
+            dragEndY = 0;
             
             // 重新计算所有交点
             recalculateAllIntersections();
@@ -558,7 +675,51 @@ public class DrawingController {
      * 清除所有图形
      */
     public void clearAll() {
-        gridChartPane.clearAllObjects();
+        // 保存当前所有对象，用于撤销
+        List<WorldObject> objectsToClear = new ArrayList<>(gridChartPane.getObjects());
+        commandHistory.execute(new CommandHistory.Command() {
+            @Override
+            public void execute() {
+                gridChartPane.clearAllObjects();
+            }
+
+            @Override
+            public void undo() {
+                for (WorldObject obj : objectsToClear) {
+                    gridChartPane.addObject(obj);
+                }
+            }
+        });
+    }
+
+    /**
+     * 撤销操作
+     */
+    public void undo() {
+        commandHistory.undo();
+        gridChartPane.redraw();
+    }
+
+    /**
+     * 恢复操作
+     */
+    public void redo() {
+        commandHistory.redo();
+        gridChartPane.redraw();
+    }
+
+    /**
+     * 判断是否可以撤销
+     */
+    public boolean canUndo() {
+        return commandHistory.canUndo();
+    }
+
+    /**
+     * 判断是否可以恢复
+     */
+    public boolean canRedo() {
+        return commandHistory.canRedo();
     }
 
     /**

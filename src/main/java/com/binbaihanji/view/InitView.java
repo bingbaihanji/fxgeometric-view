@@ -7,6 +7,8 @@ import com.binbaihanji.view.layout.pane.ShapeToolPane;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.SplitPane;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
@@ -43,6 +45,10 @@ public class InitView {
         toolPane.drawModeProperty().addListener((obs, oldMode, newMode) -> {
             drawingController.setDrawMode(newMode);
         });
+        
+        // 绑定撤销/恢复按钮
+        toolPane.setOnUndo(() -> drawingController.undo());
+        toolPane.setOnRedo(() -> drawingController.redo());
 
         // 5. 设置布局
         SplitPane central = new SplitPane(toolPane, gridChartPane);
@@ -69,8 +75,35 @@ public class InitView {
         gridChartPane.setPreviewPainter(drawingController::paintPreview);
 
         Scene scene = new Scene(root, 1000, 700);
+        
+        // 7. 添加快捷键支持
+        scene.setOnKeyPressed(this::handleKeyPressed);
+        this.drawingController = drawingController;
+        
         stage.setTitle(I18nUtil.getString("application.name"));
         stage.setScene(scene);
         return stage;
+    }
+    
+    /**
+     * 绘制控制器（用于快捷键处理）
+     */
+    private DrawingController drawingController;
+    
+    /**
+     * 处理快捷键事件
+     */
+    private void handleKeyPressed(KeyEvent event) {
+        if (event.isControlDown()) {
+            if (event.getCode() == KeyCode.Z) {
+                // Ctrl+Z: 撤销
+                drawingController.undo();
+                event.consume();
+            } else if (event.getCode() == KeyCode.Y) {
+                // Ctrl+Y: 恢复
+                drawingController.redo();
+                event.consume();
+            }
+        }
     }
 }

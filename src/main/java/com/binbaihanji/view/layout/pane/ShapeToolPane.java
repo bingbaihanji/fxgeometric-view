@@ -2,13 +2,12 @@ package com.binbaihanji.view.layout.pane;
 
 import com.binbaihanji.constant.DrawMode;
 import com.binbaihanji.util.I18nUtil;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tooltip;
@@ -19,7 +18,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
-import java.io.InputStream;
+
 import java.net.URL;
 
 /**
@@ -33,6 +32,16 @@ public class ShapeToolPane extends VBox {
 
     private final ObjectProperty<DrawMode> drawMode =
             new SimpleObjectProperty<>(DrawMode.NONE);
+
+    /**
+     * 撤销回调
+     */
+    private Runnable onUndo;
+
+    /**
+     * 恢复回调
+     */
+    private Runnable onRedo;
 
 
 
@@ -76,8 +85,8 @@ public class ShapeToolPane extends VBox {
 
         TilePane editTools = createToolGrid();
         editTools.getChildren().addAll(
-                createTool("geo.select", DrawMode.NONE, group),
-                createTool("geo.showLabel", DrawMode.NONE, group),
+                createActionButton("geo.revoke", this::handleUndo),
+                createActionButton("geo.restore", this::handleRedo),
                 createTool("geo.hideObject", DrawMode.NONE, group),
                 createTool("geo.delete", DrawMode.NONE, group)
         );
@@ -151,6 +160,74 @@ public class ShapeToolPane extends VBox {
         return pane;
     }
 
+    /**
+     * 创建动作按钮（不是切换按钮）
+     */
+    private Button createActionButton(String textKey, Runnable action) {
+        String tooltipText = I18nUtil.getString(textKey);
+        Node iconNode = loadIconNode(textKey);
+
+        Label text = new Label(tooltipText);
+        text.setStyle("-fx-font-size: 10px; -fx-text-alignment: center;");
+
+        VBox graphic = new VBox(3, iconNode, text);
+        graphic.setAlignment(Pos.CENTER);
+        graphic.setPrefSize(50, 50);
+
+        Button button = new Button();
+        button.setGraphic(graphic);
+        button.setPrefSize(60, 65);
+        button.setMinSize(60, 65);
+        button.setMaxSize(60, 65);
+        button.setFocusTraversable(false);
+
+        button.setStyle("""
+                -fx-background-radius: 8;
+                -fx-border-radius: 8;
+                -fx-border-width: 1;
+                -fx-border-color: #d0d0d0;
+                -fx-background-color: #ffffff;
+                -fx-padding: 4;
+                -fx-font-size: 10px;
+                """);
+
+        button.setOnMouseEntered(e -> {
+            button.setStyle("""
+                    -fx-background-radius: 8;
+                    -fx-border-radius: 8;
+                    -fx-border-width: 1;
+                    -fx-border-color: #999;
+                    -fx-background-color: #f9f9f9;
+                    -fx-padding: 4;
+                    -fx-font-size: 10px;
+                    """);
+        });
+
+        button.setOnMouseExited(e -> {
+            button.setStyle("""
+                    -fx-background-radius: 8;
+                    -fx-border-radius: 8;
+                    -fx-border-width: 1;
+                    -fx-border-color: #d0d0d0;
+                    -fx-background-color: #ffffff;
+                    -fx-padding: 4;
+                    -fx-font-size: 10px;
+                    """);
+        });
+
+        button.setOnAction(e -> {
+            if (action != null) {
+                action.run();
+            }
+        });
+
+        Tooltip tooltip = new Tooltip(tooltipText);
+        tooltip.setStyle("-fx-font-size: 11px;");
+        Tooltip.install(button, tooltip);
+
+        return button;
+    }
+    
     /**
      * 单个工具按钮（图标 + 文本）
      */
@@ -291,6 +368,8 @@ public class ShapeToolPane extends VBox {
             case "geo.segment", "geo.line" -> "icon/segment.png";
             case "geo.circle" -> "icon/circle.png";
             case "geo.polygon" -> "icon/rectangle.png";
+            case "geo.restore" -> "icon/restore.png";
+            case "geo.revoke" -> "icon/revoke.png";
             default -> null;
         };
     }
@@ -302,6 +381,38 @@ public class ShapeToolPane extends VBox {
 
     public DrawMode getDrawMode() {
         return drawMode.get();
+    }
+
+    /**
+     * 设置撤销回调
+     */
+    public void setOnUndo(Runnable callback) {
+        this.onUndo = callback;
+    }
+
+    /**
+     * 设置恢复回调
+     */
+    public void setOnRedo(Runnable callback) {
+        this.onRedo = callback;
+    }
+
+    /**
+     * 处理撤销
+     */
+    private void handleUndo() {
+        if (onUndo != null) {
+            onUndo.run();
+        }
+    }
+
+    /**
+     * 处理恢复
+     */
+    private void handleRedo() {
+        if (onRedo != null) {
+            onRedo.run();
+        }
     }
 
 
