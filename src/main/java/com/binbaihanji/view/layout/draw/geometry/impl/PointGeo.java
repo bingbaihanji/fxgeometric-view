@@ -5,10 +5,12 @@ import com.binbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
+import java.util.List;
+
 public class PointGeo implements WorldObject {
 
-    private final double x;
-    private final double y;
+    private double x;
+    private double y;
 
     private boolean hover = false;
     private Color color = Color.RED; // 默认颜色为红色
@@ -57,5 +59,16 @@ public class PointGeo implements WorldObject {
     @Override
     public void onClick(double wx, double wy) {
         System.out.println("点被点击：" + x + ", " + y);
+    }
+    
+    @Override
+    public List<DraggablePoint> getDraggablePoints() {
+        // 点本身可拖动
+        return List.of(
+            new DraggablePoint(x, y, (newX, newY) -> {
+                x = newX;
+                y = newY;
+            })
+        );
     }
 }

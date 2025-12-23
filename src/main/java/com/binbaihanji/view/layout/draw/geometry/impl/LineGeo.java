@@ -5,12 +5,14 @@ import com.binbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
+import java.util.List;
+
 public class LineGeo implements WorldObject {
 
-    private final double startX;
-    private final double startY;
-    private final double endX;
-    private final double endY;
+    private double startX;
+    private double startY;
+    private double endX;
+    private double endY;
 
     private boolean hover = false;
 
@@ -48,6 +50,12 @@ public class LineGeo implements WorldObject {
         gc.setStroke(hover ? Color.ORANGE : Color.DODGERBLUE);
         gc.setLineWidth(hover ? 3 : 2);
         gc.strokeLine(sx1, sy1, sx2, sy2);
+        
+        // 绘制端点
+        gc.setFill(hover ? Color.ORANGE : Color.RED);
+        double pointRadius = hover ? 5 : 4;
+        gc.fillOval(sx1 - pointRadius, sy1 - pointRadius, pointRadius * 2, pointRadius * 2);
+        gc.fillOval(sx2 - pointRadius, sy2 - pointRadius, pointRadius * 2, pointRadius * 2);
     }
 
     @Override
@@ -77,5 +85,20 @@ public class LineGeo implements WorldObject {
     @Override
     public void setHover(boolean hover) {
         this.hover = hover;
+    }
+    
+    @Override
+    public List<DraggablePoint> getDraggablePoints() {
+        // 线段的两个端点可拖动
+        return List.of(
+            new DraggablePoint(startX, startY, (newX, newY) -> {
+                startX = newX;
+                startY = newY;
+            }),
+            new DraggablePoint(endX, endY, (newX, newY) -> {
+                endX = newX;
+                endY = newY;
+            })
+        );
     }
 }

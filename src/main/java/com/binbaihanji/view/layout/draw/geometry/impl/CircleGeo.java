@@ -5,12 +5,12 @@ import com.binbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
+import java.util.List;
+
 public class CircleGeo implements WorldObject {
 
-
-
-    private final double cx;
-    private final double cy;
+    private double cx;
+    private double cy;
     private final double r;
 
     private boolean hover = false;
@@ -81,5 +81,16 @@ public class CircleGeo implements WorldObject {
     @Override
     public void setHover(boolean hover) {
         this.hover = hover;
+    }
+    
+    @Override
+    public List<DraggablePoint> getDraggablePoints() {
+        // 圆心可拖动
+        return List.of(
+            new DraggablePoint(cx, cy, (newX, newY) -> {
+                cx = newX;
+                cy = newY;
+            })
+        );
     }
 }

@@ -47,6 +47,17 @@ public class DrawingController {
      * 多边形顶点列表（用于POLYGON模式）
      */
     private final List<Point2D> polygonVertices = new ArrayList<>();
+    
+    /**
+     * 当前拖动的控制点
+     */
+    private WorldObject.DraggablePoint draggingPoint = null;
+    
+    /**
+     * 拖动开始时的鼠标偏移量
+     */
+    private double dragOffsetX = 0;
+    private double dragOffsetY = 0;
 
     /**
      * 绘制状态
@@ -173,12 +184,7 @@ public class DrawingController {
                     checkIntersections(newCircle);
                 }
                 case LINE -> {
-                    // 添加起点和终点的点
-                    PointGeo startPoint = new PointGeo(firstPointX, firstPointY);
-                    PointGeo endPoint = new PointGeo(worldX, worldY);
-                    gridChartPane.addObject(startPoint);
-                    gridChartPane.addObject(endPoint);
-                    // 创建线段对象并添加到画布
+                    // 只创建线段对象，不创建独立的端点
                     LineGeo newLine = new LineGeo(firstPointX, firstPointY, worldX, worldY);
                     gridChartPane.addObject(newLine);
                     // 检查新线段与其他图形的交点
@@ -218,17 +224,6 @@ public class DrawingController {
         // 添加新顶点
         polygonVertices.add(new Point2D(worldX, worldY));
         
-        // 添加顶点点
-        PointGeo vertex = new PointGeo(worldX, worldY);
-        gridChartPane.addObject(vertex);
-        
-        // 如果有两个以上顶点，绘制连接线段
-        if (polygonVertices.size() >= 2) {
-            Point2D prevVertex = polygonVertices.get(polygonVertices.size() - 2);
-            LineGeo edge = new LineGeo(prevVertex.getX(), prevVertex.getY(), worldX, worldY);
-            gridChartPane.addObject(edge);
-        }
-        
         // 进入多边形绘制状态
         state = DrawingState.POLYGON_DRAWING;
         
@@ -244,19 +239,8 @@ public class DrawingController {
             return;
         }
         
-        // 创建多边形对象
+        // 只创建多边形对象，不创建独立的点和线段
         PolygonGeo polygon = new PolygonGeo(new ArrayList<>(polygonVertices));
-        
-        // 添加最后一条边（连接最后一个顶点和第一个顶点）
-        Point2D lastVertex = polygonVertices.get(polygonVertices.size() - 1);
-        Point2D firstVertex = polygonVertices.get(0);
-        LineGeo closingEdge = new LineGeo(
-            lastVertex.getX(), lastVertex.getY(),
-            firstVertex.getX(), firstVertex.getY()
-        );
-        gridChartPane.addObject(closingEdge);
-        
-        // 添加多边形到画布
         gridChartPane.addObject(polygon);
         
         // 检查交点
@@ -272,10 +256,14 @@ public class DrawingController {
      * 鼠标移动事件（实时预览）
      */
     public void handleMouseMoved(MouseEvent e) {
+        double rawX = gridChartPane.screenToWorldX(e.getX());
+        double rawY = gridChartPane.screenToWorldY(e.getY());
+        
+        // 更新当前鼠标位置
+        currentMouseX = rawX;
+        currentMouseY = rawY;
+        
         if (state == DrawingState.FIRST_CLICK) {
-            double rawX = gridChartPane.screenToWorldX(e.getX());
-            double rawY = gridChartPane.screenToWorldY(e.getY());
-            
             // 应用特殊点磁性吸附
             double worldX = rawX;
             double worldY = rawY;
@@ -302,9 +290,6 @@ public class DrawingController {
             gridChartPane.redraw();
         } else if (state == DrawingState.POLYGON_DRAWING) {
             // 多边形绘制中，显示从最后一个顶点到当前鼠标位置的预览线
-            double rawX = gridChartPane.screenToWorldX(e.getX());
-            double rawY = gridChartPane.screenToWorldY(e.getY());
-            
             // 应用特殊点磁性吸附
             double worldX = rawX;
             double worldY = rawY;
@@ -317,6 +302,9 @@ public class DrawingController {
             currentMouseX = worldX;
             currentMouseY = worldY;
             gridChartPane.redraw();
+        } else if (drawMode == DrawMode.NONE) {
+            // 非绘制模式下，重绘以显示控制点高亮
+            gridChartPane.redraw();
         }
     }
 
@@ -327,6 +315,27 @@ public class DrawingController {
         if (drawMode == DrawMode.FREEHAND) {
             freehandTool.onMousePressed(gridChartPane, e);
             e.consume();
+        } else if (drawMode == DrawMode.NONE && e.getButton() == MouseButton.PRIMARY) {
+            // 非绘制模式下，尝试选中控制点进行拖动
+            double worldX = gridChartPane.screenToWorldX(e.getX());
+            double worldY = gridChartPane.screenToWorldY(e.getY());
+            
+            // 计算容差
+            double scale = gridChartPane.getTransform().getScale();
+            double tolerance = 10.0 / scale; // 10像素的点击范围
+            
+            // 遍历所有图形的控制点，找到最近的控制点
+            for (WorldObject obj : gridChartPane.getObjects()) {
+                for (WorldObject.DraggablePoint point : obj.getDraggablePoints()) {
+                    if (point.hitTest(worldX, worldY, tolerance)) {
+                        draggingPoint = point;
+                        dragOffsetX = worldX - point.getX();
+                        dragOffsetY = worldY - point.getY();
+                        e.consume();
+                        return;
+                    }
+                }
+            }
         }
     }
 
@@ -336,6 +345,26 @@ public class DrawingController {
     public void handleMouseDragged(MouseEvent e) {
         if (drawMode == DrawMode.FREEHAND) {
             freehandTool.onMouseDragged(gridChartPane, e);
+            e.consume();
+        } else if (draggingPoint != null) {
+            // 拖动控制点
+            double rawX = gridChartPane.screenToWorldX(e.getX());
+            double rawY = gridChartPane.screenToWorldY(e.getY());
+            
+            // 应用特殊点磁性吸附
+            double worldX = rawX;
+            double worldY = rawY;
+            SpecialPoint nearestPoint = findNearestSpecialPoint(rawX, rawY);
+            if (nearestPoint != null) {
+                worldX = nearestPoint.getX();
+                worldY = nearestPoint.getY();
+            }
+            
+            // 更新控制点位置（减去偏移量）
+            draggingPoint.updatePosition(worldX - dragOffsetX, worldY - dragOffsetY);
+            
+            // 重绘
+            gridChartPane.redraw();
             e.consume();
         } else if (state == DrawingState.FIRST_CLICK) {
             double rawX = gridChartPane.screenToWorldX(e.getX());
@@ -374,6 +403,16 @@ public class DrawingController {
     public void handleMouseReleased(MouseEvent e) {
         if (drawMode == DrawMode.FREEHAND) {
             freehandTool.onMouseReleased(gridChartPane, e);
+            e.consume();
+        } else if (draggingPoint != null) {
+            // 结束拖动
+            draggingPoint = null;
+            dragOffsetX = 0;
+            dragOffsetY = 0;
+            
+            // 重新计算所有交点
+            recalculateAllIntersections();
+            
             e.consume();
         }
     }
@@ -414,8 +453,31 @@ public class DrawingController {
                 }
             }
         } else if (state == DrawingState.POLYGON_DRAWING) {
-            // 绘制多边形预览：从最后一个顶点到当前鼠标位置的线段
+            // 绘制多边形预览：显示已选择的顶点和边
             if (!polygonVertices.isEmpty()) {
+                // 绘制已确定的顶点
+                gc.setFill(Color.RED);
+                double pointRadius = 4;
+                for (Point2D vertex : polygonVertices) {
+                    double sx = transform.worldToScreenX(vertex.getX());
+                    double sy = transform.worldToScreenY(vertex.getY());
+                    gc.fillOval(sx - pointRadius, sy - pointRadius, pointRadius * 2, pointRadius * 2);
+                }
+                
+                // 绘制已确定的边
+                gc.setStroke(Color.DODGERBLUE);
+                gc.setLineWidth(2);
+                for (int i = 0; i < polygonVertices.size() - 1; i++) {
+                    Point2D p1 = polygonVertices.get(i);
+                    Point2D p2 = polygonVertices.get(i + 1);
+                    double sx1 = transform.worldToScreenX(p1.getX());
+                    double sy1 = transform.worldToScreenY(p1.getY());
+                    double sx2 = transform.worldToScreenX(p2.getX());
+                    double sy2 = transform.worldToScreenY(p2.getY());
+                    gc.strokeLine(sx1, sy1, sx2, sy2);
+                }
+                
+                // 绘制从最后一个顶点到鼠标的预览线
                 Point2D lastVertex = polygonVertices.get(polygonVertices.size() - 1);
                 Point2D firstVertex = polygonVertices.get(0);
                 
@@ -424,7 +486,6 @@ public class DrawingController {
                 double sx2 = transform.worldToScreenX(currentMouseX);
                 double sy2 = transform.worldToScreenY(currentMouseY);
                 
-                // 绘制从最后一个顶点到鼠标的预览线
                 gc.setStroke(Color.valueOf("#759eb2"));
                 gc.setLineWidth(1);
                 gc.setLineDashes(6);
@@ -453,6 +514,27 @@ public class DrawingController {
             }
         } else if (drawMode == DrawMode.FREEHAND) {
             freehandTool.paintPreview(gc, transform);
+        } else if (drawMode == DrawMode.NONE && draggingPoint == null) {
+            // 非绘制模式下，高亮显示可拖动的控制点
+            double mouseWorldX = currentMouseX;
+            double mouseWorldY = currentMouseY;
+            double scale = transform.getScale();
+            double tolerance = 10.0 / scale;
+            
+            for (WorldObject obj : gridChartPane.getObjects()) {
+                for (WorldObject.DraggablePoint point : obj.getDraggablePoints()) {
+                    if (point.hitTest(mouseWorldX, mouseWorldY, tolerance)) {
+                        // 绘制高亮圈
+                        double sx = transform.worldToScreenX(point.getX());
+                        double sy = transform.worldToScreenY(point.getY());
+                        
+                        gc.setStroke(Color.ORANGE);
+                        gc.setLineWidth(2);
+                        gc.strokeOval(sx - 8, sy - 8, 16, 16);
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -516,6 +598,91 @@ public class DrawingController {
         for (PointGeo point : intersectionPoints) {
             gridChartPane.addObject(point);
         }
+    }
+    
+    /**
+     * 重新计算所有图形之间的交点
+     * 用于拖动后更新交点位置
+     */
+    private void recalculateAllIntersections() {
+        // 1. 删除所有旧的交点（紫色的PointGeo）
+        List<WorldObject> allObjects = new ArrayList<>(gridChartPane.getObjects());
+        for (WorldObject obj : allObjects) {
+            if (obj instanceof PointGeo point) {
+                // 检查是否为紫色交点
+                if (isIntersectionPoint(point)) {
+                    gridChartPane.removeObject(obj);
+                }
+            }
+        }
+        
+        // 2. 重新计算所有图形之间的交点
+        List<WorldObject> objects = new ArrayList<>(gridChartPane.getObjects());
+        List<PointGeo> newIntersectionPoints = new ArrayList<>();
+        
+        for (int i = 0; i < objects.size(); i++) {
+            WorldObject obj1 = objects.get(i);
+            // 跳过点对象
+            if (obj1 instanceof PointGeo) continue;
+            
+            for (int j = i + 1; j < objects.size(); j++) {
+                WorldObject obj2 = objects.get(j);
+                // 跳过点对象
+                if (obj2 instanceof PointGeo) continue;
+                
+                // 计算交点
+                List<Point2D> intersections = calculateIntersections(obj1, obj2);
+                for (Point2D point : intersections) {
+                    PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
+                    intersectionPoint.setColor(Color.PURPLE);
+                    newIntersectionPoints.add(intersectionPoint);
+                }
+            }
+        }
+        
+        // 3. 添加新的交点
+        for (PointGeo point : newIntersectionPoints) {
+            gridChartPane.addObject(point);
+        }
+        
+        // 4. 重绘
+        gridChartPane.redraw();
+    }
+    
+    /**
+     * 判断点是否为交点（通过颜色判断）
+     */
+    private boolean isIntersectionPoint(PointGeo point) {
+        // 这里需要一个方法来检查点的颜色
+        // 由于PointGeo没有public的getColor方法，我们需要添加一个
+        // 暂时使用反射或者添加一个标记
+        try {
+            java.lang.reflect.Field colorField = PointGeo.class.getDeclaredField("color");
+            colorField.setAccessible(true);
+            Color color = (Color) colorField.get(point);
+            return Color.PURPLE.equals(color);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    /**
+     * 计算两个几何对象之间的交点
+     */
+    private List<Point2D> calculateIntersections(WorldObject obj1, WorldObject obj2) {
+        List<Point2D> intersections = new ArrayList<>();
+        
+        if (obj1 instanceof LineGeo && obj2 instanceof LineGeo) {
+            intersections.addAll(IntersectionUtils.getLineLineIntersections((LineGeo) obj1, (LineGeo) obj2));
+        } else if (obj1 instanceof LineGeo && obj2 instanceof CircleGeo) {
+            intersections.addAll(IntersectionUtils.getLineCircleIntersections((LineGeo) obj1, (CircleGeo) obj2));
+        } else if (obj1 instanceof CircleGeo && obj2 instanceof LineGeo) {
+            intersections.addAll(IntersectionUtils.getLineCircleIntersections((LineGeo) obj2, (CircleGeo) obj1));
+        } else if (obj1 instanceof CircleGeo && obj2 instanceof CircleGeo) {
+            intersections.addAll(IntersectionUtils.getCircleCircleIntersections((CircleGeo) obj1, (CircleGeo) obj2));
+        }
+        
+        return intersections;
     }
     
     /**
