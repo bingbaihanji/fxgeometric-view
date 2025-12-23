@@ -71,6 +71,16 @@ public class DrawingController {
     private double dragEndX = 0;
     private double dragEndY = 0;
     private DrawingState state = DrawingState.IDLE;
+
+    /**
+     * 已选中的线段或直线（用于作图工具）
+     */
+    private WorldObject selectedLine = null;
+
+    /**
+     * 已选中的圆（用于作图工具）
+     */
+    private CircleGeo selectedCircle = null;
     /**
      * 第一个点的世界坐标（用于绘制圆、线段等）
      */
@@ -115,6 +125,9 @@ public class DrawingController {
         this.state = DrawingState.IDLE;
         // 清空多边形顶点列表
         polygonVertices.clear();
+        // 清除选中的对象
+        selectedLine = null;
+        selectedCircle = null;
         // 清除预览
         gridChartPane.redraw();
     }
@@ -138,6 +151,41 @@ public class DrawingController {
         if (nearestPoint != null) {
             worldX = nearestPoint.getX();
             worldY = nearestPoint.getY();
+        }
+
+        // 处理中点模式
+        if (drawMode == DrawMode.MIDPOINT) {
+            handleMidpointClick(worldX, worldY);
+            e.consume();
+            return;
+        }
+
+        // 处理垂线模式
+        if (drawMode == DrawMode.PERPENDICULAR) {
+            handlePerpendicularClick(worldX, worldY);
+            e.consume();
+            return;
+        }
+
+        // 处理垂直平分线模式
+        if (drawMode == DrawMode.PERPENDICULAR_BISECTOR) {
+            handlePerpendicularBisectorClick(worldX, worldY);
+            e.consume();
+            return;
+        }
+
+        // 处理平行线模式
+        if (drawMode == DrawMode.PARALLEL) {
+            handleParallelClick(worldX, worldY);
+            e.consume();
+            return;
+        }
+
+        // 处理切线模式
+        if (drawMode == DrawMode.TANGENT) {
+            handleTangentClick(worldX, worldY);
+            e.consume();
+            return;
         }
 
         if (drawMode == DrawMode.POINT) {
@@ -393,6 +441,22 @@ public class DrawingController {
         } else if (drawMode == DrawMode.NONE) {
             // 非绘制模式下，重绘以显示控制点高亮
             gridChartPane.redraw();
+        } else if (selectedLine != null && (drawMode == DrawMode.PERPENDICULAR || 
+                   drawMode == DrawMode.PARALLEL)) {
+            // 作图工具模式下，鼠标移动时更新预览（垂直平分线不需要预览）
+            double worldX = rawX;
+            double worldY = rawY;
+            SpecialPoint nearestPoint = findNearestSpecialPoint(rawX, rawY);
+            if (nearestPoint != null) {
+                worldX = nearestPoint.getX();
+                worldY = nearestPoint.getY();
+            }
+            currentMouseX = worldX;
+            currentMouseY = worldY;
+            gridChartPane.redraw();
+        } else if (drawMode == DrawMode.TANGENT) {
+            // 切线模式下，鼠标移动时更新预览
+            gridChartPane.redraw();
         }
     }
 
@@ -594,68 +658,135 @@ public class DrawingController {
         }
 
         if (state == DrawingState.FIRST_CLICK) {
-            // 修复：移除了previewRadius > 0的条件，确保在首次点击时也能显示预览
-            // 这样可以在点击时立即显示圆心点，与线段绘制行为保持一致
-            if (drawMode == DrawMode.CIRCLE) {
-                // 圆形预览现在可以正确显示，包括首次点击时的圆心点
-                circleTool.paintPreview(gc, transform);
-            } else {
-                // 绘制线段/直线的预览
-                if (drawMode == DrawMode.LINE || drawMode == DrawMode.INFINITE_LINE) {
-                    double sx1 = transform.worldToScreenX(firstPointX);
-                    double sy1 = transform.worldToScreenY(firstPointY);
-                    double sx2 = transform.worldToScreenX(currentMouseX);
-                    double sy2 = transform.worldToScreenY(currentMouseY);
+            // 作图工具预览：垂线、平行线（垂直平分线不需要预览，点击即绘制）
+            if (selectedLine != null && (drawMode == DrawMode.PERPENDICULAR ||
+                    drawMode == DrawMode.PARALLEL)) {
+                // 高亮显示已选中的线段/直线
+                selectedLine.setHover(true);
+                selectedLine.paint(gc, transform, gridChartPane.getWidth(), gridChartPane.getHeight());
+                selectedLine.setHover(false);
 
-                    // 设置浅色虚线样式用于预览
-                    gc.setStroke(Color.valueOf("#759eb2"));
-                    gc.setLineWidth(1);
-                    gc.setLineDashes(6);
+                // 根据不同的作图模式绘制预览线
+                double x1, y1, x2, y2;
+                if (selectedLine instanceof LineGeo line) {
+                    x1 = line.getStartX();
+                    y1 = line.getStartY();
+                    x2 = line.getEndX();
+                    y2 = line.getEndY();
+                } else if (selectedLine instanceof InfiniteLineGeo line) {
+                    x1 = line.getPoint1X();
+                    y1 = line.getPoint1Y();
+                    x2 = line.getPoint2X();
+                    y2 = line.getPoint2Y();
+                } else {
+                    return;
+                }
 
-                    if (drawMode == DrawMode.INFINITE_LINE) {
-                        // 为无限直线扩展端点
-                        double dx = sx2 - sx1;
-                        double dy = sy2 - sy1;
-                        double scale = 10000; // 一个足够高的扩展值
+                Point2D[] previewLine = null;
+                if (drawMode == DrawMode.PERPENDICULAR) {
+                    previewLine = IntersectionUtils.getPerpendicularLine(x1, y1, x2, y2, currentMouseX, currentMouseY);
+                } else if (drawMode == DrawMode.PARALLEL) {
+                    previewLine = IntersectionUtils.getParallelLine(x1, y1, x2, y2, currentMouseX, currentMouseY);
+                }
 
-                        if (Math.abs(dx) < 1e-10) {
-                            // 竖直线
-                            sx2 = sx1;
-                            sy1 = -scale;
-                            sy2 = scale;
-                        } else if (Math.abs(dy) < 1e-10) {
-                            // 水平线
-                            sx1 = -scale;
-                            sx2 = scale;
-                        } else {
-                            // 一般情况
-                            double t = scale / Math.hypot(dx, dy);
-                            double p1x = sx1 - t * dx;
-                            double p1y = sy1 - t * dy;
-                            double p2x = sx1 + t * dx;
-                            double p2y = sy1 + t * dy;
-                            sx1 = p1x;
-                            sy1 = p1y;
-                            sx2 = p2x;
-                            sy2 = p2y;
-                        }
+                if (previewLine != null) {
+                    // 扩展为无限直线的屏幕坐标
+                    double px1 = previewLine[0].getX();
+                    double py1 = previewLine[0].getY();
+                    double px2 = previewLine[1].getX();
+                    double py2 = previewLine[1].getY();
+
+                    // 计算方向向量并扩展
+                    double dx = px2 - px1;
+                    double dy = py2 - py1;
+                    double len = Math.hypot(dx, dy);
+                    if (len > 1e-10) {
+                        double extendScale = 10000.0;
+                        double ux = dx / len;
+                        double uy = dy / len;
+                        double extX1 = px1 - ux * extendScale;
+                        double extY1 = py1 - uy * extendScale;
+                        double extX2 = px1 + ux * extendScale;
+                        double extY2 = py1 + uy * extendScale;
+
+                        double sx1 = transform.worldToScreenX(extX1);
+                        double sy1 = transform.worldToScreenY(extY1);
+                        double sx2 = transform.worldToScreenX(extX2);
+                        double sy2 = transform.worldToScreenY(extY2);
+
+                        // 绘制虚线预览
+                        gc.setStroke(Color.valueOf("#759eb2"));
+                        gc.setLineWidth(2);
+                        gc.setLineDashes(6);
+                        gc.strokeLine(sx1, sy1, sx2, sy2);
+                        gc.setLineDashes(null);
                     }
 
-                    gc.strokeLine(sx1, sy1, sx2, sy2);
-
-                    // 绘制端点
+                    // 绘制鼠标位置的点
+                    double mouseScreenX = transform.worldToScreenX(currentMouseX);
+                    double mouseScreenY = transform.worldToScreenY(currentMouseY);
                     gc.setFill(Color.LIGHTGRAY);
                     double pointRadius = 3;
-                    double fsx1 = transform.worldToScreenX(firstPointX);
-                    double fsy1 = transform.worldToScreenY(firstPointY);
-                    gc.fillOval(fsx1 - pointRadius, fsy1 - pointRadius, pointRadius * 2, pointRadius * 2);
-                    double fsx2 = transform.worldToScreenX(currentMouseX);
-                    double fsy2 = transform.worldToScreenY(currentMouseY);
-                    gc.fillOval(fsx2 - pointRadius, fsy2 - pointRadius, pointRadius * 2, pointRadius * 2);
-
-                    // 清除虚线设置
-                    gc.setLineDashes(null);
+                    gc.fillOval(mouseScreenX - pointRadius, mouseScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
                 }
+            } else if (drawMode == DrawMode.CIRCLE) {
+                // 圆形预览
+                circleTool.paintPreview(gc, transform);
+            } else if (drawMode == DrawMode.LINE || drawMode == DrawMode.INFINITE_LINE) {
+                // 绘制线段/直线的预览
+                double sx1 = transform.worldToScreenX(firstPointX);
+                double sy1 = transform.worldToScreenY(firstPointY);
+                double sx2 = transform.worldToScreenX(currentMouseX);
+                double sy2 = transform.worldToScreenY(currentMouseY);
+
+                // 设置浅色虚线样式用于预览
+                gc.setStroke(Color.valueOf("#759eb2"));
+                gc.setLineWidth(1);
+                gc.setLineDashes(6);
+
+                if (drawMode == DrawMode.INFINITE_LINE) {
+                    // 为无限直线扩展端点
+                    double dx = sx2 - sx1;
+                    double dy = sy2 - sy1;
+                    double scale = 10000; // 一个足够高的扩展值
+
+                    if (Math.abs(dx) < 1e-10) {
+                        // 竖直线
+                        sx2 = sx1;
+                        sy1 = -scale;
+                        sy2 = scale;
+                    } else if (Math.abs(dy) < 1e-10) {
+                        // 水平线
+                        sx1 = -scale;
+                        sx2 = scale;
+                    } else {
+                        // 一般情况
+                        double t = scale / Math.hypot(dx, dy);
+                        double p1x = sx1 - t * dx;
+                        double p1y = sy1 - t * dy;
+                        double p2x = sx1 + t * dx;
+                        double p2y = sy1 + t * dy;
+                        sx1 = p1x;
+                        sy1 = p1y;
+                        sx2 = p2x;
+                        sy2 = p2y;
+                    }
+                }
+
+                gc.strokeLine(sx1, sy1, sx2, sy2);
+
+                // 绘制端点
+                gc.setFill(Color.LIGHTGRAY);
+                double pointRadius = 3;
+                double fsx1 = transform.worldToScreenX(firstPointX);
+                double fsy1 = transform.worldToScreenY(firstPointY);
+                gc.fillOval(fsx1 - pointRadius, fsy1 - pointRadius, pointRadius * 2, pointRadius * 2);
+                double fsx2 = transform.worldToScreenX(currentMouseX);
+                double fsy2 = transform.worldToScreenY(currentMouseY);
+                gc.fillOval(fsx2 - pointRadius, fsy2 - pointRadius, pointRadius * 2, pointRadius * 2);
+
+                // 清除虚线设置
+                gc.setLineDashes(null);
             }
         } else if (state == DrawingState.POLYGON_DRAWING) {
             // 绘制多边形预览：显示已选择的顶点和边
@@ -734,6 +865,146 @@ public class DrawingController {
                         gc.setStroke(Color.ORANGE);
                         gc.setLineWidth(2);
                         gc.strokeOval(sx - 8, sy - 8, 16, 16);
+                        break;
+                    }
+                }
+            }
+        } else if (state == DrawingState.FIRST_CLICK && selectedLine != null) {
+            // 作图工具预览：高亮显示已选中的线段/直线并显示预览线
+            selectedLine.setHover(true);
+            selectedLine.paint(gc, transform, gridChartPane.getWidth(), gridChartPane.getHeight());
+            selectedLine.setHover(false);
+
+            // 根据不同的作图模式绘制预览线
+            double x1, y1, x2, y2;
+            if (selectedLine instanceof LineGeo line) {
+                x1 = line.getStartX();
+                y1 = line.getStartY();
+                x2 = line.getEndX();
+                y2 = line.getEndY();
+            } else if (selectedLine instanceof InfiniteLineGeo line) {
+                x1 = line.getPoint1X();
+                y1 = line.getPoint1Y();
+                x2 = line.getPoint2X();
+                y2 = line.getPoint2Y();
+            } else {
+                return;
+            }
+
+            Point2D[] previewLine = null;
+            if (drawMode == DrawMode.PERPENDICULAR) {
+                previewLine = IntersectionUtils.getPerpendicularLine(x1, y1, x2, y2, currentMouseX, currentMouseY);
+            } else if (drawMode == DrawMode.PERPENDICULAR_BISECTOR) {
+                previewLine = IntersectionUtils.getPerpendicularBisector(x1, y1, x2, y2, currentMouseX, currentMouseY);
+            } else if (drawMode == DrawMode.PARALLEL) {
+                previewLine = IntersectionUtils.getParallelLine(x1, y1, x2, y2, currentMouseX, currentMouseY);
+            }
+
+            if (previewLine != null) {
+                // 扩展为无限直线的屏幕坐标
+                double px1 = previewLine[0].getX();
+                double py1 = previewLine[0].getY();
+                double px2 = previewLine[1].getX();
+                double py2 = previewLine[1].getY();
+
+                // 计算方向向量并扩展
+                double dx = px2 - px1;
+                double dy = py2 - py1;
+                double len = Math.hypot(dx, dy);
+                if (len > 1e-10) {
+                    double extendScale = 10000.0;
+                    double ux = dx / len;
+                    double uy = dy / len;
+                    double extX1 = px1 - ux * extendScale;
+                    double extY1 = py1 - uy * extendScale;
+                    double extX2 = px1 + ux * extendScale;
+                    double extY2 = py1 + uy * extendScale;
+
+                    double sx1 = transform.worldToScreenX(extX1);
+                    double sy1 = transform.worldToScreenY(extY1);
+                    double sx2 = transform.worldToScreenX(extX2);
+                    double sy2 = transform.worldToScreenY(extY2);
+
+                    // 绘制虚线预览
+                    gc.setStroke(Color.valueOf("#759eb2"));
+                    gc.setLineWidth(2);
+                    gc.setLineDashes(6);
+                    gc.strokeLine(sx1, sy1, sx2, sy2);
+                    gc.setLineDashes(null);
+                }
+
+                // 绘制鼠标位置的点
+                double mouseScreenX = transform.worldToScreenX(currentMouseX);
+                double mouseScreenY = transform.worldToScreenY(currentMouseY);
+                gc.setFill(Color.LIGHTGRAY);
+                double pointRadius = 3;
+                gc.fillOval(mouseScreenX - pointRadius, mouseScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
+            }
+        } else if (drawMode == DrawMode.TANGENT) {
+            // 切线模式预览：显示鼠标附近的圆和切线预览
+            double scale = transform.getScale();
+            double tolerance = 15.0 / scale;
+
+            for (WorldObject obj : gridChartPane.getObjects()) {
+                if (obj instanceof CircleGeo circle) {
+                    // 检查鼠标是否靠近圆
+                    double distance = Math.hypot(currentMouseX - circle.getCx(), currentMouseY - circle.getCy());
+                    if (Math.abs(distance - circle.getR()) <= tolerance) {
+                        // 高亮显示圆
+                        circle.setHover(true);
+                        circle.paint(gc, transform, gridChartPane.getWidth(), gridChartPane.getHeight());
+                        circle.setHover(false);
+
+                        // 计算离鼠标位置最近的圆周上的点（将鼠标位置投影到圆周上）
+                        double dx = currentMouseX - circle.getCx();
+                        double dy = currentMouseY - circle.getCy();
+                        double len = Math.hypot(dx, dy);
+                        
+                        // 归一化方向向量并乘以半径，得到圆周上的点
+                        double tangentPointX = circle.getCx() + (dx / len) * circle.getR();
+                        double tangentPointY = circle.getCy() + (dy / len) * circle.getR();
+
+                        // 计算并绘制切线预览
+                        Point2D[] tangentLine = IntersectionUtils.getTangentLine(
+                                circle.getCx(), circle.getCy(), tangentPointX, tangentPointY
+                        );
+
+                        // 扩展为无限直线
+                        double px1 = tangentLine[0].getX();
+                        double py1 = tangentLine[0].getY();
+                        double px2 = tangentLine[1].getX();
+                        double py2 = tangentLine[1].getY();
+
+                        double tdx = px2 - px1;
+                        double tdy = py2 - py1;
+                        double tlen = Math.hypot(tdx, tdy);
+                        if (tlen > 1e-10) {
+                            double extendScale = 10000.0;
+                            double ux = tdx / tlen;
+                            double uy = tdy / tlen;
+                            double extX1 = px1 - ux * extendScale;
+                            double extY1 = py1 - uy * extendScale;
+                            double extX2 = px1 + ux * extendScale;
+                            double extY2 = py1 + uy * extendScale;
+
+                            double sx1 = transform.worldToScreenX(extX1);
+                            double sy1 = transform.worldToScreenY(extY1);
+                            double sx2 = transform.worldToScreenX(extX2);
+                            double sy2 = transform.worldToScreenY(extY2);
+
+                            gc.setStroke(Color.valueOf("#759eb2"));
+                            gc.setLineWidth(2);
+                            gc.setLineDashes(6);
+                            gc.strokeLine(sx1, sy1, sx2, sy2);
+                            gc.setLineDashes(null);
+                        }
+
+                        // 绘制切点（投影后的圆周上的点）
+                        double tangentScreenX = transform.worldToScreenX(tangentPointX);
+                        double tangentScreenY = transform.worldToScreenY(tangentPointY);
+                        gc.setFill(Color.ORANGE);
+                        double pointRadius = 4;
+                        gc.fillOval(tangentScreenX - pointRadius, tangentScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
                         break;
                     }
                 }
@@ -1195,6 +1466,346 @@ public class DrawingController {
         }
 
         return intersections;
+    }
+
+    /**
+     * 处理中点模式的点击事件
+     * 点击线段或直线，立即绘制其中点
+     */
+    private void handleMidpointClick(double worldX, double worldY) {
+        // 查找点击位置附近的线段或直线
+        double scale = gridChartPane.getTransform().getScale();
+        double tolerance = 10.0 / scale;
+
+        for (WorldObject obj : gridChartPane.getObjects()) {
+            if (obj instanceof LineGeo line) {
+                if (line.hitTest(worldX, worldY, tolerance)) {
+                    // 计算中点
+                    Point2D midpoint = IntersectionUtils.getMidpoint(
+                            line.getStartX(), line.getStartY(),
+                            line.getEndX(), line.getEndY()
+                    );
+
+                    // 绘制中点
+                    PointGeo newPoint = new PointGeo(midpoint.getX(), midpoint.getY());
+                    newPoint.setColor(Color.GREEN);
+                    commandHistory.execute(new CommandHistory.Command() {
+                        @Override
+                        public void execute() {
+                            gridChartPane.addObject(newPoint);
+                        }
+
+                        @Override
+                        public void undo() {
+                            gridChartPane.removeObject(newPoint);
+                        }
+                    });
+                    return;
+                }
+            } else if (obj instanceof InfiniteLineGeo line) {
+                if (line.hitTest(worldX, worldY, tolerance)) {
+                    // 直线的中点是定义点的中点
+                    Point2D midpoint = IntersectionUtils.getMidpoint(
+                            line.getPoint1X(), line.getPoint1Y(),
+                            line.getPoint2X(), line.getPoint2Y()
+                    );
+
+                    // 绘制中点
+                    PointGeo newPoint = new PointGeo(midpoint.getX(), midpoint.getY());
+                    newPoint.setColor(Color.GREEN);
+                    commandHistory.execute(new CommandHistory.Command() {
+                        @Override
+                        public void execute() {
+                            gridChartPane.addObject(newPoint);
+                        }
+
+                        @Override
+                        public void undo() {
+                            gridChartPane.removeObject(newPoint);
+                        }
+                    });
+                    return;
+                }
+            }
+        }
+    }
+
+    /**
+     * 处理垂线模式的点击事件
+     * 第一次点击：选择线段或直线
+     * 第二次点击：选择一点，过此点绘制垂线
+     */
+    private void handlePerpendicularClick(double worldX, double worldY) {
+        if (state == DrawingState.IDLE) {
+            // 第一次点击：选择线段或直线
+            double scale = gridChartPane.getTransform().getScale();
+            double tolerance = 10.0 / scale;
+
+            for (WorldObject obj : gridChartPane.getObjects()) {
+                if (obj instanceof LineGeo line) {
+                    if (line.hitTest(worldX, worldY, tolerance)) {
+                        selectedLine = line;
+                        state = DrawingState.FIRST_CLICK;
+                        gridChartPane.redraw();
+                        return;
+                    }
+                } else if (obj instanceof InfiniteLineGeo line) {
+                    if (line.hitTest(worldX, worldY, tolerance)) {
+                        selectedLine = line;
+                        state = DrawingState.FIRST_CLICK;
+                        gridChartPane.redraw();
+                        return;
+                    }
+                }
+            }
+        } else if (state == DrawingState.FIRST_CLICK && selectedLine != null) {
+            // 第二次点击：过此点绘制垂线
+            double x1, y1, x2, y2;
+            if (selectedLine instanceof LineGeo line) {
+                x1 = line.getStartX();
+                y1 = line.getStartY();
+                x2 = line.getEndX();
+                y2 = line.getEndY();
+            } else if (selectedLine instanceof InfiniteLineGeo line) {
+                x1 = line.getPoint1X();
+                y1 = line.getPoint1Y();
+                x2 = line.getPoint2X();
+                y2 = line.getPoint2Y();
+            } else {
+                return;
+            }
+
+            // 计算垂线：过 (worldX, worldY) 点
+            Point2D[] perpLine = IntersectionUtils.getPerpendicularLine(x1, y1, x2, y2, worldX, worldY);
+            
+            // 创建垂线（使用鼠标点和垂线上的另一点）
+            InfiniteLineGeo newLine = new InfiniteLineGeo(
+                    worldX, worldY,
+                    perpLine[0].getX(), perpLine[0].getY()
+            );
+
+            // 计算交点
+            List<PointGeo> intersectionPoints = checkIntersections(newLine);
+            commandHistory.execute(new CommandHistory.Command() {
+                @Override
+                public void execute() {
+                    gridChartPane.addObject(newLine);
+                    for (PointGeo point : intersectionPoints) {
+                        gridChartPane.addObject(point);
+                    }
+                }
+
+                @Override
+                public void undo() {
+                    gridChartPane.removeObject(newLine);
+                    for (PointGeo point : intersectionPoints) {
+                        gridChartPane.removeObject(point);
+                    }
+                }
+            });
+
+            // 重置状态
+            selectedLine = null;
+            state = DrawingState.IDLE;
+            gridChartPane.redraw();
+        }
+    }
+
+    /**
+     * 处理垂直平分线模式的点击事件
+     * 点击线段，立即绘制其垂直平分线（直线没有垂直平分线）
+     */
+    private void handlePerpendicularBisectorClick(double worldX, double worldY) {
+        // 查找点击位置附近的线段（注意：只有线段才有垂直平分线，直线没有）
+        double scale = gridChartPane.getTransform().getScale();
+        double tolerance = 10.0 / scale;
+
+        for (WorldObject obj : gridChartPane.getObjects()) {
+            if (obj instanceof LineGeo line) {
+                if (line.hitTest(worldX, worldY, tolerance)) {
+                    // 计算线段的中点
+                    double midX = (line.getStartX() + line.getEndX()) / 2.0;
+                    double midY = (line.getStartY() + line.getEndY()) / 2.0;
+
+                    // 计算垂直平分线（过中点，垂直于线段）
+                    Point2D[] bisectorLine = IntersectionUtils.getPerpendicularLine(
+                            line.getStartX(), line.getStartY(),
+                            line.getEndX(), line.getEndY(),
+                            midX, midY
+                    );
+
+                    // 创建垂直平分线（使用中点和垂直方向点）
+                    InfiniteLineGeo newLine = new InfiniteLineGeo(
+                            midX, midY,
+                            bisectorLine[0].getX(), bisectorLine[0].getY()
+                    );
+
+                    // 计算交点
+                    List<PointGeo> intersectionPoints = checkIntersections(newLine);
+                    commandHistory.execute(new CommandHistory.Command() {
+                        @Override
+                        public void execute() {
+                            gridChartPane.addObject(newLine);
+                            for (PointGeo point : intersectionPoints) {
+                                gridChartPane.addObject(point);
+                            }
+                        }
+
+                        @Override
+                        public void undo() {
+                            gridChartPane.removeObject(newLine);
+                            for (PointGeo point : intersectionPoints) {
+                                gridChartPane.removeObject(point);
+                            }
+                        }
+                    });
+                    return;
+                }
+            }
+            // 注意：不处理 InfiniteLineGeo，因为直线没有垂直平分线
+        }
+    }
+
+    /**
+     * 处理平行线模式的点击事件
+     * 第一次点击：选择线段或直线
+     * 第二次点击：选择一点，过此点绘制平行线
+     */
+    private void handleParallelClick(double worldX, double worldY) {
+        if (state == DrawingState.IDLE) {
+            // 第一次点击：选择线段或直线
+            double scale = gridChartPane.getTransform().getScale();
+            double tolerance = 10.0 / scale;
+
+            for (WorldObject obj : gridChartPane.getObjects()) {
+                if (obj instanceof LineGeo line) {
+                    if (line.hitTest(worldX, worldY, tolerance)) {
+                        selectedLine = line;
+                        state = DrawingState.FIRST_CLICK;
+                        gridChartPane.redraw();
+                        return;
+                    }
+                } else if (obj instanceof InfiniteLineGeo line) {
+                    if (line.hitTest(worldX, worldY, tolerance)) {
+                        selectedLine = line;
+                        state = DrawingState.FIRST_CLICK;
+                        gridChartPane.redraw();
+                        return;
+                    }
+                }
+            }
+        } else if (state == DrawingState.FIRST_CLICK && selectedLine != null) {
+            // 第二次点击：过此点绘制平行线
+            double x1, y1, x2, y2;
+            if (selectedLine instanceof LineGeo line) {
+                x1 = line.getStartX();
+                y1 = line.getStartY();
+                x2 = line.getEndX();
+                y2 = line.getEndY();
+            } else if (selectedLine instanceof InfiniteLineGeo line) {
+                x1 = line.getPoint1X();
+                y1 = line.getPoint1Y();
+                x2 = line.getPoint2X();
+                y2 = line.getPoint2Y();
+            } else {
+                return;
+            }
+
+            // 计算平行线
+            Point2D[] parallelLine = IntersectionUtils.getParallelLine(x1, y1, x2, y2, worldX, worldY);
+            
+            // 创建平行线（使用鼠标点和平行线上的另一点）
+            InfiniteLineGeo newLine = new InfiniteLineGeo(
+                    worldX, worldY,
+                    parallelLine[0].getX(), parallelLine[0].getY()
+            );
+
+            // 计算交点
+            List<PointGeo> intersectionPoints = checkIntersections(newLine);
+            commandHistory.execute(new CommandHistory.Command() {
+                @Override
+                public void execute() {
+                    gridChartPane.addObject(newLine);
+                    for (PointGeo point : intersectionPoints) {
+                        gridChartPane.addObject(point);
+                    }
+                }
+
+                @Override
+                public void undo() {
+                    gridChartPane.removeObject(newLine);
+                    for (PointGeo point : intersectionPoints) {
+                        gridChartPane.removeObject(point);
+                    }
+                }
+            });
+
+            // 重置状态
+            selectedLine = null;
+            state = DrawingState.IDLE;
+            gridChartPane.redraw();
+        }
+    }
+
+    /**
+     * 处理切线模式的点击事件
+     * 点击靠近圆的位置，自动吸附到圆周上最近的点，过该点绘制切线
+     */
+    private void handleTangentClick(double worldX, double worldY) {
+        // 查找点击位置附近的圆
+        double scale = gridChartPane.getTransform().getScale();
+        double tolerance = 15.0 / scale;
+
+        for (WorldObject obj : gridChartPane.getObjects()) {
+            if (obj instanceof CircleGeo circle) {
+                // 计算点击位置到圆心的距离
+                double distance = Math.hypot(worldX - circle.getCx(), worldY - circle.getCy());
+                
+                // 检查是否靠近圆（允许一定容差）
+                if (Math.abs(distance - circle.getR()) <= tolerance) {
+                    // 计算离点击位置最近的圆周上的点（将点击位置投影到圆周上）
+                    double dx = worldX - circle.getCx();
+                    double dy = worldY - circle.getCy();
+                    double len = Math.hypot(dx, dy);
+                    
+                    // 归一化方向向量并乘以半径，得到圆周上的点
+                    double tangentPointX = circle.getCx() + (dx / len) * circle.getR();
+                    double tangentPointY = circle.getCy() + (dy / len) * circle.getR();
+                    
+                    // 计算并绘制切线（过圆周上的切点）
+                    Point2D[] tangentLine = IntersectionUtils.getTangentLine(
+                            circle.getCx(), circle.getCy(), tangentPointX, tangentPointY
+                    );
+                    
+                    // 创建切线（使用切点和切线上的另一点）
+                    InfiniteLineGeo newLine = new InfiniteLineGeo(
+                            tangentPointX, tangentPointY,
+                            tangentLine[0].getX(), tangentLine[0].getY()
+                    );
+
+                    // 计算交点
+                    List<PointGeo> intersectionPoints = checkIntersections(newLine);
+                    commandHistory.execute(new CommandHistory.Command() {
+                        @Override
+                        public void execute() {
+                            gridChartPane.addObject(newLine);
+                            for (PointGeo point : intersectionPoints) {
+                                gridChartPane.addObject(point);
+                            }
+                        }
+
+                        @Override
+                        public void undo() {
+                            gridChartPane.removeObject(newLine);
+                            for (PointGeo point : intersectionPoints) {
+                                gridChartPane.removeObject(point);
+                            }
+                        }
+                    });
+                    return;
+                }
+            }
+        }
     }
 
     /**

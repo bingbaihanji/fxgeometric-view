@@ -97,11 +97,11 @@ public class ShapeToolPane extends VBox {
 
         TilePane drawTools = createToolGrid();
         drawTools.getChildren().addAll(
-                createTool("geo.midpoint", DrawMode.NONE, group),
-                createTool("geo.perpendicular", DrawMode.NONE, group),
-                createTool("geo.perpendicularBisector", DrawMode.NONE, group),
-                createTool("geo.parallel", DrawMode.NONE, group),
-                createTool("geo.tangent", DrawMode.NONE, group)
+                createTool("geo.midpoint", DrawMode.MIDPOINT, group),
+                createTool("geo.perpendicular", DrawMode.PERPENDICULAR, group),
+                createTool("geo.perpendicularBisector", DrawMode.PERPENDICULAR_BISECTOR, group),
+                createTool("geo.parallel", DrawMode.PARALLEL, group),
+                createTool("geo.tangent", DrawMode.TANGENT, group)
         );
 
         content.getChildren().add(

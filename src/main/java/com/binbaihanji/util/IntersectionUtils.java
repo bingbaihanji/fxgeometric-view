@@ -322,4 +322,157 @@ public class IntersectionUtils {
 
         return intersections;
     }
+
+    /**
+     * 计算线段或直线的中点
+     *
+     * @param x1 起点x坐标
+     * @param y1 起点y坐标
+     * @param x2 终点x坐标
+     * @param y2 终点y坐标
+     * @return 中点坐标
+     */
+    public static Point2D getMidpoint(double x1, double y1, double x2, double y2) {
+        return new Point2D((x1 + x2) / 2, (y1 + y2) / 2);
+    }
+
+    /**
+     * 计算过指定点垂直于给定直线的垂线的两个点（用于绘制无限直线）
+     * 返回的两个点在垂线上，距离给定点足够远以绘制无限直线
+     *
+     * @param lineX1  原直线的第一个点x坐标
+     * @param lineY1  原直线的第一个点y坐标
+     * @param lineX2  原直线的第二个点x坐标
+     * @param lineY2  原直线的第二个点y坐标
+     * @param pointX  给定点x坐标
+     * @param pointY  给定点y坐标
+     * @return 垂线上的两个点 [point1, point2]
+     */
+    public static Point2D[] getPerpendicularLine(double lineX1, double lineY1, double lineX2, double lineY2,
+                                                  double pointX, double pointY) {
+        // 计算原直线的方向向量
+        double dx = lineX2 - lineX1;
+        double dy = lineY2 - lineY1;
+
+        // 垂线的方向向量是 (-dy, dx)
+        double perpDx = -dy;
+        double perpDy = dx;
+
+        // 归一化方向向量
+        double length = Math.sqrt(perpDx * perpDx + perpDy * perpDy);
+        if (length > 1e-10) {
+            perpDx /= length;
+            perpDy /= length;
+        }
+
+        // 生成垂线上的两个点（距离给定点足够远）
+        double scale = 10000; // 扩展距离
+        Point2D point1 = new Point2D(pointX + perpDx * scale, pointY + perpDy * scale);
+        Point2D point2 = new Point2D(pointX - perpDx * scale, pointY - perpDy * scale);
+
+        return new Point2D[]{point1, point2};
+    }
+
+    /**
+     * 计算垂直平分线的两个点（用于绘制无限直线）
+     * 垂直平分线过线段中点且垂直于线段
+     *
+     * @param lineX1 线段起点x坐标
+     * @param lineY1 线段起点y坐标
+     * @param lineX2 线段终点x坐标
+     * @param lineY2 线段终点y坐标
+     * @param pointX 给定点x坐标（垂直平分线将过此点）
+     * @param pointY 给定点y坐标
+     * @return 垂直平分线上的两个点 [point1, point2]
+     */
+    public static Point2D[] getPerpendicularBisector(double lineX1, double lineY1, double lineX2, double lineY2,
+                                                      double pointX, double pointY) {
+        // 计算线段的方向向量
+        double dx = lineX2 - lineX1;
+        double dy = lineY2 - lineY1;
+
+        // 垂直平分线的方向向量是 (-dy, dx)
+        double perpDx = -dy;
+        double perpDy = dx;
+
+        // 归一化方向向量
+        double length = Math.sqrt(perpDx * perpDx + perpDy * perpDy);
+        if (length > 1e-10) {
+            perpDx /= length;
+            perpDy /= length;
+        }
+
+        // 生成垂直平分线上的两个点（从给定点出发）
+        double scale = 10000; // 扩展距离
+        Point2D point1 = new Point2D(pointX + perpDx * scale, pointY + perpDy * scale);
+        Point2D point2 = new Point2D(pointX - perpDx * scale, pointY - perpDy * scale);
+
+        return new Point2D[]{point1, point2};
+    }
+
+    /**
+     * 计算过指定点平行于给定直线的平行线的两个点（用于绘制无限直线）
+     *
+     * @param lineX1  原直线的第一个点x坐标
+     * @param lineY1  原直线的第一个点y坐标
+     * @param lineX2  原直线的第二个点x坐标
+     * @param lineY2  原直线的第二个点y坐标
+     * @param pointX  给定点x坐标
+     * @param pointY  给定点y坐标
+     * @return 平行线上的两个点 [point1, point2]
+     */
+    public static Point2D[] getParallelLine(double lineX1, double lineY1, double lineX2, double lineY2,
+                                            double pointX, double pointY) {
+        // 计算原直线的方向向量
+        double dx = lineX2 - lineX1;
+        double dy = lineY2 - lineY1;
+
+        // 归一化方向向量
+        double length = Math.sqrt(dx * dx + dy * dy);
+        if (length > 1e-10) {
+            dx /= length;
+            dy /= length;
+        }
+
+        // 生成平行线上的两个点（距离给定点足够远）
+        double scale = 10000; // 扩展距离
+        Point2D point1 = new Point2D(pointX + dx * scale, pointY + dy * scale);
+        Point2D point2 = new Point2D(pointX - dx * scale, pointY - dy * scale);
+
+        return new Point2D[]{point1, point2};
+    }
+
+    /**
+     * 计算过圆上一点的切线的两个点（用于绘制无限直线）
+     * 切线垂直于圆心到该点的半径
+     *
+     * @param cx     圆心x坐标
+     * @param cy     圆心y坐标
+     * @param pointX 圆上的点x坐标
+     * @param pointY 圆上的点y坐标
+     * @return 切线上的两个点 [point1, point2]
+     */
+    public static Point2D[] getTangentLine(double cx, double cy, double pointX, double pointY) {
+        // 计算从圆心到切点的半径向量
+        double dx = pointX - cx;
+        double dy = pointY - cy;
+
+        // 切线垂直于半径，方向向量为 (-dy, dx)
+        double tangentDx = -dy;
+        double tangentDy = dx;
+
+        // 归一化方向向量
+        double length = Math.sqrt(tangentDx * tangentDx + tangentDy * tangentDy);
+        if (length > 1e-10) {
+            tangentDx /= length;
+            tangentDy /= length;
+        }
+
+        // 生成切线上的两个点（距离切点足够远）
+        double scale = 10000; // 扩展距离
+        Point2D point1 = new Point2D(pointX + tangentDx * scale, pointY + tangentDy * scale);
+        Point2D point2 = new Point2D(pointX - tangentDx * scale, pointY - tangentDy * scale);
+
+        return new Point2D[]{point1, point2};
+    }
 }

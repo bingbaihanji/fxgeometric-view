@@ -40,5 +40,30 @@ public enum DrawMode {
     /**
      * 手绘线
      */
-    FREEHAND
+    FREEHAND,
+
+    /**
+     * 中点（点击线段绘制中点）
+     */
+    MIDPOINT,
+
+    /**
+     * 垂线（选择线段/直线 -> 选择一点 -> 过此点绘制垂线）
+     */
+    PERPENDICULAR,
+
+    /**
+     * 垂直平分线（选择线段/直线 -> 选择一点 -> 过此点绘制垂直平分线）
+     */
+    PERPENDICULAR_BISECTOR,
+
+    /**
+     * 平行线（选择线段/直线 -> 选择一点 -> 过此点绘制平行线）
+     */
+    PARALLEL,
+
+    /**
+     * 切线（选择圆上一点 -> 绘制过此点的切线）
+     */
+    TANGENT
 }
