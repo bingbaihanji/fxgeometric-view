@@ -10,6 +10,7 @@ import com.binbaihanji.view.layout.draw.geometry.WorldObject;
 import com.binbaihanji.view.layout.draw.geometry.impl.CircleGeo;
 import com.binbaihanji.view.layout.draw.geometry.impl.PointGeo;
 import com.binbaihanji.view.layout.draw.geometry.impl.LineGeo;
+import com.binbaihanji.view.layout.draw.geometry.impl.InfiniteLineGeo;
 import com.binbaihanji.view.layout.draw.geometry.impl.PolygonGeo;
 import com.binbaihanji.view.layout.draw.geometry.impl.PathGeo;
 import com.binbaihanji.view.layout.draw.tools.CircleDrawingTool;
@@ -239,8 +240,25 @@ public class DrawingController {
                     // 检查新线段与其他图形的交点
                     checkIntersections(newLine);
                 }
+                case INFINITE_LINE -> {
+                    // 创建无限直线对象
+                    InfiniteLineGeo newLine = new InfiniteLineGeo(firstPointX, firstPointY, worldX, worldY);
+                    commandHistory.execute(new CommandHistory.Command() {
+                        @Override
+                        public void execute() {
+                            gridChartPane.addObject(newLine);
+                        }
+
+                        @Override
+                        public void undo() {
+                            gridChartPane.removeObject(newLine);
+                        }
+                    });
+                    // 检查新直线与其他图形的交点
+                    checkIntersections(newLine);
+                }
             }
-            
+
             // 清除预览，回到空闲状态
             state = DrawingState.IDLE;
             previewRadius = 0;
@@ -563,8 +581,8 @@ public class DrawingController {
                 // 圆形预览现在可以正确显示，包括首次点击时的圆心点
                 circleTool.paintPreview(gc, transform);
             } else {
-                // 绘制线段的预览
-                if (drawMode == DrawMode.LINE) {
+                // 绘制线段/直线的预览
+                if (drawMode == DrawMode.LINE || drawMode == DrawMode.INFINITE_LINE) {
                     double sx1 = transform.worldToScreenX(firstPointX);
                     double sy1 = transform.worldToScreenY(firstPointY);
                     double sx2 = transform.worldToScreenX(currentMouseX);
@@ -575,13 +593,46 @@ public class DrawingController {
                     gc.setLineWidth(1);
                     gc.setLineDashes(6);
                     
+                    if (drawMode == DrawMode.INFINITE_LINE) {
+                        // 为无限直线扩展端点
+                        double dx = sx2 - sx1;
+                        double dy = sy2 - sy1;
+                        double scale = 10000; // 一个足够高的扩展值
+                        
+                        if (Math.abs(dx) < 1e-10) {
+                            // 竖直线
+                            sx2 = sx1;
+                            sy1 = -scale;
+                            sy2 = scale;
+                        } else if (Math.abs(dy) < 1e-10) {
+                            // 水平线
+                            sx1 = -scale;
+                            sx2 = scale;
+                        } else {
+                            // 一般情况
+                            double t = scale / Math.hypot(dx, dy);
+                            double p1x = sx1 - t * dx;
+                            double p1y = sy1 - t * dy;
+                            double p2x = sx1 + t * dx;
+                            double p2y = sy1 + t * dy;
+                            sx1 = p1x;
+                            sy1 = p1y;
+                            sx2 = p2x;
+                            sy2 = p2y;
+                        }
+                    }
+                    
                     gc.strokeLine(sx1, sy1, sx2, sy2);
                     
                     // 绘制端点
                     gc.setFill(Color.LIGHTGRAY);
                     double pointRadius = 3;
-                    gc.fillOval(sx1 - pointRadius, sy1 - pointRadius, pointRadius * 2, pointRadius * 2);
-                    gc.fillOval(sx2 - pointRadius, sy2 - pointRadius, pointRadius * 2, pointRadius * 2);
+                    double fsx1 = transform.worldToScreenX(firstPointX);
+                    double fsy1 = transform.worldToScreenY(firstPointY);
+                    gc.fillOval(fsx1 - pointRadius, fsy1 - pointRadius, pointRadius * 2, pointRadius * 2);
+                    double fsx2 = transform.worldToScreenX(currentMouseX);
+                    double fsy2 = transform.worldToScreenY(currentMouseY);
+                    gc.fillOval(fsx2 - pointRadius, fsy2 - pointRadius, pointRadius * 2, pointRadius * 2);
                     
                     // 清除虚线设置
                     gc.setLineDashes(null);
@@ -767,6 +818,30 @@ public class DrawingController {
                     intersectionPoint.setColor(Color.PURPLE);
                     intersectionPoints.add(intersectionPoint);
                 }
+            } else if (newObject instanceof InfiniteLineGeo && obj instanceof LineGeo) {
+                // 无限直线与线段的交点
+                List<Point2D> intersections = IntersectionUtils.getInfiniteLineLineIntersections((InfiniteLineGeo) newObject, (LineGeo) obj);
+                for (Point2D point : intersections) {
+                    PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
+                    intersectionPoint.setColor(Color.PURPLE);
+                    intersectionPoints.add(intersectionPoint);
+                }
+            } else if (newObject instanceof InfiniteLineGeo && obj instanceof CircleGeo) {
+                // 无限直线与圆的交点
+                List<Point2D> intersections = IntersectionUtils.getInfiniteLineCircleIntersections((InfiniteLineGeo) newObject, (CircleGeo) obj);
+                for (Point2D point : intersections) {
+                    PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
+                    intersectionPoint.setColor(Color.PURPLE);
+                    intersectionPoints.add(intersectionPoint);
+                }
+            } else if (newObject instanceof InfiniteLineGeo && obj instanceof InfiniteLineGeo) {
+                // 无限直线与无限直线的交点
+                List<Point2D> intersections = IntersectionUtils.getInfiniteLineInfiniteLineIntersections((InfiniteLineGeo) newObject, (InfiniteLineGeo) obj);
+                for (Point2D point : intersections) {
+                    PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
+                    intersectionPoint.setColor(Color.PURPLE);
+                    intersectionPoints.add(intersectionPoint);
+                }
             } else if (newObject instanceof PolygonGeo polygon) {
                 // 多边形与其他图形的交点：遍历多边形的每条边
                 for (LineGeo edge : polygon.getEdges()) {
@@ -793,6 +868,13 @@ public class DrawingController {
                                 intersectionPoint.setColor(Color.PURPLE);
                                 intersectionPoints.add(intersectionPoint);
                             }
+                        }
+                    } else if (obj instanceof InfiniteLineGeo infiniteLine) {
+                        List<Point2D> intersections = IntersectionUtils.getInfiniteLineLineIntersections(infiniteLine, edge);
+                        for (Point2D point : intersections) {
+                            PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
+                            intersectionPoint.setColor(Color.PURPLE);
+                            intersectionPoints.add(intersectionPoint);
                         }
                     } else if (obj instanceof PathGeo path) {
                         // 多边形与手绘路径的交点
@@ -832,6 +914,13 @@ public class DrawingController {
                                 intersectionPoints.add(intersectionPoint);
                             }
                         }
+                    } else if (obj instanceof InfiniteLineGeo infiniteLine) {
+                        List<Point2D> intersections = IntersectionUtils.getInfiniteLineLineIntersections(infiniteLine, edge);
+                        for (Point2D point : intersections) {
+                            PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
+                            intersectionPoint.setColor(Color.PURPLE);
+                            intersectionPoints.add(intersectionPoint);
+                        }
                     } else if (obj instanceof PathGeo otherPath) {
                         // 手绘路径与手绘路径的交点
                         for (LineGeo otherEdge : otherPath.getEdges()) {
@@ -856,6 +945,52 @@ public class DrawingController {
                         }
                     } else if (newObject instanceof CircleGeo circle) {
                         List<Point2D> intersections = IntersectionUtils.getLineCircleIntersections(edge, circle);
+                        for (Point2D point : intersections) {
+                            PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
+                            intersectionPoint.setColor(Color.PURPLE);
+                            intersectionPoints.add(intersectionPoint);
+                        }
+                    } else if (newObject instanceof InfiniteLineGeo infiniteLine) {
+                        List<Point2D> intersections = IntersectionUtils.getInfiniteLineLineIntersections(infiniteLine, edge);
+                        for (Point2D point : intersections) {
+                            PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
+                            intersectionPoint.setColor(Color.PURPLE);
+                            intersectionPoints.add(intersectionPoint);
+                        }
+                    }
+                }
+            } else if (obj instanceof InfiniteLineGeo infiniteLine) {
+                // 其他图形与无限直线的交点
+                if (newObject instanceof LineGeo line) {
+                    List<Point2D> intersections = IntersectionUtils.getInfiniteLineLineIntersections(infiniteLine, line);
+                    for (Point2D point : intersections) {
+                        PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
+                        intersectionPoint.setColor(Color.PURPLE);
+                        intersectionPoints.add(intersectionPoint);
+                    }
+                } else if (newObject instanceof CircleGeo circle) {
+                    List<Point2D> intersections = IntersectionUtils.getInfiniteLineCircleIntersections(infiniteLine, circle);
+                    for (Point2D point : intersections) {
+                        PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
+                        intersectionPoint.setColor(Color.PURPLE);
+                        intersectionPoints.add(intersectionPoint);
+                    }
+                }
+            } else if (newObject instanceof InfiniteLineGeo infiniteLine) {
+                // 无限直线与多边形的交点
+                if (obj instanceof PolygonGeo polygon) {
+                    for (LineGeo edge : polygon.getEdges()) {
+                        List<Point2D> intersections = IntersectionUtils.getInfiniteLineLineIntersections(infiniteLine, edge);
+                        for (Point2D point : intersections) {
+                            PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
+                            intersectionPoint.setColor(Color.PURPLE);
+                            intersectionPoints.add(intersectionPoint);
+                        }
+                    }
+                } else if (obj instanceof PathGeo path) {
+                    // 无限直线与手绘路径的交点
+                    for (LineGeo edge : path.getEdges()) {
+                        List<Point2D> intersections = IntersectionUtils.getInfiniteLineLineIntersections(infiniteLine, edge);
                         for (Point2D point : intersections) {
                             PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
                             intersectionPoint.setColor(Color.PURPLE);
@@ -952,6 +1087,16 @@ public class DrawingController {
             intersections.addAll(IntersectionUtils.getLineCircleIntersections((LineGeo) obj2, (CircleGeo) obj1));
         } else if (obj1 instanceof CircleGeo && obj2 instanceof CircleGeo) {
             intersections.addAll(IntersectionUtils.getCircleCircleIntersections((CircleGeo) obj1, (CircleGeo) obj2));
+        } else if (obj1 instanceof InfiniteLineGeo && obj2 instanceof LineGeo) {
+            intersections.addAll(IntersectionUtils.getInfiniteLineLineIntersections((InfiniteLineGeo) obj1, (LineGeo) obj2));
+        } else if (obj1 instanceof LineGeo && obj2 instanceof InfiniteLineGeo) {
+            intersections.addAll(IntersectionUtils.getInfiniteLineLineIntersections((InfiniteLineGeo) obj2, (LineGeo) obj1));
+        } else if (obj1 instanceof InfiniteLineGeo && obj2 instanceof CircleGeo) {
+            intersections.addAll(IntersectionUtils.getInfiniteLineCircleIntersections((InfiniteLineGeo) obj1, (CircleGeo) obj2));
+        } else if (obj1 instanceof CircleGeo && obj2 instanceof InfiniteLineGeo) {
+            intersections.addAll(IntersectionUtils.getInfiniteLineCircleIntersections((InfiniteLineGeo) obj2, (CircleGeo) obj1));
+        } else if (obj1 instanceof InfiniteLineGeo && obj2 instanceof InfiniteLineGeo) {
+            intersections.addAll(IntersectionUtils.getInfiniteLineInfiniteLineIntersections((InfiniteLineGeo) obj1, (InfiniteLineGeo) obj2));
         } else if (obj1 instanceof PolygonGeo polygon) {
             // 多边形与其他图形的交点
             for (LineGeo edge : polygon.getEdges()) {
@@ -959,6 +1104,8 @@ public class DrawingController {
                     intersections.addAll(IntersectionUtils.getLineLineIntersections(edge, line));
                 } else if (obj2 instanceof CircleGeo circle) {
                     intersections.addAll(IntersectionUtils.getLineCircleIntersections(edge, circle));
+                } else if (obj2 instanceof InfiniteLineGeo infiniteLine) {
+                    intersections.addAll(IntersectionUtils.getInfiniteLineLineIntersections(infiniteLine, edge));
                 } else if (obj2 instanceof PolygonGeo otherPolygon) {
                     for (LineGeo otherEdge : otherPolygon.getEdges()) {
                         intersections.addAll(IntersectionUtils.getLineLineIntersections(edge, otherEdge));
@@ -972,6 +1119,30 @@ public class DrawingController {
                     intersections.addAll(IntersectionUtils.getLineLineIntersections(line, edge));
                 } else if (obj1 instanceof CircleGeo circle) {
                     intersections.addAll(IntersectionUtils.getLineCircleIntersections(edge, circle));
+                } else if (obj1 instanceof InfiniteLineGeo infiniteLine) {
+                    intersections.addAll(IntersectionUtils.getInfiniteLineLineIntersections(infiniteLine, edge));
+                }
+            }
+        } else if (obj1 instanceof InfiniteLineGeo infiniteLine) {
+            // 无限直线与其他图形的交点
+            if (obj2 instanceof PolygonGeo polygon) {
+                for (LineGeo edge : polygon.getEdges()) {
+                    intersections.addAll(IntersectionUtils.getInfiniteLineLineIntersections(infiniteLine, edge));
+                }
+            } else if (obj2 instanceof PathGeo path) {
+                for (LineGeo edge : path.getEdges()) {
+                    intersections.addAll(IntersectionUtils.getInfiniteLineLineIntersections(infiniteLine, edge));
+                }
+            }
+        } else if (obj2 instanceof InfiniteLineGeo infiniteLine) {
+            // 其他图形与无限直线的交点
+            if (obj1 instanceof PolygonGeo polygon) {
+                for (LineGeo edge : polygon.getEdges()) {
+                    intersections.addAll(IntersectionUtils.getInfiniteLineLineIntersections(infiniteLine, edge));
+                }
+            } else if (obj1 instanceof PathGeo path) {
+                for (LineGeo edge : path.getEdges()) {
+                    intersections.addAll(IntersectionUtils.getInfiniteLineLineIntersections(infiniteLine, edge));
                 }
             }
         } else if (obj1 instanceof PathGeo path) {
@@ -985,6 +1156,8 @@ public class DrawingController {
                     for (LineGeo polyEdge : polygon.getEdges()) {
                         intersections.addAll(IntersectionUtils.getLineLineIntersections(edge, polyEdge));
                     }
+                } else if (obj2 instanceof InfiniteLineGeo infiniteLine) {
+                    intersections.addAll(IntersectionUtils.getInfiniteLineLineIntersections(infiniteLine, edge));
                 } else if (obj2 instanceof PathGeo otherPath) {
                     for (LineGeo otherEdge : otherPath.getEdges()) {
                         intersections.addAll(IntersectionUtils.getLineLineIntersections(edge, otherEdge));
@@ -1002,6 +1175,8 @@ public class DrawingController {
                     for (LineGeo polyEdge : polygon.getEdges()) {
                         intersections.addAll(IntersectionUtils.getLineLineIntersections(polyEdge, edge));
                     }
+                } else if (obj1 instanceof InfiniteLineGeo infiniteLine) {
+                    intersections.addAll(IntersectionUtils.getInfiniteLineLineIntersections(infiniteLine, edge));
                 }
             }
         }

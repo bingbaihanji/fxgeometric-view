@@ -2,6 +2,7 @@ package com.binbaihanji.util;
 
 import com.binbaihanji.view.layout.draw.geometry.WorldObject;
 import com.binbaihanji.view.layout.draw.geometry.impl.CircleGeo;
+import com.binbaihanji.view.layout.draw.geometry.impl.InfiniteLineGeo;
 import com.binbaihanji.view.layout.draw.geometry.impl.LineGeo;
 import com.binbaihanji.view.layout.draw.geometry.impl.PointGeo;
 import javafx.geometry.Point2D;
@@ -79,6 +80,10 @@ public class SpecialPointManager {
                 // 添加线段的两个端点
                 specialPointsSet.add(new SpecialPoint(line.getStartX(), line.getStartY(), "ENDPOINT"));
                 specialPointsSet.add(new SpecialPoint(line.getEndX(), line.getEndY(), "ENDPOINT"));
+            } else if (obj instanceof InfiniteLineGeo infiniteLine) {
+                // 添加无限直线的两个定义点
+                specialPointsSet.add(new SpecialPoint(infiniteLine.getPoint1X(), infiniteLine.getPoint1Y(), "ENDPOINT"));
+                specialPointsSet.add(new SpecialPoint(infiniteLine.getPoint2X(), infiniteLine.getPoint2Y(), "ENDPOINT"));
             } else if (obj instanceof PointGeo point) {
                 // 添加点对象的坐标（包括交点）
                 specialPointsSet.add(new SpecialPoint(point.getX(), point.getY(), "INTERSECTION"));
@@ -128,6 +133,24 @@ public class SpecialPointManager {
         // 圆与圆的交点
         else if (obj1 instanceof CircleGeo && obj2 instanceof CircleGeo) {
             intersections.addAll(IntersectionUtils.getCircleCircleIntersections((CircleGeo) obj1, (CircleGeo) obj2));
+        }
+        // 无限直线与线段的交点
+        else if (obj1 instanceof InfiniteLineGeo && obj2 instanceof LineGeo) {
+            intersections.addAll(IntersectionUtils.getInfiniteLineLineIntersections((InfiniteLineGeo) obj1, (LineGeo) obj2));
+        }
+        else if (obj1 instanceof LineGeo && obj2 instanceof InfiniteLineGeo) {
+            intersections.addAll(IntersectionUtils.getInfiniteLineLineIntersections((InfiniteLineGeo) obj2, (LineGeo) obj1));
+        }
+        // 无限直线与圆的交点
+        else if (obj1 instanceof InfiniteLineGeo && obj2 instanceof CircleGeo) {
+            intersections.addAll(IntersectionUtils.getInfiniteLineCircleIntersections((InfiniteLineGeo) obj1, (CircleGeo) obj2));
+        }
+        else if (obj1 instanceof CircleGeo && obj2 instanceof InfiniteLineGeo) {
+            intersections.addAll(IntersectionUtils.getInfiniteLineCircleIntersections((InfiniteLineGeo) obj2, (CircleGeo) obj1));
+        }
+        // 无限直线与无限直线的交点
+        else if (obj1 instanceof InfiniteLineGeo && obj2 instanceof InfiniteLineGeo) {
+            intersections.addAll(IntersectionUtils.getInfiniteLineInfiniteLineIntersections((InfiniteLineGeo) obj1, (InfiniteLineGeo) obj2));
         }
         
         return intersections;

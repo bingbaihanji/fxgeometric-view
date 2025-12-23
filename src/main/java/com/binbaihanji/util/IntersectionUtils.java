@@ -1,6 +1,7 @@
 package com.binbaihanji.util;
 
 import com.binbaihanji.view.layout.draw.geometry.impl.CircleGeo;
+import com.binbaihanji.view.layout.draw.geometry.impl.InfiniteLineGeo;
 import com.binbaihanji.view.layout.draw.geometry.impl.LineGeo;
 import javafx.geometry.Point2D;
 
@@ -9,7 +10,7 @@ import java.util.List;
 
 /**
  * 几何图形交点计算工具类
- * 提供线段与线段、线段与圆、圆与圆之间的交点计算功能
+ * 提供线段与线段、线段与圆、圆与圆、无限直线与其他图形之间的交点计算功能
  */
 public class IntersectionUtils {
 
@@ -178,6 +179,146 @@ public class IntersectionUtils {
         if (Math.abs(ix1 - ix2) > 1e-10 || Math.abs(iy1 - iy2) > 1e-10) {
             intersections.add(new Point2D(ix2, iy2));
         }
+
+        return intersections;
+    }
+
+    /**
+     * 计算无限直线与线段的交点
+     *
+     * @param infiniteLine 无限直线
+     * @param line 线段
+     * @return 交点列表
+     */
+    public static List<Point2D> getInfiniteLineLineIntersections(InfiniteLineGeo infiniteLine, LineGeo line) {
+        List<Point2D> intersections = new ArrayList<>();
+
+        double x1 = infiniteLine.getPoint1X();
+        double y1 = infiniteLine.getPoint1Y();
+        double x2 = infiniteLine.getPoint2X();
+        double y2 = infiniteLine.getPoint2Y();
+
+        double x3 = line.getStartX();
+        double y3 = line.getStartY();
+        double x4 = line.getEndX();
+        double y4 = line.getEndY();
+
+        double denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+        if (Math.abs(denom) < 1e-10) {
+            // 直线平行或重合
+            return intersections;
+        }
+
+        double tNum = (x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4);
+        double uNum = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3));
+
+        double u = uNum / denom;
+
+        // 无限直线不需要检查t，只检查交点是否在线段上
+        if (u >= 0 && u <= 1) {
+            double t = tNum / denom;
+            double ix = x1 + t * (x2 - x1);
+            double iy = y1 + t * (y2 - y1);
+            intersections.add(new Point2D(ix, iy));
+        }
+
+        return intersections;
+    }
+
+    /**
+     * 计算无限直线与圆的交点
+     *
+     * @param infiniteLine 无限直线
+     * @param circle 圆
+     * @return 交点列表
+     */
+    public static List<Point2D> getInfiniteLineCircleIntersections(InfiniteLineGeo infiniteLine, CircleGeo circle) {
+        List<Point2D> intersections = new ArrayList<>();
+
+        double x1 = infiniteLine.getPoint1X();
+        double y1 = infiniteLine.getPoint1Y();
+        double x2 = infiniteLine.getPoint2X();
+        double y2 = infiniteLine.getPoint2Y();
+
+        double cx = circle.getCx();
+        double cy = circle.getCy();
+        double r = circle.getR();
+
+        // 将直线转换为参数方程: P(t) = P1 + t(P2-P1)
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+
+        // 圆的方程: (x-cx)^2 + (y-cy)^2 = r^2
+        // 直线的参数方程代入圆的方程得到关于t的二次方程: at^2 + bt + c = 0
+
+        double a = dx * dx + dy * dy;
+        double b = 2 * (dx * (x1 - cx) + dy * (y1 - cy));
+        double c = (x1 - cx) * (x1 - cx) + (y1 - cy) * (y1 - cy) - r * r;
+
+        double discriminant = b * b - 4 * a * c;
+
+        if (discriminant < 0) {
+            // 没有实数解，直线与圆不相交
+            return intersections;
+        }
+
+        if (Math.abs(discriminant) < 1e-10) {
+            // 一个解，直线与圆相切
+            double t = -b / (2 * a);
+            double ix = x1 + t * dx;
+            double iy = y1 + t * dy;
+            intersections.add(new Point2D(ix, iy));
+        } else {
+            // 两个解，直线与圆相交于两点
+            double sqrtDiscriminant = Math.sqrt(discriminant);
+            double t1 = (-b + sqrtDiscriminant) / (2 * a);
+            double t2 = (-b - sqrtDiscriminant) / (2 * a);
+
+            double ix1 = x1 + t1 * dx;
+            double iy1 = y1 + t1 * dy;
+            intersections.add(new Point2D(ix1, iy1));
+
+            double ix2 = x1 + t2 * dx;
+            double iy2 = y1 + t2 * dy;
+            intersections.add(new Point2D(ix2, iy2));
+        }
+
+        return intersections;
+    }
+
+    /**
+     * 计算两条无限直线的交点
+     *
+     * @param line1 第一条无限直线
+     * @param line2 第二条无限直线
+     * @return 交点列表
+     */
+    public static List<Point2D> getInfiniteLineInfiniteLineIntersections(InfiniteLineGeo line1, InfiniteLineGeo line2) {
+        List<Point2D> intersections = new ArrayList<>();
+
+        double x1 = line1.getPoint1X();
+        double y1 = line1.getPoint1Y();
+        double x2 = line1.getPoint2X();
+        double y2 = line1.getPoint2Y();
+
+        double x3 = line2.getPoint1X();
+        double y3 = line2.getPoint1Y();
+        double x4 = line2.getPoint2X();
+        double y4 = line2.getPoint2Y();
+
+        double denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+        if (Math.abs(denom) < 1e-10) {
+            // 直线平行或重合
+            return intersections;
+        }
+
+        double tNum = (x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4);
+        double t = tNum / denom;
+
+        // 无限直线不需要检查t和u的范围，直接计算交点
+        double ix = x1 + t * (x2 - x1);
+        double iy = y1 + t * (y2 - y1);
+        intersections.add(new Point2D(ix, iy));
 
         return intersections;
     }

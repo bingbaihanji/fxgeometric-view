@@ -70,7 +70,7 @@ public class ShapeToolPane extends VBox {
         basicTools.getChildren().addAll(
                 createTool("geo.point", DrawMode.POINT, group),
                 createTool("geo.segment", DrawMode.LINE, group),
-                createTool("geo.line", DrawMode.LINE, group),
+                createTool("geo.line", DrawMode.INFINITE_LINE, group),
                 createTool("geo.circle", DrawMode.CIRCLE, group),
                 createTool("geo.polygon", DrawMode.POLYGON, group),
                 createTool("geo.freehand", DrawMode.FREEHAND, group)
@@ -120,6 +120,25 @@ public class ShapeToolPane extends VBox {
         VBox.setVgrow(scrollPane, Priority.ALWAYS);
         getChildren().add(scrollPane);
     }
+
+    /**
+     * 获取图标文件路径
+     */
+    private String getIconPath(String textKey) {
+        return switch (textKey) {
+            case "geo.point" -> "icon/point.png";
+            case "geo.segment" -> "icon/segment.png";
+            case "geo.circle" -> "icon/circle.png";
+            case "geo.polygon" -> "icon/rectangle.png";
+            case "geo.restore" -> "icon/restore.png";
+            case "geo.revoke" -> "icon/revoke.png";
+            case "geo.empty" -> "icon/empty.png";
+            case "geo.line" -> "icon/line.png";
+            default -> null;
+        };
+    }
+
+
 
     /* ======================= UI 构建方法 ======================= */
 
@@ -357,21 +376,6 @@ public class ShapeToolPane extends VBox {
     }
 
 
-    /**
-     * 获取图标文件路径
-     */
-    private String getIconPath(String textKey) {
-        return switch (textKey) {
-            case "geo.point" -> "icon/point.png";
-            case "geo.segment", "geo.line" -> "icon/segment.png";
-            case "geo.circle" -> "icon/circle.png";
-            case "geo.polygon" -> "icon/rectangle.png";
-            case "geo.restore" -> "icon/restore.png";
-            case "geo.revoke" -> "icon/revoke.png";
-            case "geo.empty" -> "icon/empty.png";
-            default -> null;
-        };
-    }
 
 
     public ObjectProperty<DrawMode> drawModeProperty() {

@@ -35,7 +35,6 @@ public class GridChartPane extends Pane {
 
 
     //  基础组件
-
     private final Canvas canvas = new Canvas();
 
     //  坐标系统
@@ -47,7 +46,7 @@ public class GridChartPane extends Pane {
     private final List<WorldObject> objects = new ArrayList<>();
     private WorldObject hoverObject = null;
 
-    private CircleDrawingTool circleTool;
+    private final CircleDrawingTool circleTool;
 
     // 预览绘制器
     private BiConsumer<GraphicsContext, WorldTransform> previewPainter;

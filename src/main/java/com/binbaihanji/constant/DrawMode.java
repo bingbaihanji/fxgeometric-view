@@ -23,6 +23,11 @@ public enum DrawMode {
     LINE,
 
     /**
+     * 无限直线
+     */
+    INFINITE_LINE,
+
+    /**
      * 圆
      */
     CIRCLE,
