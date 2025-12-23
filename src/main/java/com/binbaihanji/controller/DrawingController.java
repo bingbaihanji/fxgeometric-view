@@ -562,10 +562,9 @@ public class DrawingController {
                 // 线段与线段的交点
                 List<Point2D> intersections = IntersectionUtils.getLineLineIntersections((LineGeo) newObject, (LineGeo) obj);
                 for (Point2D point : intersections) {
-                    // 使用特殊颜色绘制交点
                     PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
-                    intersectionPoint.setColor(Color.PURPLE); // 设置交点颜色
-                    intersectionPoints.add(intersectionPoint); // 先收集起来
+                    intersectionPoint.setColor(Color.PURPLE);
+                    intersectionPoints.add(intersectionPoint);
                 }
             } else if (newObject instanceof LineGeo && obj instanceof CircleGeo) {
                 // 线段与圆的交点
@@ -590,6 +589,54 @@ public class DrawingController {
                     PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
                     intersectionPoint.setColor(Color.PURPLE);
                     intersectionPoints.add(intersectionPoint);
+                }
+            } else if (newObject instanceof PolygonGeo polygon) {
+                // 多边形与其他图形的交点：遍历多边形的每条边
+                for (LineGeo edge : polygon.getEdges()) {
+                    if (obj instanceof LineGeo line) {
+                        List<Point2D> intersections = IntersectionUtils.getLineLineIntersections(edge, line);
+                        for (Point2D point : intersections) {
+                            PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
+                            intersectionPoint.setColor(Color.PURPLE);
+                            intersectionPoints.add(intersectionPoint);
+                        }
+                    } else if (obj instanceof CircleGeo circle) {
+                        List<Point2D> intersections = IntersectionUtils.getLineCircleIntersections(edge, circle);
+                        for (Point2D point : intersections) {
+                            PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
+                            intersectionPoint.setColor(Color.PURPLE);
+                            intersectionPoints.add(intersectionPoint);
+                        }
+                    } else if (obj instanceof PolygonGeo otherPolygon) {
+                        // 多边形与多边形的交点：遍历两个多边形的所有边
+                        for (LineGeo otherEdge : otherPolygon.getEdges()) {
+                            List<Point2D> intersections = IntersectionUtils.getLineLineIntersections(edge, otherEdge);
+                            for (Point2D point : intersections) {
+                                PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
+                                intersectionPoint.setColor(Color.PURPLE);
+                                intersectionPoints.add(intersectionPoint);
+                            }
+                        }
+                    }
+                }
+            } else if (obj instanceof PolygonGeo polygon) {
+                // 其他图形与多边形的交点
+                for (LineGeo edge : polygon.getEdges()) {
+                    if (newObject instanceof LineGeo line) {
+                        List<Point2D> intersections = IntersectionUtils.getLineLineIntersections(line, edge);
+                        for (Point2D point : intersections) {
+                            PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
+                            intersectionPoint.setColor(Color.PURPLE);
+                            intersectionPoints.add(intersectionPoint);
+                        }
+                    } else if (newObject instanceof CircleGeo circle) {
+                        List<Point2D> intersections = IntersectionUtils.getLineCircleIntersections(edge, circle);
+                        for (Point2D point : intersections) {
+                            PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY());
+                            intersectionPoint.setColor(Color.PURPLE);
+                            intersectionPoints.add(intersectionPoint);
+                        }
+                    }
                 }
             }
         }
@@ -680,6 +727,28 @@ public class DrawingController {
             intersections.addAll(IntersectionUtils.getLineCircleIntersections((LineGeo) obj2, (CircleGeo) obj1));
         } else if (obj1 instanceof CircleGeo && obj2 instanceof CircleGeo) {
             intersections.addAll(IntersectionUtils.getCircleCircleIntersections((CircleGeo) obj1, (CircleGeo) obj2));
+        } else if (obj1 instanceof PolygonGeo polygon) {
+            // 多边形与其他图形的交点
+            for (LineGeo edge : polygon.getEdges()) {
+                if (obj2 instanceof LineGeo line) {
+                    intersections.addAll(IntersectionUtils.getLineLineIntersections(edge, line));
+                } else if (obj2 instanceof CircleGeo circle) {
+                    intersections.addAll(IntersectionUtils.getLineCircleIntersections(edge, circle));
+                } else if (obj2 instanceof PolygonGeo otherPolygon) {
+                    for (LineGeo otherEdge : otherPolygon.getEdges()) {
+                        intersections.addAll(IntersectionUtils.getLineLineIntersections(edge, otherEdge));
+                    }
+                }
+            }
+        } else if (obj2 instanceof PolygonGeo polygon) {
+            // 其他图形与多边形的交点
+            for (LineGeo edge : polygon.getEdges()) {
+                if (obj1 instanceof LineGeo line) {
+                    intersections.addAll(IntersectionUtils.getLineLineIntersections(line, edge));
+                } else if (obj1 instanceof CircleGeo circle) {
+                    intersections.addAll(IntersectionUtils.getLineCircleIntersections(edge, circle));
+                }
+            }
         }
         
         return intersections;
