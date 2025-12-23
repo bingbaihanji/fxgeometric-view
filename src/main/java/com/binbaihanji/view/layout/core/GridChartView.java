@@ -9,8 +9,6 @@ import com.binbaihanji.view.layout.draw.geometry.impl.AxesPainter;
 import com.binbaihanji.view.layout.draw.geometry.impl.GridPainter;
 import com.binbaihanji.view.layout.draw.tools.CircleDrawingTool;
 import javafx.animation.PauseTransition;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Tooltip;
@@ -22,7 +20,6 @@ import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BiConsumer;
 
 /**
@@ -31,27 +28,25 @@ import java.util.function.BiConsumer;
  * @date 2025-12-20 16:12:42
  * @description 格点图视图
  */
-public class GridChartPane extends Pane {
+public class GridChartView extends Pane {
 
 
+    // 判定
+    private static final double HOVER_MOVE_THRESHOLD = 3; // 像素
     //  基础组件
     private final Canvas canvas = new Canvas();
-
     //  坐标系统
     private final WorldTransform transform = new WorldTransform();
-
-
     private final List<WorldPainter> painters = new ArrayList<>();
-
     private final List<WorldObject> objects = new ArrayList<>();
-    private WorldObject hoverObject = null;
-
     private final CircleDrawingTool circleTool;
-
+    //   鼠标悬停气泡
+    private final Tooltip hoverTooltip = new Tooltip();
+    private final PauseTransition hoverTimer =
+            new PauseTransition(Duration.seconds(0.5));
+    private WorldObject hoverObject = null;
     // 预览绘制器
     private BiConsumer<GraphicsContext, WorldTransform> previewPainter;
-
-
     /**
      * 初始化状态标志
      * <p>
@@ -60,24 +55,32 @@ public class GridChartPane extends Pane {
      * 避免每次布局时都重置用户可能已经调整过的原点位置
      */
     private boolean initialized = false;
-
-
-    //   鼠标悬停气泡
-    private final Tooltip hoverTooltip = new Tooltip();
-
-    private final PauseTransition hoverTimer =
-            new PauseTransition(Duration.seconds(0.5));
-
     private double lastHoverX;
     private double lastHoverY;
-    
     // 当前鼠标附近的特殊点（用于视觉反馈）
     private SpecialPoint nearbySpecialPoint = null;
-
-    // 判定
-    private static final double HOVER_MOVE_THRESHOLD = 3; // 像素
-
     private Runnable onTransformChanged;
+    //  视图拖拽状态
+    private boolean panning = false;
+    private double lastMouseX;
+    private double lastMouseY;
+
+
+    //  构造
+    public GridChartView() {
+        circleTool = new CircleDrawingTool();
+
+        getChildren().add(canvas);
+        bindSize(); // 尺寸绑定
+        initMouseZoom();// 鼠标滚轮缩放
+        initMousePan(); // 鼠标滚轮键按下时开始拖拽
+        redraw(); // 绘制 格点/网格
+        initMouseClickOutput(); // 点击控制台显示坐标
+        initMouseHoverTooltip(); // 悬浮气泡显示坐标
+        initMouseObjectHover();
+        addPainter(new GridPainter(GridMode.DOT));
+        addPainter(new AxesPainter());
+    }
 
     /**
      * 初始化鼠标悬停坐标气泡
@@ -124,7 +127,6 @@ public class GridChartPane extends Pane {
         });
     }
 
-
     /**
      * 显示悬停点的坐标气泡
      */
@@ -166,27 +168,13 @@ public class GridChartPane extends Pane {
         return onTransformChanged;
     }
 
-
-    //  视图拖拽状态
-    private boolean panning = false;
-    private double lastMouseX;
-    private double lastMouseY;
-
-    //  构造
-    public GridChartPane() {
-        circleTool = new CircleDrawingTool();
-
-        getChildren().add(canvas);
-        bindSize(); // 尺寸绑定
-        initMouseZoom();// 鼠标滚轮缩放
-        initMousePan(); // 鼠标滚轮键按下时开始拖拽
-        redraw(); // 绘制 格点/网格
-        initMouseClickOutput(); // 点击控制台显示坐标
-        initMouseHoverTooltip(); // 悬浮气泡显示坐标
-        initMouseObjectHover();
-        addPainter(new GridPainter(GridMode.DOT));
-        addPainter(new AxesPainter());
+    // 回掉接口
+    public void setOnTransformChanged(Runnable runable) {
+        this.onTransformChanged = runable;
     }
+
+
+    //  初始化
 
     /**
      * 布局子节点方法 - 在JavaFX布局系统中自动调用
@@ -206,9 +194,6 @@ public class GridChartPane extends Pane {
             redraw();
         }
     }
-
-
-    //  初始化
 
     /**
      * 初始化画布尺寸绑定和监听器
@@ -233,6 +218,9 @@ public class GridChartPane extends Pane {
     private void initMouseZoom() {
         setOnScroll(this::handleZoom);
     }
+
+
+    //  缩放
 
     /**
      * 鼠标滚轮键按下时开始拖拽
@@ -274,9 +262,6 @@ public class GridChartPane extends Pane {
             panning = false;
         });
     }
-
-
-    //  缩放
 
     private void handleZoom(ScrollEvent e) {
 
@@ -344,7 +329,6 @@ public class GridChartPane extends Pane {
         );
     }
 
-
     /**
      * 重绘整个画布
      * <p>
@@ -376,39 +360,39 @@ public class GridChartPane extends Pane {
             // 预览绘制逻辑已经修复，可以正常显示圆形预览
             circleTool.paintPreview(gc, transform);
         }
-        
+
         // 绘制特殊点吸附提示
         if (nearbySpecialPoint != null) {
             drawSpecialPointHint(gc);
         }
     }
-    
+
+
+    //  坐标轴 绘制
+
     /**
      * 绘制特殊点吸附提示（高亮圈）
      */
     private void drawSpecialPointHint(GraphicsContext gc) {
         double sx = transform.worldToScreenX(nearbySpecialPoint.getX());
         double sy = transform.worldToScreenY(nearbySpecialPoint.getY());
-        
+
         // 绘制吸附提示圈
         gc.setStroke(Color.rgb(255, 165, 0, 0.8)); // 橙色半透明
         gc.setLineWidth(2);
         gc.setLineDashes(null);
-        
+
         // 绘制两个同心圆作为吸附提示
         double radius1 = 8;
         double radius2 = 12;
         gc.strokeOval(sx - radius1, sy - radius1, radius1 * 2, radius1 * 2);
         gc.strokeOval(sx - radius2, sy - radius2, radius2 * 2, radius2 * 2);
-        
+
         // 绘制中心点
         gc.setFill(Color.rgb(255, 165, 0, 0.6));
         double centerRadius = 3;
         gc.fillOval(sx - centerRadius, sy - centerRadius, centerRadius * 2, centerRadius * 2);
     }
-
-
-    //  坐标轴 绘制
 
     /**
      * 根据当前缩放比例选择合适的坐标轴刻度步长
@@ -423,7 +407,6 @@ public class GridChartPane extends Pane {
         if (scale > 25) return 5;
         return 10;
     }
-
 
     /**
      * 初始化鼠标点击输出与世界对象交互
@@ -482,7 +465,6 @@ public class GridChartPane extends Pane {
         });
     }
 
-
     private void initMouseObjectHover() {
 
         addEventHandler(MouseEvent.MOUSE_MOVED, e -> {
@@ -493,7 +475,7 @@ public class GridChartPane extends Pane {
             // 应用磁性吸附效果，并更新附近的特殊点用于视觉反馈
             SpecialPoint nearestSpecialPoint = findNearestSpecialPoint(worldX, worldY);
             nearbySpecialPoint = nearestSpecialPoint; // 保存用于绘制提示
-            
+
             if (nearestSpecialPoint != null) {
                 worldX = nearestSpecialPoint.getX();
                 worldY = nearestSpecialPoint.getY();
@@ -539,7 +521,7 @@ public class GridChartPane extends Pane {
                 hoverObject = null;
                 redraw();
             }
-            
+
             // 清除特殊点提示
             if (nearbySpecialPoint != null) {
                 nearbySpecialPoint = null;
@@ -550,6 +532,7 @@ public class GridChartPane extends Pane {
 
     /**
      * 查找最近的特殊点（用于磁性吸附）
+     *
      * @param x 当前鼠标x坐标（世界坐标）
      * @param y 当前鼠标y坐标（世界坐标）
      * @return 最近的特殊点，如果没有找到则返回null
@@ -557,15 +540,14 @@ public class GridChartPane extends Pane {
     private SpecialPoint findNearestSpecialPoint(double x, double y) {
         // 获取所有特殊点
         List<SpecialPoint> specialPoints = SpecialPointManager.extractSpecialPoints(objects);
-        
+
         // 计算吸附阈值（像素距离转换为世界坐标距离）
         double scale = transform.getScale();
         double threshold = 10.0 / scale; // 10像素的吸附范围
-        
+
         // 查找最近的特殊点
         return SpecialPointManager.findNearestSpecialPoint(x, y, specialPoints, threshold);
     }
-
 
     /**
      * 消除浮点抖动
@@ -603,6 +585,8 @@ public class GridChartPane extends Pane {
     }
 
 
+    //  对外接口
+
     /**
      * 吸附到最近网格点（基于当前轴刻度）
      * <p>
@@ -624,9 +608,6 @@ public class GridChartPane extends Pane {
         return worldValue;
     }
 
-
-    //  对外接口
-
     /**
      * 立即取消悬停气泡显示
      */
@@ -634,13 +615,6 @@ public class GridChartPane extends Pane {
         hoverTimer.stop();
         hoverTooltip.hide();
     }
-
-
-    // 回掉接口
-    public void setOnTransformChanged(Runnable runable) {
-        this.onTransformChanged = runable;
-    }
-
 
     /**
      * 获取当前缩放比例
@@ -691,6 +665,7 @@ public class GridChartPane extends Pane {
 
     /**
      * 获取所有图形对象的副本
+     *
      * @return 图形对象列表的副本
      */
     public List<WorldObject> getObjects() {

@@ -1,6 +1,6 @@
 package com.binbaihanji.view.layout.draw.tools;
 
-import com.binbaihanji.view.layout.core.GridChartPane;
+import com.binbaihanji.view.layout.core.GridChartView;
 import com.binbaihanji.view.layout.core.WorldTransform;
 import com.binbaihanji.view.layout.draw.geometry.impl.CircleGeo;
 import javafx.scene.canvas.GraphicsContext;
@@ -13,7 +13,7 @@ public class CircleDrawingTool {
     private double cx, cy;
     private double previewRadius = 0;
 
-    public void onMouseClicked(GridChartPane pane, MouseEvent e) {
+    public void onMouseClicked(GridChartView pane, MouseEvent e) {
 
         double wx = pane.screenToWorldX(e.getX());
         double wy = pane.screenToWorldY(e.getY());
@@ -31,7 +31,7 @@ public class CircleDrawingTool {
         pane.redraw();
     }
 
-    public void onMouseMoved(GridChartPane pane, MouseEvent e) {
+    public void onMouseMoved(GridChartView pane, MouseEvent e) {
 
         if (!hasCenter) return;
 
@@ -69,7 +69,7 @@ public class CircleDrawingTool {
         gc.setLineDashes(6);
         gc.strokeOval(sx - sr, sy - sr, sr * 2, sr * 2);
         gc.setLineDashes(null);
-        
+
         // 添加圆心点的预览显示，与线段绘制保持一致
         gc.setFill(Color.LIGHTGRAY);
         double pointRadius = 3;

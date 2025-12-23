@@ -60,15 +60,15 @@ public class PointGeo implements WorldObject {
     public void onClick(double wx, double wy) {
         System.out.println("点被点击：" + x + ", " + y);
     }
-    
+
     @Override
     public List<DraggablePoint> getDraggablePoints() {
         // 点本身可拖动
         return List.of(
-            new DraggablePoint(x, y, (newX, newY) -> {
-                x = newX;
-                y = newY;
-            })
+                new DraggablePoint(x, y, (newX, newY) -> {
+                    x = newX;
+                    y = newY;
+                })
         );
     }
 }

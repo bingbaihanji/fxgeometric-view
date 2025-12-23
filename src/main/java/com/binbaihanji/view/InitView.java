@@ -2,9 +2,10 @@ package com.binbaihanji.view;
 
 import com.binbaihanji.controller.DrawingController;
 import com.binbaihanji.util.I18nUtil;
-import com.binbaihanji.view.layout.core.GridChartPane;
+import com.binbaihanji.view.layout.core.GridChartView;
 import com.binbaihanji.view.layout.pane.ShapeToolPane;
 import javafx.application.Platform;
+import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.SplitPane;
 import javafx.scene.input.KeyCode;
@@ -22,6 +23,10 @@ import javafx.stage.Stage;
  */
 public class InitView {
     private final Stage stage;
+    /**
+     * 绘制控制器（用于快捷键处理）
+     */
+    private DrawingController drawingController;
 
     public InitView(Stage stage) {
         this.stage = stage;
@@ -32,7 +37,7 @@ public class InitView {
         BorderPane root = new BorderPane();
 
         // 1. 创建坐标系面板
-        GridChartPane gridChartPane = new GridChartPane();
+        GridChartView gridChartPane = new GridChartView();
 
         // 2. 创建工具栏
         ShapeToolPane toolPane = new ShapeToolPane();
@@ -45,15 +50,15 @@ public class InitView {
         toolPane.drawModeProperty().addListener((obs, oldMode, newMode) -> {
             drawingController.setDrawMode(newMode);
         });
-        
+
         // 绑定撤销/恢复/清空按钮
-        toolPane.setOnUndo(() -> drawingController.undo());
-        toolPane.setOnRedo(() -> drawingController.redo());
-        toolPane.setOnClear(() -> drawingController.clearAll());
+        toolPane.setOnUndo(drawingController::undo);
+        toolPane.setOnRedo(drawingController::redo);
+        toolPane.setOnClear(drawingController::clearAll);
 
         // 5. 设置布局
         SplitPane central = new SplitPane(toolPane, gridChartPane);
-        central.setOrientation(javafx.geometry.Orientation.HORIZONTAL);
+        central.setOrientation(Orientation.HORIZONTAL);
         central.setDividerPositions(0.23);
 
         // 监听整个SplitPane的分隔条位置变化
@@ -76,21 +81,16 @@ public class InitView {
         gridChartPane.setPreviewPainter(drawingController::paintPreview);
 
         Scene scene = new Scene(root, 1000, 700);
-        
+
         // 7. 添加快捷键支持
         scene.setOnKeyPressed(this::handleKeyPressed);
         this.drawingController = drawingController;
-        
+
         stage.setTitle(I18nUtil.getString("application.name"));
         stage.setScene(scene);
         return stage;
     }
-    
-    /**
-     * 绘制控制器（用于快捷键处理）
-     */
-    private DrawingController drawingController;
-    
+
     /**
      * 处理快捷键事件
      */

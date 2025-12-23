@@ -27,12 +27,12 @@ public final class WorldTransform {
         return (offsetY - y) / scale;
     }
 
-    public void setScale(double scale) {
-        this.scale = scale;
-    }
-
     public double getScale() {
         return scale;
+    }
+
+    public void setScale(double scale) {
+        this.scale = scale;
     }
 
     public void setOffset(double offsetX, double offsetY) {

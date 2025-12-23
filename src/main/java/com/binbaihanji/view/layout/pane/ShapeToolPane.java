@@ -23,7 +23,7 @@ import java.net.URL;
  */
 public class ShapeToolPane extends VBox {
 
-    /* ======================= 状态属性 ======================= */
+    /*状态属性*/
 
     private final ObjectProperty<DrawMode> drawMode =
             new SimpleObjectProperty<>(DrawMode.NONE);
@@ -45,7 +45,7 @@ public class ShapeToolPane extends VBox {
 
 
 
-    /* ======================= 构造 ======================= */
+    /*构造*/
 
     public ShapeToolPane() {
 
@@ -73,7 +73,7 @@ public class ShapeToolPane extends VBox {
                 createTool("geo.line", DrawMode.INFINITE_LINE, group),
                 createTool("geo.circle", DrawMode.CIRCLE, group),
                 createTool("geo.polygon", DrawMode.POLYGON, group),
-                createTool("geo.freehand", DrawMode.FREEHAND, group)
+                createTool("geo.handpainted", DrawMode.FREEHAND, group)
         );
 
         content.getChildren().add(
@@ -134,13 +134,14 @@ public class ShapeToolPane extends VBox {
             case "geo.revoke" -> "icon/revoke.png";
             case "geo.empty" -> "icon/empty.png";
             case "geo.line" -> "icon/line.png";
+            case "geo.handpainted" -> "icon/handpainted.png";
             default -> null;
         };
     }
 
 
 
-    /* ======================= UI 构建方法 ======================= */
+    /*UI 构建方法*/
 
     /**
      * 分组标题 + 内容
@@ -374,8 +375,6 @@ public class ShapeToolPane extends VBox {
         fallback.setStyle("-fx-font-size: 20px; -fx-text-fill: #333;");
         return fallback;
     }
-
-
 
 
     public ObjectProperty<DrawMode> drawModeProperty() {

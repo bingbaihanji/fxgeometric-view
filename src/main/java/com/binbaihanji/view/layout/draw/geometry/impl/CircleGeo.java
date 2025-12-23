@@ -9,10 +9,9 @@ import java.util.List;
 
 public class CircleGeo implements WorldObject {
 
+    private final double r;
     private double cx;
     private double cy;
-    private final double r;
-
     private boolean hover = false;
 
 
@@ -46,7 +45,7 @@ public class CircleGeo implements WorldObject {
         double sr = r * transform.getScale();
 
         gc.setStroke(hover ? Color.ORANGE
-                           : Color.DODGERBLUE);
+                : Color.DODGERBLUE);
         gc.setLineWidth(2);
 
         gc.strokeOval(
@@ -55,13 +54,13 @@ public class CircleGeo implements WorldObject {
                 sr * 2,
                 sr * 2
         );
-        
+
         // 根据项目规范要求，绘制圆形时显示圆心点
         // 绘制圆心点以便提供明确的几何定位反馈
         gc.setFill(hover ? Color.ORANGE : Color.RED);
         double pointRadius = hover ? 4 : 3;
         gc.fillOval(sx - pointRadius, sy - pointRadius, pointRadius * 2, pointRadius * 2);
-        
+
         // TODO: 优化建议 - 当前圆心点的颜色和大小是固定的，可以考虑与预览阶段保持一致
         // 预览阶段的圆心点使用浅灰色，而这里是红色，可能会让用户感到困惑
         // 建议在预览阶段和最终绘制阶段使用一致的视觉表现
@@ -82,15 +81,15 @@ public class CircleGeo implements WorldObject {
     public void setHover(boolean hover) {
         this.hover = hover;
     }
-    
+
     @Override
     public List<DraggablePoint> getDraggablePoints() {
         // 圆心可拖动
         return List.of(
-            new DraggablePoint(cx, cy, (newX, newY) -> {
-                cx = newX;
-                cy = newY;
-            })
+                new DraggablePoint(cx, cy, (newX, newY) -> {
+                    cx = newX;
+                    cy = newY;
+                })
         );
     }
 }

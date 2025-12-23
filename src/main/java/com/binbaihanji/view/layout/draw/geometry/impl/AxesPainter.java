@@ -158,9 +158,9 @@ public class AxesPainter implements WorldPainter {
         double step = chooseAxisStep(transform.getScale());
 
         // 计算当前可视区域在世界坐标系中的边界
-        double worldLeft   = transform.screenToWorldX(0);
-        double worldRight  = transform.screenToWorldX(width);
-        double worldTop    = transform.screenToWorldY(0);
+        double worldLeft = transform.screenToWorldX(0);
+        double worldRight = transform.screenToWorldX(width);
+        double worldTop = transform.screenToWorldY(0);
         double worldBottom = transform.screenToWorldY(height);
 
         // 设置刻度线和文字的样式（使用主坐标轴颜色）
@@ -283,8 +283,8 @@ public class AxesPainter implements WorldPainter {
     private double chooseAxisStep(double scale) {
         if (scale > 200) return 0.5;
         if (scale > 100) return 1;
-        if (scale > 50)  return 2;
-        if (scale > 25)  return 5;
+        if (scale > 50) return 2;
+        if (scale > 25) return 5;
         return 10;
     }
 

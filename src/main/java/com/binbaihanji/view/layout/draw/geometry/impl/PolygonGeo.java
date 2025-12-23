@@ -26,20 +26,8 @@ public class PolygonGeo implements WorldObject {
     private boolean hover = false;
 
     /**
-     * 内部点类
-     */
-    private static class Point {
-        double x;
-        double y;
-
-        Point(double x, double y) {
-            this.x = x;
-            this.y = y;
-        }
-    }
-
-    /**
      * 构造函数
+     *
      * @param vertices 顶点坐标数组 [x1, y1, x2, y2, ...]
      */
     public PolygonGeo(double... vertices) {
@@ -58,6 +46,7 @@ public class PolygonGeo implements WorldObject {
 
     /**
      * 构造函数（从点列表）
+     *
      * @param points 顶点列表
      */
     public PolygonGeo(List<javafx.geometry.Point2D> points) {
@@ -94,8 +83,8 @@ public class PolygonGeo implements WorldObject {
         gc.setFill(hover ? Color.ORANGE : Color.RED);
         double pointRadius = 3;
         for (int i = 0; i < vertices.size(); i++) {
-            gc.fillOval(xPoints[i] - pointRadius, yPoints[i] - pointRadius, 
-                       pointRadius * 2, pointRadius * 2);
+            gc.fillOval(xPoints[i] - pointRadius, yPoints[i] - pointRadius,
+                    pointRadius * 2, pointRadius * 2);
         }
     }
 
@@ -105,7 +94,7 @@ public class PolygonGeo implements WorldObject {
         for (int i = 0; i < vertices.size(); i++) {
             Point p1 = vertices.get(i);
             Point p2 = vertices.get((i + 1) % vertices.size());
-            
+
             // 检查点到线段的距离
             double dist = pointToSegmentDistance(wx, wy, p1.x, p1.y, p2.x, p2.y);
             if (dist < tol) {
@@ -118,20 +107,20 @@ public class PolygonGeo implements WorldObject {
     /**
      * 计算点到线段的距离
      */
-    private double pointToSegmentDistance(double px, double py, 
-                                         double x1, double y1, double x2, double y2) {
+    private double pointToSegmentDistance(double px, double py,
+                                          double x1, double y1, double x2, double y2) {
         double dx = x2 - x1;
         double dy = y2 - y1;
         double lengthSquared = dx * dx + dy * dy;
-        
+
         if (lengthSquared == 0) {
             return Math.hypot(px - x1, py - y1);
         }
-        
+
         double t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / lengthSquared));
         double nearestX = x1 + t * dx;
         double nearestY = y1 + t * dy;
-        
+
         return Math.hypot(px - nearestX, py - nearestY);
     }
 
@@ -159,9 +148,10 @@ public class PolygonGeo implements WorldObject {
         Point p = vertices.get(index);
         return new javafx.geometry.Point2D(p.x, p.y);
     }
-    
+
     /**
      * 获取多边形的所有边（作为线段）
+     *
      * @return 线段列表
      */
     public List<LineGeo> getEdges() {
@@ -173,7 +163,7 @@ public class PolygonGeo implements WorldObject {
         }
         return edges;
     }
-    
+
     @Override
     public List<DraggablePoint> getDraggablePoints() {
         // 所有顶点都可拖动
@@ -187,5 +177,18 @@ public class PolygonGeo implements WorldObject {
             }));
         }
         return points;
+    }
+
+    /**
+     * 内部点类
+     */
+    private static class Point {
+        double x;
+        double y;
+
+        Point(double x, double y) {
+            this.x = x;
+            this.y = y;
+        }
     }
 }

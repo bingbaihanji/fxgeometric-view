@@ -36,7 +36,7 @@ public enum DrawMode {
      * 多边形（依次选点绘制，终点与起点重合时完成）
      */
     POLYGON,
-    
+
     /**
      * 手绘线
      */

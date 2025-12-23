@@ -59,7 +59,7 @@ public class IntersectionUtils {
     /**
      * 计算线段与圆的交点
      *
-     * @param line  线段
+     * @param line   线段
      * @param circle 圆
      * @return 交点列表
      */
@@ -187,7 +187,7 @@ public class IntersectionUtils {
      * 计算无限直线与线段的交点
      *
      * @param infiniteLine 无限直线
-     * @param line 线段
+     * @param line         线段
      * @return 交点列表
      */
     public static List<Point2D> getInfiniteLineLineIntersections(InfiniteLineGeo infiniteLine, LineGeo line) {
@@ -229,7 +229,7 @@ public class IntersectionUtils {
      * 计算无限直线与圆的交点
      *
      * @param infiniteLine 无限直线
-     * @param circle 圆
+     * @param circle       圆
      * @return 交点列表
      */
     public static List<Point2D> getInfiniteLineCircleIntersections(InfiniteLineGeo infiniteLine, CircleGeo circle) {

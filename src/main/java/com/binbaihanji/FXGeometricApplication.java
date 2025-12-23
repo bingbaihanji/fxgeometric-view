@@ -2,8 +2,6 @@ package com.binbaihanji;
 
 import com.binbaihanji.view.FXGeometricView;
 
-import java.util.Locale;
-
 /**
  *
  * @author bingbaihanji

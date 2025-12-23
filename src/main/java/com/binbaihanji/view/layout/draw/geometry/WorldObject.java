@@ -30,6 +30,14 @@ public interface WorldObject extends WorldPainter {
     }
 
     /**
+     * 点位置更新器
+     */
+    @FunctionalInterface
+    interface PointUpdater {
+        void update(double newX, double newY);
+    }
+
+    /**
      * 可拖动的控制点
      */
     class DraggablePoint {
@@ -64,13 +72,5 @@ public interface WorldObject extends WorldPainter {
         public boolean hitTest(double worldX, double worldY, double tolerance) {
             return Math.hypot(worldX - x, worldY - y) < tolerance;
         }
-    }
-
-    /**
-     * 点位置更新器
-     */
-    @FunctionalInterface
-    interface PointUpdater {
-        void update(double newX, double newY);
     }
 }

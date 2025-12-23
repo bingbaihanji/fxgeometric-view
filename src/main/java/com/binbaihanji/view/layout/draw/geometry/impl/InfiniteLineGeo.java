@@ -147,14 +147,14 @@ public class InfiniteLineGeo implements WorldObject {
     public List<DraggablePoint> getDraggablePoints() {
         // 直线的两个定义点可拖动
         return List.of(
-            new DraggablePoint(point1X, point1Y, (newX, newY) -> {
-                point1X = newX;
-                point1Y = newY;
-            }),
-            new DraggablePoint(point2X, point2Y, (newX, newY) -> {
-                point2X = newX;
-                point2Y = newY;
-            })
+                new DraggablePoint(point1X, point1Y, (newX, newY) -> {
+                    point1X = newX;
+                    point1Y = newY;
+                }),
+                new DraggablePoint(point2X, point2Y, (newX, newY) -> {
+                    point2X = newX;
+                    point2Y = newY;
+                })
         );
     }
 }
