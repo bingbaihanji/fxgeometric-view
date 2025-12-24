@@ -187,6 +187,20 @@ public class PathGeo implements WorldObject {
         return edges;
     }
 
+    @Override
+    public void rotateAroundPoint(double centerX, double centerY, double angle) {
+        double cos = Math.cos(angle);
+        double sin = Math.sin(angle);
+        
+        // 旋转所有路径点
+        for (Point point : pathPoints) {
+            double dx = point.x - centerX;
+            double dy = point.y - centerY;
+            point.x = centerX + dx * cos - dy * sin;
+            point.y = centerY + dx * sin + dy * cos;
+        }
+    }
+
     /**
      * 内部点类
      */

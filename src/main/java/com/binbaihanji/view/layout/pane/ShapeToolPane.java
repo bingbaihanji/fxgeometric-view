@@ -101,7 +101,9 @@ public class ShapeToolPane extends VBox {
                 createTool("geo.perpendicular", DrawMode.PERPENDICULAR, group),
                 createTool("geo.perpendicularBisector", DrawMode.PERPENDICULAR_BISECTOR, group),
                 createTool("geo.parallel", DrawMode.PARALLEL, group),
-                createTool("geo.tangent", DrawMode.TANGENT, group)
+                createTool("geo.tangent", DrawMode.TANGENT, group),
+                createTool("geo.rotating", DrawMode.ROTATE, group)
+
         );
 
         content.getChildren().add(
@@ -139,6 +141,7 @@ public class ShapeToolPane extends VBox {
             case "geo.perpendicularBisector" -> "icon/perpendicularBisector.png";
             case "geo.parallel" -> "icon/parallel.png";
             case "geo.tangent" -> "icon/tangent.png";
+            case "geo.rotating" -> "icon/rotating.png";
             default -> null;
         };
     }

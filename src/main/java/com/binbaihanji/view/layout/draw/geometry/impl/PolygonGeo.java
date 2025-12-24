@@ -201,6 +201,20 @@ public class PolygonGeo implements WorldObject {
         return points;
     }
 
+    @Override
+    public void rotateAroundPoint(double centerX, double centerY, double angle) {
+        double cos = Math.cos(angle);
+        double sin = Math.sin(angle);
+        
+        // 旋转所有顶点
+        for (Point vertex : vertices) {
+            double dx = vertex.x - centerX;
+            double dy = vertex.y - centerY;
+            vertex.x = centerX + dx * cos - dy * sin;
+            vertex.y = centerY + dx * sin + dy * cos;
+        }
+    }
+
     /**
      * 内部点类
      */

@@ -127,4 +127,22 @@ public class LineGeo implements WorldObject {
                 })
         );
     }
+
+    @Override
+    public void rotateAroundPoint(double centerX, double centerY, double angle) {
+        double cos = Math.cos(angle);
+        double sin = Math.sin(angle);
+        
+        // 旋转起点
+        double dx1 = startX - centerX;
+        double dy1 = startY - centerY;
+        startX = centerX + dx1 * cos - dy1 * sin;
+        startY = centerY + dx1 * sin + dy1 * cos;
+        
+        // 旋转终点
+        double dx2 = endX - centerX;
+        double dy2 = endY - centerY;
+        endX = centerX + dx2 * cos - dy2 * sin;
+        endY = centerY + dx2 * sin + dy2 * cos;
+    }
 }

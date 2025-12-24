@@ -110,4 +110,14 @@ public class PointGeo implements WorldObject {
                 })
         );
     }
+
+    @Override
+    public void rotateAroundPoint(double centerX, double centerY, double angle) {
+        double cos = Math.cos(angle);
+        double sin = Math.sin(angle);
+        double dx = x - centerX;
+        double dy = y - centerY;
+        x = centerX + dx * cos - dy * sin;
+        y = centerY + dx * sin + dy * cos;
+    }
 }

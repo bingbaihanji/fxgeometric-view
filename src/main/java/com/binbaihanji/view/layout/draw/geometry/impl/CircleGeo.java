@@ -92,4 +92,15 @@ public class CircleGeo implements WorldObject {
                 })
         );
     }
+
+    @Override
+    public void rotateAroundPoint(double centerX, double centerY, double angle) {
+        // 旋转圆心
+        double cos = Math.cos(angle);
+        double sin = Math.sin(angle);
+        double dx = cx - centerX;
+        double dy = cy - centerY;
+        cx = centerX + dx * cos - dy * sin;
+        cy = centerY + dx * sin + dy * cos;
+    }
 }

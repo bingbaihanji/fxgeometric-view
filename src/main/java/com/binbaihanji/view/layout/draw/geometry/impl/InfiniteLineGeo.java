@@ -177,4 +177,22 @@ public class InfiniteLineGeo implements WorldObject {
                 })
         );
     }
+
+    @Override
+    public void rotateAroundPoint(double centerX, double centerY, double angle) {
+        double cos = Math.cos(angle);
+        double sin = Math.sin(angle);
+        
+        // 旋转定义点1
+        double dx1 = point1X - centerX;
+        double dy1 = point1Y - centerY;
+        point1X = centerX + dx1 * cos - dy1 * sin;
+        point1Y = centerY + dx1 * sin + dy1 * cos;
+        
+        // 旋转定义点2
+        double dx2 = point2X - centerX;
+        double dy2 = point2Y - centerY;
+        point2X = centerX + dx2 * cos - dy2 * sin;
+        point2Y = centerY + dx2 * sin + dy2 * cos;
+    }
 }

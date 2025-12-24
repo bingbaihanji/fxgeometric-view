@@ -30,6 +30,17 @@ public interface WorldObject extends WorldPainter {
     }
 
     /**
+     * 绕指定点旋转图形
+     *
+     * @param centerX 旋转中心X坐标（世界坐标）
+     * @param centerY 旋转中心Y坐标（世界坐标）
+     * @param angle   旋转角度（弧度）
+     */
+    default void rotateAroundPoint(double centerX, double centerY, double angle) {
+        // 默认实现为空，子类可以覆写
+    }
+
+    /**
      * 点位置更新器
      */
     @FunctionalInterface
