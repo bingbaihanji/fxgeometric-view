@@ -1,10 +1,7 @@
 package com.binbaihanji.controller;
 
 import com.binbaihanji.constant.DrawMode;
-import com.binbaihanji.util.CommandHistory;
-import com.binbaihanji.util.IntersectionUtils;
-import com.binbaihanji.util.PointNameManager;
-import com.binbaihanji.util.SpecialPointManager;
+import com.binbaihanji.util.*;
 import com.binbaihanji.util.SpecialPointManager.SpecialPoint;
 import com.binbaihanji.view.layout.core.GridChartView;
 import com.binbaihanji.view.layout.core.WorldTransform;
@@ -1950,8 +1947,8 @@ public class DrawingController {
      */
     private Optional<Pair<Double, Boolean>> showRotateDialog() {
         Dialog<Pair<Double, Boolean>> dialog = new Dialog<>();
-        dialog.setTitle("旋转");
-        dialog.setHeaderText("输入旋转角度和方向");
+        dialog.setTitle(I18nUtil.getString("rotating.windows.title"));
+        dialog.setHeaderText(I18nUtil.getString("rotating.windows.header"));
 
         // 显示对话框后获取Stage并设置图标
         dialog.showingProperty().addListener((observable, oldValue, newValue) -> {
@@ -1964,7 +1961,7 @@ public class DrawingController {
         });
 
         // 设置按钮
-        ButtonType confirmButtonType = new ButtonType("确定", ButtonBar.ButtonData.OK_DONE);
+        ButtonType confirmButtonType = new ButtonType(I18nUtil.getString("rotating.windows.okButton"), ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(confirmButtonType, ButtonType.CANCEL);
         
         // 创建表单
@@ -1975,20 +1972,20 @@ public class DrawingController {
         
         // 角度输入框
         TextField angleField = new TextField();
-        angleField.setPromptText("角度");
+        angleField.setPromptText(I18nUtil.getString("rotating.windows.angle"));
         angleField.setText("90");
         
         // 方向选择
         ToggleGroup directionGroup = new ToggleGroup();
-        RadioButton clockwiseBtn = new RadioButton("顺时针");
+        RadioButton clockwiseBtn = new RadioButton(I18nUtil.getString("rotating.windows.clockwise"));
         clockwiseBtn.setToggleGroup(directionGroup);
         clockwiseBtn.setSelected(true);
-        RadioButton counterclockwiseBtn = new RadioButton("逆时针");
+        RadioButton counterclockwiseBtn = new RadioButton(I18nUtil.getString("rotating.windows.counterclockwise"));
         counterclockwiseBtn.setToggleGroup(directionGroup);
         
-        grid.add(new Label("旋转角度(度):"), 0, 0);
+        grid.add(new Label(I18nUtil.getString("rotating.windows.rotationAngle")), 0, 0);
         grid.add(angleField, 1, 0);
-        grid.add(new Label("旋转方向:"), 0, 1);
+        grid.add(new Label(I18nUtil.getString("rotating.windows.rotationDirection")), 0, 1);
         grid.add(clockwiseBtn, 1, 1);
         grid.add(counterclockwiseBtn, 2, 1);
         

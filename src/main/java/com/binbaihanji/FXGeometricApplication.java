@@ -2,6 +2,8 @@ package com.binbaihanji;
 
 import com.binbaihanji.view.FXGeometricView;
 
+import java.util.Locale;
+
 /**
  *
  * @author bingbaihanji
@@ -10,6 +12,8 @@ import com.binbaihanji.view.FXGeometricView;
  */
 public class FXGeometricApplication {
     public static void main(String[] args) {
+        // 设置英文环境
+        // Locale.setDefault(Locale.US);
         FXGeometricView.launch(FXGeometricView.class, args);
 
     }
