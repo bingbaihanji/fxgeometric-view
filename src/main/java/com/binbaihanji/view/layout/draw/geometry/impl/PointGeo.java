@@ -44,14 +44,14 @@ public class PointGeo implements WorldObject {
         return y;
     }
 
-    // 设置点的颜色
-    public void setColor(Color color) {
-        this.color = color;
-    }
-
     // 获取点的颜色
     public Color getColor() {
         return color;
+    }
+
+    // 设置点的颜色
+    public void setColor(Color color) {
+        this.color = color;
     }
 
     // 获取点的名称

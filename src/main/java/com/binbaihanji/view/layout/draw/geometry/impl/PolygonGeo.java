@@ -25,9 +25,8 @@ public class PolygonGeo implements WorldObject {
      * 多边形顶点列表（世界坐标）
      */
     private final List<Point> vertices;
-
-    private boolean hover = false;
     private final List<String> vertexNames; // 顶点名称列表
+    private boolean hover = false;
 
     /**
      * 构造函数

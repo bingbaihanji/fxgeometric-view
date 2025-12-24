@@ -97,6 +97,7 @@ public class DrawingController {
     private double currentMouseY;
     private CircleDrawingTool circleTool;
     private FreehandDrawingTool freehandTool;
+
     public DrawingController(GridChartView gridChartPane) {
         this.gridChartPane = gridChartPane;
         // CircleDrawingTool现在可以正确地与DrawingController协同工作
@@ -441,8 +442,8 @@ public class DrawingController {
         } else if (drawMode == DrawMode.NONE) {
             // 非绘制模式下，重绘以显示控制点高亮
             gridChartPane.redraw();
-        } else if (selectedLine != null && (drawMode == DrawMode.PERPENDICULAR || 
-                   drawMode == DrawMode.PARALLEL)) {
+        } else if (selectedLine != null && (drawMode == DrawMode.PERPENDICULAR ||
+                drawMode == DrawMode.PARALLEL)) {
             // 作图工具模式下，鼠标移动时更新预览（垂直平分线不需要预览）
             double worldX = rawX;
             double worldY = rawY;
@@ -959,7 +960,7 @@ public class DrawingController {
                         double dx = currentMouseX - circle.getCx();
                         double dy = currentMouseY - circle.getCy();
                         double len = Math.hypot(dx, dy);
-                        
+
                         // 归一化方向向量并乘以半径，得到圆周上的点
                         double tangentPointX = circle.getCx() + (dx / len) * circle.getR();
                         double tangentPointY = circle.getCy() + (dy / len) * circle.getR();
@@ -1577,7 +1578,7 @@ public class DrawingController {
 
             // 计算垂线：过 (worldX, worldY) 点
             Point2D[] perpLine = IntersectionUtils.getPerpendicularLine(x1, y1, x2, y2, worldX, worldY);
-            
+
             // 创建垂线（使用鼠标点和垂线上的另一点）
             InfiniteLineGeo newLine = new InfiniteLineGeo(
                     worldX, worldY,
@@ -1713,7 +1714,7 @@ public class DrawingController {
 
             // 计算平行线
             Point2D[] parallelLine = IntersectionUtils.getParallelLine(x1, y1, x2, y2, worldX, worldY);
-            
+
             // 创建平行线（使用鼠标点和平行线上的另一点）
             InfiniteLineGeo newLine = new InfiniteLineGeo(
                     worldX, worldY,
@@ -1760,23 +1761,23 @@ public class DrawingController {
             if (obj instanceof CircleGeo circle) {
                 // 计算点击位置到圆心的距离
                 double distance = Math.hypot(worldX - circle.getCx(), worldY - circle.getCy());
-                
+
                 // 检查是否靠近圆（允许一定容差）
                 if (Math.abs(distance - circle.getR()) <= tolerance) {
                     // 计算离点击位置最近的圆周上的点（将点击位置投影到圆周上）
                     double dx = worldX - circle.getCx();
                     double dy = worldY - circle.getCy();
                     double len = Math.hypot(dx, dy);
-                    
+
                     // 归一化方向向量并乘以半径，得到圆周上的点
                     double tangentPointX = circle.getCx() + (dx / len) * circle.getR();
                     double tangentPointY = circle.getCy() + (dy / len) * circle.getR();
-                    
+
                     // 计算并绘制切线（过圆周上的切点）
                     Point2D[] tangentLine = IntersectionUtils.getTangentLine(
                             circle.getCx(), circle.getCy(), tangentPointX, tangentPointY
                     );
-                    
+
                     // 创建切线（使用切点和切线上的另一点）
                     InfiniteLineGeo newLine = new InfiniteLineGeo(
                             tangentPointX, tangentPointY,

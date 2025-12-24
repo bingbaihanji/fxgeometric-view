@@ -340,16 +340,16 @@ public class IntersectionUtils {
      * 计算过指定点垂直于给定直线的垂线的两个点（用于绘制无限直线）
      * 返回的两个点在垂线上，距离给定点足够远以绘制无限直线
      *
-     * @param lineX1  原直线的第一个点x坐标
-     * @param lineY1  原直线的第一个点y坐标
-     * @param lineX2  原直线的第二个点x坐标
-     * @param lineY2  原直线的第二个点y坐标
-     * @param pointX  给定点x坐标
-     * @param pointY  给定点y坐标
+     * @param lineX1 原直线的第一个点x坐标
+     * @param lineY1 原直线的第一个点y坐标
+     * @param lineX2 原直线的第二个点x坐标
+     * @param lineY2 原直线的第二个点y坐标
+     * @param pointX 给定点x坐标
+     * @param pointY 给定点y坐标
      * @return 垂线上的两个点 [point1, point2]
      */
     public static Point2D[] getPerpendicularLine(double lineX1, double lineY1, double lineX2, double lineY2,
-                                                  double pointX, double pointY) {
+                                                 double pointX, double pointY) {
         // 计算原直线的方向向量
         double dx = lineX2 - lineX1;
         double dy = lineY2 - lineY1;
@@ -386,7 +386,7 @@ public class IntersectionUtils {
      * @return 垂直平分线上的两个点 [point1, point2]
      */
     public static Point2D[] getPerpendicularBisector(double lineX1, double lineY1, double lineX2, double lineY2,
-                                                      double pointX, double pointY) {
+                                                     double pointX, double pointY) {
         // 计算线段的方向向量
         double dx = lineX2 - lineX1;
         double dy = lineY2 - lineY1;
@@ -413,12 +413,12 @@ public class IntersectionUtils {
     /**
      * 计算过指定点平行于给定直线的平行线的两个点（用于绘制无限直线）
      *
-     * @param lineX1  原直线的第一个点x坐标
-     * @param lineY1  原直线的第一个点y坐标
-     * @param lineX2  原直线的第二个点x坐标
-     * @param lineY2  原直线的第二个点y坐标
-     * @param pointX  给定点x坐标
-     * @param pointY  给定点y坐标
+     * @param lineX1 原直线的第一个点x坐标
+     * @param lineY1 原直线的第一个点y坐标
+     * @param lineX2 原直线的第二个点x坐标
+     * @param lineY2 原直线的第二个点y坐标
+     * @param pointX 给定点x坐标
+     * @param pointY 给定点y坐标
      * @return 平行线上的两个点 [point1, point2]
      */
     public static Point2D[] getParallelLine(double lineX1, double lineY1, double lineX2, double lineY2,

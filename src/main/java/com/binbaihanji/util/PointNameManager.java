@@ -16,29 +16,25 @@ import java.util.Map;
 public class PointNameManager {
 
     /**
+     * 坐标精度阈值（用于判断两个点是否相同）
+     */
+    private static final double EPSILON = 1e-6;
+    /**
      * 单例实例
      */
     private static PointNameManager instance;
-
     /**
      * 点坐标到名称的映射
      */
     private final Map<String, String> pointNameMap = new HashMap<>();
-
     /**
      * 名称到索引的映射（用于跟踪已使用的索引）
      */
     private final Map<String, Integer> nameToIndexMap = new HashMap<>();
-
     /**
      * 下一个可用的命名索引
      */
     private int nextAvailableIndex = 0;
-
-    /**
-     * 坐标精度阈值（用于判断两个点是否相同）
-     */
-    private static final double EPSILON = 1e-6;
 
     private PointNameManager() {
     }

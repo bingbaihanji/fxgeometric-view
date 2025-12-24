@@ -48,7 +48,7 @@ class PointNameManagerTest {
         // 第27个点应该是 A1
         assertEquals("A1", manager.assignName(26, 26));
         assertEquals("B1", manager.assignName(27, 27));
-        
+
         // 第53个点应该是 A2
         for (int i = 28; i < 52; i++) {
             manager.assignName(i, i);
@@ -62,10 +62,10 @@ class PointNameManagerTest {
         manager.assignName(1, 1);
         manager.assignName(2, 2);
         assertEquals(2, manager.getNamedPointCount());
-        
+
         manager.clear();
         assertEquals(0, manager.getNamedPointCount());
-        
+
         // 清除后重新命名应该从A开始
         assertEquals("A", manager.assignName(3, 3));
     }
@@ -91,7 +91,7 @@ class PointNameManagerTest {
         // 测试移除名称
         manager.assignName(1.0, 2.0);
         assertTrue(manager.hasName(1.0, 2.0));
-        
+
         manager.removeName(1.0, 2.0);
         assertFalse(manager.hasName(1.0, 2.0));
     }
@@ -111,18 +111,18 @@ class PointNameManagerTest {
         // 线段AB
         assertEquals("A", manager.assignName(0, 0));
         assertEquals("B", manager.assignName(1, 1));
-        
+
         // 直线CD
         assertEquals("C", manager.assignName(2, 2));
         assertEquals("D", manager.assignName(3, 3));
-        
+
         // 圆E（圆心）
         assertEquals("E", manager.assignName(4, 4));
-        
+
         // 手绘线FG（起点和终点）
         assertEquals("F", manager.assignName(5, 5));
         assertEquals("G", manager.assignName(6, 6));
-        
+
         // 多边形HIJ应该是下一组名称
         assertEquals("H", manager.assignName(7, 7));
         assertEquals("I", manager.assignName(8, 8));
@@ -135,25 +135,25 @@ class PointNameManagerTest {
         // 线段AB
         assertEquals("A", manager.assignName(0, 0));
         assertEquals("B", manager.assignName(1, 1));
-        
+
         // 直线CD
         assertEquals("C", manager.assignName(2, 2));
         assertEquals("D", manager.assignName(3, 3));
-        
+
         // 圆E（圆心）
         assertEquals("E", manager.assignName(4, 4));
-        
+
         // 手绘线FG（起点、多个中间点和终点）
         // 只为起点和终点命名，中间点不应该影响索引
         assertEquals("F", manager.assignName(5, 5));  // 起点
         // 模拟 getEdges() 不会为中间点命名，所以跳过中间点
         assertEquals("G", manager.assignName(6, 6));  // 终点
-        
+
         // 多边形HIJ应该紧接着F和G之后
         assertEquals("H", manager.assignName(7, 7));
         assertEquals("I", manager.assignName(8, 8));
         assertEquals("J", manager.assignName(9, 9));
-        
+
         // 确认总点数
         assertEquals(10, manager.getNamedPointCount());
     }
