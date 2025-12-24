@@ -182,7 +182,7 @@ public class PathGeo implements WorldObject {
         for (int i = 0; i < pathPoints.size() - 1; i++) {
             Point p1 = pathPoints.get(i);
             Point p2 = pathPoints.get(i + 1);
-            edges.add(new LineGeo(p1.x, p1.y, p2.x, p2.y));
+            edges.add(new LineGeo(p1.x, p1.y, p2.x, p2.y, false));  // 不自动命名
         }
         return edges;
     }

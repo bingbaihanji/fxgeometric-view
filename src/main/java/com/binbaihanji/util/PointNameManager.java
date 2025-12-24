@@ -26,9 +26,14 @@ public class PointNameManager {
     private final Map<String, String> pointNameMap = new HashMap<>();
 
     /**
-     * 当前命名索引
+     * 名称到索引的映射（用于跟踪已使用的索引）
      */
-    private int currentIndex = 0;
+    private final Map<String, Integer> nameToIndexMap = new HashMap<>();
+
+    /**
+     * 下一个可用的命名索引
+     */
+    private int nextAvailableIndex = 0;
 
     /**
      * 坐标精度阈值（用于判断两个点是否相同）
@@ -63,10 +68,16 @@ public class PointNameManager {
             return pointNameMap.get(key);
         }
 
+        // 找到下一个未使用的索引
+        while (isIndexUsed(nextAvailableIndex)) {
+            nextAvailableIndex++;
+        }
+
         // 生成新名称
-        String name = generateName(currentIndex);
+        String name = generateName(nextAvailableIndex);
         pointNameMap.put(key, name);
-        currentIndex++;
+        nameToIndexMap.put(name, nextAvailableIndex);
+        nextAvailableIndex++;
 
         return name;
     }
@@ -110,7 +121,10 @@ public class PointNameManager {
      */
     public void removeName(double x, double y) {
         String key = getPointKey(x, y);
-        pointNameMap.remove(key);
+        String name = pointNameMap.remove(key);
+        if (name != null) {
+            nameToIndexMap.remove(name);
+        }
     }
 
     /**
@@ -118,7 +132,8 @@ public class PointNameManager {
      */
     public void clear() {
         pointNameMap.clear();
-        currentIndex = 0;
+        nameToIndexMap.clear();
+        nextAvailableIndex = 0;
     }
 
     /**
@@ -157,5 +172,13 @@ public class PointNameManager {
      */
     public int getNamedPointCount() {
         return pointNameMap.size();
+    }
+
+    /**
+     * 检查索引是否已被使用
+     */
+    private boolean isIndexUsed(int index) {
+        String name = generateName(index);
+        return nameToIndexMap.containsKey(name);
     }
 }

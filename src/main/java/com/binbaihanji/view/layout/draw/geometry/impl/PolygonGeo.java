@@ -182,7 +182,7 @@ public class PolygonGeo implements WorldObject {
         for (int i = 0; i < vertices.size(); i++) {
             Point p1 = vertices.get(i);
             Point p2 = vertices.get((i + 1) % vertices.size());
-            edges.add(new LineGeo(p1.x, p1.y, p2.x, p2.y));
+            edges.add(new LineGeo(p1.x, p1.y, p2.x, p2.y, false));  // 不自动命名
         }
         return edges;
     }

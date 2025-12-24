@@ -22,14 +22,20 @@ public class LineGeo implements WorldObject {
     private String endPointName;   // 终点名称
 
     public LineGeo(double startX, double startY, double endX, double endY) {
+        this(startX, startY, endX, endY, true);
+    }
+
+    public LineGeo(double startX, double startY, double endX, double endY, boolean autoName) {
         this.startX = startX;
         this.startY = startY;
         this.endX = endX;
         this.endY = endY;
-        // 为起点和终点分配名称
-        PointNameManager manager = PointNameManager.getInstance();
-        this.startPointName = manager.assignName(startX, startY);
-        this.endPointName = manager.assignName(endX, endY);
+        // 根据参数决定是否为起点和终点分配名称
+        if (autoName) {
+            PointNameManager manager = PointNameManager.getInstance();
+            this.startPointName = manager.assignName(startX, startY);
+            this.endPointName = manager.assignName(endX, endY);
+        }
     }
 
 
