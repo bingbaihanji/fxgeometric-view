@@ -9,17 +9,22 @@ import com.binbaihanji.view.layout.draw.geometry.impl.AxesPainter;
 import com.binbaihanji.view.layout.draw.geometry.impl.GridPainter;
 import com.binbaihanji.view.layout.draw.tools.CircleDrawingTool;
 import javafx.animation.PauseTransition;
+import javafx.scene.Cursor;
+import javafx.scene.ImageCursor;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Tooltip;
+import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 
 /**
@@ -80,6 +85,7 @@ public class GridChartView extends Pane {
         initMouseObjectHover();
         addPainter(new GridPainter(GridMode.DOT));
         addPainter(new AxesPainter());
+        setCustomCursorForPane(this,"/icon/mouseStyle.png");
     }
 
     /**
@@ -678,4 +684,24 @@ public class GridChartView extends Pane {
     public void setPreviewPainter(BiConsumer<GraphicsContext, WorldTransform> previewPainter) {
         this.previewPainter = previewPainter;
     }
+
+
+    // 设置鼠标样式
+    private void setCustomCursorForPane(Pane pane, String imagePath) {
+        URL url = getClass().getResource(imagePath);
+        if (url == null) {
+            // 资源不存在，降级处理
+            pane.setCursor(Cursor.HAND);
+            return;
+        }
+
+        Image cursorImage = new Image(url.toExternalForm());
+
+        // 左上角作为点击点（hotspot）
+        Cursor customCursor = new ImageCursor(cursorImage, 0, 0);
+
+        pane.setOnMouseEntered(e -> pane.setCursor(customCursor));
+        pane.setOnMouseExited(e -> pane.setCursor(Cursor.DEFAULT));
+    }
+
 }
