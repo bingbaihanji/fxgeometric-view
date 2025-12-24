@@ -24,7 +24,6 @@ import javafx.util.Duration;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.BiConsumer;
 
 /**
@@ -84,8 +83,12 @@ public class GridChartView extends Pane {
         initMouseHoverTooltip(); // 悬浮气泡显示坐标
         initMouseObjectHover();
         addPainter(new GridPainter(GridMode.DOT));
-        addPainter(new AxesPainter());
-        setCustomCursorForPane(this,"/icon/mouseStyle.png");
+        addPainter(new AxesPainter(true));
+        setCustomCursorForPane(this, "/icon/mouseStyle.png");
+    }
+
+    public List<WorldPainter> getPainters() {
+        return painters;
     }
 
     /**

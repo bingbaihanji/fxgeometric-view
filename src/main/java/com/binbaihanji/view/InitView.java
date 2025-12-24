@@ -4,6 +4,8 @@ import com.binbaihanji.controller.DrawingController;
 import com.binbaihanji.util.I18nUtil;
 import com.binbaihanji.view.layout.core.GridChartView;
 import com.binbaihanji.view.layout.pane.ShapeToolPane;
+import com.binbaihanji.view.menu.MenuEvent;
+import com.binbaihanji.view.menu.MenuView;
 import javafx.application.Platform;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
@@ -79,6 +81,12 @@ public class InitView {
 
         // 6. 设置预览绘制回调
         gridChartPane.setPreviewPainter(drawingController::paintPreview);
+
+
+        var menuView = new MenuView();
+
+        MenuEvent menuEvent = new MenuEvent(menuView);
+        root.setTop(menuEvent.getMenuView(stage,gridChartPane));
 
         Scene scene = new Scene(root, 1000, 700);
 

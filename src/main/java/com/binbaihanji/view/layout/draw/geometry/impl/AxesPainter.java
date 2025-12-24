@@ -1,5 +1,6 @@
 package com.binbaihanji.view.layout.draw.geometry.impl;
 
+import com.binbaihanji.util.I18nUtil;
 import com.binbaihanji.view.layout.core.WorldTransform;
 import com.binbaihanji.view.layout.draw.geometry.WorldPainter;
 import javafx.scene.canvas.GraphicsContext;
@@ -16,11 +17,30 @@ public class AxesPainter implements WorldPainter {
     private static final Color BOUNDARY_AXES_COLOR = Color.valueOf("#4287f5"); // 边界坐标轴颜色
     private static final double EDGE_THRESHOLD = 30; // 边缘绘制阈值（像素）
 
+
+    private Boolean showCartesianCoordinateAxis;
+
+    public AxesPainter(Boolean showCartesianCoordinateAxis) {
+        this.showCartesianCoordinateAxis = showCartesianCoordinateAxis;
+    }
+
+    public void setShowCartesianCoordinateAxis(Boolean showCartesianCoordinateAxis) {
+        this.showCartesianCoordinateAxis = showCartesianCoordinateAxis;
+    }
+
+    public Boolean getShowCartesianCoordinateAxis() {
+        return showCartesianCoordinateAxis;
+    }
+
+
     @Override
     public void paint(GraphicsContext gc,
                       WorldTransform transform,
                       double width,
                       double height) {
+        if (showCartesianCoordinateAxis == false) {
+            return;
+        }
         // 计算坐标原点在屏幕上的位置
         double x0 = transform.worldToScreenX(0);
         double y0 = transform.worldToScreenY(0);
@@ -61,7 +81,7 @@ public class AxesPainter implements WorldPainter {
             // 绘制X轴箭头（右侧）
             drawArrow(gc, width - 10, y0, width, y0);
             // 绘制文字(X轴)
-            drawAxisLabel(gc, "X轴", width - 25, y0, width, height, true);
+            drawAxisLabel(gc, getLabelName("axis.xAxis"), width - 25, y0, width, height, true);
         }
 
         // 绘制Y轴（仅在可见范围内绘制）
@@ -71,7 +91,7 @@ public class AxesPainter implements WorldPainter {
             // 绘制Y轴箭头（上方）
             drawArrow(gc, x0, 10, x0, 0);
             // 绘制文字(Y轴)
-            drawAxisLabel(gc, "Y轴", x0, 20, width, height, false);
+            drawAxisLabel(gc, getLabelName("axis.yAxis"), x0, 20, width, height, false);
         }
     }
 
@@ -103,8 +123,8 @@ public class AxesPainter implements WorldPainter {
             // 绘制箭头
             drawArrow(gc, width - 10, boundaryY, width, boundaryY);
             // 绘制文字（带边界指示）
-            drawBoundaryLabel(gc, "X轴", width - 25, boundaryY,
-                    y0 < 0 ? "上边界" : "下边界", width, height, true);
+            drawBoundaryLabel(gc, getLabelName("axis.xAxis"), width - 25, boundaryY,
+                    y0 < 0 ? getLabelName("axis.upperBorder") : getLabelName("axis.lowerBorder"), width, height, true);
         }
 
         // 检查Y轴是否接近边界（但不可见）
@@ -117,8 +137,8 @@ public class AxesPainter implements WorldPainter {
             // 绘制箭头
             drawArrow(gc, boundaryX, 10, boundaryX, 0);
             // 绘制文字（带边界指示）
-            drawBoundaryLabel(gc, "Y轴", boundaryX, 20,
-                    x0 < 0 ? "左边界" : "右边界", width, height, false);
+            drawBoundaryLabel(gc, getLabelName("axis.yAxis"), boundaryX, 20,
+                    x0 < 0 ? getLabelName("axis.leftBorder") : getLabelName("axis.rightBorder"), width, height, false);
         }
 
         // 恢复实线样式
@@ -242,15 +262,15 @@ public class AxesPainter implements WorldPainter {
             double textY = (y < 15) ? y + 15 : y - 8;
             gc.fillText(axisText, x, textY);
 
-            // 绘制边界指示
-            gc.fillText("(" + boundaryText + ")", x, textY + 15);
+            // 指定区域绘制边界指示
+            gc.fillText("(" + boundaryText + ")", x - 20, textY + 25);
         } else {
             // 绘制主标签
-            double textX = (x > width - 25) ? x - 25 : x + 6;
+            double textX = (x > width - 45) ? x - 45 : x + 6;
             gc.fillText(axisText, textX, y);
 
-            // 绘制边界指示
-            gc.fillText("(" + boundaryText + ")", textX, y + 15);
+            // 指定区域绘制边界指示
+            gc.fillText("(" + boundaryText + ")", textX, y + 45);
         }
 
         // 恢复原来的字体大小
@@ -297,4 +317,9 @@ public class AxesPainter implements WorldPainter {
         }
         return String.format("%.2f", v);
     }
+
+    private String getLabelName(String i18nKey) {
+        return I18nUtil.getString(i18nKey);
+    }
+
 }
