@@ -1,6 +1,7 @@
 package com.binbaihanji.view;
 
 import com.binbaihanji.controller.DrawingController;
+import com.binbaihanji.util.FxTools;
 import com.binbaihanji.util.I18nUtil;
 import com.binbaihanji.view.layout.core.GridChartView;
 import com.binbaihanji.view.layout.pane.ShapeToolPane;
@@ -8,6 +9,7 @@ import com.binbaihanji.view.menu.MenuEvent;
 import com.binbaihanji.view.menu.MenuView;
 import javafx.application.Platform;
 import javafx.geometry.Orientation;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.SplitPane;
 import javafx.scene.input.KeyCode;
@@ -26,7 +28,7 @@ import javafx.stage.Stage;
 public class InitView {
     private final Stage stage;
     /**
-     * 绘制控制器（用于快捷键处理）
+     * 绘制控制器
      */
     private DrawingController drawingController;
 
@@ -86,12 +88,12 @@ public class InitView {
         var menuView = new MenuView();
 
         MenuEvent menuEvent = new MenuEvent(menuView);
-        root.setTop(menuEvent.getMenuView(stage,gridChartPane));
+        root.setTop(menuEvent.getMenuView(stage, gridChartPane));
 
         Scene scene = new Scene(root, 1000, 700);
 
         // 7. 添加快捷键支持
-        scene.setOnKeyPressed(this::handleKeyPressed);
+        scene.setOnKeyPressed(event -> handleKeyPressed(event, stage, gridChartPane));
         this.drawingController = drawingController;
 
         stage.setTitle(I18nUtil.getString("application.name"));
@@ -102,7 +104,7 @@ public class InitView {
     /**
      * 处理快捷键事件
      */
-    private void handleKeyPressed(KeyEvent event) {
+    private void handleKeyPressed(KeyEvent event, Stage primaryStage, Node node) {
         if (event.isControlDown()) {
             if (event.getCode() == KeyCode.Z) {
                 // Ctrl+Z: 撤销
@@ -112,6 +114,13 @@ public class InitView {
                 // Ctrl+Y: 恢复
                 drawingController.redo();
                 event.consume();
+            }
+        }
+        // ctrl + shift + p 截图
+        if (event.isControlDown() && event.isShiftDown()) {
+            if (event.getCode() == KeyCode.P) {
+                FxTools.screenshots(primaryStage, node);
+                event.consume(); // 确保消费事件
             }
         }
     }
