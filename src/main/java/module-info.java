@@ -14,9 +14,9 @@ module FXGeometricView {
 //    requires static lombok;
 
     // 导出包给外部模块使用
-    exports com.binbaihanji;
-    exports com.binbaihanji.view;
-    exports com.binbaihanji.util;
-    exports com.binbaihanji.view.layout.draw.geometry;
-    exports com.binbaihanji.view.layout.draw.tools;
+    exports com.bingbaihanji;
+    exports com.bingbaihanji.view;
+    exports com.bingbaihanji.util;
+    exports com.bingbaihanji.view.layout.draw.geometry;
+    exports com.bingbaihanji.view.layout.draw.tools;
 }

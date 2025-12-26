@@ -89,13 +89,6 @@
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
-<!--                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>1.18.36</version>
-                        </path>
-                    </annotationProcessorPaths>-->
                 </configuration>
             </plugin>
 
@@ -105,7 +98,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>com.binbaihanji.FXGeometricApplication</mainClass>
+                    <mainClass>com.bingbaihanji.FXGeometricApplication</mainClass>
                 </configuration>
             </plugin>
 
@@ -119,27 +112,27 @@
 
 
             <!-- Maven Shade Plugin -->
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-shade-plugin</artifactId>-->
-<!--                <version>3.4.1</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <phase>package</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>shade</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <transformers>-->
-<!--                                &lt;!&ndash; 指定 Main-Class &ndash;&gt;-->
-<!--                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">-->
-<!--                                    <mainClass>com.bingbaihanji.StartMain</mainClass>-->
-<!--                                </transformer>-->
-<!--                            </transformers>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.4.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <!-- 指定 Main-Class -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.bingbaihanji.FXGeometricApplication</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>
