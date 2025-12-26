@@ -9,16 +9,15 @@ import com.binbaihanji.view.layout.draw.geometry.WorldObject;
 import com.binbaihanji.view.layout.draw.geometry.impl.*;
 import com.binbaihanji.view.layout.draw.tools.CircleDrawingTool;
 import com.binbaihanji.view.layout.draw.tools.FreehandDrawingTool;
+import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.paint.Color;
-
-import javafx.geometry.Insets;
-import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import javafx.util.Pair;
@@ -1043,10 +1042,10 @@ public class DrawingController {
                 // 高亮鼠标悬停的图形
                 double scale = transform.getScale();
                 double tolerance = 10.0 / scale;
-                
+
                 for (WorldObject obj : gridChartPane.getObjects()) {
                     if (obj instanceof PointGeo) continue;
-                    
+
                     if (obj.hitTest(currentMouseX, currentMouseY, tolerance)) {
                         obj.setHover(true);
                         obj.paint(gc, transform, gridChartPane.getWidth(), gridChartPane.getHeight());
@@ -1059,18 +1058,18 @@ public class DrawingController {
                 selectedRotateShape.setHover(true);
                 selectedRotateShape.paint(gc, transform, gridChartPane.getWidth(), gridChartPane.getHeight());
                 selectedRotateShape.setHover(false);
-                
+
                 // 显示当前鼠标位置作为旋转中心点预览
                 double mouseScreenX = transform.worldToScreenX(currentMouseX);
                 double mouseScreenY = transform.worldToScreenY(currentMouseY);
-                
+
                 // 绘制旋转中心点预览（十字准星）
                 gc.setStroke(Color.MAGENTA);
                 gc.setLineWidth(2);
                 double crossSize = 8;
                 gc.strokeLine(mouseScreenX - crossSize, mouseScreenY, mouseScreenX + crossSize, mouseScreenY);
                 gc.strokeLine(mouseScreenX, mouseScreenY - crossSize, mouseScreenX, mouseScreenY + crossSize);
-                
+
                 // 绘制旋转中心圆圈
                 gc.strokeOval(mouseScreenX - 6, mouseScreenY - 6, 12, 12);
             }
@@ -1096,7 +1095,6 @@ public class DrawingController {
                 for (WorldObject obj : objectsToClear) {
                     gridChartPane.addObject(obj);
                 }
-                // TODO: 恢复点名称映射（需要实现命名管理器的快照功能）
             }
         });
     }
@@ -1887,7 +1885,7 @@ public class DrawingController {
             for (WorldObject obj : gridChartPane.getObjects()) {
                 // 排除点对象（点旋转没有意义）
                 if (obj instanceof PointGeo) continue;
-                
+
                 if (obj.hitTest(worldX, worldY, tolerance)) {
                     selectedRotateShape = obj;
                     state = DrawingState.ROTATE_SELECT_CENTER;
@@ -1899,23 +1897,23 @@ public class DrawingController {
             // 第二次点击：选择旋转中心点，弹出对话框
             final double rotateCenterX = worldX;
             final double rotateCenterY = worldY;
-            
+
             // 创建旋转参数对话框
             Optional<Pair<Double, Boolean>> result = showRotateDialog();
-            
+
             if (result.isPresent()) {
                 double angleDegrees = result.get().getKey();
                 boolean clockwise = result.get().getValue();
-                
+
                 // 将角度转换为弧度，并根据方向调整
                 double angleRadians = Math.toRadians(angleDegrees);
                 if (clockwise) {
                     angleRadians = -angleRadians; // 顺时针方向为负角度
                 }
-                
+
                 final double finalAngle = angleRadians;
                 final WorldObject shapeToRotate = selectedRotateShape;
-                
+
                 // 使用命令历史执行旋转，支持撤销/恢复
                 commandHistory.execute(new CommandHistory.Command() {
                     @Override
@@ -1929,11 +1927,11 @@ public class DrawingController {
                         shapeToRotate.rotateAroundPoint(rotateCenterX, rotateCenterY, -finalAngle);
                     }
                 });
-                
+
                 // 重新计算交点
                 recalculateAllIntersections();
             }
-            
+
             // 重置状态
             selectedRotateShape = null;
             state = DrawingState.ROTATE_SELECT_SHAPE;
@@ -1943,6 +1941,7 @@ public class DrawingController {
 
     /**
      * 显示旋转参数对话框
+     *
      * @return 旋转角度和方向（true为顺时针，false为逆时针）
      */
     private Optional<Pair<Double, Boolean>> showRotateDialog() {
@@ -1955,7 +1954,7 @@ public class DrawingController {
             if (newValue) { // 对话框正在显示
                 Window window = dialog.getDialogPane().getScene().getWindow();
                 if (window instanceof Stage stage) {
-                     stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResource("/icon/rotating.png")).toExternalForm()));
+                    stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResource("/icon/rotating.png")).toExternalForm()));
                 }
             }
         });
@@ -1963,18 +1962,18 @@ public class DrawingController {
         // 设置按钮
         ButtonType confirmButtonType = new ButtonType(I18nUtil.getString("rotating.windows.okButton"), ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(confirmButtonType, ButtonType.CANCEL);
-        
+
         // 创建表单
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 150, 10, 10));
-        
+
         // 角度输入框
         TextField angleField = new TextField();
         angleField.setPromptText(I18nUtil.getString("rotating.windows.angle"));
         angleField.setText("90");
-        
+
         // 方向选择
         ToggleGroup directionGroup = new ToggleGroup();
         RadioButton clockwiseBtn = new RadioButton(I18nUtil.getString("rotating.windows.clockwise"));
@@ -1982,15 +1981,15 @@ public class DrawingController {
         clockwiseBtn.setSelected(true);
         RadioButton counterclockwiseBtn = new RadioButton(I18nUtil.getString("rotating.windows.counterclockwise"));
         counterclockwiseBtn.setToggleGroup(directionGroup);
-        
+
         grid.add(new Label(I18nUtil.getString("rotating.windows.rotationAngle")), 0, 0);
         grid.add(angleField, 1, 0);
         grid.add(new Label(I18nUtil.getString("rotating.windows.rotationDirection")), 0, 1);
         grid.add(clockwiseBtn, 1, 1);
         grid.add(counterclockwiseBtn, 2, 1);
-        
+
         dialog.getDialogPane().setContent(grid);
-        
+
         // 设置结果转换器
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == confirmButtonType) {
@@ -2004,7 +2003,7 @@ public class DrawingController {
             }
             return null;
         });
-        
+
         return dialog.showAndWait();
     }
 

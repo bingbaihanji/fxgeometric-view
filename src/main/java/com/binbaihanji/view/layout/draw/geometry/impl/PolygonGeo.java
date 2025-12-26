@@ -205,7 +205,7 @@ public class PolygonGeo implements WorldObject {
     public void rotateAroundPoint(double centerX, double centerY, double angle) {
         double cos = Math.cos(angle);
         double sin = Math.sin(angle);
-        
+
         // 旋转所有顶点
         for (Point vertex : vertices) {
             double dx = vertex.x - centerX;

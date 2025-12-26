@@ -3,7 +3,6 @@ package com.binbaihanji.util;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
-import javafx.scene.SubScene;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
@@ -15,10 +14,8 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 
 public interface FxTools {
 
@@ -41,7 +38,7 @@ public interface FxTools {
         BufferedImage png = SwingFXUtils.fromFXImage(image, null);
         FileChooser fileChooser = new FileChooser();
         // 设置默认文件名：当前日期时间
-        LocalDateTime  now  = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH.mm.ss.SSS");
         fileChooser.setInitialFileName(formatter.format(now));
 

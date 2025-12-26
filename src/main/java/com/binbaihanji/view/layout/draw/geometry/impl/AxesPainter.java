@@ -24,14 +24,13 @@ public class AxesPainter implements WorldPainter {
         this.showCartesianCoordinateAxis = showCartesianCoordinateAxis;
     }
 
-    public void setShowCartesianCoordinateAxis(Boolean showCartesianCoordinateAxis) {
-        this.showCartesianCoordinateAxis = showCartesianCoordinateAxis;
-    }
-
     public Boolean getShowCartesianCoordinateAxis() {
         return showCartesianCoordinateAxis;
     }
 
+    public void setShowCartesianCoordinateAxis(Boolean showCartesianCoordinateAxis) {
+        this.showCartesianCoordinateAxis = showCartesianCoordinateAxis;
+    }
 
     @Override
     public void paint(GraphicsContext gc,
