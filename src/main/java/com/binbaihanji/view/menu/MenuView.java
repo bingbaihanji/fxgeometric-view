@@ -18,6 +18,8 @@ public class MenuView extends MenuBar {
     private RadioMenuItem showAxis; // 显示坐标轴
     private RadioMenuItem hideAxis; // 隐藏坐标轴
 
+    private MenuItem systemSettingsItem; // 系统设置菜单项
+
     public MenuView() {
         initializeMenus();
     }
@@ -77,9 +79,18 @@ public class MenuView extends MenuBar {
         viewMenu.getItems().addAll(gridModeMenu, axisMenu);
 
 
-        // 3. 将所有菜单添加到菜单栏
-        menus.addAll(toolMenu, viewMenu);
-        this.getMenus().addAll(toolMenu, viewMenu);
+        // 3. 创建"设置"菜单
+        Menu settingsMenu = new Menu(getMenuName("menu.settings"));
+
+        // 创建"系统设置"菜单项
+        systemSettingsItem = new MenuItem(getMenuName("menu.settings.systemSettings"));
+
+
+        settingsMenu.getItems().add(systemSettingsItem);
+
+        // 4. 将所有菜单添加到菜单栏
+        menus.addAll(toolMenu, viewMenu, settingsMenu);
+        this.getMenus().addAll(toolMenu, viewMenu, settingsMenu);
     }
 
 
@@ -113,6 +124,10 @@ public class MenuView extends MenuBar {
     public RadioMenuItem getHideAxis() {
         return hideAxis;
     }
+
+    public MenuItem getSystemSettingsItem() {
+        return systemSettingsItem;
+    }
     // 添加事件监听器的方法
 
     public void setOnScreenshotAction(Runnable action) {
@@ -133,5 +148,9 @@ public class MenuView extends MenuBar {
 
     public void setOnHideAxisSelected(Runnable action) {
         hideAxis.setOnAction(e -> action.run());
+    }
+
+    public void setOnSystemSettingsAction(Runnable action) {
+        systemSettingsItem.setOnAction(e -> action.run());
     }
 }

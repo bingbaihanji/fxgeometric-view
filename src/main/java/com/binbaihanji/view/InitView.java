@@ -96,6 +96,21 @@ public class InitView {
         scene.setOnKeyPressed(event -> handleKeyPressed(event, stage, gridChartPane));
         this.drawingController = drawingController;
 
+        // 8. 添加语言变化监听器，切换语言后重新加载界面
+        I18nUtil.addLocaleChangeListener(() -> {
+            Platform.runLater(() -> {
+                // 重新初始化界面
+                Stage newStage = init();
+                // 保持窗口尺寸和位置
+                newStage.setX(stage.getX());
+                newStage.setY(stage.getY());
+                newStage.setWidth(stage.getWidth());
+                newStage.setHeight(stage.getHeight());
+                stage.setScene(newStage.getScene());
+                stage.setTitle(I18nUtil.getString("application.name"));
+            });
+        });
+
         stage.setTitle(I18nUtil.getString("application.name"));
         stage.setScene(scene);
         return stage;

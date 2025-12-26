@@ -1,5 +1,7 @@
 package com.binbaihanji.util;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -10,6 +12,8 @@ import java.util.ResourceBundle;
  */
 public class I18nUtil {
     private static final String BASE_NAME = "language.language";
+    // 语言变化监听器列表
+    private static final List<Runnable> localeChangeListeners = new ArrayList<>();
     private static ResourceBundle resourceBundle;
     private static Locale currentLocale;
 
@@ -47,6 +51,8 @@ public class I18nUtil {
     public static void switchLocale(Locale locale) {
         currentLocale = locale;
         resourceBundle = ResourceBundle.getBundle(BASE_NAME, locale);
+        // 通知所有监听器
+        notifyLocaleChange();
     }
 
     /**
@@ -56,6 +62,39 @@ public class I18nUtil {
      */
     public static Locale getCurrentLocale() {
         return currentLocale;
+    }
+
+    /**
+     * 添加语言变化监听器
+     *
+     * @param listener 监听器回调
+     */
+    public static void addLocaleChangeListener(Runnable listener) {
+        if (listener != null && !localeChangeListeners.contains(listener)) {
+            localeChangeListeners.add(listener);
+        }
+    }
+
+    /**
+     * 移除语言变化监听器
+     *
+     * @param listener 监听器回调
+     */
+    public static void removeLocaleChangeListener(Runnable listener) {
+        localeChangeListeners.remove(listener);
+    }
+
+    /**
+     * 通知所有监听器语言已变化
+     */
+    private static void notifyLocaleChange() {
+        for (Runnable listener : localeChangeListeners) {
+            try {
+                listener.run();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 

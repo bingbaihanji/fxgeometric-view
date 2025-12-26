@@ -90,6 +90,16 @@ public class MenuEvent {
                 });
             }
         });
+
+        // 系统设置菜单
+        menuView.setOnSystemSettingsAction(() -> {
+            System.out.println("打开系统设置");
+            Platform.runLater(() -> {
+                SystemSettingsDialog dialog = new SystemSettingsDialog();
+                dialog.showAndWait();
+            });
+        });
+
         return menuView;
     }
 
