@@ -3,17 +3,20 @@ package com.bingbaihanji.controller;
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.util.*;
 import com.bingbaihanji.util.SpecialPointManager.SpecialPoint;
+import com.bingbaihanji.util.constraint.*;
 import com.bingbaihanji.view.layout.core.GridChartView;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import com.bingbaihanji.view.layout.draw.geometry.impl.*;
 import com.bingbaihanji.view.layout.draw.tools.CircleDrawingTool;
 import com.bingbaihanji.view.layout.draw.tools.FreehandDrawingTool;
+import com.bingbaihanji.view.menu.GeometryContextMenu;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
@@ -97,6 +100,11 @@ public class DrawingController {
      */
     private double firstPointX;
     private double firstPointY;
+
+    /**
+     * 第一次点击时的现有特殊点（用于圆心吸附）
+     */
+    private SpecialPoint firstClickExistingPoint = null;
     /**
      * 预览半径
      */
@@ -127,6 +135,7 @@ public class DrawingController {
         gridChartPane.setOnMousePressed(this::handleMousePressed);
         gridChartPane.setOnMouseDragged(this::handleMouseDragged);
         gridChartPane.setOnMouseReleased(this::handleMouseReleased);
+        gridChartPane.setOnContextMenuRequested(this::handleContextMenu);
     }
 
     /**
@@ -213,8 +222,42 @@ public class DrawingController {
         }
 
         if (drawMode == DrawMode.POINT) {
-            // 点模式：直接绘制
-            PointGeo newPoint = new PointGeo(worldX, worldY);
+            // 点模式：检测是否靠近图形（吸附）
+            double scale = gridChartPane.getTransform().getScale();
+            double snapDistance = 15.0 / scale; // 吸附距离阈值
+
+            // 查找最近的可约束图形
+            WorldObject nearestShape = null;
+            double minDistance = snapDistance;
+
+            for (WorldObject obj : gridChartPane.getObjects()) {
+                if (obj instanceof LineGeo || obj instanceof InfiniteLineGeo || obj instanceof CircleGeo || obj instanceof PolygonGeo || obj instanceof PathGeo) {
+                    // 创建临时约束来计算距离
+                    PointConstraint tempConstraint = createConstraint(obj);
+                    double distance = tempConstraint.distanceToShape(worldX, worldY);
+
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        nearestShape = obj;
+                    }
+                }
+            }
+
+            PointGeo newPoint;
+            if (nearestShape != null) {
+                // 创建约束点
+                PointConstraint constraint = createConstraint(nearestShape);
+                double parameter = constraint.calculateParameter(worldX, worldY);
+                constraint.setParameter(parameter);
+
+                Point2D constrainedPos = constraint.getPointFromParameter();
+                newPoint = new PointGeo(constrainedPos.getX(), constrainedPos.getY());
+                newPoint.setConstraint(constraint);
+            } else {
+                // 创建普通点
+                newPoint = new PointGeo(worldX, worldY);
+            }
+
             commandHistory.execute(new CommandHistory.Command() {
                 @Override
                 public void execute() {
@@ -227,9 +270,7 @@ public class DrawingController {
                 }
             });
             state = DrawingState.IDLE;
-            // 消费点绘制事件
             e.consume();
-            // 检查新点与其他图形的交点（点通常不产生新交点）
         } else if (drawMode == DrawMode.POLYGON) {
             // 多边形模式：依次选择顶点
             handlePolygonClick(worldX, worldY);
@@ -239,6 +280,11 @@ public class DrawingController {
             firstPointX = worldX;
             firstPointY = worldY;
             state = DrawingState.FIRST_CLICK;
+
+            // 检查第一次点击是否靠近现有特殊点（用于圆心吸附）
+            // 注意：这里使用rawX, rawY而不是worldX, worldY，因为worldX可能已经被上面的吸附逻辑修改过了
+            // 我们需要检查是否真的靠近现有点
+            firstClickExistingPoint = findNearestSpecialPoint(rawX, rawY);
 
             // 对于圆形绘制，初始化预览参数
             if (drawMode == DrawMode.CIRCLE) {
@@ -255,14 +301,20 @@ public class DrawingController {
                             Math.pow(worldX - firstPointX, 2) + Math.pow(worldY - firstPointY, 2)
                     );
                     CircleGeo newCircle = new CircleGeo(firstPointX, firstPointY, radius);
-                    // 创建圆心点，使其拥有名称（如A1, B1等）
-                    PointGeo centerPoint = new PointGeo(firstPointX, firstPointY);
+
+                    // 如果第一次点击时没有靠近现有点，才创建新的圆心点
+                    PointGeo centerPoint = (firstClickExistingPoint == null) ?
+                            new PointGeo(firstPointX, firstPointY) : null;
+
                     // 计算此圆产生的所有交点
                     List<PointGeo> intersectionPoints = checkIntersections(newCircle);
                     commandHistory.execute(new CommandHistory.Command() {
                         @Override
                         public void execute() {
-                            gridChartPane.addObject(centerPoint);
+                            // 只在圆心点不为null时才添加
+                            if (centerPoint != null) {
+                                gridChartPane.addObject(centerPoint);
+                            }
                             gridChartPane.addObject(newCircle);
                             // 添加交点
                             for (PointGeo point : intersectionPoints) {
@@ -273,7 +325,9 @@ public class DrawingController {
                         @Override
                         public void undo() {
                             gridChartPane.removeObject(newCircle);
-                            gridChartPane.removeObject(centerPoint);
+                            if (centerPoint != null) {
+                                gridChartPane.removeObject(centerPoint);
+                            }
                             // 移除交点
                             for (PointGeo point : intersectionPoints) {
                                 gridChartPane.removeObject(point);
@@ -282,6 +336,8 @@ public class DrawingController {
                     });
                     // 重置CircleDrawingTool状态
                     circleTool.reset();
+                    // 重置第一次点击的现有点标记
+                    firstClickExistingPoint = null;
                 }
                 case LINE -> {
                     // 只创建线段对象，不创建独立的端点
@@ -423,6 +479,42 @@ public class DrawingController {
         currentMouseX = rawX;
         currentMouseY = rawY;
 
+        // 在POINT模式下，检测是否靠近图形，改变鼠标样式
+        if (drawMode == DrawMode.POINT) {
+            double scale = gridChartPane.getTransform().getScale();
+            double snapDistance = 15.0 / scale;
+
+            boolean nearShape = false;
+            for (WorldObject obj : gridChartPane.getObjects()) {
+                if (obj instanceof LineGeo || obj instanceof InfiniteLineGeo || obj instanceof CircleGeo || obj instanceof PolygonGeo || obj instanceof PathGeo) {
+                    PointConstraint tempConstraint = createConstraint(obj);
+                    double distance = tempConstraint.distanceToShape(rawX, rawY);
+                    if (distance < snapDistance) {
+                        nearShape = true;
+                        break;
+                    }
+                }
+            }
+
+            // 设置鼠标样式
+            if (nearShape) {
+                gridChartPane.setCursor(javafx.scene.Cursor.HAND);
+            } else {
+                gridChartPane.setCursor(gridChartPane.getDefaultCursor());
+            }
+        } else if (drawMode == DrawMode.CIRCLE && state == DrawingState.IDLE) {
+            // 在圆形模式下，空闲状态检测是否靠近特殊点
+            SpecialPoint nearestPoint = findNearestSpecialPoint(rawX, rawY);
+            if (nearestPoint != null) {
+                gridChartPane.setCursor(javafx.scene.Cursor.HAND);
+            } else {
+                gridChartPane.setCursor(gridChartPane.getDefaultCursor());
+            }
+        } else {
+            // 其他模式下恢复默认样式
+            gridChartPane.setCursor(gridChartPane.getDefaultCursor());
+        }
+
         if (state == DrawingState.FIRST_CLICK) {
             // 应用特殊点磁性吸附
             double worldX = rawX;
@@ -554,6 +646,9 @@ public class DrawingController {
             // 更新控制点位置
             draggingPoint.updatePosition(newX, newY);
 
+            // 实时更新所有约束点（关键！）
+            updateAllConstrainedPoints();
+
             // 实时记录当前拖动位置（用于撤销/恢复）
             dragEndX = newX;
             dragEndY = newY;
@@ -647,6 +742,7 @@ public class DrawingController {
                     public void execute() {
                         // 恢复操作：移动到结束位置
                         pointRef.updatePosition(endX, endY);
+                        updateAllConstrainedPoints();  // 更新约束点
                         recalculateAllIntersections();
                     }
 
@@ -654,6 +750,7 @@ public class DrawingController {
                     public void undo() {
                         // 撤销操作：移动回起始位置
                         pointRef.updatePosition(startX, startY);
+                        updateAllConstrainedPoints();  // 更新约束点
                         recalculateAllIntersections();
                     }
                 });
@@ -1412,6 +1509,23 @@ public class DrawingController {
     }
 
     /**
+     * 更新所有约束点的位置
+     * <p>
+     * 当图形的控制点被拖动后，约束点需要根据参数重新计算位置
+     */
+    private void updateAllConstrainedPoints() {
+        for (WorldObject obj : gridChartPane.getObjects()) {
+            if (obj instanceof PointGeo point) {
+                if (point.isConstrained()) {
+                    // 根据约束参数重新计算位置
+                    Point2D newPos = point.getConstraint().getPointFromParameter();
+                    point.updatePosition(newPos.getX(), newPos.getY());
+                }
+            }
+        }
+    }
+
+    /**
      * 判断点是否为交点（通过颜色判断）
      */
     private boolean isIntersectionPoint(PointGeo point) {
@@ -1937,6 +2051,60 @@ public class DrawingController {
             state = DrawingState.ROTATE_SELECT_SHAPE;
             gridChartPane.redraw();
         }
+    }
+
+    /**
+     * 创建约束对象的工厂方法
+     */
+    private PointConstraint createConstraint(WorldObject shape) {
+        if (shape instanceof LineGeo line) {
+            return new LineConstraint(line);
+        } else if (shape instanceof InfiniteLineGeo infiniteLine) {
+            return new InfiniteLineConstraint(infiniteLine);
+        } else if (shape instanceof CircleGeo circle) {
+            return new CircleConstraint(circle);
+        } else if (shape instanceof PolygonGeo polygon) {
+            return new PolygonConstraint(polygon);
+        } else if (shape instanceof PathGeo path) {
+            return new PathConstraint(path);
+        }
+        throw new IllegalArgumentException("不支持的图形类型: " + shape.getClass().getName());
+    }
+
+    /**
+     * 处理右键菜单事件
+     */
+    private void handleContextMenu(ContextMenuEvent event) {
+        double worldX = gridChartPane.screenToWorldX(event.getX());
+        double worldY = gridChartPane.screenToWorldY(event.getY());
+        double scale = gridChartPane.getTransform().getScale();
+        double tolerance = 10.0 / scale;
+
+        // 查找点击的对象（从后往前，优先选择最新添加的对象）
+        WorldObject clickedObject = null;
+        List<WorldObject> objects = gridChartPane.getObjects();
+        for (int i = objects.size() - 1; i >= 0; i--) {
+            WorldObject obj = objects.get(i);
+            if (obj.hitTest(worldX, worldY, tolerance)) {
+                clickedObject = obj;
+                break;
+            }
+        }
+
+        ContextMenu menu;
+        if (clickedObject instanceof PointGeo point) {
+            // 点的右键菜单
+            menu = GeometryContextMenu.createPointMenu(point, gridChartPane, this);
+        } else if (clickedObject != null) {
+            // 其他图形的右键菜单
+            menu = GeometryContextMenu.createShapeMenu(clickedObject, gridChartPane, this);
+        } else {
+            // 画布的右键菜单
+            menu = GeometryContextMenu.createCanvasMenu(gridChartPane, this);
+        }
+
+        menu.show(gridChartPane, event.getScreenX(), event.getScreenY());
+        event.consume();
     }
 
     /**

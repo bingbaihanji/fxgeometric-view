@@ -1,6 +1,7 @@
 package com.bingbaihanji.view.layout.draw.geometry.impl;
 
 import com.bingbaihanji.util.PointNameManager;
+import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.scene.canvas.GraphicsContext;
@@ -86,12 +87,12 @@ public class PolygonGeo implements WorldObject {
         }
 
         // 绘制多边形
-        gc.setStroke(hover ? Color.ORANGE : Color.DODGERBLUE);
+        gc.setStroke(hover ? StyleManager.GEOMETRY_HOVER : StyleManager.GEOMETRY_LINE);
         gc.setLineWidth(hover ? 3 : 2);
         gc.strokePolygon(xPoints, yPoints, vertices.size());
 
         // 绘制顶点
-        gc.setFill(hover ? Color.ORANGE : Color.RED);
+        gc.setFill(hover ? StyleManager.GEOMETRY_HOVER : StyleManager.GEOMETRY_DEFAULT);
         double pointRadius = 3;
         for (int i = 0; i < vertices.size(); i++) {
             gc.fillOval(xPoints[i] - pointRadius, yPoints[i] - pointRadius,

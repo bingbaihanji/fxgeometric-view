@@ -1,9 +1,9 @@
 package com.bingbaihanji.view.layout.draw.geometry.impl;
 
+import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 
 import java.util.List;
 
@@ -44,8 +44,8 @@ public class CircleGeo implements WorldObject {
         double sy = transform.worldToScreenY(cy);
         double sr = r * transform.getScale();
 
-        gc.setStroke(hover ? Color.ORANGE
-                : Color.DODGERBLUE);
+        gc.setStroke(hover ? StyleManager.GEOMETRY_HOVER
+                : StyleManager.GEOMETRY_LINE);
         gc.setLineWidth(2);
 
         gc.strokeOval(
@@ -57,7 +57,7 @@ public class CircleGeo implements WorldObject {
 
         // 根据项目规范要求，绘制圆形时显示圆心点
         // 绘制圆心点以便提供明确的几何定位反馈
-        gc.setFill(hover ? Color.ORANGE : Color.RED);
+        gc.setFill(hover ? StyleManager.GEOMETRY_HOVER : StyleManager.GEOMETRY_DEFAULT);
         double pointRadius = hover ? 4 : 3;
         gc.fillOval(sx - pointRadius, sy - pointRadius, pointRadius * 2, pointRadius * 2);
 

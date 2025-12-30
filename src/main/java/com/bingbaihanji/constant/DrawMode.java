@@ -43,6 +43,11 @@ public enum DrawMode {
     FREEHAND,
 
     /**
+     * 约束点（点击几何图形创建约束点，点只能沿图形移动）
+     */
+    CONSTRAINED_POINT,
+
+    /**
      * 中点（点击线段绘制中点）
      */
     MIDPOINT,

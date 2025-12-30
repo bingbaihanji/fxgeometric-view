@@ -1,10 +1,10 @@
 package com.bingbaihanji.view.layout.draw.geometry.impl;
 
 import com.bingbaihanji.constant.GridMode;
+import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.WorldPainter;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 
 /**
  * 世界网格绘制器
@@ -40,7 +40,7 @@ public class GridPainter implements WorldPainter {
 
         if (gridMode == GridMode.DOT) {
 
-            gc.setFill(Color.rgb(126, 126, 126));
+            gc.setFill(StyleManager.GRID_DOT_COLOR);
 
             double startX = Math.floor(worldLeft / step) * step;
             double startY = Math.floor(worldBottom / step) * step;
@@ -58,7 +58,7 @@ public class GridPainter implements WorldPainter {
 
         if (gridMode == GridMode.LINE) {
 
-            gc.setStroke(Color.rgb(153, 153, 153));
+            gc.setStroke(StyleManager.GRID_LINE_COLOR);
             gc.setLineWidth(1);
 
             double startX = Math.floor(worldLeft / step) * step;

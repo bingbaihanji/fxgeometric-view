@@ -1,10 +1,10 @@
 package com.bingbaihanji.view.layout.draw.geometry.impl;
 
 import com.bingbaihanji.util.I18nUtil;
+import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.WorldPainter;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
 /**
@@ -12,9 +12,6 @@ import javafx.scene.text.Font;
  */
 public class AxesPainter implements WorldPainter {
 
-    // 颜色常量
-    private static final Color AXES_COLOR = Color.valueOf("#f7a707"); // 主坐标轴颜色
-    private static final Color BOUNDARY_AXES_COLOR = Color.valueOf("#4287f5"); // 边界坐标轴颜色
     private static final double EDGE_THRESHOLD = 30; // 边缘绘制阈值（像素）
 
 
@@ -69,8 +66,8 @@ public class AxesPainter implements WorldPainter {
                               boolean xAxisVisible, boolean yAxisVisible) {
 
         // 设置坐标轴样式（橙色）
-        gc.setStroke(AXES_COLOR);
-        gc.setFill(AXES_COLOR);
+        gc.setStroke(StyleManager.AXES_COLOR);
+        gc.setFill(StyleManager.AXES_COLOR);
         gc.setLineWidth(1.8);
 
         // 绘制X轴（仅在可见范围内绘制）
@@ -105,8 +102,8 @@ public class AxesPainter implements WorldPainter {
                                   boolean xAxisVisible, boolean yAxisVisible) {
 
         // 设置边界坐标轴样式（蓝色）
-        gc.setStroke(BOUNDARY_AXES_COLOR);
-        gc.setFill(BOUNDARY_AXES_COLOR);
+        gc.setStroke(StyleManager.BOUNDARY_AXES_COLOR);
+        gc.setFill(StyleManager.BOUNDARY_AXES_COLOR);
         gc.setLineWidth(1.5);
 
         // 绘制虚线样式
@@ -183,8 +180,8 @@ public class AxesPainter implements WorldPainter {
         double worldBottom = transform.screenToWorldY(height);
 
         // 设置刻度线和文字的样式（使用主坐标轴颜色）
-        gc.setStroke(AXES_COLOR);
-        gc.setFill(AXES_COLOR);
+        gc.setStroke(StyleManager.AXES_COLOR);
+        gc.setFill(StyleManager.AXES_COLOR);
         gc.setLineWidth(2);
         gc.setFont(Font.font(15));
 

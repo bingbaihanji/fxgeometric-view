@@ -1,8 +1,11 @@
 package com.bingbaihanji.view.layout.draw.geometry.impl;
 
 import com.bingbaihanji.util.PointNameManager;
+import com.bingbaihanji.util.StyleManager;
+import com.bingbaihanji.util.constraint.PointConstraint;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
+import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -16,8 +19,9 @@ public class PointGeo implements WorldObject {
     private double y;
 
     private boolean hover = false;
-    private Color color = Color.RED; // 默认颜色为红色
+    private Color color = StyleManager.GEOMETRY_DEFAULT; // 默认颜色
     private String name; // 点的名称
+    private PointConstraint constraint = null; // 点的约束（可选）
 
     public PointGeo(double x, double y) {
         this.x = x;
@@ -64,13 +68,38 @@ public class PointGeo implements WorldObject {
         this.name = name;
     }
 
+    // 获取点的约束
+    public PointConstraint getConstraint() {
+        return constraint;
+    }
+
+    // 设置点的约束
+    public void setConstraint(PointConstraint constraint) {
+        this.constraint = constraint;
+    }
+
+    // 判断点是否被约束
+    public boolean isConstrained() {
+        return constraint != null;
+    }
+
+    // 更新点的位置（用于创建约束点后设置投影位置）
+    public void updatePosition(double newX, double newY) {
+        this.x = newX;
+        this.y = newY;
+    }
+
     @Override
     public void paint(GraphicsContext gc, WorldTransform t, double w, double h) {
 
         double sx = t.worldToScreenX(x);
         double sy = t.worldToScreenY(y);
 
-        gc.setFill(hover ? Color.ORANGE : color);
+        // 约束点使用深蓝色，普通点使用原颜色
+        Color displayColor = hover ? StyleManager.GEOMETRY_HOVER :
+                (isConstrained() ? StyleManager.GEOMETRY_CONSTRAINED : color);
+
+        gc.setFill(displayColor);
 
         double r = hover ? 6 : 4;
         gc.fillOval(sx - r, sy - r, r * 2, r * 2);
@@ -105,8 +134,18 @@ public class PointGeo implements WorldObject {
         // 点本身可拖动
         return List.of(
                 new DraggablePoint(x, y, (newX, newY) -> {
-                    x = newX;
-                    y = newY;
+                    if (constraint != null) {
+                        // 如果有约束，计算新参数并根据参数更新位置
+                        double newParameter = constraint.calculateParameter(newX, newY);
+                        constraint.setParameter(newParameter);
+                        Point2D newPos = constraint.getPointFromParameter();
+                        x = newPos.getX();
+                        y = newPos.getY();
+                    } else {
+                        // 无约束，直接移动
+                        x = newX;
+                        y = newY;
+                    }
                 })
         );
     }

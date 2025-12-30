@@ -1,6 +1,7 @@
 package com.bingbaihanji.view.layout.draw.geometry.impl;
 
 import com.bingbaihanji.util.PointNameManager;
+import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.geometry.Point2D;
@@ -59,7 +60,7 @@ public class PathGeo implements WorldObject {
         if (pathPoints.size() < 2) return;
 
         // 绘制曲线路径
-        gc.setStroke(hover ? Color.ORANGE : Color.DODGERBLUE);
+        gc.setStroke(hover ? StyleManager.GEOMETRY_HOVER : StyleManager.GEOMETRY_LINE);
         gc.setLineWidth(hover ? 3 : 2);
 
         for (int i = 0; i < pathPoints.size() - 1; i++) {
@@ -83,7 +84,7 @@ public class PathGeo implements WorldObject {
         double sx2 = transform.worldToScreenX(endPoint.x);
         double sy2 = transform.worldToScreenY(endPoint.y);
 
-        gc.setFill(hover ? Color.ORANGE : Color.RED);
+        gc.setFill(hover ? StyleManager.GEOMETRY_HOVER : StyleManager.GEOMETRY_DEFAULT);
         double pointRadius = hover ? 5 : 4;
         gc.fillOval(sx1 - pointRadius, sy1 - pointRadius, pointRadius * 2, pointRadius * 2);
         gc.fillOval(sx2 - pointRadius, sy2 - pointRadius, pointRadius * 2, pointRadius * 2);

@@ -2,6 +2,7 @@ package com.bingbaihanji.view.layout.pane;
 
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.util.I18nUtil;
+import com.bingbaihanji.util.StyleManager;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Insets;
@@ -53,12 +54,7 @@ public class ShapeToolPane extends VBox {
         setMinWidth(180);
         setPadding(new Insets(12));
         setSpacing(8);
-        setStyle("""
-                -fx-background-color: #fafafa;
-                -fx-border-color: #e5e5e5;
-                -fx-border-width: 0 1 0 0;
-                -fx-font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
-                """);
+        setStyle(StyleManager.getPanelStyle());
 
         ToggleGroup group = new ToggleGroup();
         VBox content = new VBox(12);
@@ -116,7 +112,7 @@ public class ShapeToolPane extends VBox {
         scrollPane.setFitToWidth(true);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        scrollPane.setStyle("-fx-control-inner-background: #fafafa;");
+        scrollPane.setStyle(StyleManager.getScrollPaneStyle());
 
         VBox.setVgrow(scrollPane, Priority.ALWAYS);
         getChildren().add(scrollPane);
@@ -136,6 +132,7 @@ public class ShapeToolPane extends VBox {
             case "geo.empty" -> "icon/empty.png";
             case "geo.line" -> "icon/line.png";
             case "geo.handpainted" -> "icon/handpainted.png";
+            case "geo.constrainedPoint" -> "icon/point.png"; // 暂时使用普通点图标
             case "geo.midpoint" -> "icon/midpoint.png";
             case "geo.perpendicular" -> "icon/perpendicular.png";
             case "geo.perpendicularBisector" -> "icon/perpendicularBisector.png";
@@ -155,15 +152,10 @@ public class ShapeToolPane extends VBox {
      */
     private VBox createSection(String titleKey, Node content) {
         Label title = new Label(I18nUtil.getString(titleKey));
-        title.setStyle("""
-                -fx-font-size: 13px;
-                -fx-font-weight: bold;
-                -fx-text-fill: #1f2937;
-                -fx-padding: 4 0 4 0;
-                """);
+        title.setStyle(StyleManager.getSectionTitleStyle());
 
         VBox separator = new VBox();
-        separator.setStyle("-fx-border-color: #e5e5e5; -fx-border-width: 0 0 1 0;");
+        separator.setStyle(StyleManager.getSeparatorStyle());
         separator.setPrefHeight(1);
 
         VBox box = new VBox(6, title, separator, content);
@@ -193,7 +185,7 @@ public class ShapeToolPane extends VBox {
         Node iconNode = loadIconNode(textKey);
 
         Label text = new Label(tooltipText);
-        text.setStyle("-fx-font-size: 10px; -fx-text-alignment: center;");
+        text.setStyle(StyleManager.getTextLabelStyle());
 
         VBox graphic = new VBox(3, iconNode, text);
         graphic.setAlignment(Pos.CENTER);
@@ -206,38 +198,14 @@ public class ShapeToolPane extends VBox {
         button.setMaxSize(60, 65);
         button.setFocusTraversable(false);
 
-        button.setStyle("""
-                -fx-background-radius: 8;
-                -fx-border-radius: 8;
-                -fx-border-width: 1;
-                -fx-border-color: #d0d0d0;
-                -fx-background-color: #ffffff;
-                -fx-padding: 4;
-                -fx-font-size: 10px;
-                """);
+        button.setStyle(StyleManager.getButtonStyle("normal"));
 
         button.setOnMouseEntered(e -> {
-            button.setStyle("""
-                    -fx-background-radius: 8;
-                    -fx-border-radius: 8;
-                    -fx-border-width: 1;
-                    -fx-border-color: #999;
-                    -fx-background-color: #f9f9f9;
-                    -fx-padding: 4;
-                    -fx-font-size: 10px;
-                    """);
+            button.setStyle(StyleManager.getButtonStyle("hover"));
         });
 
         button.setOnMouseExited(e -> {
-            button.setStyle("""
-                    -fx-background-radius: 8;
-                    -fx-border-radius: 8;
-                    -fx-border-width: 1;
-                    -fx-border-color: #d0d0d0;
-                    -fx-background-color: #ffffff;
-                    -fx-padding: 4;
-                    -fx-font-size: 10px;
-                    """);
+            button.setStyle(StyleManager.getButtonStyle("normal"));
         });
 
         button.setOnAction(e -> {
@@ -247,7 +215,7 @@ public class ShapeToolPane extends VBox {
         });
 
         Tooltip tooltip = new Tooltip(tooltipText);
-        tooltip.setStyle("-fx-font-size: 11px;");
+        tooltip.setStyle(StyleManager.getTooltipStyle());
         Tooltip.install(button, tooltip);
 
         return button;
@@ -265,7 +233,7 @@ public class ShapeToolPane extends VBox {
         Node iconNode = loadIconNode(textKey);
 
         Label text = new Label(tooltipText);
-        text.setStyle("-fx-font-size: 10px; -fx-text-alignment: center;");
+        text.setStyle(StyleManager.getTextLabelStyle());
 
         VBox graphic = new VBox(3, iconNode, text);
         graphic.setAlignment(Pos.CENTER);
@@ -279,70 +247,30 @@ public class ShapeToolPane extends VBox {
         button.setMaxSize(60, 65);
         button.setFocusTraversable(false);
 
-        button.setStyle("""
-                -fx-background-radius: 8;
-                -fx-border-radius: 8;
-                -fx-border-width: 1;
-                -fx-border-color: #d0d0d0;
-                -fx-background-color: #ffffff;
-                -fx-padding: 4;
-                -fx-font-size: 10px;
-                """);
+        button.setStyle(StyleManager.getButtonStyle("normal"));
 
         button.setOnMouseEntered(e -> {
             if (!button.isSelected()) {
-                button.setStyle("""
-                        -fx-background-radius: 8;
-                        -fx-border-radius: 8;
-                        -fx-border-width: 1;
-                        -fx-border-color: #999;
-                        -fx-background-color: #f9f9f9;
-                        -fx-padding: 4;
-                        -fx-font-size: 10px;
-                        """);
+                button.setStyle(StyleManager.getButtonStyle("hover"));
             }
         });
 
         button.setOnMouseExited(e -> {
             if (!button.isSelected()) {
-                button.setStyle("""
-                        -fx-background-radius: 8;
-                        -fx-border-radius: 8;
-                        -fx-border-width: 1;
-                        -fx-border-color: #d0d0d0;
-                        -fx-background-color: #ffffff;
-                        -fx-padding: 4;
-                        -fx-font-size: 10px;
-                        """);
+                button.setStyle(StyleManager.getButtonStyle("normal"));
             }
         });
 
         button.selectedProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal) {
-                button.setStyle("""
-                        -fx-background-radius: 8;
-                        -fx-border-radius: 8;
-                        -fx-border-width: 2;
-                        -fx-border-color: #2563eb;
-                        -fx-background-color: #eff6ff;
-                        -fx-padding: 4;
-                        -fx-font-size: 10px;
-                        """);
+                button.setStyle(StyleManager.getButtonStyle("selected"));
             } else {
-                button.setStyle("""
-                        -fx-background-radius: 8;
-                        -fx-border-radius: 8;
-                        -fx-border-width: 1;
-                        -fx-border-color: #d0d0d0;
-                        -fx-background-color: #ffffff;
-                        -fx-padding: 4;
-                        -fx-font-size: 10px;
-                        """);
+                button.setStyle(StyleManager.getButtonStyle("normal"));
             }
         });
 
         Tooltip tooltip = new Tooltip(tooltipText);
-        tooltip.setStyle("-fx-font-size: 11px;");
+        tooltip.setStyle(StyleManager.getTooltipStyle());
         Tooltip.install(button, tooltip);
 
         button.setOnAction(e ->
@@ -379,7 +307,7 @@ public class ShapeToolPane extends VBox {
         }
 
         Label fallback = new Label("◉");
-        fallback.setStyle("-fx-font-size: 20px; -fx-text-fill: #333;");
+        fallback.setStyle(StyleManager.getFallbackLabelStyle());
         return fallback;
     }
 

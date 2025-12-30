@@ -42,12 +42,14 @@ public class GridChartView extends Pane {
     //  坐标系统
     private final WorldTransform transform = new WorldTransform();
     private final List<WorldPainter> painters = new ArrayList<>();
-    private final List<WorldObject> objects = new ArrayList<>();
+    private final List<WorldObject> objects;  // 改为非final，支持共享列表
     private final CircleDrawingTool circleTool;
     //   鼠标悬停气泡
     private final Tooltip hoverTooltip = new Tooltip();
     private final PauseTransition hoverTimer =
             new PauseTransition(Duration.seconds(0.5));
+    // 对象变化监听器列表（观察者模式）
+    private final List<Runnable> objectChangeListeners = new ArrayList<>();
     private WorldObject hoverObject = null;
     // 预览绘制器
     private BiConsumer<GraphicsContext, WorldTransform> previewPainter;
@@ -64,14 +66,27 @@ public class GridChartView extends Pane {
     // 当前鼠标附近的特殊点（用于视觉反馈）
     private SpecialPoint nearbySpecialPoint = null;
     private Runnable onTransformChanged;
+    // 画布背景颜色
+    private Color backgroundColor = Color.WHITE;
     //  视图拖拽状态
     private boolean panning = false;
     private double lastMouseX;
     private double lastMouseY;
-
+    // 自定义默认光标
+    private Cursor customDefaultCursor = null;
 
     //  构造
     public GridChartView() {
+        this(new ArrayList<>());  // 默认创建新的列表
+    }
+
+    /**
+     * 构造函数（支持共享对象列表）
+     *
+     * @param sharedObjects 共享的对象列表，用于多窗口同步
+     */
+    public GridChartView(List<WorldObject> sharedObjects) {
+        this.objects = sharedObjects;
         circleTool = new CircleDrawingTool();
 
         getChildren().add(canvas);
@@ -177,13 +192,13 @@ public class GridChartView extends Pane {
         return onTransformChanged;
     }
 
+
+    //  初始化
+
     // 回掉接口
     public void setOnTransformChanged(Runnable runable) {
         this.onTransformChanged = runable;
     }
-
-
-    //  初始化
 
     /**
      * 布局子节点方法 - 在JavaFX布局系统中自动调用
@@ -221,15 +236,15 @@ public class GridChartView extends Pane {
         });
     }
 
+
+    //  缩放
+
     /**
      * 鼠标滚轮缩放
      */
     private void initMouseZoom() {
         setOnScroll(this::handleZoom);
     }
-
-
-    //  缩放
 
     /**
      * 鼠标滚轮键按下时开始拖拽
@@ -338,6 +353,9 @@ public class GridChartView extends Pane {
         );
     }
 
+
+    //  坐标轴 绘制
+
     /**
      * 重绘整个画布
      * <p>
@@ -346,6 +364,10 @@ public class GridChartView extends Pane {
     public void redraw() {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+
+        // 填充背景色
+        gc.setFill(backgroundColor);
+        gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
         double w = canvas.getWidth();
         double h = canvas.getHeight();
@@ -375,9 +397,6 @@ public class GridChartView extends Pane {
             drawSpecialPointHint(gc);
         }
     }
-
-
-    //  坐标轴 绘制
 
     /**
      * 绘制特殊点吸附提示（高亮圈）
@@ -573,6 +592,9 @@ public class GridChartView extends Pane {
         return v;
     }
 
+
+    //  对外接口
+
     /**
      * 吸附到最近整数点（优先级最高）
      * <p>
@@ -592,9 +614,6 @@ public class GridChartView extends Pane {
         }
         return worldValue;
     }
-
-
-    //  对外接口
 
     /**
      * 吸附到最近网格点（基于当前轴刻度）
@@ -653,14 +672,61 @@ public class GridChartView extends Pane {
         redraw();
     }
 
+    /**
+     * 获取画布背景颜色
+     *
+     * @return 背景颜色
+     */
+    public Color getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    /**
+     * 设置画布背景颜色
+     *
+     * @param color 背景颜色
+     */
+    public void setBackgroundColor(Color color) {
+        this.backgroundColor = color;
+        redraw();
+    }
+
+    /**
+     * 添加对象变化监听器（观察者模式）
+     *
+     * @param listener 监听器回调
+     */
+    public void addObjectChangeListener(Runnable listener) {
+        objectChangeListeners.add(listener);
+    }
+
+    /**
+     * 移除对象变化监听器
+     *
+     * @param listener 监听器回调
+     */
+    public void removeObjectChangeListener(Runnable listener) {
+        objectChangeListeners.remove(listener);
+    }
+
+    /**
+     * 通知所有监听器对象已变化
+     */
+    private void notifyObjectChange() {
+        for (Runnable listener : objectChangeListeners) {
+            listener.run();
+        }
+    }
 
     public void addObject(WorldObject obj) {
         objects.add(obj);
+        notifyObjectChange();
         redraw();
     }
 
     public void removeObject(WorldObject obj) {
         objects.remove(obj);
+        notifyObjectChange();
         redraw();
     }
 
@@ -688,13 +754,13 @@ public class GridChartView extends Pane {
         this.previewPainter = previewPainter;
     }
 
-
     // 设置鼠标样式
     private void setCustomCursorForPane(Pane pane, String imagePath) {
         URL url = getClass().getResource(imagePath);
         if (url == null) {
             // 资源不存在，降级处理
             pane.setCursor(Cursor.HAND);
+            customDefaultCursor = Cursor.HAND;
             return;
         }
 
@@ -702,9 +768,18 @@ public class GridChartView extends Pane {
 
         // 左上角作为点击点（hotspot）
         Cursor customCursor = new ImageCursor(cursorImage, 0, 0);
+        customDefaultCursor = customCursor;
 
         pane.setOnMouseEntered(e -> pane.setCursor(customCursor));
-        pane.setOnMouseExited(e -> pane.setCursor(Cursor.DEFAULT));
+        pane.setOnMouseExited(e -> pane.setCursor(customCursor));
+    }
+
+    /**
+     * 获取默认的自定义光标
+     * 用于在DrawingController中恢复默认光标样式
+     */
+    public Cursor getDefaultCursor() {
+        return customDefaultCursor != null ? customDefaultCursor : Cursor.DEFAULT;
     }
 
 }

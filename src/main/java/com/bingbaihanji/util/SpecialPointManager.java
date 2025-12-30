@@ -1,10 +1,7 @@
 package com.bingbaihanji.util;
 
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
-import com.bingbaihanji.view.layout.draw.geometry.impl.CircleGeo;
-import com.bingbaihanji.view.layout.draw.geometry.impl.InfiniteLineGeo;
-import com.bingbaihanji.view.layout.draw.geometry.impl.LineGeo;
-import com.bingbaihanji.view.layout.draw.geometry.impl.PointGeo;
+import com.bingbaihanji.view.layout.draw.geometry.impl.*;
 import javafx.geometry.Point2D;
 
 import java.util.ArrayList;
@@ -27,7 +24,7 @@ public class SpecialPointManager {
     public static List<SpecialPoint> extractSpecialPoints(List<WorldObject> objects) {
         Set<SpecialPoint> specialPointsSet = new HashSet<>();
 
-        // 收集圆、线段端点和独立点
+        // 收集圆、线段端点、多边形顶点、手绘路径端点和独立点
         for (WorldObject obj : objects) {
             if (obj instanceof CircleGeo circle) {
                 // 添加圆心点
@@ -40,6 +37,22 @@ public class SpecialPointManager {
                 // 添加无限直线的两个定义点
                 specialPointsSet.add(new SpecialPoint(infiniteLine.getPoint1X(), infiniteLine.getPoint1Y(), "ENDPOINT"));
                 specialPointsSet.add(new SpecialPoint(infiniteLine.getPoint2X(), infiniteLine.getPoint2Y(), "ENDPOINT"));
+            } else if (obj instanceof PolygonGeo polygon) {
+                // 添加多边形的所有顶点
+                int vertexCount = polygon.getVertexCount();
+                for (int i = 0; i < vertexCount; i++) {
+                    Point2D vertex = polygon.getVertex(i);
+                    specialPointsSet.add(new SpecialPoint(vertex.getX(), vertex.getY(), "VERTEX"));
+                }
+            } else if (obj instanceof PathGeo path) {
+                // 添加手绘路径的起点和终点
+                List<LineGeo> edges = path.getEdges();
+                if (!edges.isEmpty()) {
+                    LineGeo firstEdge = edges.get(0);
+                    LineGeo lastEdge = edges.get(edges.size() - 1);
+                    specialPointsSet.add(new SpecialPoint(firstEdge.getStartX(), firstEdge.getStartY(), "ENDPOINT"));
+                    specialPointsSet.add(new SpecialPoint(lastEdge.getEndX(), lastEdge.getEndY(), "ENDPOINT"));
+                }
             } else if (obj instanceof PointGeo point) {
                 // 添加点对象的坐标（包括交点）
                 specialPointsSet.add(new SpecialPoint(point.getX(), point.getY(), "INTERSECTION"));

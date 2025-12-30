@@ -1,6 +1,7 @@
 package com.bingbaihanji.view.layout.draw.geometry.impl;
 
 import com.bingbaihanji.util.PointNameManager;
+import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.scene.canvas.GraphicsContext;
@@ -71,12 +72,12 @@ public class InfiniteLineGeo implements WorldObject {
         // 计算直线与屏幕边界的交点
         double[] endpoints = calculateLineScreenIntersection(sx1, sy1, sx2, sy2, w, h);
 
-        gc.setStroke(hover ? Color.ORANGE : Color.DODGERBLUE);
+        gc.setStroke(hover ? StyleManager.GEOMETRY_HOVER : StyleManager.GEOMETRY_LINE);
         gc.setLineWidth(hover ? 3 : 2);
         gc.strokeLine(endpoints[0], endpoints[1], endpoints[2], endpoints[3]);
 
         // 绘制两个定义点
-        gc.setFill(hover ? Color.ORANGE : Color.RED);
+        gc.setFill(hover ? StyleManager.GEOMETRY_HOVER : StyleManager.GEOMETRY_DEFAULT);
         double pointRadius = hover ? 5 : 4;
         gc.fillOval(sx1 - pointRadius, sy1 - pointRadius, pointRadius * 2, pointRadius * 2);
         gc.fillOval(sx2 - pointRadius, sy2 - pointRadius, pointRadius * 2, pointRadius * 2);
