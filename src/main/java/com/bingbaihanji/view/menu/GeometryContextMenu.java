@@ -5,7 +5,7 @@ import com.bingbaihanji.util.I18nUtil;
 import com.bingbaihanji.view.DetachedCanvasWindow;
 import com.bingbaihanji.view.layout.core.GridChartView;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
-import com.bingbaihanji.view.layout.draw.geometry.impl.PointGeo;
+import com.bingbaihanji.view.layout.draw.geometry.impl.*;
 import javafx.scene.control.*;
 import javafx.scene.paint.Color;
 
@@ -15,6 +15,7 @@ import java.util.Optional;
  * 几何图形右键菜单管理器
  * <p>
  * 提供点、图形和画布的右键菜单功能
+ * 支持窗口层级管理：从任意窗口打开的子窗口会自动注册到父窗口的控制器中
  *
  * @author bingbaihanji
  * @date 2025-12-30
@@ -68,11 +69,15 @@ public class GeometryContextMenu {
     ) {
         ContextMenu menu = new ContextMenu();
 
+        // 属性
+        MenuItem propertiesItem = new MenuItem(I18nUtil.getString("geo.menu.properties"));
+        propertiesItem.setOnAction(e -> showPropertiesDialog(shape, canvas));
+
         // 删除
         MenuItem deleteItem = new MenuItem(I18nUtil.getString("geo.menu.delete"));
         deleteItem.setOnAction(e -> deleteObject(shape, canvas, controller));
 
-        menu.getItems().add(deleteItem);
+        menu.getItems().addAll(propertiesItem, new SeparatorMenuItem(), deleteItem);
         return menu;
     }
 
@@ -82,6 +87,21 @@ public class GeometryContextMenu {
     public static ContextMenu createCanvasMenu(
             GridChartView canvas,
             DrawingController controller
+    ) {
+        return createCanvasMenu(canvas, controller, null);
+    }
+
+    /**
+     * 为画布创建右键菜单（带父窗口引用）
+     *
+     * @param canvas 画布视图
+     * @param controller 绘制控制器
+     * @param parentWindow 父窗口（如果在独立窗口中则传入，否则为null）
+     */
+    public static ContextMenu createCanvasMenu(
+            GridChartView canvas,
+            DrawingController controller,
+            DetachedCanvasWindow parentWindow
     ) {
         ContextMenu menu = new ContextMenu();
 
@@ -121,7 +141,9 @@ public class GeometryContextMenu {
         // 在新窗口打开
         MenuItem detachItem = new MenuItem(I18nUtil.getString("geo.menu.detachWindow"));
         detachItem.setOnAction(e -> {
-            DetachedCanvasWindow detachedWindow = new DetachedCanvasWindow(canvas);
+            DetachedCanvasWindow detachedWindow = new DetachedCanvasWindow(canvas, parentWindow);
+            // 将新窗口注册到当前控制器的子窗口列表中
+            controller.addChildWindow(detachedWindow);
             detachedWindow.show();
         });
 
@@ -174,6 +196,62 @@ public class GeometryContextMenu {
             point.setColor(color);
             canvas.redraw();
         });
+    }
+
+    /**
+     * 显示几何图形属性对话框
+     */
+    private static void showPropertiesDialog(WorldObject shape, GridChartView canvas) {
+        ShapePropertiesDialog dialog;
+        
+        // 根据不同的图形类型创建对话框
+        if (shape instanceof CircleGeo circle) {
+            // 圆形：支持颜色和半径修改
+            dialog = new ShapePropertiesDialog(circle.getColor(), circle.getR());
+            
+            Optional<ShapePropertiesResult> result = dialog.showAndWait();
+            result.ifPresent(props -> {
+                circle.setColor(props.getColor());
+                circle.setR(props.getRadius());
+                canvas.redraw();
+            });
+        } else if (shape instanceof LineGeo line) {
+            // 线段：仅支持颜色修改
+            dialog = new ShapePropertiesDialog(line.getColor());
+            
+            Optional<ShapePropertiesResult> result = dialog.showAndWait();
+            result.ifPresent(props -> {
+                line.setColor(props.getColor());
+                canvas.redraw();
+            });
+        } else if (shape instanceof InfiniteLineGeo infiniteLine) {
+            // 直线：仅支持颜色修改
+            dialog = new ShapePropertiesDialog(infiniteLine.getColor());
+            
+            Optional<ShapePropertiesResult> result = dialog.showAndWait();
+            result.ifPresent(props -> {
+                infiniteLine.setColor(props.getColor());
+                canvas.redraw();
+            });
+        } else if (shape instanceof PathGeo path) {
+            // 手绘路径：仅支持颜色修改
+            dialog = new ShapePropertiesDialog(path.getColor());
+            
+            Optional<ShapePropertiesResult> result = dialog.showAndWait();
+            result.ifPresent(props -> {
+                path.setColor(props.getColor());
+                canvas.redraw();
+            });
+        } else if (shape instanceof PolygonGeo polygon) {
+            // 多边形：仅支持颜色修改
+            dialog = new ShapePropertiesDialog(polygon.getColor());
+            
+            Optional<ShapePropertiesResult> result = dialog.showAndWait();
+            result.ifPresent(props -> {
+                polygon.setColor(props.getColor());
+                canvas.redraw();
+            });
+        }
     }
 
     /**

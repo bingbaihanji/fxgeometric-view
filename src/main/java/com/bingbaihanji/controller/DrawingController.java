@@ -4,6 +4,7 @@ import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.util.*;
 import com.bingbaihanji.util.SpecialPointManager.SpecialPoint;
 import com.bingbaihanji.util.constraint.*;
+import com.bingbaihanji.view.DetachedCanvasWindow;
 import com.bingbaihanji.view.layout.core.GridChartView;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
@@ -44,6 +45,16 @@ public class DrawingController {
      * 坐标系面板
      */
     private final GridChartView gridChartPane;
+
+    /**
+     * 父窗口引用（如果在独立窗口中则不为null）
+     */
+    private DetachedCanvasWindow parentWindow;
+
+    /**
+     * 从此控制器（主窗口或独立窗口）打开的所有子窗口
+     */
+    private final List<DetachedCanvasWindow> childWindows = new ArrayList<>();
 
     /**
      * 命令历史管理器
@@ -118,7 +129,15 @@ public class DrawingController {
     private FreehandDrawingTool freehandTool;
 
     public DrawingController(GridChartView gridChartPane) {
+        this(gridChartPane, null);
+    }
+
+    /**
+     * 构造函数（带父窗口引用）
+     */
+    public DrawingController(GridChartView gridChartPane, DetachedCanvasWindow parentWindow) {
         this.gridChartPane = gridChartPane;
+        this.parentWindow = parentWindow;
         // CircleDrawingTool现在可以正确地与DrawingController协同工作
         // 通过添加setPreviewParams和reset方法，实现了与DrawingController的状态同步
         this.circleTool = new CircleDrawingTool();
@@ -2100,7 +2119,7 @@ public class DrawingController {
             menu = GeometryContextMenu.createShapeMenu(clickedObject, gridChartPane, this);
         } else {
             // 画布的右键菜单
-            menu = GeometryContextMenu.createCanvasMenu(gridChartPane, this);
+            menu = GeometryContextMenu.createCanvasMenu(gridChartPane, this, parentWindow);
         }
 
         menu.show(gridChartPane, event.getScreenX(), event.getScreenY());
@@ -2192,6 +2211,24 @@ public class DrawingController {
 
         // 查找最近的特殊点
         return SpecialPointManager.findNearestSpecialPoint(x, y, specialPoints, threshold);
+    }
+
+    /**
+     * 添加子窗口到列表中
+     */
+    public void addChildWindow(DetachedCanvasWindow childWindow) {
+        childWindows.add(childWindow);
+    }
+
+    /**
+     * 关闭所有子窗口（用于主窗口关闭时）
+     */
+    public void closeAllChildWindows() {
+        List<DetachedCanvasWindow> childrenCopy = new ArrayList<>(childWindows);
+        for (DetachedCanvasWindow child : childrenCopy) {
+            child.close();
+        }
+        childWindows.clear();
     }
 
     /**

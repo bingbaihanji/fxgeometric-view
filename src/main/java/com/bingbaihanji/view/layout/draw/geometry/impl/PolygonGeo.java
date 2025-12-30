@@ -28,6 +28,7 @@ public class PolygonGeo implements WorldObject {
     private final List<Point> vertices;
     private final List<String> vertexNames; // 顶点名称列表
     private boolean hover = false;
+    private Color color = StyleManager.GEOMETRY_LINE; // 多边形颜色
 
     /**
      * 构造函数
@@ -72,6 +73,14 @@ public class PolygonGeo implements WorldObject {
         }
     }
 
+    public Color getColor() {
+        return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
+    }
+
     @Override
     public void paint(GraphicsContext gc, WorldTransform transform, double w, double h) {
         if (vertices.isEmpty()) return;
@@ -87,12 +96,12 @@ public class PolygonGeo implements WorldObject {
         }
 
         // 绘制多边形
-        gc.setStroke(hover ? StyleManager.GEOMETRY_HOVER : StyleManager.GEOMETRY_LINE);
+        gc.setStroke(hover ? StyleManager.GEOMETRY_HOVER : color);
         gc.setLineWidth(hover ? 3 : 2);
         gc.strokePolygon(xPoints, yPoints, vertices.size());
 
         // 绘制顶点
-        gc.setFill(hover ? StyleManager.GEOMETRY_HOVER : StyleManager.GEOMETRY_DEFAULT);
+        gc.setFill(hover ? StyleManager.GEOMETRY_HOVER : color);
         double pointRadius = 3;
         for (int i = 0; i < vertices.size(); i++) {
             gc.fillOval(xPoints[i] - pointRadius, yPoints[i] - pointRadius,

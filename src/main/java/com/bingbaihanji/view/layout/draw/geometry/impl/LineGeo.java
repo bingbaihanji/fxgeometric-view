@@ -21,6 +21,7 @@ public class LineGeo implements WorldObject {
     private boolean hover = false;
     private String startPointName; // 起点名称
     private String endPointName;   // 终点名称
+    private Color color = StyleManager.GEOMETRY_LINE; // 线段颜色
 
     public LineGeo(double startX, double startY, double endX, double endY) {
         this(startX, startY, endX, endY, true);
@@ -56,6 +57,14 @@ public class LineGeo implements WorldObject {
         return endY;
     }
 
+    public Color getColor() {
+        return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
+    }
+
     @Override
     public void paint(GraphicsContext gc, WorldTransform transform, double w, double h) {
         double sx1 = transform.worldToScreenX(startX);
@@ -63,12 +72,12 @@ public class LineGeo implements WorldObject {
         double sx2 = transform.worldToScreenX(endX);
         double sy2 = transform.worldToScreenY(endY);
 
-        gc.setStroke(hover ? StyleManager.GEOMETRY_HOVER : StyleManager.GEOMETRY_LINE);
+        gc.setStroke(hover ? StyleManager.GEOMETRY_HOVER : color);
         gc.setLineWidth(hover ? 3 : 2);
         gc.strokeLine(sx1, sy1, sx2, sy2);
 
         // 绘制端点
-        gc.setFill(hover ? StyleManager.GEOMETRY_HOVER : StyleManager.GEOMETRY_DEFAULT);
+        gc.setFill(hover ? StyleManager.GEOMETRY_HOVER : color);
         double pointRadius = hover ? 5 : 4;
         gc.fillOval(sx1 - pointRadius, sy1 - pointRadius, pointRadius * 2, pointRadius * 2);
         gc.fillOval(sx2 - pointRadius, sy2 - pointRadius, pointRadius * 2, pointRadius * 2);

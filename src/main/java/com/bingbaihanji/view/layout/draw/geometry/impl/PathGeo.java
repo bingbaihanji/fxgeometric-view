@@ -31,6 +31,7 @@ public class PathGeo implements WorldObject {
     private boolean hover = false;
     private String startPointName; // 起点名称
     private String endPointName;   // 终点名称
+    private Color color = StyleManager.GEOMETRY_LINE; // 路径颜色
 
     /**
      * 构造函数
@@ -55,12 +56,20 @@ public class PathGeo implements WorldObject {
         this.endPointName = manager.assignName(endPoint.getX(), endPoint.getY());
     }
 
+    public Color getColor() {
+        return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
+    }
+
     @Override
     public void paint(GraphicsContext gc, WorldTransform transform, double w, double h) {
         if (pathPoints.size() < 2) return;
 
         // 绘制曲线路径
-        gc.setStroke(hover ? StyleManager.GEOMETRY_HOVER : StyleManager.GEOMETRY_LINE);
+        gc.setStroke(hover ? StyleManager.GEOMETRY_HOVER : color);
         gc.setLineWidth(hover ? 3 : 2);
 
         for (int i = 0; i < pathPoints.size() - 1; i++) {
@@ -84,7 +93,7 @@ public class PathGeo implements WorldObject {
         double sx2 = transform.worldToScreenX(endPoint.x);
         double sy2 = transform.worldToScreenY(endPoint.y);
 
-        gc.setFill(hover ? StyleManager.GEOMETRY_HOVER : StyleManager.GEOMETRY_DEFAULT);
+        gc.setFill(hover ? StyleManager.GEOMETRY_HOVER : color);
         double pointRadius = hover ? 5 : 4;
         gc.fillOval(sx1 - pointRadius, sy1 - pointRadius, pointRadius * 2, pointRadius * 2);
         gc.fillOval(sx2 - pointRadius, sy2 - pointRadius, pointRadius * 2, pointRadius * 2);

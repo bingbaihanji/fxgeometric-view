@@ -113,6 +113,12 @@ public class InitView {
 
         stage.setTitle(I18nUtil.getString("application.name"));
         stage.setScene(scene);
+
+        // 9. 添加窗口关闭事件处理，关闭所有子窗口
+        stage.setOnCloseRequest(event -> {
+            drawingController.closeAllChildWindows();
+        });
+
         return stage;
     }
 

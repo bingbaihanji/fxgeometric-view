@@ -4,15 +4,17 @@ import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 
 import java.util.List;
 
 public class CircleGeo implements WorldObject {
 
-    private final double r;
+    private double r;
     private double cx;
     private double cy;
     private boolean hover = false;
+    private Color color = StyleManager.GEOMETRY_LINE;
 
 
     public CircleGeo(double cx, double cy, double r) {
@@ -34,6 +36,18 @@ public class CircleGeo implements WorldObject {
         return r;
     }
 
+    public void setR(double r) {
+        this.r = r;
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
+    }
+
     @Override
     public void paint(GraphicsContext gc,
                       WorldTransform transform,
@@ -44,8 +58,7 @@ public class CircleGeo implements WorldObject {
         double sy = transform.worldToScreenY(cy);
         double sr = r * transform.getScale();
 
-        gc.setStroke(hover ? StyleManager.GEOMETRY_HOVER
-                : StyleManager.GEOMETRY_LINE);
+        gc.setStroke(hover ? StyleManager.GEOMETRY_HOVER : color);
         gc.setLineWidth(2);
 
         gc.strokeOval(
@@ -57,7 +70,7 @@ public class CircleGeo implements WorldObject {
 
         // 根据项目规范要求，绘制圆形时显示圆心点
         // 绘制圆心点以便提供明确的几何定位反馈
-        gc.setFill(hover ? StyleManager.GEOMETRY_HOVER : StyleManager.GEOMETRY_DEFAULT);
+        gc.setFill(hover ? StyleManager.GEOMETRY_HOVER : color);
         double pointRadius = hover ? 4 : 3;
         gc.fillOval(sx - pointRadius, sy - pointRadius, pointRadius * 2, pointRadius * 2);
 

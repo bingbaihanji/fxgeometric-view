@@ -21,6 +21,8 @@ import javafx.stage.Stage;
 import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 独立画布窗口
@@ -37,6 +39,10 @@ public class DetachedCanvasWindow {
     private final Stage stage;
     private final GridChartView detachedView;
     private final DrawingController drawingController;
+    // 存储从此窗口打开的所有子窗口
+    private final List<DetachedCanvasWindow> childWindows = new ArrayList<>();
+    // 父窗口引用（如果有）
+    private DetachedCanvasWindow parentWindow;
 
     /**
      * 构造独立窗口
@@ -44,7 +50,23 @@ public class DetachedCanvasWindow {
      * @param sourceView 源视图（主窗口的GridChartView）
      */
     public DetachedCanvasWindow(GridChartView sourceView) {
+        this(sourceView, null);
+    }
+
+    /**
+     * 构造独立窗口（带父窗口引用）
+     *
+     * @param sourceView 源视图（主窗口的GridChartView）
+     * @param parent 父窗口（如果从其他独立窗口打开）
+     */
+    public DetachedCanvasWindow(GridChartView sourceView, DetachedCanvasWindow parent) {
         this.stage = new Stage();
+        this.parentWindow = parent;
+
+        // 如果有父窗口，将自己添加到父窗口的子窗口列表中
+        if (parent != null) {
+            parent.addChildWindow(this);
+        }
 
         // 使用共享的对象列表创建新视图（关键：两个窗口共享同一个对象列表）
         this.detachedView = new GridChartView(sourceView.getObjects());
@@ -52,8 +74,8 @@ public class DetachedCanvasWindow {
         // 创建工具栏
         ShapeToolPane toolPane = new ShapeToolPane();
 
-        // 创建绘制控制器
-        this.drawingController = new DrawingController(detachedView);
+        // 创建绘制控制器（传递自身引用以支持子窗口层级管理）
+        this.drawingController = new DrawingController(detachedView, this);
 
         // 绑定工具栏事件
         toolPane.drawModeProperty().addListener((obs, oldMode, newMode) -> {
@@ -117,6 +139,11 @@ public class DetachedCanvasWindow {
         Scene scene = new Scene(root, 1000, 700);
         stage.setScene(scene);
         stage.setTitle(I18nUtil.getString("geo.window.detached.title"));
+
+        // 添加窗口关闭事件处理
+        stage.setOnCloseRequest(event -> {
+            closeAllChildWindows();
+        });
 
         // 添加快捷键支持
         scene.setOnKeyPressed(event -> handleKeyPressed(event));
@@ -194,7 +221,34 @@ public class DetachedCanvasWindow {
      * 关闭窗口
      */
     public void close() {
+        closeAllChildWindows();
         stage.close();
+    }
+
+    /**
+     * 关闭所有子窗口
+     */
+    private void closeAllChildWindows() {
+        // 创建子窗口列表的副本，避免在迭代时修改集合
+        List<DetachedCanvasWindow> childrenCopy = new ArrayList<>(childWindows);
+        for (DetachedCanvasWindow child : childrenCopy) {
+            child.close(); // 递归关闭子窗口及其子窗口
+        }
+        childWindows.clear();
+    }
+
+    /**
+     * 添加子窗口
+     */
+    private void addChildWindow(DetachedCanvasWindow child) {
+        childWindows.add(child);
+    }
+
+    /**
+     * 获取GridChartView，供子窗口创建时使用
+     */
+    public GridChartView getGridChartView() {
+        return detachedView;
     }
 
     /**
