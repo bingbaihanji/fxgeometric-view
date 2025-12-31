@@ -78,11 +78,11 @@ public class PointGeo extends AbstractWorldObject {
         // 保存旧位置
         double oldX = this.x;
         double oldY = this.y;
-        
+
         // 更新坐标
         this.x = newX;
         this.y = newY;
-        
+
         // 如果该点有名称，更新PointNameManager中的映射
         if (this.label != null && !this.label.isEmpty()) {
             PointNameManager.getInstance().updatePosition(oldX, oldY, newX, newY);
@@ -130,7 +130,7 @@ public class PointGeo extends AbstractWorldObject {
                     // 保存旧位置用于更新映射
                     double oldX = this.x;
                     double oldY = this.y;
-                    
+
                     if (constraint != null) {
                         // 如果有约束，计算新参数并根据参数更新位置
                         double newParameter = constraint.calculateParameter(newX, newY);
@@ -143,7 +143,7 @@ public class PointGeo extends AbstractWorldObject {
                         this.x = newX;
                         this.y = newY;
                     }
-                    
+
                     // 如果该点有名称，更新PointNameManager中的映射
                     if (this.label != null && !this.label.isEmpty()) {
                         PointNameManager.getInstance().updatePosition(oldX, oldY, this.x, this.y);

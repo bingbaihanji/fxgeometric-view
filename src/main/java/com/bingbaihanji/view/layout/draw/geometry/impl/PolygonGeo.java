@@ -1,14 +1,9 @@
 package com.bingbaihanji.view.layout.draw.geometry.impl;
 
 import com.bingbaihanji.constant.ObjectType;
-import com.bingbaihanji.util.FillRenderer;
-import com.bingbaihanji.util.LabelRenderer;
-import com.bingbaihanji.util.LineStyleUtil;
-import com.bingbaihanji.util.PointNameManager;
-import com.bingbaihanji.util.StyleManager;
+import com.bingbaihanji.util.*;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 import java.util.List;

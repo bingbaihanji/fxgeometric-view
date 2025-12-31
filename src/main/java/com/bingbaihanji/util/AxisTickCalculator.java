@@ -25,16 +25,16 @@ public class AxisTickCalculator {
     /**
      * 计算坐标轴刻度距离（自动模式）
      * 参考 GeoGebra 的 setAxesIntervals() 方法（EuclidianView.java:1913-1951）
-     *
+     * <p>
      * 算法说明：
      * 1. 计算每100像素对应的世界单位数（units）
      * 2. 将units转换为科学计数法形式：units = n * 10^exp，其中 1 <= n < 10
      * 3. 根据n的值选择合适的步长：
-     *    - n > 5 时，选择 5 * 10^exp
-     *    - 2 < n <= 5 时，选择 2 * 10^exp
-     *    - n <= 2 时，选择 1 * 10^exp
+     * - n > 5 时，选择 5 * 10^exp
+     * - 2 < n <= 5 时，选择 2 * 10^exp
+     * - n <= 2 时，选择 1 * 10^exp
      *
-     * @param scale 缩放比例（像素/单位），例如 scale=50 表示 1个世界单位 = 50像素
+     * @param scale    缩放比例（像素/单位），例如 scale=50 表示 1个世界单位 = 50像素
      * @param isPiUnit 是否使用π单位（影响刻度计算）
      * @return 刻度距离（世界单位）
      */
@@ -69,14 +69,14 @@ public class AxisTickCalculator {
     /**
      * 计算网格距离（基于轴刻度距离）
      * 参考 GeoGebra 的 gridDistances 计算（EuclidianView.java:1980-1983）
-     *
+     * <p>
      * 在 GeoGebra 中：
      * if (automaticGridDistance && axis < 2) {
-     *     gridDistances[axis] = axesNumberingDistances[axis] * DEFAULT_GRID_DIST_FACTOR;
+     * gridDistances[axis] = axesNumberingDistances[axis] * DEFAULT_GRID_DIST_FACTOR;
      * }
      *
      * @param axisTickDistance 坐标轴刻度距离（世界单位）
-     * @param gridDistFactor 网格距离因子（默认为1.0）
+     * @param gridDistFactor   网格距离因子（默认为1.0）
      * @return 网格距离（世界单位）
      */
     public static double calculateGridDistance(double axisTickDistance, double gridDistFactor) {
@@ -97,21 +97,21 @@ public class AxisTickCalculator {
     /**
      * 计算网格的屏幕起始位置（使用模运算对齐原点）
      * 参考 GeoGebra 的 DrawGrid.java:58-59
-     *
+     * <p>
      * 原理说明：
      * - originScreenPos：原点在屏幕上的坐标（像素）
      * - tickStepPixels：网格步长（像素）
      * - 返回值：第一条网格线相对屏幕边缘的偏移量
-     *
+     * <p>
      * 模运算确保网格线始终经过原点的整数倍位置，无论如何缩放和平移。
-     *
+     * <p>
      * 示例：
      * - 原点在屏幕x=250px，网格步长100px
      * - 第一条网格线位置：250 % 100 = 50px
      * - 后续网格线：50px, 150px, 250px（原点）, 350px, ...
      *
      * @param originScreenPos 原点在屏幕上的位置（像素）
-     * @param tickStepPixels 网格步长（像素）
+     * @param tickStepPixels  网格步长（像素）
      * @return 第一条网格线的屏幕位置（像素）
      */
     public static double calculateGridStartPosition(double originScreenPos, double tickStepPixels) {

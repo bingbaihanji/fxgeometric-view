@@ -494,6 +494,7 @@ public class EuclidianViewSettings {
 
     /**
      * 克隆配置
+     *
      * @return 配置的副本
      */
     public EuclidianViewSettings clone() {

@@ -36,28 +36,8 @@ public enum GridType {
     CARTESIAN_WITH_SUBGRID;
 
     /**
-     * 获取国际化显示名称
-     */
-    public String getDisplayName() {
-        String key = "gridType." + this.name().substring(0, 1).toLowerCase() +
-                     this.name().substring(1).toLowerCase().replace("_", "");
-        // Convert CARTESIAN_WITH_SUBGRID -> cartesianWithSubgrid
-        if (this == CARTESIAN_WITH_SUBGRID) {
-            key = "gridType.cartesianWithSubgrid";
-        } else {
-            key = "gridType." + name().substring(0, 1).toLowerCase() +
-                  name().substring(1).toLowerCase();
-        }
-        return I18nUtil.getString(key);
-    }
-
-    @Override
-    public String toString() {
-        return getDisplayName();
-    }
-
-    /**
      * 从旧的GridMode转换为GridType
+     *
      * @param gridMode 旧的网格模式
      * @return 对应的GridType
      */
@@ -70,5 +50,26 @@ public enum GridType {
             default:
                 return CARTESIAN;
         }
+    }
+
+    /**
+     * 获取国际化显示名称
+     */
+    public String getDisplayName() {
+        String key = "gridType." + this.name().substring(0, 1).toLowerCase() +
+                this.name().substring(1).toLowerCase().replace("_", "");
+        // Convert CARTESIAN_WITH_SUBGRID -> cartesianWithSubgrid
+        if (this == CARTESIAN_WITH_SUBGRID) {
+            key = "gridType.cartesianWithSubgrid";
+        } else {
+            key = "gridType." + name().substring(0, 1).toLowerCase() +
+                    name().substring(1).toLowerCase();
+        }
+        return I18nUtil.getString(key);
+    }
+
+    @Override
+    public String toString() {
+        return getDisplayName();
     }
 }

@@ -1,6 +1,5 @@
 package com.bingbaihanji.view.layout.core;
 
-import com.bingbaihanji.constant.GridMode;
 import com.bingbaihanji.constant.SnapMode;
 import com.bingbaihanji.util.AxisTickCalculator;
 import com.bingbaihanji.util.SpecialPointManager;
@@ -796,6 +795,7 @@ public class GridChartView extends Pane {
 
     /**
      * 缩放到指定百分比
+     *
      * @param percent 百分比（如100表示100%）
      */
     public void zoomToPercent(double percent) {
@@ -815,6 +815,7 @@ public class GridChartView extends Pane {
 
     /**
      * 设置坐标轴比例
+     *
      * @param xRatio X轴比例系数
      * @param yRatio Y轴比例系数
      */
@@ -882,29 +883,6 @@ public class GridChartView extends Pane {
     // ========== 轴向吸附系统 ==========
 
     /**
-     * 轴向吸附信息类
-     */
-    private static class AxisSnapInfo {
-        boolean isVertical;   // true=垂直线吸附, false=水平线吸附
-        double snapValue;     // 吸附的x或y坐标值
-        double lineStartX;    // 辅助线起点X（屏幕坐标）
-        double lineStartY;    // 辅助线起点Y（屏幕坐标）
-        double lineEndX;      // 辅助线终点X（屏幕坐标）
-        double lineEndY;      // 辅助线终点Y（屏幕坐标）
-
-        public AxisSnapInfo(boolean isVertical, double snapValue,
-                           double lineStartX, double lineStartY,
-                           double lineEndX, double lineEndY) {
-            this.isVertical = isVertical;
-            this.snapValue = snapValue;
-            this.lineStartX = lineStartX;
-            this.lineStartY = lineStartY;
-            this.lineEndX = lineEndX;
-            this.lineEndY = lineEndY;
-        }
-    }
-
-    /**
      * 应用坐标吸附（包括点吸附、网格吸附、轴向吸附）
      *
      * @param rawX 原始世界坐标X
@@ -946,8 +924,8 @@ public class GridChartView extends Pane {
         if (snapModes.contains(SnapMode.GRID)) {
             // 使用统一的刻度计算器（确保与网格和坐标轴一致）
             double step = AxisTickCalculator.calculateAxisTickDistance(
-                transform.getScale(),
-                false  // 网格吸附通常不使用π单位
+                    transform.getScale(),
+                    false  // 网格吸附通常不使用π单位
             );
 
             x = snapToInteger(rawX);
@@ -960,19 +938,6 @@ public class GridChartView extends Pane {
         }
 
         return new double[]{x, y};
-    }
-
-    /**
-     * 轴向吸附结果类
-     */
-    private static class AxisSnapResult {
-        AxisSnapInfo snapInfo;
-        double distance;  // 到吸附线的距离
-
-        public AxisSnapResult(AxisSnapInfo snapInfo, double distance) {
-            this.snapInfo = snapInfo;
-            this.distance = distance;
-        }
     }
 
     /**
@@ -1011,10 +976,10 @@ public class GridChartView extends Pane {
                     double lineEndY = getHeight();
 
                     AxisSnapInfo snapInfo = new AxisSnapInfo(
-                        true,
-                        point.getX(),
-                        screenX, lineStartY,
-                        screenX, lineEndY
+                            true,
+                            point.getX(),
+                            screenX, lineStartY,
+                            screenX, lineEndY
                     );
 
                     bestSnap = new AxisSnapResult(snapInfo, distX);
@@ -1032,10 +997,10 @@ public class GridChartView extends Pane {
                     double lineEndX = getWidth();
 
                     AxisSnapInfo snapInfo = new AxisSnapInfo(
-                        false,
-                        point.getY(),
-                        lineStartX, screenY,
-                        lineEndX, screenY
+                            false,
+                            point.getY(),
+                            lineStartX, screenY,
+                            lineEndX, screenY
                     );
 
                     bestSnap = new AxisSnapResult(snapInfo, distY);
@@ -1063,14 +1028,50 @@ public class GridChartView extends Pane {
 
         // 绘制辅助线
         gc.strokeLine(
-            axisSnapInfo.lineStartX,
-            axisSnapInfo.lineStartY,
-            axisSnapInfo.lineEndX,
-            axisSnapInfo.lineEndY
+                axisSnapInfo.lineStartX,
+                axisSnapInfo.lineStartY,
+                axisSnapInfo.lineEndX,
+                axisSnapInfo.lineEndY
         );
 
         // 恢复默认样式
         gc.setLineDashes(null);
+    }
+
+    /**
+     * 轴向吸附信息类
+     */
+    private static class AxisSnapInfo {
+        boolean isVertical;   // true=垂直线吸附, false=水平线吸附
+        double snapValue;     // 吸附的x或y坐标值
+        double lineStartX;    // 辅助线起点X（屏幕坐标）
+        double lineStartY;    // 辅助线起点Y（屏幕坐标）
+        double lineEndX;      // 辅助线终点X（屏幕坐标）
+        double lineEndY;      // 辅助线终点Y（屏幕坐标）
+
+        public AxisSnapInfo(boolean isVertical, double snapValue,
+                            double lineStartX, double lineStartY,
+                            double lineEndX, double lineEndY) {
+            this.isVertical = isVertical;
+            this.snapValue = snapValue;
+            this.lineStartX = lineStartX;
+            this.lineStartY = lineStartY;
+            this.lineEndX = lineEndX;
+            this.lineEndY = lineEndY;
+        }
+    }
+
+    /**
+     * 轴向吸附结果类
+     */
+    private static class AxisSnapResult {
+        AxisSnapInfo snapInfo;
+        double distance;  // 到吸附线的距离
+
+        public AxisSnapResult(AxisSnapInfo snapInfo, double distance) {
+            this.snapInfo = snapInfo;
+            this.distance = distance;
+        }
     }
 
 }

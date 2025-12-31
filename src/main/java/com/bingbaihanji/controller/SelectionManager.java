@@ -220,8 +220,8 @@ public class SelectionManager {
      */
     public List<WorldObject> getSelectedByType(ObjectType type) {
         return selectedObjects.stream()
-            .filter(obj -> obj.getObjectType() == type)
-            .collect(Collectors.toList());
+                .filter(obj -> obj.getObjectType() == type)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -229,8 +229,8 @@ public class SelectionManager {
      */
     public List<WorldObject> getSelectedPoints() {
         return selectedObjects.stream()
-            .filter(obj -> obj.getObjectType().isPoint())
-            .collect(Collectors.toList());
+                .filter(obj -> obj.getObjectType().isPoint())
+                .collect(Collectors.toList());
     }
 
     /**
@@ -238,8 +238,8 @@ public class SelectionManager {
      */
     public List<WorldObject> getSelectedLines() {
         return selectedObjects.stream()
-            .filter(obj -> obj.getObjectType().isLine())
-            .collect(Collectors.toList());
+                .filter(obj -> obj.getObjectType().isLine())
+                .collect(Collectors.toList());
     }
 
     /**
@@ -247,8 +247,8 @@ public class SelectionManager {
      */
     public List<WorldObject> getSelectedPolygons() {
         return selectedObjects.stream()
-            .filter(obj -> obj.getObjectType().isPolygon())
-            .collect(Collectors.toList());
+                .filter(obj -> obj.getObjectType().isPolygon())
+                .collect(Collectors.toList());
     }
 
     // ========== 监听器管理 ==========

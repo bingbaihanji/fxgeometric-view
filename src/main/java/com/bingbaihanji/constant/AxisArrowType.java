@@ -49,7 +49,7 @@ public enum AxisArrowType {
             key = "axisArrowType.twoArrowsFilled";
         } else {
             key = "axisArrowType." + name().substring(0, 1).toLowerCase() +
-                  name().substring(1).toLowerCase();
+                    name().substring(1).toLowerCase();
         }
         return I18nUtil.getString(key);
     }

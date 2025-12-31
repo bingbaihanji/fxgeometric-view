@@ -219,23 +219,23 @@ public abstract class AbstractWorldObject implements WorldObject {
     // ========== 交互状态实现 ==========
 
     @Override
-    public void setHover(boolean hover) {
-        this.hover = hover;
-    }
-
-    @Override
     public boolean isHover() {
         return hover;
     }
 
     @Override
-    public void setSelected(boolean selected) {
-        this.selected = selected;
+    public void setHover(boolean hover) {
+        this.hover = hover;
     }
 
     @Override
     public boolean isSelected() {
         return selected;
+    }
+
+    @Override
+    public void setSelected(boolean selected) {
+        this.selected = selected;
     }
 
     // ========== 视觉属性实现 ==========
@@ -396,10 +396,10 @@ public abstract class AbstractWorldObject implements WorldObject {
             return color.brighter(); // 悬停时变亮
         } else {
             return new Color(
-                color.getRed(),
-                color.getGreen(),
-                color.getBlue(),
-                opacity
+                    color.getRed(),
+                    color.getGreen(),
+                    color.getBlue(),
+                    opacity
             );
         }
     }
@@ -409,10 +409,10 @@ public abstract class AbstractWorldObject implements WorldObject {
      */
     protected Color getEffectiveFillColor() {
         return new Color(
-            fillColor.getRed(),
-            fillColor.getGreen(),
-            fillColor.getBlue(),
-            fillOpacity * opacity // 综合透明度
+                fillColor.getRed(),
+                fillColor.getGreen(),
+                fillColor.getBlue(),
+                fillOpacity * opacity // 综合透明度
         );
     }
 
@@ -429,6 +429,6 @@ public abstract class AbstractWorldObject implements WorldObject {
     @Override
     public String toString() {
         return String.format("%s[id=%d, label='%s']",
-            objectType.getDisplayName(), id, label);
+                objectType.getDisplayName(), id, label);
     }
 }

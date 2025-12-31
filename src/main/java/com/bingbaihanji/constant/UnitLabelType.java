@@ -30,7 +30,7 @@ public enum UnitLabelType {
      */
     public String getDisplayName() {
         String key = "unitLabelType." + name().substring(0, 1).toLowerCase() +
-                     name().substring(1).toLowerCase();
+                name().substring(1).toLowerCase();
         return I18nUtil.getString(key);
     }
 

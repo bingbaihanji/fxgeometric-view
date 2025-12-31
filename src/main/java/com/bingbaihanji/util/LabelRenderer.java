@@ -19,8 +19,8 @@ public class LabelRenderer {
     /**
      * 绘制对象的标签
      *
-     * @param gc     GraphicsContext对象
-     * @param object 世界对象
+     * @param gc      GraphicsContext对象
+     * @param object  世界对象
      * @param screenX 标签基准点X坐标（屏幕坐标）
      * @param screenY 标签基准点Y坐标（屏幕坐标）
      */
@@ -54,8 +54,8 @@ public class LabelRenderer {
     /**
      * 绘制标签（使用默认位置AUTO）
      *
-     * @param gc     GraphicsContext对象
-     * @param label  标签文本
+     * @param gc      GraphicsContext对象
+     * @param label   标签文本
      * @param screenX 基准点X坐标（屏幕坐标）
      * @param screenY 基准点Y坐标（屏幕坐标）
      */

@@ -105,10 +105,10 @@ public enum FillType {
      */
     public boolean isHatchFill() {
         return this == HATCH_HORIZONTAL
-            || this == HATCH_VERTICAL
-            || this == HATCH_DIAGONAL
-            || this == HATCH_CROSS_DIAGONAL
-            || this == HATCH_GRID;
+                || this == HATCH_VERTICAL
+                || this == HATCH_DIAGONAL
+                || this == HATCH_CROSS_DIAGONAL
+                || this == HATCH_GRID;
     }
 
     /**

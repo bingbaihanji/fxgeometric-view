@@ -17,16 +17,16 @@ public class AxisRangeCalculator {
     /**
      * 根据所有对象计算合适的视图范围
      *
-     * @param objects   所有几何对象
-     * @param transform 坐标变换对象
-     * @param viewWidth 视图宽度
+     * @param objects    所有几何对象
+     * @param transform  坐标变换对象
+     * @param viewWidth  视图宽度
      * @param viewHeight 视图高度
      * @return 包含xMin, xMax, yMin, yMax的数组
      */
     public static double[] fitAllObjects(List<WorldObject> objects,
-                                          WorldTransform transform,
-                                          double viewWidth,
-                                          double viewHeight) {
+                                         WorldTransform transform,
+                                         double viewWidth,
+                                         double viewHeight) {
         if (objects.isEmpty()) {
             // 没有对象时，返回标准范围
             return getStandardRange();
@@ -51,7 +51,7 @@ public class AxisRangeCalculator {
 
         // 检查是否找到有效边界
         if (Double.isInfinite(minX) || Double.isInfinite(maxX) ||
-            Double.isInfinite(minY) || Double.isInfinite(maxY)) {
+                Double.isInfinite(minY) || Double.isInfinite(maxY)) {
             return getStandardRange();
         }
 
@@ -103,10 +103,10 @@ public class AxisRangeCalculator {
         double yRange = viewHeight / scale;
 
         return new double[]{
-            -xRange / 2,  // xMin
-            xRange / 2,   // xMax
-            -yRange / 2,  // yMin
-            yRange / 2    // yMax
+                -xRange / 2,  // xMin
+                xRange / 2,   // xMax
+                -yRange / 2,  // yMin
+                yRange / 2    // yMax
         };
     }
 

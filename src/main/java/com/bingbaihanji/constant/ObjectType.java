@@ -175,9 +175,9 @@ public enum ObjectType {
      */
     public boolean isPoint() {
         return this == POINT_FREE
-            || this == POINT_DEPENDENT
-            || this == POINT_ON_PATH
-            || this == POINT_INTERSECTION;
+                || this == POINT_DEPENDENT
+                || this == POINT_ON_PATH
+                || this == POINT_INTERSECTION;
     }
 
     /**
@@ -185,9 +185,9 @@ public enum ObjectType {
      */
     public boolean isLine() {
         return this == SEGMENT
-            || this == LINE
-            || this == RAY
-            || this == VECTOR;
+                || this == LINE
+                || this == RAY
+                || this == VECTOR;
     }
 
     /**
@@ -195,11 +195,11 @@ public enum ObjectType {
      */
     public boolean isConic() {
         return this == CIRCLE
-            || this == ARC
-            || this == SECTOR
-            || this == ELLIPSE
-            || this == HYPERBOLA
-            || this == PARABOLA;
+                || this == ARC
+                || this == SECTOR
+                || this == ELLIPSE
+                || this == HYPERBOLA
+                || this == PARABOLA;
     }
 
     /**
@@ -207,9 +207,9 @@ public enum ObjectType {
      */
     public boolean isPolygon() {
         return this == POLYGON
-            || this == TRIANGLE
-            || this == RECTANGLE
-            || this == REGULAR_POLYGON;
+                || this == TRIANGLE
+                || this == RECTANGLE
+                || this == REGULAR_POLYGON;
     }
 
     /**

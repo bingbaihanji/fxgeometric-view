@@ -136,12 +136,12 @@ public class PointNameManager {
     public void updatePosition(double oldX, double oldY, double newX, double newY) {
         String oldKey = getPointKey(oldX, oldY);
         String newKey = getPointKey(newX, newY);
-        
+
         // 如果新旧位置相同（精度范围内），不需要更新
         if (oldKey.equals(newKey)) {
             return;
         }
-        
+
         // 获取旧位置的名称
         String name = pointNameMap.get(oldKey);
         if (name != null) {

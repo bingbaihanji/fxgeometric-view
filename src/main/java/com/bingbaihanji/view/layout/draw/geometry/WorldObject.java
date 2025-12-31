@@ -112,12 +112,6 @@ public interface WorldObject extends WorldPainter {
     }
 
     /**
-     * 设置悬停状态
-     */
-    default void setHover(boolean hover) {
-    }
-
-    /**
      * 获取悬停状态
      */
     default boolean isHover() {
@@ -125,9 +119,9 @@ public interface WorldObject extends WorldPainter {
     }
 
     /**
-     * 设置选中状态
+     * 设置悬停状态
      */
-    default void setSelected(boolean selected) {
+    default void setHover(boolean hover) {
     }
 
     /**
@@ -135,6 +129,12 @@ public interface WorldObject extends WorldPainter {
      */
     default boolean isSelected() {
         return false;
+    }
+
+    /**
+     * 设置选中状态
+     */
+    default void setSelected(boolean selected) {
     }
 
     // ========== 视觉属性 ==========

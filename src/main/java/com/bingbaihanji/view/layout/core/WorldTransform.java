@@ -38,6 +38,7 @@ public final class WorldTransform {
 
     /**
      * 获取缩放比例（平均值，用于向后兼容）
+     *
      * @return XY轴比例的平均值
      */
     public double getScale() {
@@ -46,6 +47,7 @@ public final class WorldTransform {
 
     /**
      * 设置统一缩放比例（XY轴使用相同比例）
+     *
      * @param scale 缩放比例
      */
     public void setScale(double scale) {
@@ -55,6 +57,7 @@ public final class WorldTransform {
 
     /**
      * 获取X轴缩放比例
+     *
      * @return X轴缩放比例
      */
     public double getScaleX() {
@@ -63,6 +66,7 @@ public final class WorldTransform {
 
     /**
      * 设置X轴缩放比例
+     *
      * @param scaleX X轴缩放比例
      */
     public void setScaleX(double scaleX) {
@@ -71,6 +75,7 @@ public final class WorldTransform {
 
     /**
      * 获取Y轴缩放比例
+     *
      * @return Y轴缩放比例
      */
     public double getScaleY() {
@@ -79,6 +84,7 @@ public final class WorldTransform {
 
     /**
      * 设置Y轴缩放比例
+     *
      * @param scaleY Y轴缩放比例
      */
     public void setScaleY(double scaleY) {
@@ -87,6 +93,7 @@ public final class WorldTransform {
 
     /**
      * 设置轴比例（保持平均缩放不变）
+     *
      * @param xRatio X轴比例系数
      * @param yRatio Y轴比例系数
      */

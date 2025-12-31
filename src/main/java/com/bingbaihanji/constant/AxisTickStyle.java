@@ -37,7 +37,7 @@ public enum AxisTickStyle {
             key = "axisTickStyle.majorOnly";
         } else {
             key = "axisTickStyle." + name().substring(0, 1).toLowerCase() +
-                  name().substring(1).toLowerCase();
+                    name().substring(1).toLowerCase();
         }
         return I18nUtil.getString(key);
     }

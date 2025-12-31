@@ -55,7 +55,7 @@ public enum LineType {
             key = "lineType.dashedDotted";
         } else {
             key = "lineType." + name().substring(0, 1).toLowerCase() +
-                  name().substring(1).toLowerCase();
+                    name().substring(1).toLowerCase();
         }
         return I18nUtil.getString(key);
     }
@@ -67,6 +67,7 @@ public enum LineType {
 
     /**
      * 获取虚线模式数组
+     *
      * @return 虚线模式数组，实线返回null
      */
     public double[] getDashPattern() {

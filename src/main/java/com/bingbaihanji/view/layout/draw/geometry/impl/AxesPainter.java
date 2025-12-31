@@ -11,7 +11,6 @@ import com.bingbaihanji.view.layout.core.EuclidianViewSettings;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.WorldPainter;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
 /**
@@ -319,7 +318,7 @@ public class AxesPainter implements WorldPainter {
      * 根据箭头类型绘制箭头
      */
     private void drawArrowByType(GraphicsContext gc, AxisArrowType type,
-                                  double x1, double y1, double x2, double y2, boolean isXAxis) {
+                                 double x1, double y1, double x2, double y2, boolean isXAxis) {
         if (type == null || type == AxisArrowType.NONE) {
             return;
         }
@@ -378,8 +377,8 @@ public class AxesPainter implements WorldPainter {
      * 绘制实心箭头
      */
     private void drawFilledArrow(GraphicsContext gc,
-                                  double x1, double y1,
-                                  double x2, double y2) {
+                                 double x1, double y1,
+                                 double x2, double y2) {
         double angle = Math.atan2(y2 - y1, x2 - x1);
         double arrowLength = 8;
         double arrowAngle = Math.PI / 6;

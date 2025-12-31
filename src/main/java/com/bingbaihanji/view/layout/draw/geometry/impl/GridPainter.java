@@ -4,12 +4,10 @@ import com.bingbaihanji.constant.GridMode;
 import com.bingbaihanji.constant.GridType;
 import com.bingbaihanji.util.AxisTickCalculator;
 import com.bingbaihanji.util.LineStyleUtil;
-import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.view.layout.core.EuclidianViewSettings;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.WorldPainter;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 
 /**
  * 增强的世界网格绘制器
@@ -93,7 +91,7 @@ public class GridPainter implements WorldPainter {
      * 参考 GeoGebra 的模运算对齐原理
      */
     private void paintDotGrid(GraphicsContext gc, WorldTransform transform,
-                               double width, double height) {
+                              double width, double height) {
         double worldLeft = transform.screenToWorldX(0);
         double worldRight = transform.screenToWorldX(width);
         double worldTop = transform.screenToWorldY(0);
@@ -126,7 +124,7 @@ public class GridPainter implements WorldPainter {
      * 参考 GeoGebra 的 DrawGrid.drawCartesianGrid() 实现
      */
     private void paintCartesianGrid(GraphicsContext gc, WorldTransform transform,
-                                      double width, double height, boolean withSubGrid) {
+                                    double width, double height, boolean withSubGrid) {
         double worldLeft = transform.screenToWorldX(0);
         double worldRight = transform.screenToWorldX(width);
         double worldTop = transform.screenToWorldY(0);
@@ -173,10 +171,10 @@ public class GridPainter implements WorldPainter {
      * 参考 GeoGebra 的次网格实现（5等分）
      */
     private void paintSubGrid(GraphicsContext gc, WorldTransform transform,
-                               double width, double height,
-                               double worldLeft, double worldRight,
-                               double worldTop, double worldBottom,
-                               double mainStep) {
+                              double width, double height,
+                              double worldLeft, double worldRight,
+                              double worldTop, double worldBottom,
+                              double mainStep) {
         double subStep = mainStep / MINOR_GRID_COUNT;
 
         gc.setStroke(settings.getSubGridColor());
@@ -221,7 +219,7 @@ public class GridPainter implements WorldPainter {
      * 参考 Desktop 的 EuclidianView.java 实现
      */
     private void paintPolarGrid(GraphicsContext gc, WorldTransform transform,
-                                 double width, double height) {
+                                double width, double height) {
         double worldLeft = transform.screenToWorldX(0);
         double worldRight = transform.screenToWorldX(width);
         double worldTop = transform.screenToWorldY(0);
@@ -270,7 +268,7 @@ public class GridPainter implements WorldPainter {
      * 参考 Desktop 的 EuclidianView.java 实现（使用√3比例）
      */
     private void paintIsometricGrid(GraphicsContext gc, WorldTransform transform,
-                                     double width, double height) {
+                                    double width, double height) {
         double worldLeft = transform.screenToWorldX(0);
         double worldRight = transform.screenToWorldX(width);
         double worldTop = transform.screenToWorldY(0);
@@ -331,14 +329,14 @@ public class GridPainter implements WorldPainter {
         if (settings.isSyncGridWithAxes() && settings.isAutoGridDistance()) {
             // 计算坐标轴刻度距离（使用统一的算法）
             double axisTickDistance = AxisTickCalculator.calculateAxisTickDistance(
-                scale,
-                false  // 网格通常不使用π单位
+                    scale,
+                    false  // 网格通常不使用π单位
             );
 
             // 网格距离 = 坐标轴刻度 * 因子（参考GeoGebra的gridDistances计算）
             return AxisTickCalculator.calculateGridDistance(
-                axisTickDistance,
-                settings.getGridDistanceFactor()
+                    axisTickDistance,
+                    settings.getGridDistanceFactor()
             );
         }
 
