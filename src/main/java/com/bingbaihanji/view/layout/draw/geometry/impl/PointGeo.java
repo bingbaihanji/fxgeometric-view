@@ -75,8 +75,18 @@ public class PointGeo extends AbstractWorldObject {
 
     // 更新点的位置（用于创建约束点后设置投影位置）
     public void updatePosition(double newX, double newY) {
+        // 保存旧位置
+        double oldX = this.x;
+        double oldY = this.y;
+        
+        // 更新坐标
         this.x = newX;
         this.y = newY;
+        
+        // 如果该点有名称，更新PointNameManager中的映射
+        if (this.label != null && !this.label.isEmpty()) {
+            PointNameManager.getInstance().updatePosition(oldX, oldY, newX, newY);
+        }
     }
 
     @Override
@@ -117,17 +127,26 @@ public class PointGeo extends AbstractWorldObject {
         // 点本身可拖动
         return List.of(
                 new DraggablePoint(x, y, (newX, newY) -> {
+                    // 保存旧位置用于更新映射
+                    double oldX = this.x;
+                    double oldY = this.y;
+                    
                     if (constraint != null) {
                         // 如果有约束，计算新参数并根据参数更新位置
                         double newParameter = constraint.calculateParameter(newX, newY);
                         constraint.setParameter(newParameter);
                         Point2D newPos = constraint.getPointFromParameter();
-                        x = newPos.getX();
-                        y = newPos.getY();
+                        this.x = newPos.getX();
+                        this.y = newPos.getY();
                     } else {
                         // 无约束，直接移动
-                        x = newX;
-                        y = newY;
+                        this.x = newX;
+                        this.y = newY;
+                    }
+                    
+                    // 如果该点有名称，更新PointNameManager中的映射
+                    if (this.label != null && !this.label.isEmpty()) {
+                        PointNameManager.getInstance().updatePosition(oldX, oldY, this.x, this.y);
                     }
                 })
         );

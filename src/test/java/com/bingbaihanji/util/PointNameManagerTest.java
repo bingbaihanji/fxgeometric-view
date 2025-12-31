@@ -157,4 +157,50 @@ class PointNameManagerTest {
         // 确认总点数
         assertEquals(10, manager.getNamedPointCount());
     }
+
+    @Test
+    void testUpdatePosition() {
+        // 测试点位置更新后的名称映射更新
+        // 创建点A在(0, 0)
+        assertEquals("A", manager.assignName(0, 0));
+        // 创建点B在(2, 2)
+        assertEquals("B", manager.assignName(2, 2));
+        
+        // 验证初始状态
+        assertEquals("A", manager.getName(0, 0));
+        assertNull(manager.getName(1, 1));
+        
+        // 更新点A的位置从(0, 0)到(1, 1)
+        manager.updatePosition(0, 0, 1, 1);
+        
+        // 验证更新后，(0, 0)不再有名称，而(1, 1)现在有名称A
+        assertNull(manager.getName(0, 0));
+        assertEquals("A", manager.getName(1, 1));
+        
+        // 现在在新位置(1, 1)创建几何图形，assignName应该返回A而不是创建新名称
+        assertEquals("A", manager.assignName(1, 1));
+        
+        // 确认总点数仍然是2
+        assertEquals(2, manager.getNamedPointCount());
+    }
+
+    @Test
+    void testUpdatePositionToOccupiedLocation() {
+        // 测试将点移动到已有其他点的位置
+        // 创建点A在(0, 0)
+        assertEquals("A", manager.assignName(0, 0));
+        // 创建点B在(1, 1)
+        assertEquals("B", manager.assignName(1, 1));
+        
+        // 尝试将点A移动到点B的位置(1, 1)
+        manager.updatePosition(0, 0, 1, 1);
+        
+        // (0, 0)应该不再有名称
+        assertNull(manager.getName(0, 0));
+        // (1, 1)应该保留原来的名称B
+        assertEquals("B", manager.getName(1, 1));
+        
+        // 确认总点数减少为1
+        assertEquals(1, manager.getNamedPointCount());
+    }
 }

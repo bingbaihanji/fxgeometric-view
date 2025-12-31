@@ -124,6 +124,41 @@ public class PointNameManager {
     }
 
     /**
+     * 更新点的位置（用于点移动时更新映射关系）
+     * <p>
+     * 将点的名称从旧位置映射移除，并在新位置建立映射
+     *
+     * @param oldX 旧X坐标
+     * @param oldY 旧Y坐标
+     * @param newX 新X坐标
+     * @param newY 新Y坐标
+     */
+    public void updatePosition(double oldX, double oldY, double newX, double newY) {
+        String oldKey = getPointKey(oldX, oldY);
+        String newKey = getPointKey(newX, newY);
+        
+        // 如果新旧位置相同（精度范围内），不需要更新
+        if (oldKey.equals(newKey)) {
+            return;
+        }
+        
+        // 获取旧位置的名称
+        String name = pointNameMap.get(oldKey);
+        if (name != null) {
+            // 检查新位置是否已有其他点
+            String existingName = pointNameMap.get(newKey);
+            if (existingName == null) {
+                // 新位置没有点，移动映射
+                pointNameMap.remove(oldKey);
+                pointNameMap.put(newKey, name);
+            } else {
+                // 新位置已有点，只移除旧位置映射（保留现有映射）
+                pointNameMap.remove(oldKey);
+            }
+        }
+    }
+
+    /**
      * 清除所有命名
      */
     public void clear() {
