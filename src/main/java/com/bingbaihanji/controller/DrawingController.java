@@ -84,6 +84,7 @@ public class DrawingController {
         context.setSnappingHandler(snappingHandler);
 
         // 交互型 Handler（处理鼠标事件，按优先级排序）
+        handlers.add(new SelectionHandler());         // 选择功能（在非绘制模式下生效，优先于拖动）
         handlers.add(new DragHandler());              // 拖动在非绘制模式下优先
         handlers.add(new FreehandHandler());          // 手绘优先级高
         handlers.add(new BasicShapeHandler());        // 基础图形
@@ -258,6 +259,13 @@ public class DrawingController {
         return context.getCommandHistory().canRedo();
     }
 
+    /**
+     * 获取绘制上下文
+     */
+    public DrawingContext getContext() {
+        return context;
+    }
+
     // 窗口管理方法（保留）
 
     /**
@@ -286,14 +294,30 @@ public class DrawingController {
         double worldX = context.getGridChartPane().screenToWorldX(event.getX());
         double worldY = context.getGridChartPane().screenToWorldY(event.getY());
         double scale = context.getTransform().getScale();
-        double tolerance = 10.0 / scale;
+        double vertexTolerance = 10.0 / scale; // 顶点使用更大的容差
+        double objectTolerance = 5.0 / scale;  // 对象使用较小的容差
 
-        // 查找点击的对象（从后往前，优先选择最新添加的对象）
-        WorldObject clickedObject = null;
+        // ========== 优先级1：检查是否点击了图形的顶点 ==========
         List<WorldObject> objects = context.getObjects();
+        for (WorldObject obj : objects) {
+            for (WorldObject.DraggablePoint point : obj.getDraggablePoints()) {
+                if (point.hitTest(worldX, worldY, vertexTolerance)) {
+                    // 点击了顶点，显示顶点菜单
+                    ContextMenu menu = GeometryContextMenu.createVertexMenu(
+                            point, obj, context.getGridChartPane(), this
+                    );
+                    menu.show(context.getGridChartPane(), event.getScreenX(), event.getScreenY());
+                    event.consume();
+                    return;
+                }
+            }
+        }
+
+        // ========== 优先级2：检查是否点击了独立的点对象 ==========
+        WorldObject clickedObject = null;
         for (int i = objects.size() - 1; i >= 0; i--) {
             WorldObject obj = objects.get(i);
-            if (obj.hitTest(worldX, worldY, tolerance)) {
+            if (obj.hitTest(worldX, worldY, objectTolerance)) {
                 clickedObject = obj;
                 break;
             }

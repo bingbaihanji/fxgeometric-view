@@ -172,7 +172,7 @@ public class SystemSettingsDialog extends Dialog<ButtonType> {
                 if (externalFile.exists() && externalFile.isFile()) {
                     try (java.io.InputStream stream = new FileInputStream(externalFile);
                          java.io.InputStreamReader reader = new java.io.InputStreamReader(stream, StandardCharsets.UTF_8)) {
-                        java.util.PropertyResourceBundle bundle = new java.util.PropertyResourceBundle(reader);
+                        PropertyResourceBundle bundle = new PropertyResourceBundle(reader);
                         return bundle.getString("language.name");
                     }
                 }
@@ -194,7 +194,7 @@ public class SystemSettingsDialog extends Dialog<ButtonType> {
             java.io.InputStream stream = getClass().getResourceAsStream(path);
             if (stream != null) {
                 try (java.io.InputStreamReader reader = new java.io.InputStreamReader(stream, StandardCharsets.UTF_8)) {
-                    java.util.PropertyResourceBundle bundle = new java.util.PropertyResourceBundle(reader);
+                    PropertyResourceBundle bundle = new PropertyResourceBundle(reader);
                     return bundle.getString("language.name");
                 }
             }
@@ -273,7 +273,7 @@ public class SystemSettingsDialog extends Dialog<ButtonType> {
                         File[] files = dir.listFiles((d, name) ->
                                 name.startsWith("language_") && name.endsWith(".properties"));
                         if (files != null) {
-                            for (java.io.File file : files) {
+                            for (File file : files) {
                                 String langCode = extractLangCode(file.getName());
                                 if (langCode != null) {
                                     langCodes.add(langCode);
@@ -288,7 +288,7 @@ public class SystemSettingsDialog extends Dialog<ButtonType> {
                     if (parts.length > 0) {
                         try (java.util.jar.JarFile jar = new java.util.jar.JarFile(
                                 new File(new java.net.URI(parts[0])))) {
-                            java.util.Enumeration<java.util.jar.JarEntry> entries = jar.entries();
+                            Enumeration<java.util.jar.JarEntry> entries = jar.entries();
                             while (entries.hasMoreElements()) {
                                 java.util.jar.JarEntry entry = entries.nextElement();
                                 String name = entry.getName();
@@ -326,7 +326,7 @@ public class SystemSettingsDialog extends Dialog<ButtonType> {
                 File[] files = languageDir.listFiles((dir, name) ->
                         name.startsWith("language_") && name.endsWith(".properties"));
                 if (files != null) {
-                    for (java.io.File file : files) {
+                    for (File file : files) {
                         String langCode = extractLangCode(file.getName());
                         if (langCode != null) {
                             langCodes.add(langCode);

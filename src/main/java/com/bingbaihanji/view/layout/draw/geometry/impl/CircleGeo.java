@@ -1,38 +1,41 @@
 package com.bingbaihanji.view.layout.draw.geometry.impl;
 
+import com.bingbaihanji.constant.ObjectType;
+import com.bingbaihanji.util.FillRenderer;
+import com.bingbaihanji.util.LabelRenderer;
+import com.bingbaihanji.util.LineStyleUtil;
 import com.bingbaihanji.util.PointNameManager;
 import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;
-import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.TextAlignment;
 
 import java.util.List;
 
-public class CircleGeo implements WorldObject {
+public class CircleGeo extends AbstractWorldObject {
 
     private double r;
     private double cx;
     private double cy;
-    private boolean hover = false;
-    private Color color = StyleManager.GEOMETRY_LINE;
     private String centerName; // 圆心名称
 
 
     public CircleGeo(double cx, double cy, double r) {
+        super(ObjectType.CIRCLE);
         this.cx = cx;
         this.cy = cy;
         this.r = r;
+        this.color = StyleManager.GEOMETRY_LINE;
         // 自动为圆心分配名称
         this.centerName = PointNameManager.getInstance().assignName(cx, cy);
     }
 
     public CircleGeo(double cx, double cy, double r, boolean autoNameCenter) {
+        super(ObjectType.CIRCLE);
         this.cx = cx;
         this.cy = cy;
         this.r = r;
+        this.color = StyleManager.GEOMETRY_LINE;
         // 根据参数决定是否为圆心自动命名
         if (autoNameCenter) {
             this.centerName = PointNameManager.getInstance().assignName(cx, cy);
@@ -56,14 +59,6 @@ public class CircleGeo implements WorldObject {
         this.r = r;
     }
 
-    public Color getColor() {
-        return color;
-    }
-
-    public void setColor(Color color) {
-        this.color = color;
-    }
-
     public String getCenterName() {
         return centerName;
     }
@@ -82,8 +77,15 @@ public class CircleGeo implements WorldObject {
         double sy = transform.worldToScreenY(cy);
         double sr = r * transform.getScale();
 
-        gc.setStroke(hover ? StyleManager.GEOMETRY_HOVER : color);
-        gc.setLineWidth(2);
+        // 先绘制填充
+        FillRenderer.fillOval(gc, fillType, fillColor, fillOpacity,
+                hatchAngle, hatchDistance, sx, sy, sr);
+
+        // 再绘制边框
+        // 应用线型
+        LineStyleUtil.applyLineStyle(gc, lineType);
+        gc.setStroke(getEffectiveColor());
+        gc.setLineWidth(getEffectiveLineWidth());
 
         gc.strokeOval(
                 sx - sr,
@@ -92,19 +94,18 @@ public class CircleGeo implements WorldObject {
                 sr * 2
         );
 
-        // 根据项目规范要求，绘制圆形时显示圆心点
+        // 重置线型
+        LineStyleUtil.resetLineStyle(gc);
+
+        // 根据项目规范要求,绘制圆形时显示圆心点
         // 绘制圆心点以便提供明确的几何定位反馈
-        gc.setFill(hover ? StyleManager.GEOMETRY_HOVER : color);
+        gc.setFill(getEffectiveColor());
         double pointRadius = hover ? 4 : 3;
         gc.fillOval(sx - pointRadius, sy - pointRadius, pointRadius * 2, pointRadius * 2);
 
-        // 绘制圆心名称
+        // 使用LabelRenderer绘制圆心名称
         if (centerName != null && !centerName.isEmpty()) {
-            gc.setFill(Color.BLACK);
-            gc.setFont(Font.font(12));
-            gc.setTextAlign(TextAlignment.LEFT);
-            // 在圆心的右上方显示名称
-            gc.fillText(centerName, sx + 8, sy - 8);
+            LabelRenderer.renderLabel(gc, centerName, sx, sy);
         }
     }
 
@@ -117,11 +118,6 @@ public class CircleGeo implements WorldObject {
     @Override
     public void onClick(double x, double y) {
         // 圆本身暂时不响应点击
-    }
-
-    @Override
-    public void setHover(boolean hover) {
-        this.hover = hover;
     }
 
     @Override
@@ -144,5 +140,11 @@ public class CircleGeo implements WorldObject {
         double dy = cy - centerY;
         cx = centerX + dx * cos - dy * sin;
         cy = centerY + dx * sin + dy * cos;
+    }
+
+    @Override
+    public double[] getBoundingBox() {
+        // 圆的边界框
+        return new double[]{cx - r, cx + r, cy - r, cy + r};
     }
 }

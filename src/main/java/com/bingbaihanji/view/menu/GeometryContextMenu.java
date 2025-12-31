@@ -1,12 +1,15 @@
 package com.bingbaihanji.view.menu;
 
 import com.bingbaihanji.controller.DrawingController;
+import com.bingbaihanji.util.CommandHistory;
 import com.bingbaihanji.util.I18nUtil;
 import com.bingbaihanji.view.DetachedCanvasWindow;
 import com.bingbaihanji.view.layout.core.GridChartView;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import com.bingbaihanji.view.layout.draw.geometry.impl.*;
+import javafx.geometry.Insets;
 import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 
 import java.util.Optional;
@@ -40,6 +43,10 @@ public class GeometryContextMenu {
         MenuItem colorItem = new MenuItem(I18nUtil.getString("geo.menu.changeColor"));
         colorItem.setOnAction(e -> showColorPickerDialog(point, canvas));
 
+        // 设置位置
+        MenuItem positionItem = new MenuItem(I18nUtil.getString("geo.menu.position"));
+        positionItem.setOnAction(e -> showPositionDialog(point, canvas, controller));
+
         // 移除约束（仅约束点显示）
         if (point.isConstrained()) {
             MenuItem removeConstraintItem = new MenuItem(I18nUtil.getString("geo.menu.removeConstraint"));
@@ -55,7 +62,26 @@ public class GeometryContextMenu {
         MenuItem deleteItem = new MenuItem(I18nUtil.getString("geo.menu.delete"));
         deleteItem.setOnAction(e -> deleteObject(point, canvas, controller));
 
-        menu.getItems().addAll(renameItem, colorItem, new SeparatorMenuItem(), deleteItem);
+        menu.getItems().addAll(renameItem, colorItem, positionItem, new SeparatorMenuItem(), deleteItem);
+        return menu;
+    }
+
+    /**
+     * 为几何图形的顶点创建右键菜单
+     */
+    public static ContextMenu createVertexMenu(
+            WorldObject.DraggablePoint vertex,
+            WorldObject parentShape,
+            GridChartView canvas,
+            DrawingController controller
+    ) {
+        ContextMenu menu = new ContextMenu();
+
+        // 设置位置
+        MenuItem positionItem = new MenuItem(I18nUtil.getString("geo.menu.position"));
+        positionItem.setOnAction(e -> showVertexPositionDialog(vertex, parentShape, canvas, controller));
+
+        menu.getItems().add(positionItem);
         return menu;
     }
 
@@ -116,6 +142,81 @@ public class GeometryContextMenu {
         MenuItem clearItem = new MenuItem(I18nUtil.getString("geo.menu.clear"));
         clearItem.setOnAction(e -> controller.clearAll());
 
+        // ========== 视图控制子菜单 ==========
+
+        // 缩放子菜单
+        Menu zoomMenu = new Menu(I18nUtil.getString("menu.zoom"));
+
+        MenuItem zoom25 = new MenuItem("25%");
+        zoom25.setOnAction(e -> canvas.zoomToPercent(25));
+
+        MenuItem zoom50 = new MenuItem("50%");
+        zoom50.setOnAction(e -> canvas.zoomToPercent(50));
+
+        MenuItem zoom100 = new MenuItem("100%");
+        zoom100.setOnAction(e -> canvas.zoomToPercent(100));
+
+        MenuItem zoom200 = new MenuItem("200%");
+        zoom200.setOnAction(e -> canvas.zoomToPercent(200));
+
+        MenuItem zoom400 = new MenuItem("400%");
+        zoom400.setOnAction(e -> canvas.zoomToPercent(400));
+
+        zoomMenu.getItems().addAll(zoom25, zoom50, zoom100, zoom200, zoom400);
+
+        // 轴比例子菜单
+        Menu axisRatioMenu = new Menu(I18nUtil.getString("menu.axisRatio"));
+
+        MenuItem ratio11 = new MenuItem("1:1");
+        ratio11.setOnAction(e -> canvas.setAxisRatio(1, 1));
+
+        MenuItem ratio12 = new MenuItem("1:2");
+        ratio12.setOnAction(e -> canvas.setAxisRatio(1, 2));
+
+        MenuItem ratio21 = new MenuItem("2:1");
+        ratio21.setOnAction(e -> canvas.setAxisRatio(2, 1));
+
+        MenuItem ratio14 = new MenuItem("1:4");
+        ratio14.setOnAction(e -> canvas.setAxisRatio(1, 4));
+
+        MenuItem ratio41 = new MenuItem("4:1");
+        ratio41.setOnAction(e -> canvas.setAxisRatio(4, 1));
+
+        axisRatioMenu.getItems().addAll(ratio11, ratio12, ratio21, ratio14, ratio41);
+
+        // 显示所有对象
+        MenuItem fitAllItem = new MenuItem(I18nUtil.getString("menu.showAllObjects"));
+        fitAllItem.setOnAction(e -> canvas.fitAllObjects());
+        fitAllItem.setDisable(canvas.getObjects().isEmpty());
+
+        // 标准视图
+        MenuItem standardViewItem = new MenuItem(I18nUtil.getString("menu.standardView"));
+        standardViewItem.setOnAction(e -> canvas.resetToStandardView());
+
+        // ========== 属性配置 ==========
+
+        // 坐标轴属性
+        MenuItem axesPropsItem = new MenuItem(I18nUtil.getString("menu.axesProperties"));
+        axesPropsItem.setOnAction(e -> {
+            AxesPropertiesDialog dialog = new AxesPropertiesDialog(canvas.getSettings());
+            dialog.showAndWait().ifPresent(result -> {
+                if (result == ButtonType.OK) {
+                    canvas.applySettings();
+                }
+            });
+        });
+
+        // 网格属性
+        MenuItem gridPropsItem = new MenuItem(I18nUtil.getString("menu.gridProperties"));
+        gridPropsItem.setOnAction(e -> {
+            GridPropertiesDialog dialog = new GridPropertiesDialog(canvas.getSettings());
+            dialog.showAndWait().ifPresent(result -> {
+                if (result == ButtonType.OK) {
+                    canvas.applySettings();
+                }
+            });
+        });
+
         // 背景颜色子菜单
         Menu bgColorMenu = new Menu(I18nUtil.getString("geo.menu.backgroundColor"));
 
@@ -147,8 +248,21 @@ public class GeometryContextMenu {
             detachedWindow.show();
         });
 
-        menu.getItems().addAll(undoItem, redoItem, new SeparatorMenuItem(),
-                clearItem, new SeparatorMenuItem(), bgColorMenu, new SeparatorMenuItem(), detachItem);
+        menu.getItems().addAll(
+                undoItem, redoItem,
+                new SeparatorMenuItem(),
+                clearItem,
+                new SeparatorMenuItem(),
+                zoomMenu, axisRatioMenu,
+                new SeparatorMenuItem(),
+                fitAllItem, standardViewItem,
+                new SeparatorMenuItem(),
+                axesPropsItem, gridPropsItem,
+                new SeparatorMenuItem(),
+                bgColorMenu,
+                new SeparatorMenuItem(),
+                detachItem
+        );
         return menu;
     }
 
@@ -196,6 +310,139 @@ public class GeometryContextMenu {
             point.setColor(color);
             canvas.redraw();
         });
+    }
+
+    /**
+     * 显示位置设置对话框
+     */
+    private static void showPositionDialog(PointGeo point, GridChartView canvas, DrawingController controller) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle(I18nUtil.getString("geo.dialog.position.title"));
+        dialog.setHeaderText(I18nUtil.getString("geo.dialog.position.header"));
+
+        // 创建输入表单
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+
+        TextField xField = new TextField(String.format("%.2f", point.getX()));
+        TextField yField = new TextField(String.format("%.2f", point.getY()));
+
+        grid.add(new Label(I18nUtil.getString("geo.dialog.position.x")), 0, 0);
+        grid.add(xField, 1, 0);
+        grid.add(new Label(I18nUtil.getString("geo.dialog.position.y")), 0, 1);
+        grid.add(yField, 1, 1);
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        // 处理确定按钮
+        Optional<ButtonType> result = dialog.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                double newX = Double.parseDouble(xField.getText());
+                double newY = Double.parseDouble(yField.getText());
+
+                // 保存旧位置用于撤销
+                final double oldX = point.getX();
+                final double oldY = point.getY();
+
+                // 使用命令模式支持撤销/恢复
+                controller.getContext().executeCommand(new CommandHistory.Command() {
+                    @Override
+                    public void execute() {
+                        point.updatePosition(newX, newY);
+                        canvas.redraw();
+                    }
+
+                    @Override
+                    public void undo() {
+                        point.updatePosition(oldX, oldY);
+                        canvas.redraw();
+                    }
+                });
+            } catch (NumberFormatException e) {
+                // 显示错误提示
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle(I18nUtil.getString("geo.dialog.position.error.title"));
+                alert.setHeaderText(null);
+                alert.setContentText(I18nUtil.getString("geo.dialog.position.error.invalid"));
+                alert.showAndWait();
+            }
+        }
+    }
+
+    /**
+     * 显示顶点位置设置对话框（用于线段、多边形、圆等图形的顶点）
+     */
+    private static void showVertexPositionDialog(
+            WorldObject.DraggablePoint vertex,
+            WorldObject parentShape,
+            GridChartView canvas,
+            DrawingController controller
+    ) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle(I18nUtil.getString("geo.dialog.vertex.position.title"));
+        dialog.setHeaderText(I18nUtil.getString("geo.dialog.vertex.position.header"));
+
+        // 创建输入表单
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+
+        TextField xField = new TextField(String.format("%.2f", vertex.getX()));
+        TextField yField = new TextField(String.format("%.2f", vertex.getY()));
+
+        grid.add(new Label(I18nUtil.getString("geo.dialog.position.x")), 0, 0);
+        grid.add(xField, 1, 0);
+        grid.add(new Label(I18nUtil.getString("geo.dialog.position.y")), 0, 1);
+        grid.add(yField, 1, 1);
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        // 处理确定按钮
+        Optional<ButtonType> result = dialog.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                double newX = Double.parseDouble(xField.getText());
+                double newY = Double.parseDouble(yField.getText());
+
+                // 保存旧位置用于撤销
+                final double oldX = vertex.getX();
+                final double oldY = vertex.getY();
+
+                // 使用命令模式支持撤销/恢复
+                controller.getContext().executeCommand(new CommandHistory.Command() {
+                    @Override
+                    public void execute() {
+                        vertex.updatePosition(newX, newY);
+                        // 更新约束点和交点
+                        controller.getContext().getConstraintHandler().updateAllConstrainedPoints(controller.getContext());
+                        controller.getContext().getIntersectionHandler().recalculateAllIntersections(controller.getContext());
+                        canvas.redraw();
+                    }
+
+                    @Override
+                    public void undo() {
+                        vertex.updatePosition(oldX, oldY);
+                        // 更新约束点和交点
+                        controller.getContext().getConstraintHandler().updateAllConstrainedPoints(controller.getContext());
+                        controller.getContext().getIntersectionHandler().recalculateAllIntersections(controller.getContext());
+                        canvas.redraw();
+                    }
+                });
+            } catch (NumberFormatException e) {
+                // 显示错误提示
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle(I18nUtil.getString("geo.dialog.position.error.title"));
+                alert.setHeaderText(null);
+                alert.setContentText(I18nUtil.getString("geo.dialog.position.error.invalid"));
+                alert.showAndWait();
+            }
+        }
     }
 
     /**

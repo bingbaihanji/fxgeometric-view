@@ -1,13 +1,14 @@
 package com.bingbaihanji.view.layout.draw.geometry.impl;
 
+import com.bingbaihanji.constant.ObjectType;
+import com.bingbaihanji.util.FillRenderer;
+import com.bingbaihanji.util.LabelRenderer;
+import com.bingbaihanji.util.LineStyleUtil;
 import com.bingbaihanji.util.PointNameManager;
 import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;
-import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.TextAlignment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,15 +21,13 @@ import java.util.List;
  * @author bingbaihanji
  * @date 2025-12-23
  */
-public class PolygonGeo implements WorldObject {
+public class PolygonGeo extends AbstractWorldObject {
 
     /**
      * 多边形顶点列表（世界坐标）
      */
     private final List<Point> vertices;
     private final List<String> vertexNames; // 顶点名称列表
-    private boolean hover = false;
-    private Color color = StyleManager.GEOMETRY_LINE; // 多边形颜色
 
     /**
      * 构造函数
@@ -36,6 +35,7 @@ public class PolygonGeo implements WorldObject {
      * @param vertices 顶点坐标数组 [x1, y1, x2, y2, ...]
      */
     public PolygonGeo(double... vertices) {
+        super(ObjectType.POLYGON);
         if (vertices.length < 6) {
             throw new IllegalArgumentException("多边形至少需要3个顶点");
         }
@@ -45,6 +45,7 @@ public class PolygonGeo implements WorldObject {
 
         this.vertices = new ArrayList<>();
         this.vertexNames = new ArrayList<>();
+        this.color = StyleManager.GEOMETRY_LINE;
         PointNameManager manager = PointNameManager.getInstance();
         for (int i = 0; i < vertices.length; i += 2) {
             this.vertices.add(new Point(vertices[i], vertices[i + 1]));
@@ -59,26 +60,20 @@ public class PolygonGeo implements WorldObject {
      * @param points 顶点列表
      */
     public PolygonGeo(List<javafx.geometry.Point2D> points) {
+        super(ObjectType.POLYGON);
         if (points.size() < 3) {
             throw new IllegalArgumentException("多边形至少需要3个顶点");
         }
 
         this.vertices = new ArrayList<>();
         this.vertexNames = new ArrayList<>();
+        this.color = StyleManager.GEOMETRY_LINE;
         PointNameManager manager = PointNameManager.getInstance();
         for (javafx.geometry.Point2D p : points) {
             this.vertices.add(new Point(p.getX(), p.getY()));
             // 为每个顶点分配名称
             this.vertexNames.add(manager.assignName(p.getX(), p.getY()));
         }
-    }
-
-    public Color getColor() {
-        return color;
-    }
-
-    public void setColor(Color color) {
-        this.color = color;
     }
 
     @Override
@@ -95,27 +90,33 @@ public class PolygonGeo implements WorldObject {
             yPoints[i] = transform.worldToScreenY(vertex.y);
         }
 
-        // 绘制多边形
-        gc.setStroke(hover ? StyleManager.GEOMETRY_HOVER : color);
-        gc.setLineWidth(hover ? 3 : 2);
+        // 先绘制填充
+        FillRenderer.fillPolygon(gc, fillType, fillColor, fillOpacity,
+                hatchAngle, hatchDistance, xPoints, yPoints, vertices.size());
+
+        // 再绘制多边形边框
+        // 应用线型
+        LineStyleUtil.applyLineStyle(gc, lineType);
+        gc.setStroke(getEffectiveColor());
+        gc.setLineWidth(getEffectiveLineWidth());
         gc.strokePolygon(xPoints, yPoints, vertices.size());
 
+        // 重置线型
+        LineStyleUtil.resetLineStyle(gc);
+
         // 绘制顶点
-        gc.setFill(hover ? StyleManager.GEOMETRY_HOVER : color);
+        gc.setFill(getEffectiveColor());
         double pointRadius = 3;
         for (int i = 0; i < vertices.size(); i++) {
             gc.fillOval(xPoints[i] - pointRadius, yPoints[i] - pointRadius,
                     pointRadius * 2, pointRadius * 2);
         }
 
-        // 绘制顶点名称
-        gc.setFill(Color.BLACK);
-        gc.setFont(Font.font(12));
-        gc.setTextAlign(TextAlignment.LEFT);
+        // 使用LabelRenderer绘制顶点名称
         for (int i = 0; i < vertices.size(); i++) {
             String name = vertexNames.get(i);
             if (name != null && !name.isEmpty()) {
-                gc.fillText(name, xPoints[i] + 8, yPoints[i] - 8);
+                LabelRenderer.renderLabel(gc, name, xPoints[i], yPoints[i]);
             }
         }
     }
@@ -157,11 +158,6 @@ public class PolygonGeo implements WorldObject {
     }
 
     @Override
-    public void setHover(boolean hover) {
-        this.hover = hover;
-    }
-
-    @Override
     public void onClick(double wx, double wy) {
         System.out.println("多边形被点击");
     }
@@ -199,7 +195,7 @@ public class PolygonGeo implements WorldObject {
     @Override
     public List<DraggablePoint> getDraggablePoints() {
         // 所有顶点都可拖动
-        List<DraggablePoint> points = new java.util.ArrayList<>();
+        List<DraggablePoint> points = new ArrayList<>();
         for (int i = 0; i < vertices.size(); i++) {
             final int index = i;
             Point vertex = vertices.get(index);
@@ -223,6 +219,28 @@ public class PolygonGeo implements WorldObject {
             vertex.x = centerX + dx * cos - dy * sin;
             vertex.y = centerY + dx * sin + dy * cos;
         }
+    }
+
+    @Override
+    public double[] getBoundingBox() {
+        if (vertices.isEmpty()) {
+            return null;
+        }
+
+        // 计算所有顶点的边界框
+        double minX = Double.MAX_VALUE;
+        double maxX = Double.MIN_VALUE;
+        double minY = Double.MAX_VALUE;
+        double maxY = Double.MIN_VALUE;
+
+        for (Point vertex : vertices) {
+            minX = Math.min(minX, vertex.x);
+            maxX = Math.max(maxX, vertex.x);
+            minY = Math.min(minY, vertex.y);
+            maxY = Math.max(maxY, vertex.y);
+        }
+
+        return new double[]{minX, maxX, minY, maxY};
     }
 
     /**

@@ -1,9 +1,10 @@
 package com.bingbaihanji.view.layout.draw.geometry.impl;
 
+import com.bingbaihanji.constant.ObjectType;
+import com.bingbaihanji.util.LineStyleUtil;
 import com.bingbaihanji.util.PointNameManager;
 import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;
-import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -21,17 +22,15 @@ import java.util.List;
  * @author bingbaihanji
  * @date 2025-12-23
  */
-public class PathGeo implements WorldObject {
+public class PathGeo extends AbstractWorldObject {
 
     /**
      * 路径上的所有点（世界坐标）
      */
     private final List<Point> pathPoints;
 
-    private boolean hover = false;
     private String startPointName; // 起点名称
     private String endPointName;   // 终点名称
-    private Color color = StyleManager.GEOMETRY_LINE; // 路径颜色
 
     /**
      * 构造函数
@@ -39,6 +38,7 @@ public class PathGeo implements WorldObject {
      * @param points 路径点列表
      */
     public PathGeo(List<Point2D> points) {
+        super(ObjectType.PATH);
         if (points.size() < 2) {
             throw new IllegalArgumentException("路径至少需要2个点");
         }
@@ -48,6 +48,8 @@ public class PathGeo implements WorldObject {
             this.pathPoints.add(new Point(p.getX(), p.getY()));
         }
 
+        this.color = StyleManager.GEOMETRY_LINE;
+
         // 为起点和终点分配名称
         PointNameManager manager = PointNameManager.getInstance();
         Point2D startPoint = points.get(0);
@@ -56,21 +58,15 @@ public class PathGeo implements WorldObject {
         this.endPointName = manager.assignName(endPoint.getX(), endPoint.getY());
     }
 
-    public Color getColor() {
-        return color;
-    }
-
-    public void setColor(Color color) {
-        this.color = color;
-    }
-
     @Override
     public void paint(GraphicsContext gc, WorldTransform transform, double w, double h) {
         if (pathPoints.size() < 2) return;
 
         // 绘制曲线路径
-        gc.setStroke(hover ? StyleManager.GEOMETRY_HOVER : color);
-        gc.setLineWidth(hover ? 3 : 2);
+        // 应用线型
+        LineStyleUtil.applyLineStyle(gc, lineType);
+        gc.setStroke(getEffectiveColor());
+        gc.setLineWidth(getEffectiveLineWidth());
 
         for (int i = 0; i < pathPoints.size() - 1; i++) {
             Point p1 = pathPoints.get(i);
@@ -84,6 +80,9 @@ public class PathGeo implements WorldObject {
             gc.strokeLine(sx1, sy1, sx2, sy2);
         }
 
+        // 重置线型
+        LineStyleUtil.resetLineStyle(gc);
+
         // 只绘制起点和终点
         Point startPoint = pathPoints.get(0);
         Point endPoint = pathPoints.get(pathPoints.size() - 1);
@@ -93,7 +92,7 @@ public class PathGeo implements WorldObject {
         double sx2 = transform.worldToScreenX(endPoint.x);
         double sy2 = transform.worldToScreenY(endPoint.y);
 
-        gc.setFill(hover ? StyleManager.GEOMETRY_HOVER : color);
+        gc.setFill(getEffectiveColor());
         double pointRadius = hover ? 5 : 4;
         gc.fillOval(sx1 - pointRadius, sy1 - pointRadius, pointRadius * 2, pointRadius * 2);
         gc.fillOval(sx2 - pointRadius, sy2 - pointRadius, pointRadius * 2, pointRadius * 2);
@@ -143,11 +142,6 @@ public class PathGeo implements WorldObject {
         double nearestY = y1 + t * dy;
 
         return Math.hypot(px - nearestX, py - nearestY);
-    }
-
-    @Override
-    public void setHover(boolean hover) {
-        this.hover = hover;
     }
 
     @Override
@@ -209,6 +203,28 @@ public class PathGeo implements WorldObject {
             point.x = centerX + dx * cos - dy * sin;
             point.y = centerY + dx * sin + dy * cos;
         }
+    }
+
+    @Override
+    public double[] getBoundingBox() {
+        if (pathPoints.isEmpty()) {
+            return null;
+        }
+
+        // 计算所有路径点的边界框
+        double minX = Double.MAX_VALUE;
+        double maxX = Double.MIN_VALUE;
+        double minY = Double.MAX_VALUE;
+        double maxY = Double.MIN_VALUE;
+
+        for (Point point : pathPoints) {
+            minX = Math.min(minX, point.x);
+            maxX = Math.max(maxX, point.x);
+            minY = Math.min(minY, point.y);
+            maxY = Math.max(maxY, point.y);
+        }
+
+        return new double[]{minX, maxX, minY, maxY};
     }
 
     /**

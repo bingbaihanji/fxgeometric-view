@@ -1,9 +1,10 @@
 package com.bingbaihanji.view.layout.draw.geometry.impl;
 
+import com.bingbaihanji.constant.ObjectType;
+import com.bingbaihanji.util.LineStyleUtil;
 import com.bingbaihanji.util.PointNameManager;
 import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;
-import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -19,23 +20,23 @@ import java.util.List;
  * @author bingbaihanji
  * @date 2025-12-23
  */
-public class InfiniteLineGeo implements WorldObject {
+public class InfiniteLineGeo extends AbstractWorldObject {
 
     private double point1X;
     private double point1Y;
     private double point2X;
     private double point2Y;
 
-    private boolean hover = false;
     private String point1Name; // 定义点1名称
     private String point2Name; // 定义点2名称
-    private Color color = StyleManager.GEOMETRY_LINE; // 直线颜色
 
     public InfiniteLineGeo(double point1X, double point1Y, double point2X, double point2Y) {
+        super(ObjectType.LINE);
         this.point1X = point1X;
         this.point1Y = point1Y;
         this.point2X = point2X;
         this.point2Y = point2Y;
+        this.color = StyleManager.GEOMETRY_LINE;
         // 为定义点分配名称
         PointNameManager manager = PointNameManager.getInstance();
         this.point1Name = manager.assignName(point1X, point1Y);
@@ -58,14 +59,6 @@ public class InfiniteLineGeo implements WorldObject {
         return point2Y;
     }
 
-    public Color getColor() {
-        return color;
-    }
-
-    public void setColor(Color color) {
-        this.color = color;
-    }
-
     @Override
     public void paint(GraphicsContext gc, WorldTransform transform, double w, double h) {
         // 转换两个点到屏幕坐标
@@ -81,12 +74,17 @@ public class InfiniteLineGeo implements WorldObject {
         // 计算直线与屏幕边界的交点
         double[] endpoints = calculateLineScreenIntersection(sx1, sy1, sx2, sy2, w, h);
 
-        gc.setStroke(hover ? StyleManager.GEOMETRY_HOVER : color);
-        gc.setLineWidth(hover ? 3 : 2);
+        // 应用线型
+        LineStyleUtil.applyLineStyle(gc, lineType);
+        gc.setStroke(getEffectiveColor());
+        gc.setLineWidth(getEffectiveLineWidth());
         gc.strokeLine(endpoints[0], endpoints[1], endpoints[2], endpoints[3]);
 
+        // 重置线型
+        LineStyleUtil.resetLineStyle(gc);
+
         // 绘制两个定义点
-        gc.setFill(hover ? StyleManager.GEOMETRY_HOVER : color);
+        gc.setFill(getEffectiveColor());
         double pointRadius = hover ? 5 : 4;
         gc.fillOval(sx1 - pointRadius, sy1 - pointRadius, pointRadius * 2, pointRadius * 2);
         gc.fillOval(sx2 - pointRadius, sy2 - pointRadius, pointRadius * 2, pointRadius * 2);
@@ -166,11 +164,6 @@ public class InfiniteLineGeo implements WorldObject {
     @Override
     public void onClick(double x, double y) {
         // 直线本身暂时不响应点击
-    }
-
-    @Override
-    public void setHover(boolean hover) {
-        this.hover = hover;
     }
 
     @Override

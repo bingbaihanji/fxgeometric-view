@@ -1,9 +1,10 @@
 package com.bingbaihanji.view.layout.draw.geometry.impl;
 
+import com.bingbaihanji.constant.ObjectType;
+import com.bingbaihanji.util.LineStyleUtil;
 import com.bingbaihanji.util.PointNameManager;
 import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;
-import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -11,27 +12,27 @@ import javafx.scene.text.TextAlignment;
 
 import java.util.List;
 
-public class LineGeo implements WorldObject {
+public class LineGeo extends AbstractWorldObject {
 
     private double startX;
     private double startY;
     private double endX;
     private double endY;
 
-    private boolean hover = false;
     private String startPointName; // 起点名称
     private String endPointName;   // 终点名称
-    private Color color = StyleManager.GEOMETRY_LINE; // 线段颜色
 
     public LineGeo(double startX, double startY, double endX, double endY) {
         this(startX, startY, endX, endY, true);
     }
 
     public LineGeo(double startX, double startY, double endX, double endY, boolean autoName) {
+        super(ObjectType.SEGMENT);
         this.startX = startX;
         this.startY = startY;
         this.endX = endX;
         this.endY = endY;
+        this.color = StyleManager.GEOMETRY_LINE; // 线段颜色
         // 根据参数决定是否为起点和终点分配名称
         if (autoName) {
             PointNameManager manager = PointNameManager.getInstance();
@@ -57,14 +58,6 @@ public class LineGeo implements WorldObject {
         return endY;
     }
 
-    public Color getColor() {
-        return color;
-    }
-
-    public void setColor(Color color) {
-        this.color = color;
-    }
-
     @Override
     public void paint(GraphicsContext gc, WorldTransform transform, double w, double h) {
         double sx1 = transform.worldToScreenX(startX);
@@ -72,12 +65,17 @@ public class LineGeo implements WorldObject {
         double sx2 = transform.worldToScreenX(endX);
         double sy2 = transform.worldToScreenY(endY);
 
-        gc.setStroke(hover ? StyleManager.GEOMETRY_HOVER : color);
-        gc.setLineWidth(hover ? 3 : 2);
+        // 应用线型
+        LineStyleUtil.applyLineStyle(gc, lineType);
+        gc.setStroke(getEffectiveColor());
+        gc.setLineWidth(getEffectiveLineWidth());
         gc.strokeLine(sx1, sy1, sx2, sy2);
 
+        // 重置线型
+        LineStyleUtil.resetLineStyle(gc);
+
         // 绘制端点
-        gc.setFill(hover ? StyleManager.GEOMETRY_HOVER : color);
+        gc.setFill(getEffectiveColor());
         double pointRadius = hover ? 5 : 4;
         gc.fillOval(sx1 - pointRadius, sy1 - pointRadius, pointRadius * 2, pointRadius * 2);
         gc.fillOval(sx2 - pointRadius, sy2 - pointRadius, pointRadius * 2, pointRadius * 2);
@@ -119,11 +117,6 @@ public class LineGeo implements WorldObject {
     }
 
     @Override
-    public void setHover(boolean hover) {
-        this.hover = hover;
-    }
-
-    @Override
     public List<DraggablePoint> getDraggablePoints() {
         // 线段的两个端点可拖动
         return List.of(
@@ -154,5 +147,15 @@ public class LineGeo implements WorldObject {
         double dy2 = endY - centerY;
         endX = centerX + dx2 * cos - dy2 * sin;
         endY = centerY + dx2 * sin + dy2 * cos;
+    }
+
+    @Override
+    public double[] getBoundingBox() {
+        // 线段的边界框包含两个端点
+        double minX = Math.min(startX, endX);
+        double maxX = Math.max(startX, endX);
+        double minY = Math.min(startY, endY);
+        double maxY = Math.max(startY, endY);
+        return new double[]{minX, maxX, minY, maxY};
     }
 }

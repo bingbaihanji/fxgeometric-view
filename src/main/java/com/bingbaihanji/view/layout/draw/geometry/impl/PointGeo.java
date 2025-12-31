@@ -1,42 +1,42 @@
 package com.bingbaihanji.view.layout.draw.geometry.impl;
 
+import com.bingbaihanji.constant.ObjectType;
+import com.bingbaihanji.util.LabelRenderer;
 import com.bingbaihanji.util.PointNameManager;
 import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.util.constraint.PointConstraint;
 import com.bingbaihanji.view.layout.core.WorldTransform;
-import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.TextAlignment;
 
 import java.util.List;
 
-public class PointGeo implements WorldObject {
+public class PointGeo extends AbstractWorldObject {
 
     private double x;
     private double y;
 
-    private boolean hover = false;
-    private Color color = StyleManager.GEOMETRY_DEFAULT; // 默认颜色
-    private String name; // 点的名称
     private PointConstraint constraint = null; // 点的约束（可选）
 
     public PointGeo(double x, double y) {
+        super(ObjectType.POINT_FREE); // 默认为自由点
         this.x = x;
         this.y = y;
         // 自动分配名称
-        this.name = PointNameManager.getInstance().assignName(x, y);
+        this.label = PointNameManager.getInstance().assignName(x, y);
+        this.color = StyleManager.GEOMETRY_DEFAULT; // 默认颜色
     }
 
     public PointGeo(double x, double y, boolean autoName) {
+        super(ObjectType.POINT_FREE); // 默认为自由点
         this.x = x;
         this.y = y;
         // 根据参数决定是否自动命名
         if (autoName) {
-            this.name = PointNameManager.getInstance().assignName(x, y);
+            this.label = PointNameManager.getInstance().assignName(x, y);
         }
+        this.color = StyleManager.GEOMETRY_DEFAULT;
     }
 
     // Getter methods
@@ -48,24 +48,14 @@ public class PointGeo implements WorldObject {
         return y;
     }
 
-    // 获取点的颜色
-    public Color getColor() {
-        return color;
-    }
-
-    // 设置点的颜色
-    public void setColor(Color color) {
-        this.color = color;
-    }
-
-    // 获取点的名称
+    // 获取点的名称（兼容旧代码）
     public String getName() {
-        return name;
+        return label;
     }
 
-    // 设置点的名称
+    // 设置点的名称（兼容旧代码）
     public void setName(String name) {
-        this.name = name;
+        this.label = name;
     }
 
     // 获取点的约束
@@ -95,33 +85,26 @@ public class PointGeo implements WorldObject {
         double sx = t.worldToScreenX(x);
         double sy = t.worldToScreenY(y);
 
-        // 约束点使用深蓝色，普通点使用原颜色
-        Color displayColor = hover ? StyleManager.GEOMETRY_HOVER :
-                (isConstrained() ? StyleManager.GEOMETRY_CONSTRAINED : color);
+        // 使用有效颜色（考虑选中/悬停状态）
+        Color displayColor = getEffectiveColor();
+
+        // 约束点使用深蓝色
+        if (isConstrained()) {
+            displayColor = StyleManager.GEOMETRY_CONSTRAINED;
+        }
 
         gc.setFill(displayColor);
 
-        double r = hover ? 6 : 4;
+        double r = (hover || selected) ? 6 : 4;
         gc.fillOval(sx - r, sy - r, r * 2, r * 2);
 
-        // 绘制点的名称
-        if (name != null && !name.isEmpty()) {
-            gc.setFill(Color.BLACK);
-            gc.setFont(Font.font(12));
-            gc.setTextAlign(TextAlignment.LEFT);
-            // 在点的右上方显示名称
-            gc.fillText(name, sx + 8, sy - 8);
-        }
+        // 使用LabelRenderer绘制点的名称
+        LabelRenderer.renderLabel(gc, this, sx, sy);
     }
 
     @Override
     public boolean hitTest(double wx, double wy, double tol) {
         return Math.hypot(wx - x, wy - y) < tol;
-    }
-
-    @Override
-    public void setHover(boolean hover) {
-        this.hover = hover;
     }
 
     @Override
@@ -158,5 +141,12 @@ public class PointGeo implements WorldObject {
         double dy = y - centerY;
         x = centerX + dx * cos - dy * sin;
         y = centerY + dx * sin + dy * cos;
+    }
+
+    @Override
+    public double[] getBoundingBox() {
+        // 点的边界框是一个很小的区域
+        double margin = 0.1;
+        return new double[]{x - margin, x + margin, y - margin, y + margin};
     }
 }

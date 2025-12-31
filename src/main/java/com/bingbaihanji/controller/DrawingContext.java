@@ -64,6 +64,11 @@ public class DrawingContext {
     private SnappingHandler snappingHandler;
 
     /**
+     * 选择管理器
+     */
+    private SelectionManager selectionManager;
+
+    /**
      * 构造函数
      *
      * @param gridChartPane  坐标系面板
@@ -72,6 +77,7 @@ public class DrawingContext {
     public DrawingContext(GridChartView gridChartPane, CommandHistory commandHistory) {
         this.gridChartPane = gridChartPane;
         this.commandHistory = commandHistory;
+        this.selectionManager = new SelectionManager();
     }
 
     // 状态管理
@@ -249,5 +255,19 @@ public class DrawingContext {
      */
     public void setSnappingHandler(SnappingHandler snappingHandler) {
         this.snappingHandler = snappingHandler;
+    }
+
+    /**
+     * 获取选择管理器
+     */
+    public SelectionManager getSelectionManager() {
+        return selectionManager;
+    }
+
+    /**
+     * 设置选择管理器
+     */
+    public void setSelectionManager(SelectionManager selectionManager) {
+        this.selectionManager = selectionManager;
     }
 }

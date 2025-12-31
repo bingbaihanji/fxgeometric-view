@@ -1,6 +1,8 @@
 package com.bingbaihanji.view.layout.core;
 
 import com.bingbaihanji.constant.GridMode;
+import com.bingbaihanji.constant.SnapMode;
+import com.bingbaihanji.util.AxisTickCalculator;
 import com.bingbaihanji.util.SpecialPointManager;
 import com.bingbaihanji.util.SpecialPointManager.SpecialPoint;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
@@ -24,6 +26,7 @@ import javafx.util.Duration;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiConsumer;
 
 /**
@@ -44,6 +47,8 @@ public class GridChartView extends Pane {
     private final List<WorldPainter> painters = new ArrayList<>();
     private final List<WorldObject> objects;  // 改为非final，支持共享列表
     private final CircleDrawingTool circleTool;
+    //  视图配置
+    private final EuclidianViewSettings settings = new EuclidianViewSettings();
     //   鼠标悬停气泡
     private final Tooltip hoverTooltip = new Tooltip();
     private final PauseTransition hoverTimer =
@@ -66,6 +71,13 @@ public class GridChartView extends Pane {
     // 当前鼠标附近的特殊点（用于视觉反馈）
     private SpecialPoint nearbySpecialPoint = null;
     private Runnable onTransformChanged;
+    // 轴向吸附状态（用于视觉反馈）
+    private AxisSnapInfo axisSnapInfo = null;
+
+    /**
+     * 是否显示吸附辅助线（默认false，只在绘制模式下显示）
+     */
+    private boolean showSnapGuideLines = false;
     // 画布背景颜色
     private Color backgroundColor = Color.WHITE;
     //  视图拖拽状态
@@ -97,8 +109,14 @@ public class GridChartView extends Pane {
         initMouseClickOutput(); // 点击控制台显示坐标
         initMouseHoverTooltip(); // 悬浮气泡显示坐标
         initMouseObjectHover();
-        addPainter(new GridPainter(GridMode.DOT));
-        addPainter(new AxesPainter(true));
+
+        // 使用配置初始化 Painters
+        addPainter(new GridPainter(settings));
+        addPainter(new AxesPainter(true, settings));
+
+        // 同步配置到 transform
+        applySettingsToTransform();
+
         setCustomCursorForPane(this, "/icon/mouseStyle.png");
     }
 
@@ -159,24 +177,10 @@ public class GridChartView extends Pane {
         double rawX = screenToWorldX(screenX);
         double rawY = screenToWorldY(screenY);
 
-        // 应用磁性吸附效果
-        SpecialPoint nearestSpecialPoint = findNearestSpecialPoint(rawX, rawY);
-        double x, y;
-        if (nearestSpecialPoint != null) {
-            x = nearestSpecialPoint.getX();
-            y = nearestSpecialPoint.getY();
-        } else {
-            // 如果没有特殊点吸附，则应用原有的吸附逻辑
-            double step = chooseAxisStep();
-
-            x = snapToInteger(rawX);
-            x = snapToGrid(x, step);
-            x = stabilize(x);
-
-            y = snapToInteger(rawY);
-            y = snapToGrid(y, step);
-            y = stabilize(y);
-        }
+        // 应用统一的吸附系统
+        double[] snapped = applySnapping(rawX, rawY);
+        double x = snapped[0];
+        double y = snapped[1];
 
         String text = String.format("(%.2f, %.2f)", x, y);
         hoverTooltip.setText(text);
@@ -186,6 +190,9 @@ public class GridChartView extends Pane {
                 localToScreen(screenX + 12, screenY + 12).getX(),
                 localToScreen(screenX + 12, screenY + 12).getY()
         );
+
+        // 重绘以显示吸附提示
+        redraw();
     }
 
     public Runnable getOnTransformChanged() {
@@ -299,7 +306,7 @@ public class GridChartView extends Pane {
             newScale *= 0.9;
         }
 
-        newScale = clamp(newScale, 5, 500);
+        newScale = clamp(newScale, 2, 5000);
 
         double mouseX = e.getX();
         double mouseY = e.getY();
@@ -396,6 +403,11 @@ public class GridChartView extends Pane {
         if (nearbySpecialPoint != null) {
             drawSpecialPointHint(gc);
         }
+
+        // 绘制轴向吸附辅助线
+        if (axisSnapInfo != null) {
+            drawAxisSnapGuideLine(gc);
+        }
     }
 
     /**
@@ -423,20 +435,6 @@ public class GridChartView extends Pane {
     }
 
     /**
-     * 根据当前缩放比例选择合适的坐标轴刻度步长
-     *
-     * @return 坐标轴刻度步长（世界单位）
-     */
-    private double chooseAxisStep() {
-        double scale = transform.getScale();
-        if (scale > 200) return 0.5;
-        if (scale > 100) return 1;
-        if (scale > 50) return 2;
-        if (scale > 25) return 5;
-        return 10;
-    }
-
-    /**
      * 初始化鼠标点击输出与世界对象交互
      * <p>
      * 点击优先命中 WorldObject；
@@ -450,29 +448,10 @@ public class GridChartView extends Pane {
             double worldX = screenToWorldX(e.getX());
             double worldY = screenToWorldY(e.getY());
 
-            // 应用磁性吸附效果
-            SpecialPoint nearestSpecialPoint = findNearestSpecialPoint(worldX, worldY);
-            if (nearestSpecialPoint != null) {
-                worldX = nearestSpecialPoint.getX();
-                worldY = nearestSpecialPoint.getY();
-            } else {
-                // 如果没有特殊点吸附，则应用原有的吸附逻辑
-                double step = chooseAxisStep();
-
-                worldX = stabilize(
-                        snapToGrid(
-                                snapToInteger(worldX),
-                                step
-                        )
-                );
-
-                worldY = stabilize(
-                        snapToGrid(
-                                snapToInteger(worldY),
-                                step
-                        )
-                );
-            }
+            // 应用统一的吸附系统
+            double[] snapped = applySnapping(worldX, worldY);
+            worldX = snapped[0];
+            worldY = snapped[1];
 
             // 优先命中对象
             double tolerance = 5 / transform.getScale();
@@ -500,14 +479,10 @@ public class GridChartView extends Pane {
             double worldX = screenToWorldX(e.getX());
             double worldY = screenToWorldY(e.getY());
 
-            // 应用磁性吸附效果，并更新附近的特殊点用于视觉反馈
-            SpecialPoint nearestSpecialPoint = findNearestSpecialPoint(worldX, worldY);
-            nearbySpecialPoint = nearestSpecialPoint; // 保存用于绘制提示
-
-            if (nearestSpecialPoint != null) {
-                worldX = nearestSpecialPoint.getX();
-                worldY = nearestSpecialPoint.getY();
-            }
+            // 应用统一的吸附系统（更新吸附状态用于视觉反馈）
+            double[] snapped = applySnapping(worldX, worldY);
+            worldX = snapped[0];
+            worldY = snapped[1];
 
             double tolerance = 5 / transform.getScale();
 
@@ -536,8 +511,8 @@ public class GridChartView extends Pane {
                 }
 
                 redraw();
-            } else if (nearbySpecialPoint != null) {
-                // 即使hover对象没变，如果附近有特殊点，也需要重绘以显示提示
+            } else if (nearbySpecialPoint != null || axisSnapInfo != null) {
+                // 即使hover对象没变，如果有吸附提示，也需要重绘
                 redraw();
             }
         });
@@ -550,9 +525,10 @@ public class GridChartView extends Pane {
                 redraw();
             }
 
-            // 清除特殊点提示
-            if (nearbySpecialPoint != null) {
+            // 清除吸附提示
+            if (nearbySpecialPoint != null || axisSnapInfo != null) {
                 nearbySpecialPoint = null;
+                axisSnapInfo = null;
                 redraw();
             }
         });
@@ -692,6 +668,17 @@ public class GridChartView extends Pane {
     }
 
     /**
+     * 设置是否显示吸附辅助线
+     * <p>
+     * 在绘制几何图形时可以显示辅助线，在选择/拖动模式下应隐藏
+     *
+     * @param show 是否显示辅助线
+     */
+    public void setShowSnapGuideLines(boolean show) {
+        this.showSnapGuideLines = show;
+    }
+
+    /**
      * 添加对象变化监听器（观察者模式）
      *
      * @param listener 监听器回调
@@ -782,4 +769,309 @@ public class GridChartView extends Pane {
         return customDefaultCursor != null ? customDefaultCursor : Cursor.DEFAULT;
     }
 
+    // ========== 视图配置和控制方法 ==========
+
+    /**
+     * 获取视图配置
+     */
+    public EuclidianViewSettings getSettings() {
+        return settings;
+    }
+
+    /**
+     * 应用配置（刷新视图）
+     */
+    public void applySettings() {
+        applySettingsToTransform();
+        redraw();
+    }
+
+    /**
+     * 将配置同步到 Transform
+     */
+    private void applySettingsToTransform() {
+        transform.setScaleX(settings.getXScale());
+        transform.setScaleY(settings.getYScale());
+    }
+
+    /**
+     * 缩放到指定百分比
+     * @param percent 百分比（如100表示100%）
+     */
+    public void zoomToPercent(double percent) {
+        double newScale = com.bingbaihanji.util.AxisRangeCalculator.getScaleFromPercent(transform.getScale(), percent);
+
+        // 保持中心点不变
+        double centerWorldX = transform.screenToWorldX(getWidth() / 2);
+        double centerWorldY = transform.screenToWorldY(getHeight() / 2);
+
+        transform.setScale(newScale);
+        settings.setXScale(newScale);
+        settings.setYScale(newScale);
+
+        transform.centerWorldAt(centerWorldX, centerWorldY, getWidth(), getHeight());
+        redraw();
+    }
+
+    /**
+     * 设置坐标轴比例
+     * @param xRatio X轴比例系数
+     * @param yRatio Y轴比例系数
+     */
+    public void setAxisRatio(double xRatio, double yRatio) {
+        // 保持中心点不变
+        double centerWorldX = transform.screenToWorldX(getWidth() / 2);
+        double centerWorldY = transform.screenToWorldY(getHeight() / 2);
+
+        transform.setAxisRatio(xRatio, yRatio);
+        settings.setXScale(transform.getScaleX());
+        settings.setYScale(transform.getScaleY());
+
+        transform.centerWorldAtWithScales(centerWorldX, centerWorldY, getWidth(), getHeight());
+        redraw();
+    }
+
+    /**
+     * 显示所有对象（自动调整范围）
+     */
+    public void fitAllObjects() {
+        if (objects.isEmpty()) {
+            return;
+        }
+
+        double[] range = com.bingbaihanji.util.AxisRangeCalculator.fitAllObjects(
+                objects, transform, getWidth(), getHeight()
+        );
+
+        // 计算所需的缩放比例
+        double xRange = range[1] - range[0];
+        double yRange = range[3] - range[2];
+
+        double newScaleX = getWidth() / xRange;
+        double newScaleY = getHeight() / yRange;
+
+        // 使用较小的缩放比例，确保所有对象都可见
+        double newScale = Math.min(newScaleX, newScaleY) * 0.9; // 留10%边距
+
+        transform.setScale(newScale);
+        settings.setXScale(newScale);
+        settings.setYScale(newScale);
+
+        // 居中显示
+        double centerX = (range[0] + range[1]) / 2;
+        double centerY = (range[2] + range[3]) / 2;
+
+        transform.centerWorldAt(centerX, centerY, getWidth(), getHeight());
+        redraw();
+    }
+
+    /**
+     * 重置到标准视图（原点居中，比例1:1，缩放100%）
+     */
+    public void resetToStandardView() {
+        double standardScale = 50.0; // 标准缩放（100%）
+
+        transform.setScale(standardScale);
+        settings.setXScale(standardScale);
+        settings.setYScale(standardScale);
+
+        transform.centerWorldAt(0, 0, getWidth(), getHeight());
+        redraw();
+    }
+
+    // ========== 轴向吸附系统 ==========
+
+    /**
+     * 轴向吸附信息类
+     */
+    private static class AxisSnapInfo {
+        boolean isVertical;   // true=垂直线吸附, false=水平线吸附
+        double snapValue;     // 吸附的x或y坐标值
+        double lineStartX;    // 辅助线起点X（屏幕坐标）
+        double lineStartY;    // 辅助线起点Y（屏幕坐标）
+        double lineEndX;      // 辅助线终点X（屏幕坐标）
+        double lineEndY;      // 辅助线终点Y（屏幕坐标）
+
+        public AxisSnapInfo(boolean isVertical, double snapValue,
+                           double lineStartX, double lineStartY,
+                           double lineEndX, double lineEndY) {
+            this.isVertical = isVertical;
+            this.snapValue = snapValue;
+            this.lineStartX = lineStartX;
+            this.lineStartY = lineStartY;
+            this.lineEndX = lineEndX;
+            this.lineEndY = lineEndY;
+        }
+    }
+
+    /**
+     * 应用坐标吸附（包括点吸附、网格吸附、轴向吸附）
+     *
+     * @param rawX 原始世界坐标X
+     * @param rawY 原始世界坐标Y
+     * @return 吸附后的坐标数组 [x, y]
+     */
+    private double[] applySnapping(double rawX, double rawY) {
+        double x = rawX;
+        double y = rawY;
+
+        // 清空之前的吸附状态
+        nearbySpecialPoint = null;
+        axisSnapInfo = null;
+
+        Set<SnapMode> snapModes = settings.getSnapModes();
+
+        // 1. 特殊点吸附（最高优先级）
+        if (snapModes.contains(SnapMode.POINT)) {
+            SpecialPoint specialPoint = findNearestSpecialPoint(rawX, rawY);
+            if (specialPoint != null) {
+                nearbySpecialPoint = specialPoint;
+                return new double[]{specialPoint.getX(), specialPoint.getY()};
+            }
+        }
+
+        // 2. 轴向吸附（垂直/水平）
+        AxisSnapResult axisSnap = findNearestAxisSnap(rawX, rawY);
+        if (axisSnap != null) {
+            axisSnapInfo = axisSnap.snapInfo;
+            if (axisSnap.snapInfo.isVertical) {
+                x = axisSnap.snapInfo.snapValue;
+            } else {
+                y = axisSnap.snapInfo.snapValue;
+            }
+            return new double[]{x, y};
+        }
+
+        // 3. 网格吸附（最低优先级）
+        if (snapModes.contains(SnapMode.GRID)) {
+            // 使用统一的刻度计算器（确保与网格和坐标轴一致）
+            double step = AxisTickCalculator.calculateAxisTickDistance(
+                transform.getScale(),
+                false  // 网格吸附通常不使用π单位
+            );
+
+            x = snapToInteger(rawX);
+            x = snapToGrid(x, step);
+            x = stabilize(x);
+
+            y = snapToInteger(rawY);
+            y = snapToGrid(y, step);
+            y = stabilize(y);
+        }
+
+        return new double[]{x, y};
+    }
+
+    /**
+     * 轴向吸附结果类
+     */
+    private static class AxisSnapResult {
+        AxisSnapInfo snapInfo;
+        double distance;  // 到吸附线的距离
+
+        public AxisSnapResult(AxisSnapInfo snapInfo, double distance) {
+            this.snapInfo = snapInfo;
+            this.distance = distance;
+        }
+    }
+
+    /**
+     * 查找最近的轴向吸附（垂直线或水平线）
+     *
+     * @param worldX 当前世界坐标X
+     * @param worldY 当前世界坐标Y
+     * @return 轴向吸附结果，如果没有找到返回null
+     */
+    private AxisSnapResult findNearestAxisSnap(double worldX, double worldY) {
+        Set<SnapMode> snapModes = settings.getSnapModes();
+        boolean enableVertical = snapModes.contains(SnapMode.AXIS_VERTICAL);
+        boolean enableHorizontal = snapModes.contains(SnapMode.AXIS_HORIZONTAL);
+
+        if (!enableVertical && !enableHorizontal) {
+            return null;
+        }
+
+        // 计算吸附阈值（像素转世界坐标）
+        double threshold = settings.getSnapThreshold() / transform.getScale();
+
+        AxisSnapResult bestSnap = null;
+        double minDistance = threshold;
+
+        // 遍历所有点对象，检测是否接近其垂直线或水平线
+        List<SpecialPoint> specialPoints = SpecialPointManager.extractSpecialPoints(objects);
+
+        for (SpecialPoint point : specialPoints) {
+            // 检查垂直线吸附
+            if (enableVertical) {
+                double distX = Math.abs(worldX - point.getX());
+                if (distX < minDistance) {
+                    // 计算辅助线的屏幕坐标
+                    double screenX = transform.worldToScreenX(point.getX());
+                    double lineStartY = 0;
+                    double lineEndY = getHeight();
+
+                    AxisSnapInfo snapInfo = new AxisSnapInfo(
+                        true,
+                        point.getX(),
+                        screenX, lineStartY,
+                        screenX, lineEndY
+                    );
+
+                    bestSnap = new AxisSnapResult(snapInfo, distX);
+                    minDistance = distX;
+                }
+            }
+
+            // 检查水平线吸附
+            if (enableHorizontal) {
+                double distY = Math.abs(worldY - point.getY());
+                if (distY < minDistance) {
+                    // 计算辅助线的屏幕坐标
+                    double screenY = transform.worldToScreenY(point.getY());
+                    double lineStartX = 0;
+                    double lineEndX = getWidth();
+
+                    AxisSnapInfo snapInfo = new AxisSnapInfo(
+                        false,
+                        point.getY(),
+                        lineStartX, screenY,
+                        lineEndX, screenY
+                    );
+
+                    bestSnap = new AxisSnapResult(snapInfo, distY);
+                    minDistance = distY;
+                }
+            }
+        }
+
+        return bestSnap;
+    }
+
+    /**
+     * 绘制轴向吸附辅助线
+     */
+    private void drawAxisSnapGuideLine(GraphicsContext gc) {
+        // 只在允许显示辅助线且有吸附信息时绘制
+        if (!showSnapGuideLines || axisSnapInfo == null) {
+            return;
+        }
+
+        // 设置辅助线样式
+        gc.setStroke(Color.rgb(0, 150, 255, 0.6)); // 蓝色半透明
+        gc.setLineWidth(1.5);
+        gc.setLineDashes(5, 5);
+
+        // 绘制辅助线
+        gc.strokeLine(
+            axisSnapInfo.lineStartX,
+            axisSnapInfo.lineStartY,
+            axisSnapInfo.lineEndX,
+            axisSnapInfo.lineEndY
+        );
+
+        // 恢复默认样式
+        gc.setLineDashes(null);
+    }
+
 }
+

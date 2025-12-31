@@ -11,10 +11,16 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * 拖动处理器
  * <p>
  * 处理控制点的拖动操作（在非绘制模式下）
+ * 支持多选对象的同时拖动
  *
  * @author bingbaihanji
  * @date 2025-12-31
@@ -25,6 +31,17 @@ public class DragHandler extends AbstractDrawingHandler {
      * 当前拖动的控制点
      */
     private WorldObject.DraggablePoint draggingPoint = null;
+
+    /**
+     * 多选对象拖动模式
+     */
+    private boolean draggingMultipleObjects = false;
+
+    /**
+     * 被拖动的多个对象及其所有控制点
+     */
+    private List<WorldObject> draggingObjects = new ArrayList<>();
+    private List<WorldObject.DraggablePoint> allDraggingPoints = new ArrayList<>();
 
     /**
      * 拖动开始时的鼠标偏移量
@@ -43,6 +60,11 @@ public class DragHandler extends AbstractDrawingHandler {
      */
     private double dragEndX = 0;
     private double dragEndY = 0;
+
+    /**
+     * 多选对象的初始位置（用于撤销）
+     */
+    private Map<WorldObject.DraggablePoint, double[]> initialPositions = new HashMap<>();
 
     @Override
     public boolean canHandle(DrawMode mode) {
@@ -64,11 +86,14 @@ public class DragHandler extends AbstractDrawingHandler {
         double scale = context.getTransform().getScale();
         double tolerance = 10.0 / scale; // 10像素的点击范围
 
-        // 遍历所有图形的控制点，找到最近的控制点
+        // ========== 优先级1：检查所有顶点（最高优先级）==========
+        // 无论对象是否被选中，顶点始终具有最高优先级
         for (WorldObject obj : context.getObjects()) {
             for (WorldObject.DraggablePoint point : obj.getDraggablePoints()) {
                 if (point.hitTest(worldX, worldY, tolerance)) {
+                    // 命中顶点，进入单顶点拖动模式
                     draggingPoint = point;
+                    draggingMultipleObjects = false;
                     dragOffsetX = worldX - point.getX();
                     dragOffsetY = worldY - point.getY();
 
@@ -85,12 +110,47 @@ public class DragHandler extends AbstractDrawingHandler {
             }
         }
 
+        // ========== 优先级2：检查已选中对象（用于多选拖动整体）==========
+        // 只有在没有命中顶点的情况下，才检查是否点击了对象的边缘/内部
+        List<WorldObject> selectedObjects = context.getSelectionManager().getSelectedObjects();
+        if (!selectedObjects.isEmpty()) {
+            // 检查是否点击了某个选中对象的边缘/内部（非顶点）
+            for (WorldObject selectedObj : selectedObjects) {
+                if (selectedObj.hitTest(worldX, worldY, tolerance)) {
+                    // 点击了选中对象的边缘/内部，开始多选拖动
+                    draggingMultipleObjects = true;
+                    draggingObjects = new ArrayList<>(selectedObjects);
+                    allDraggingPoints.clear();
+                    initialPositions.clear();
+
+                    // 收集所有选中对象的控制点
+                    for (WorldObject obj : draggingObjects) {
+                        for (WorldObject.DraggablePoint point : obj.getDraggablePoints()) {
+                            allDraggingPoints.add(point);
+                            // 保存初始位置
+                            initialPositions.put(point, new double[]{point.getX(), point.getY()});
+                        }
+                    }
+
+                    // 记录拖动起始位置
+                    dragStartX = worldX;
+                    dragStartY = worldY;
+                    dragEndX = worldX;
+                    dragEndY = worldY;
+
+                    e.consume();
+                    return true;
+                }
+            }
+        }
+
+        // ========== 优先级3：未命中任何对象 ==========
         return false;
     }
 
     @Override
     public boolean handleMouseMoved(MouseEvent e, DrawingContext context) {
-        if (!canHandle(context.getDrawMode()) || draggingPoint != null) {
+        if (!canHandle(context.getDrawMode()) || draggingPoint != null || draggingMultipleObjects) {
             return false;
         }
 
@@ -100,6 +160,28 @@ public class DragHandler extends AbstractDrawingHandler {
         context.setCurrentMouseX(worldX);
         context.setCurrentMouseY(worldY);
 
+        // 检查鼠标是否靠近顶点，如果是则显示十字光标
+        double scale = context.getTransform().getScale();
+        double tolerance = 10.0 / scale; // 10像素的容差
+
+        boolean nearVertex = false;
+        for (WorldObject obj : context.getObjects()) {
+            for (WorldObject.DraggablePoint point : obj.getDraggablePoints()) {
+                if (point.hitTest(worldX, worldY, tolerance)) {
+                    nearVertex = true;
+                    break;
+                }
+            }
+            if (nearVertex) break;
+        }
+
+        // 设置光标样式
+        if (nearVertex) {
+            context.getGridChartPane().setCursor(javafx.scene.Cursor.CROSSHAIR);
+        } else {
+            context.getGridChartPane().setCursor(context.getGridChartPane().getDefaultCursor());
+        }
+
         // 重绘以显示悬停高亮
         context.redraw();
         return true;
@@ -107,11 +189,15 @@ public class DragHandler extends AbstractDrawingHandler {
 
     @Override
     public boolean handleMouseDragged(MouseEvent e, DrawingContext context) {
-        if (draggingPoint == null) {
+        if (draggingPoint == null && !draggingMultipleObjects) {
             return false;
         }
 
-        // 拖动控制点
+        // 拖动顶点时保持十字光标
+        if (draggingPoint != null) {
+            context.getGridChartPane().setCursor(javafx.scene.Cursor.CROSSHAIR);
+        }
+
         double rawX = context.getGridChartPane().screenToWorldX(e.getX());
         double rawY = context.getGridChartPane().screenToWorldY(e.getY());
 
@@ -124,19 +210,38 @@ public class DragHandler extends AbstractDrawingHandler {
             worldY = nearestPoint.getY();
         }
 
-        // 计算实际更新后的位置
-        double newX = worldX - dragOffsetX;
-        double newY = worldY - dragOffsetY;
+        if (draggingMultipleObjects) {
+            // 多选对象拖动：计算位移量，移动所有控制点
+            double deltaX = worldX - dragStartX;
+            double deltaY = worldY - dragStartY;
 
-        // 更新控制点位置
-        draggingPoint.updatePosition(newX, newY);
+            // 更新所有控制点位置
+            for (WorldObject.DraggablePoint point : allDraggingPoints) {
+                double[] initial = initialPositions.get(point);
+                if (initial != null) {
+                    point.updatePosition(initial[0] + deltaX, initial[1] + deltaY);
+                }
+            }
+
+            // 记录当前位置
+            dragEndX = worldX;
+            dragEndY = worldY;
+
+        } else if (draggingPoint != null) {
+            // 单个控制点拖动
+            double newX = worldX - dragOffsetX;
+            double newY = worldY - dragOffsetY;
+
+            // 更新控制点位置
+            draggingPoint.updatePosition(newX, newY);
+
+            // 实时记录当前拖动位置（用于撤销/恢复）
+            dragEndX = newX;
+            dragEndY = newY;
+        }
 
         // 实时更新所有约束点（关键！）
         context.getConstraintHandler().updateAllConstrainedPoints(context);
-
-        // 实时记录当前拖动位置（用于撤销/恢复）
-        dragEndX = newX;
-        dragEndY = newY;
 
         // 重绘
         context.redraw();
@@ -146,46 +251,95 @@ public class DragHandler extends AbstractDrawingHandler {
 
     @Override
     public boolean handleMouseReleased(MouseEvent e, DrawingContext context) {
-        if (draggingPoint == null) {
+        if (draggingPoint == null && !draggingMultipleObjects) {
             return false;
         }
 
-        // 结束拖动
-        // 只有位置实际改变才记录命令
-        if (Math.abs(dragStartX - dragEndX) > 1e-10 ||
-                Math.abs(dragStartY - dragEndY) > 1e-10) {
+        if (draggingMultipleObjects) {
+            // 多选对象拖动结束
+            double deltaX = dragEndX - dragStartX;
+            double deltaY = dragEndY - dragStartY;
 
-            // 保存对点的持久引用和坐标
-            final WorldObject.DraggablePoint pointRef = draggingPoint;
-            final double startX = dragStartX;
-            final double startY = dragStartY;
-            final double endX = dragEndX;
-            final double endY = dragEndY;
+            // 只有位置实际改变才记录命令
+            if (Math.abs(deltaX) > 1e-10 || Math.abs(deltaY) > 1e-10) {
+                // 保存对控制点的引用和位置
+                final Map<WorldObject.DraggablePoint, double[]> savedInitialPositions = new HashMap<>(initialPositions);
+                final double finalDeltaX = deltaX;
+                final double finalDeltaY = deltaY;
 
-            // 使用addCommand而不是execute，因为拖动已经完成了
-            context.addCommand(new CommandHistory.Command() {
-                @Override
-                public void execute() {
-                    // 恢复操作：移动到结束位置
-                    pointRef.updatePosition(endX, endY);
-                    context.getConstraintHandler().updateAllConstrainedPoints(context);  // 更新约束点
-                    context.getIntersectionHandler().recalculateAllIntersections(context);
-                }
+                context.addCommand(new CommandHistory.Command() {
+                    @Override
+                    public void execute() {
+                        // 恢复操作：移动到结束位置
+                        for (Map.Entry<WorldObject.DraggablePoint, double[]> entry : savedInitialPositions.entrySet()) {
+                            WorldObject.DraggablePoint point = entry.getKey();
+                            double[] initial = entry.getValue();
+                            point.updatePosition(initial[0] + finalDeltaX, initial[1] + finalDeltaY);
+                        }
+                        context.getConstraintHandler().updateAllConstrainedPoints(context);
+                        context.getIntersectionHandler().recalculateAllIntersections(context);
+                    }
 
-                @Override
-                public void undo() {
-                    // 撤销操作：移动回起始位置
-                    pointRef.updatePosition(startX, startY);
-                    context.getConstraintHandler().updateAllConstrainedPoints(context);  // 更新约束点
-                    context.getIntersectionHandler().recalculateAllIntersections(context);
-                }
-            });
+                    @Override
+                    public void undo() {
+                        // 撤销操作：移动回起始位置
+                        for (Map.Entry<WorldObject.DraggablePoint, double[]> entry : savedInitialPositions.entrySet()) {
+                            WorldObject.DraggablePoint point = entry.getKey();
+                            double[] initial = entry.getValue();
+                            point.updatePosition(initial[0], initial[1]);
+                        }
+                        context.getConstraintHandler().updateAllConstrainedPoints(context);
+                        context.getIntersectionHandler().recalculateAllIntersections(context);
+                    }
+                });
+            }
+
+            // 重置多选拖动状态
+            draggingMultipleObjects = false;
+            draggingObjects.clear();
+            allDraggingPoints.clear();
+            initialPositions.clear();
+
+        } else if (draggingPoint != null) {
+            // 单个控制点拖动结束
+            // 只有位置实际改变才记录命令
+            if (Math.abs(dragStartX - dragEndX) > 1e-10 ||
+                    Math.abs(dragStartY - dragEndY) > 1e-10) {
+
+                // 保存对点的持久引用和坐标
+                final WorldObject.DraggablePoint pointRef = draggingPoint;
+                final double startX = dragStartX;
+                final double startY = dragStartY;
+                final double endX = dragEndX;
+                final double endY = dragEndY;
+
+                // 使用addCommand而不是execute，因为拖动已经完成了
+                context.addCommand(new CommandHistory.Command() {
+                    @Override
+                    public void execute() {
+                        // 恢复操作：移动到结束位置
+                        pointRef.updatePosition(endX, endY);
+                        context.getConstraintHandler().updateAllConstrainedPoints(context);  // 更新约束点
+                        context.getIntersectionHandler().recalculateAllIntersections(context);
+                    }
+
+                    @Override
+                    public void undo() {
+                        // 撤销操作：移动回起始位置
+                        pointRef.updatePosition(startX, startY);
+                        context.getConstraintHandler().updateAllConstrainedPoints(context);  // 更新约束点
+                        context.getIntersectionHandler().recalculateAllIntersections(context);
+                    }
+                });
+            }
+
+            // 重置单点拖动状态
+            draggingPoint = null;
+            dragOffsetX = 0;
+            dragOffsetY = 0;
         }
 
-        // 重置拖动状态
-        draggingPoint = null;
-        dragOffsetX = 0;
-        dragOffsetY = 0;
+        // 重置通用拖动状态
         dragStartX = 0;
         dragStartY = 0;
         dragEndX = 0;
@@ -194,6 +348,9 @@ public class DragHandler extends AbstractDrawingHandler {
         // 重新计算所有交点
         context.getIntersectionHandler().recalculateAllIntersections(context);
 
+        // 恢复默认光标
+        context.getGridChartPane().setCursor(context.getGridChartPane().getDefaultCursor());
+
         e.consume();
         return true;
     }
@@ -201,6 +358,10 @@ public class DragHandler extends AbstractDrawingHandler {
     @Override
     public void reset() {
         draggingPoint = null;
+        draggingMultipleObjects = false;
+        draggingObjects.clear();
+        allDraggingPoints.clear();
+        initialPositions.clear();
         dragOffsetX = 0;
         dragOffsetY = 0;
         dragStartX = 0;
@@ -211,7 +372,7 @@ public class DragHandler extends AbstractDrawingHandler {
 
     @Override
     public void paintPreview(GraphicsContext gc, WorldTransform transform, DrawingContext context) {
-        if (!canHandle(context.getDrawMode()) || draggingPoint != null) {
+        if (!canHandle(context.getDrawMode()) || draggingPoint != null || draggingMultipleObjects) {
             return;
         }
 
