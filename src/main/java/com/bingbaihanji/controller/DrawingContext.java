@@ -74,7 +74,7 @@ public class DrawingContext {
         this.commandHistory = commandHistory;
     }
 
-    // ==================== 状态管理 ====================
+    // 状态管理
 
     /**
      * 获取当前绘制模式
@@ -132,7 +132,7 @@ public class DrawingContext {
         this.currentMouseY = currentMouseY;
     }
 
-    // ==================== 画布操作 ====================
+    // 画布操作
 
     /**
      * 获取坐标系面板
@@ -180,7 +180,7 @@ public class DrawingContext {
         gridChartPane.redraw();
     }
 
-    // ==================== 命令历史管理 ====================
+    // 命令历史管理
 
     /**
      * 获取命令历史管理器
@@ -207,7 +207,7 @@ public class DrawingContext {
         commandHistory.addCommand(command);
     }
 
-    // ==================== 服务型 Handler 管理 ====================
+    // 服务型 Handler 管理
 
     /**
      * 获取交点计算处理器

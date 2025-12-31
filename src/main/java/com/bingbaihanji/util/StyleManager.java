@@ -13,12 +13,12 @@ import javafx.scene.paint.Color;
  */
 public class StyleManager {
 
-    // ==================== 面板颜色 ====================
+    // 面板颜色
     public static final String PANEL_BACKGROUND = "#fafafa";
     public static final String BORDER_COLOR = "#e5e5e5";
     public static final String SCROLL_PANE_BACKGROUND = "#fafafa";
 
-    // ==================== 按钮颜色 ====================
+    // 按钮颜色
     public static final String BUTTON_DEFAULT_BG = "#ffffff";
     public static final String BUTTON_DEFAULT_BORDER = "#d0d0d0";
     public static final String BUTTON_HOVER_BG = "#f9f9f9";
@@ -26,23 +26,23 @@ public class StyleManager {
     public static final String BUTTON_SELECTED_BG = "#eff6ff";
     public static final String BUTTON_SELECTED_BORDER = "#2563eb";
 
-    // ==================== 文字颜色 ====================
+    // 文字颜色
     public static final String TEXT_PRIMARY = "#1f2937";
     public static final String TEXT_SECONDARY = "#333";
 
-    // ==================== 几何元素颜色 ====================
+    // 几何元素颜色
     public static final Color GEOMETRY_DEFAULT = Color.RED;
     public static final Color GEOMETRY_HOVER = Color.ORANGE;
     public static final Color GEOMETRY_CONSTRAINED = Color.DARKBLUE;
     public static final Color GEOMETRY_LINE = Color.DODGERBLUE; // 线条颜色
 
-    // ==================== 坐标轴和网格颜色 ====================
+    // 坐标轴和网格颜色
     public static final Color AXES_COLOR = Color.valueOf("#f7a707");
     public static final Color BOUNDARY_AXES_COLOR = Color.valueOf("#4287f5");
     public static final Color GRID_DOT_COLOR = Color.rgb(126, 126, 126);
     public static final Color GRID_LINE_COLOR = Color.rgb(153, 153, 153);
 
-    // ==================== CSS样式生成方法 ====================
+    // CSS样式生成方法
 
     /**
      * 获取面板样式
@@ -139,7 +139,7 @@ public class StyleManager {
         return "-fx-font-size: 20px; -fx-text-fill: " + TEXT_SECONDARY + ";";
     }
 
-    // ==================== 工具方法 ====================
+    // 工具方法
 
     /**
      * 将JavaFX Color转换为十六进制字符串

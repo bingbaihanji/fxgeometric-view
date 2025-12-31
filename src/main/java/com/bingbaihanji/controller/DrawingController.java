@@ -104,7 +104,7 @@ public class DrawingController {
         context.getGridChartPane().setOnContextMenuRequested(this::handleContextMenu);
     }
 
-    // ==================== 事件分发方法（责任链模式） ====================
+    // 事件分发方法（责任链模式）
 
     /**
      * 鼠标点击事件
@@ -182,7 +182,7 @@ public class DrawingController {
         }
     }
 
-    // ==================== 对外接口（保持兼容性） ====================
+    // 对外接口（保持兼容性）
 
     /**
      * 设置绘制模式
@@ -258,7 +258,7 @@ public class DrawingController {
         return context.getCommandHistory().canRedo();
     }
 
-    // ==================== 窗口管理方法（保留） ====================
+    // 窗口管理方法（保留）
 
     /**
      * 添加子窗口到列表中
@@ -277,7 +277,7 @@ public class DrawingController {
         childWindows.clear();
     }
 
-    // ==================== 右键菜单处理（保留） ====================
+    // 右键菜单处理（保留）
 
     /**
      * 处理右键菜单事件
