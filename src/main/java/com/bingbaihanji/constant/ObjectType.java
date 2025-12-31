@@ -9,7 +9,7 @@ package com.bingbaihanji.constant;
  */
 public enum ObjectType {
 
-    // ========== 点类型 ==========
+    //   点类型  
 
     /**
      * 自由点（可自由移动）
@@ -31,7 +31,7 @@ public enum ObjectType {
      */
     POINT_INTERSECTION("点", "交点"),
 
-    // ========== 线类型 ==========
+    //   线类型  
 
     /**
      * 线段（有限线）
@@ -53,7 +53,7 @@ public enum ObjectType {
      */
     VECTOR("向量", "向量"),
 
-    // ========== 圆锥曲线类型 ==========
+    //   圆锥曲线类型  
 
     /**
      * 圆
@@ -85,7 +85,7 @@ public enum ObjectType {
      */
     PARABOLA("抛物线", "抛物线"),
 
-    // ========== 多边形类型 ==========
+    //   多边形类型  
 
     /**
      * 多边形
@@ -107,7 +107,7 @@ public enum ObjectType {
      */
     REGULAR_POLYGON("正多边形", "正多边形"),
 
-    // ========== 特殊对象类型 ==========
+    //   特殊对象类型  
 
     /**
      * 角度标注
@@ -139,7 +139,7 @@ public enum ObjectType {
      */
     IMAGE("图片", "图片");
 
-    // ========== 属性 ==========
+    //   属性  
 
     /**
      * 对象类别（中文）
@@ -151,14 +151,14 @@ public enum ObjectType {
      */
     private final String displayName;
 
-    // ========== 构造函数 ==========
+    //   构造函数  
 
     ObjectType(String category, String displayName) {
         this.category = category;
         this.displayName = displayName;
     }
 
-    // ========== Getter 方法 ==========
+    //   Getter 方法  
 
     public String getCategory() {
         return category;
@@ -168,7 +168,7 @@ public enum ObjectType {
         return displayName;
     }
 
-    // ========== 工具方法 ==========
+    //   工具方法  
 
     /**
      * 判断是否为点类型

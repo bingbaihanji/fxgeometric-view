@@ -17,21 +17,21 @@ import java.util.stream.Collectors;
  */
 public class SelectionManager {
 
-    // ========== 选中对象列表 ==========
+    //   选中对象列表  
 
     /**
      * 主选择列表（所有选中的对象）
      */
     private final List<WorldObject> selectedObjects = new ArrayList<>();
 
-    // ========== 选择变化监听器 ==========
+    //   选择变化监听器  
 
     /**
      * 选择变化监听器列表
      */
     private final List<SelectionChangeListener> listeners = new ArrayList<>();
 
-    // ========== 选择操作 ==========
+    //   选择操作  
 
     /**
      * 添加对象到选择集
@@ -168,7 +168,7 @@ public class SelectionManager {
         notifySelectionChanged();
     }
 
-    // ========== 查询方法 ==========
+    //   查询方法  
 
     /**
      * 获取所有选中对象（不可修改）
@@ -251,7 +251,7 @@ public class SelectionManager {
                 .collect(Collectors.toList());
     }
 
-    // ========== 监听器管理 ==========
+    //   监听器管理  
 
     /**
      * 添加选择变化监听器
@@ -278,7 +278,7 @@ public class SelectionManager {
         }
     }
 
-    // ========== 监听器接口 ==========
+    //   监听器接口  
 
     /**
      * 选择变化监听器接口

@@ -297,7 +297,7 @@ public class DrawingController {
         double vertexTolerance = 10.0 / scale; // 顶点使用更大的容差
         double objectTolerance = 5.0 / scale;  // 对象使用较小的容差
 
-        // ========== 优先级1：检查是否点击了图形的顶点 ==========
+        //   优先级1：检查是否点击了图形的顶点  
         List<WorldObject> objects = context.getObjects();
         for (WorldObject obj : objects) {
             for (WorldObject.DraggablePoint point : obj.getDraggablePoints()) {
@@ -313,7 +313,7 @@ public class DrawingController {
             }
         }
 
-        // ========== 优先级2：检查是否点击了独立的点对象 ==========
+        //   优先级2：检查是否点击了独立的点对象  
         WorldObject clickedObject = null;
         for (int i = objects.size() - 1; i >= 0; i--) {
             WorldObject obj = objects.get(i);

@@ -86,7 +86,7 @@ public class DragHandler extends AbstractDrawingHandler {
         double scale = context.getTransform().getScale();
         double tolerance = 10.0 / scale; // 10像素的点击范围
 
-        // ========== 优先级1：检查所有顶点（最高优先级）==========
+        //   优先级1：检查所有顶点（最高优先级） 
         // 无论对象是否被选中，顶点始终具有最高优先级
         for (WorldObject obj : context.getObjects()) {
             for (WorldObject.DraggablePoint point : obj.getDraggablePoints()) {
@@ -110,7 +110,7 @@ public class DragHandler extends AbstractDrawingHandler {
             }
         }
 
-        // ========== 优先级2：检查已选中对象（用于多选拖动整体）==========
+        //   优先级2：检查已选中对象（用于多选拖动整体） 
         // 只有在没有命中顶点的情况下，才检查是否点击了对象的边缘/内部
         List<WorldObject> selectedObjects = context.getSelectionManager().getSelectedObjects();
         if (!selectedObjects.isEmpty()) {
@@ -144,7 +144,7 @@ public class DragHandler extends AbstractDrawingHandler {
             }
         }
 
-        // ========== 优先级3：未命中任何对象 ==========
+        //   优先级3：未命中任何对象  
         return false;
     }
 

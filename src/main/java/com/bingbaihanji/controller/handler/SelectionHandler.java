@@ -60,7 +60,7 @@ public class SelectionHandler extends AbstractDrawingHandler {
         double tolerance = 5.0 / scale; // 5像素的点击范围
         double vertexTolerance = 10.0 / scale; // 顶点使用更大的容差（10像素）
 
-        // ========== 优先级1：检查是否点击了顶点 ==========
+        //   优先级1：检查是否点击了顶点  
         // 顶点具有最高优先级，如果点击了顶点，不选中对象，让 DragHandler 处理
         for (WorldObject obj : context.getObjects()) {
             for (WorldObject.DraggablePoint point : obj.getDraggablePoints()) {
@@ -71,7 +71,7 @@ public class SelectionHandler extends AbstractDrawingHandler {
             }
         }
 
-        // ========== 优先级2：检查是否点击了对象（非顶点部分）==========
+        //   优先级2：检查是否点击了对象（非顶点部分） 
         // 尝试点击选中对象
         WorldObject clickedObject = null;
         for (int i = context.getObjects().size() - 1; i >= 0; i--) {

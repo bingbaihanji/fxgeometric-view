@@ -15,7 +15,7 @@ import java.util.Set;
  */
 public class EuclidianViewSettings {
 
-    // ========== 坐标轴配置 ==========
+    //   坐标轴配置  
 
     /**
      * X轴缩放比例（像素/单位）
@@ -122,7 +122,7 @@ public class EuclidianViewSettings {
      */
     private boolean showAxesNumbers = true;
 
-    // ========== 网格配置 ==========
+    //   网格配置  
 
     /**
      * 网格类型
@@ -188,7 +188,7 @@ public class EuclidianViewSettings {
      */
     private boolean yAxisPiUnit = false;
 
-    // ========== 吸附配置 ==========
+    //   吸附配置  
 
     /**
      * 吸附模式集合（可同时启用多种）
@@ -200,7 +200,7 @@ public class EuclidianViewSettings {
      */
     private double snapThreshold = 10.0;
 
-    // ========== 构造函数 ==========
+    //   构造函数  
 
     public EuclidianViewSettings() {
         // 默认启用网格吸附、点吸附和轴向吸附
@@ -210,7 +210,7 @@ public class EuclidianViewSettings {
         snapModes.add(SnapMode.AXIS_HORIZONTAL);
     }
 
-    // ========== Getter and Setter ==========
+    //   Getter and Setter  
 
     public double getXScale() {
         return xScale;

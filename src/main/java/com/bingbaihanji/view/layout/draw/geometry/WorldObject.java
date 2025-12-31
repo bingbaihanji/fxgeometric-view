@@ -17,7 +17,7 @@ import java.util.List;
  */
 public interface WorldObject extends WorldPainter {
 
-    // ========== 基本信息 ==========
+    //   基本信息  
 
     /**
      * 获取对象唯一 ID
@@ -94,7 +94,7 @@ public interface WorldObject extends WorldPainter {
     default void setLabelColor(Color color) {
     }
 
-    // ========== 交互状态 ==========
+    //   交互状态  
 
     /**
      * 命中测试（世界坐标）
@@ -137,7 +137,7 @@ public interface WorldObject extends WorldPainter {
     default void setSelected(boolean selected) {
     }
 
-    // ========== 视觉属性 ==========
+    //   视觉属性  
 
     /**
      * 获取对象颜色
@@ -204,7 +204,7 @@ public interface WorldObject extends WorldPainter {
     default void setLayer(int layer) {
     }
 
-    // ========== 填充属性 (仅封闭图形) ==========
+    //   填充属性 (仅封闭图形)  
 
     /**
      * 获取填充类型
@@ -271,7 +271,7 @@ public interface WorldObject extends WorldPainter {
     default void setHatchDistance(int distance) {
     }
 
-    // ========== 可见性和锁定 ==========
+    //   可见性和锁定  
 
     /**
      * 是否可见
@@ -325,7 +325,7 @@ public interface WorldObject extends WorldPainter {
     default void setSelectable(boolean selectable) {
     }
 
-    // ========== 拖拽相关 ==========
+    //   拖拽相关  
 
     /**
      * 获取可拖动的控制点列表

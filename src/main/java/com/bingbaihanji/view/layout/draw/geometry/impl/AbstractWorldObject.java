@@ -17,7 +17,7 @@ import javafx.scene.paint.Color;
  */
 public abstract class AbstractWorldObject implements WorldObject {
 
-    // ========== 基本信息 ==========
+    //   基本信息  
 
     /**
      * 对象唯一 ID
@@ -54,7 +54,7 @@ public abstract class AbstractWorldObject implements WorldObject {
      */
     protected Color labelColor = Color.BLACK;
 
-    // ========== 交互状态 ==========
+    //   交互状态  
 
     /**
      * 悬停状态
@@ -66,7 +66,7 @@ public abstract class AbstractWorldObject implements WorldObject {
      */
     protected boolean selected = false;
 
-    // ========== 视觉属性 ==========
+    //   视觉属性  
 
     /**
      * 对象颜色（描边颜色）
@@ -93,7 +93,7 @@ public abstract class AbstractWorldObject implements WorldObject {
      */
     protected int layer = 0;
 
-    // ========== 填充属性 ==========
+    //   填充属性  
 
     /**
      * 填充类型
@@ -120,7 +120,7 @@ public abstract class AbstractWorldObject implements WorldObject {
      */
     protected int hatchDistance = 10;
 
-    // ========== 可见性和锁定 ==========
+    //   可见性和锁定  
 
     /**
      * 是否可见
@@ -142,7 +142,7 @@ public abstract class AbstractWorldObject implements WorldObject {
      */
     protected boolean selectable = true;
 
-    // ========== 构造函数 ==========
+    //   构造函数  
 
     /**
      * 构造函数
@@ -154,7 +154,7 @@ public abstract class AbstractWorldObject implements WorldObject {
         this.objectType = objectType;
     }
 
-    // ========== 基本信息实现 ==========
+    //   基本信息实现  
 
     @Override
     public long getId() {
@@ -216,7 +216,7 @@ public abstract class AbstractWorldObject implements WorldObject {
         this.labelColor = color != null ? color : Color.BLACK;
     }
 
-    // ========== 交互状态实现 ==========
+    //   交互状态实现  
 
     @Override
     public boolean isHover() {
@@ -238,7 +238,7 @@ public abstract class AbstractWorldObject implements WorldObject {
         this.selected = selected;
     }
 
-    // ========== 视觉属性实现 ==========
+    //   视觉属性实现  
 
     @Override
     public Color getColor() {
@@ -290,7 +290,7 @@ public abstract class AbstractWorldObject implements WorldObject {
         this.layer = Math.max(0, Math.min(layer, 9)); // 限制范围 0-9
     }
 
-    // ========== 填充属性实现 ==========
+    //   填充属性实现  
 
     @Override
     public FillType getFillType() {
@@ -342,7 +342,7 @@ public abstract class AbstractWorldObject implements WorldObject {
         this.hatchDistance = Math.max(1, Math.min(distance, 50)); // 限制范围 1-50
     }
 
-    // ========== 可见性和锁定实现 ==========
+    //   可见性和锁定实现  
 
     @Override
     public boolean isVisible() {
@@ -384,7 +384,7 @@ public abstract class AbstractWorldObject implements WorldObject {
         this.selectable = selectable;
     }
 
-    // ========== 工具方法 ==========
+    //   工具方法  
 
     /**
      * 获取有效的描边颜色（考虑透明度和选中/悬停状态）

@@ -768,7 +768,7 @@ public class GridChartView extends Pane {
         return customDefaultCursor != null ? customDefaultCursor : Cursor.DEFAULT;
     }
 
-    // ========== 视图配置和控制方法 ==========
+    //   视图配置和控制方法  
 
     /**
      * 获取视图配置
@@ -880,7 +880,7 @@ public class GridChartView extends Pane {
         redraw();
     }
 
-    // ========== 轴向吸附系统 ==========
+    //   轴向吸附系统  
 
     /**
      * 应用坐标吸附（包括点吸附、网格吸附、轴向吸附）

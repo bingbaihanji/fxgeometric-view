@@ -142,7 +142,7 @@ public class GeometryContextMenu {
         MenuItem clearItem = new MenuItem(I18nUtil.getString("geo.menu.clear"));
         clearItem.setOnAction(e -> controller.clearAll());
 
-        // ========== 视图控制子菜单 ==========
+        //   视图控制子菜单  
 
         // 缩放子菜单
         Menu zoomMenu = new Menu(I18nUtil.getString("menu.zoom"));
@@ -193,7 +193,7 @@ public class GeometryContextMenu {
         MenuItem standardViewItem = new MenuItem(I18nUtil.getString("menu.standardView"));
         standardViewItem.setOnAction(e -> canvas.resetToStandardView());
 
-        // ========== 属性配置 ==========
+        //   属性配置  
 
         // 坐标轴属性
         MenuItem axesPropsItem = new MenuItem(I18nUtil.getString("menu.axesProperties"));

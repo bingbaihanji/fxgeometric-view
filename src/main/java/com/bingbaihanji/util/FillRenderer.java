@@ -301,8 +301,8 @@ public class FillRenderer {
                 if (((int) ((iy - y) / distance)) % 2 == 0) {
                     gc.strokeLine(ix, iy, ix + distance, iy);
                 } else {
-                    gc.strokeLine(ix + distance / 2, iy - distance / 2,
-                            ix + distance / 2, iy + distance / 2);
+                    gc.strokeLine(ix + (double) distance / 2, iy - (double) distance / 2,
+                            ix + (double) distance / 2, iy + (double) distance / 2);
                 }
             }
         }

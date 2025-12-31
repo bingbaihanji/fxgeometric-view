@@ -69,7 +69,7 @@ public enum FillType {
      */
     SYMBOLS("符号填充", "重复符号图案");
 
-    // ========== 属性 ==========
+    //   属性  
 
     /**
      * 填充类型名称（中文）
@@ -81,14 +81,14 @@ public enum FillType {
      */
     private final String description;
 
-    // ========== 构造函数 ==========
+    //   构造函数  
 
     FillType(String displayName, String description) {
         this.displayName = displayName;
         this.description = description;
     }
 
-    // ========== Getter 方法 ==========
+    //   Getter 方法  
 
     public String getDisplayName() {
         return displayName;
@@ -98,7 +98,7 @@ public enum FillType {
         return description;
     }
 
-    // ========== 工具方法 ==========
+    //   工具方法  
 
     /**
      * 判断是否为线条类填充（需要设置间距和角度）
