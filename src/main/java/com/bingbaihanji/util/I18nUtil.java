@@ -2,12 +2,7 @@ package com.bingbaihanji.util;
 
 import java.io.*;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.PropertyResourceBundle;
-import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * 国际化工具类

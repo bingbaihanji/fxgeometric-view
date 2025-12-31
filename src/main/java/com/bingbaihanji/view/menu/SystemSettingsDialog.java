@@ -6,6 +6,9 @@ import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Modality;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -89,11 +92,6 @@ public class SystemSettingsDialog extends Dialog<ButtonType> {
             e.printStackTrace();
         }
 
-        // 如果没有扫描到任何语言文件,添加默认语言
-        if (languages.isEmpty()) {
-            languages.add(new LanguageItem("中文", Locale.SIMPLIFIED_CHINESE));
-            languages.add(new LanguageItem("English", Locale.ENGLISH));
-        }
 
         // 排序语言列表
         languages.sort(Comparator.comparing(LanguageItem::getDisplayName));
@@ -134,32 +132,106 @@ public class SystemSettingsDialog extends Dialog<ButtonType> {
     /**
      * 获取语言的显示名称
      * 从语言文件的 language.name 键读取,如果不存在则使用 Locale 的默认显示名称
+     * 优先级：1. JAR包同目录的外部文件 2. classpath内部资源 3. Locale默认名称
      */
     private String getLanguageDisplayName(Locale locale) {
-        try {
-            // 尝试加载该语言的资源文件并读取 language.name
-            // 使用反射调用 I18nUtil 的私有方法，或者直接重新实现加载逻辑
-            String bundleName = toBundleNameForLocale("language/language", locale);
-            String resourceName = bundleName.replace('.', '/') + ".properties";
+        String bundleName = toBundleNameForLocale("language/language", locale);
+        String resourceName = bundleName.replace('.', '/') + ".properties";
 
-            // 尝试从 classpath 加载
-            java.io.InputStream stream = getClass().getClassLoader().getResourceAsStream(resourceName);
-            if (stream != null) {
-                try (java.io.InputStreamReader reader = new java.io.InputStreamReader(stream, "UTF-8")) {
-                    java.util.PropertyResourceBundle bundle = new java.util.PropertyResourceBundle(reader);
-                    return bundle.getString("language.name");
-                }
-            }
-        } catch (Exception e) {
-            // 如果读取失败,使用 Locale 自带的显示名称作为后备方案
+        // 1. 尝试从外部文件加载
+        String displayName = loadLanguageNameFromExternalFile(resourceName);
+        if (displayName != null) {
+            return displayName;
         }
 
-        String displayName = locale.getDisplayLanguage(locale);
+        // 2. 尝试从 classpath 加载
+        displayName = loadLanguageNameFromClasspath(resourceName);
+        if (displayName != null) {
+            return displayName;
+        }
+
+        // 3. 使用 Locale 自带的显示名称作为后备方案
+        displayName = locale.getDisplayLanguage(locale);
         // 首字母大写
         if (!displayName.isEmpty()) {
             displayName = displayName.substring(0, 1).toUpperCase() + displayName.substring(1);
         }
         return displayName;
+    }
+
+    /**
+     * 从外部文件加载语言显示名称
+     */
+    private String loadLanguageNameFromExternalFile(String resourceName) {
+        try {
+            File jarFile = getJarLocation();
+            if (jarFile != null) {
+                File jarDir = jarFile.getParentFile();
+                File externalFile = new File(jarDir, resourceName);
+
+                if (externalFile.exists() && externalFile.isFile()) {
+                    try (java.io.InputStream stream = new FileInputStream(externalFile);
+                         java.io.InputStreamReader reader = new java.io.InputStreamReader(stream, StandardCharsets.UTF_8)) {
+                        java.util.PropertyResourceBundle bundle = new java.util.PropertyResourceBundle(reader);
+                        return bundle.getString("language.name");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // 外部文件加载失败，继续尝试 classpath
+        }
+        return null;
+    }
+
+    /**
+     * 从 classpath 加载语言显示名称
+     */
+    private String loadLanguageNameFromClasspath(String resourceName) {
+        try {
+            // 在模块化环境中，使用 Class.getResourceAsStream() 更可靠
+            // 路径需要以 / 开头表示从 classpath 根目录开始
+            String path = "/" + resourceName;
+            java.io.InputStream stream = getClass().getResourceAsStream(path);
+            if (stream != null) {
+                try (java.io.InputStreamReader reader = new java.io.InputStreamReader(stream, StandardCharsets.UTF_8)) {
+                    java.util.PropertyResourceBundle bundle = new java.util.PropertyResourceBundle(reader);
+                    return bundle.getString("language.name");
+                }
+            }
+        } catch (Exception e) {
+            // classpath 资源加载失败
+        }
+        return null;
+    }
+
+    /**
+     * 获取 JAR 包位置
+     */
+    private File getJarLocation() {
+        try {
+            String path = this.getClass()
+                    .getProtectionDomain()
+                    .getCodeSource()
+                    .getLocation()
+                    .toURI()
+                    .getPath();
+
+            // 处理 Windows 路径问题（/C:/path/to/file）
+            if (path.startsWith("/") && path.contains(":")) {
+                path = path.substring(1);
+            }
+
+            File file = new File(path);
+
+            // 如果是目录（IDE 开发环境），返回 null 表示不使用外部文件
+            if (file.isDirectory()) {
+                return null;
+            }
+
+            return file;
+        } catch (java.net.URISyntaxException e) {
+            return null;
+        }
     }
 
     /**
@@ -196,9 +268,9 @@ public class SystemSettingsDialog extends Dialog<ButtonType> {
 
                 if ("file".equals(protocol)) {
                     // IDE环境下,直接读取文件系统
-                    java.io.File dir = new java.io.File(resourceUrl.toURI());
+                    File dir = new File(resourceUrl.toURI());
                     if (dir.exists() && dir.isDirectory()) {
-                        java.io.File[] files = dir.listFiles((d, name) ->
+                        File[] files = dir.listFiles((d, name) ->
                                 name.startsWith("language_") && name.endsWith(".properties"));
                         if (files != null) {
                             for (java.io.File file : files) {
@@ -215,7 +287,7 @@ public class SystemSettingsDialog extends Dialog<ButtonType> {
                     String[] parts = jarPath.split("!");
                     if (parts.length > 0) {
                         try (java.util.jar.JarFile jar = new java.util.jar.JarFile(
-                                new java.io.File(new java.net.URI(parts[0])))) {
+                                new File(new java.net.URI(parts[0])))) {
                             java.util.Enumeration<java.util.jar.JarEntry> entries = jar.entries();
                             while (entries.hasMoreElements()) {
                                 java.util.jar.JarEntry entry = entries.nextElement();
@@ -245,13 +317,13 @@ public class SystemSettingsDialog extends Dialog<ButtonType> {
             // 获取JAR包所在目录
             String jarPath = SystemSettingsDialog.class.getProtectionDomain()
                     .getCodeSource().getLocation().toURI().getPath();
-            java.io.File jarFile = new java.io.File(jarPath);
-            java.io.File jarDir = jarFile.getParentFile();
+            File jarFile = new File(jarPath);
+            File jarDir = jarFile.getParentFile();
 
             // 在JAR包同目录下查找language目录
-            java.io.File languageDir = new java.io.File(jarDir, "language");
+            File languageDir = new File(jarDir, "language");
             if (languageDir.exists() && languageDir.isDirectory()) {
-                java.io.File[] files = languageDir.listFiles((dir, name) ->
+                File[] files = languageDir.listFiles((dir, name) ->
                         name.startsWith("language_") && name.endsWith(".properties"));
                 if (files != null) {
                     for (java.io.File file : files) {

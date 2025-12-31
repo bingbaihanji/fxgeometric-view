@@ -133,4 +133,8 @@ public class ShapePropertiesDialog extends Dialog<ShapePropertiesResult> {
         alert.setContentText(message);
         alert.showAndWait();
     }
+
+    public boolean isCircle() {
+        return isCircle;
+    }
 }
