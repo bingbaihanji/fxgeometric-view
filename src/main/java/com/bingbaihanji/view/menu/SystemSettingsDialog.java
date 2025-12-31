@@ -138,21 +138,50 @@ public class SystemSettingsDialog extends Dialog<ButtonType> {
     private String getLanguageDisplayName(Locale locale) {
         try {
             // 尝试加载该语言的资源文件并读取 language.name
-            java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle(
-                    "language.language",
-                    locale,
-                    new com.bingbaihanji.util.ExternalFileResourceBundleControl()
-            );
-            return bundle.getString("language.name");
+            // 使用反射调用 I18nUtil 的私有方法，或者直接重新实现加载逻辑
+            String bundleName = toBundleNameForLocale("language/language", locale);
+            String resourceName = bundleName.replace('.', '/') + ".properties";
+
+            // 尝试从 classpath 加载
+            java.io.InputStream stream = getClass().getClassLoader().getResourceAsStream(resourceName);
+            if (stream != null) {
+                try (java.io.InputStreamReader reader = new java.io.InputStreamReader(stream, "UTF-8")) {
+                    java.util.PropertyResourceBundle bundle = new java.util.PropertyResourceBundle(reader);
+                    return bundle.getString("language.name");
+                }
+            }
         } catch (Exception e) {
             // 如果读取失败,使用 Locale 自带的显示名称作为后备方案
-            String displayName = locale.getDisplayLanguage(locale);
-            // 首字母大写
-            if (!displayName.isEmpty()) {
-                displayName = displayName.substring(0, 1).toUpperCase() + displayName.substring(1);
-            }
-            return displayName;
         }
+
+        String displayName = locale.getDisplayLanguage(locale);
+        // 首字母大写
+        if (!displayName.isEmpty()) {
+            displayName = displayName.substring(0, 1).toUpperCase() + displayName.substring(1);
+        }
+        return displayName;
+    }
+
+    /**
+     * 将 baseName 和 locale 转换为 bundle 名称
+     */
+    private String toBundleNameForLocale(String baseName, Locale locale) {
+        if (locale == Locale.ROOT || locale.getLanguage().isEmpty()) {
+            return baseName;
+        }
+
+        StringBuilder sb = new StringBuilder(baseName);
+        sb.append('_').append(locale.getLanguage());
+
+        if (!locale.getCountry().isEmpty()) {
+            sb.append('_').append(locale.getCountry());
+        }
+
+        if (!locale.getVariant().isEmpty()) {
+            sb.append('_').append(locale.getVariant());
+        }
+
+        return sb.toString();
     }
 
     /**
