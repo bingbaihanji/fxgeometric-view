@@ -65,14 +65,11 @@ public class CircleDrawingTool {
         double sy = transform.worldToScreenY(cy);
         double sr = previewRadius * transform.getScale();
 
-        gc.setStroke(Color.GRAY);
+        gc.setStroke(Color.valueOf("#759eb2"));
         gc.setLineDashes(6);
         gc.strokeOval(sx - sr, sy - sr, sr * 2, sr * 2);
         gc.setLineDashes(null);
 
-        // 添加圆心点的预览显示，与线段绘制保持一致
-        gc.setFill(Color.LIGHTGRAY);
-        double pointRadius = 3;
-        gc.fillOval(sx - pointRadius, sy - pointRadius, pointRadius * 2, pointRadius * 2);
+        // 圆心点由 BasicShapeHandler 统一绘制，这里不重复绘制
     }
 }

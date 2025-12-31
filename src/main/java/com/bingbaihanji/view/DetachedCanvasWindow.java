@@ -57,7 +57,7 @@ public class DetachedCanvasWindow {
      * 构造独立窗口（带父窗口引用）
      *
      * @param sourceView 源视图（主窗口的GridChartView）
-     * @param parent 父窗口（如果从其他独立窗口打开）
+     * @param parent     父窗口（如果从其他独立窗口打开）
      */
     public DetachedCanvasWindow(GridChartView sourceView, DetachedCanvasWindow parent) {
         this.stage = new Stage();

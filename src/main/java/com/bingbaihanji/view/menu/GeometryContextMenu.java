@@ -94,8 +94,8 @@ public class GeometryContextMenu {
     /**
      * 为画布创建右键菜单（带父窗口引用）
      *
-     * @param canvas 画布视图
-     * @param controller 绘制控制器
+     * @param canvas       画布视图
+     * @param controller   绘制控制器
      * @param parentWindow 父窗口（如果在独立窗口中则传入，否则为null）
      */
     public static ContextMenu createCanvasMenu(
@@ -203,22 +203,26 @@ public class GeometryContextMenu {
      */
     private static void showPropertiesDialog(WorldObject shape, GridChartView canvas) {
         ShapePropertiesDialog dialog;
-        
+
         // 根据不同的图形类型创建对话框
         if (shape instanceof CircleGeo circle) {
-            // 圆形：支持颜色和半径修改
-            dialog = new ShapePropertiesDialog(circle.getColor(), circle.getR());
-            
+            // 圆形：支持颜色、半径和圆心名称修改
+            dialog = new ShapePropertiesDialog(circle.getColor(), circle.getR(), circle.getCenterName());
+
             Optional<ShapePropertiesResult> result = dialog.showAndWait();
             result.ifPresent(props -> {
                 circle.setColor(props.getColor());
                 circle.setR(props.getRadius());
+                // 设置圆心名称
+                if (props.getCenterName() != null && !props.getCenterName().isEmpty()) {
+                    circle.setCenterName(props.getCenterName());
+                }
                 canvas.redraw();
             });
         } else if (shape instanceof LineGeo line) {
             // 线段：仅支持颜色修改
             dialog = new ShapePropertiesDialog(line.getColor());
-            
+
             Optional<ShapePropertiesResult> result = dialog.showAndWait();
             result.ifPresent(props -> {
                 line.setColor(props.getColor());
@@ -227,7 +231,7 @@ public class GeometryContextMenu {
         } else if (shape instanceof InfiniteLineGeo infiniteLine) {
             // 直线：仅支持颜色修改
             dialog = new ShapePropertiesDialog(infiniteLine.getColor());
-            
+
             Optional<ShapePropertiesResult> result = dialog.showAndWait();
             result.ifPresent(props -> {
                 infiniteLine.setColor(props.getColor());
@@ -236,7 +240,7 @@ public class GeometryContextMenu {
         } else if (shape instanceof PathGeo path) {
             // 手绘路径：仅支持颜色修改
             dialog = new ShapePropertiesDialog(path.getColor());
-            
+
             Optional<ShapePropertiesResult> result = dialog.showAndWait();
             result.ifPresent(props -> {
                 path.setColor(props.getColor());
@@ -245,7 +249,7 @@ public class GeometryContextMenu {
         } else if (shape instanceof PolygonGeo polygon) {
             // 多边形：仅支持颜色修改
             dialog = new ShapePropertiesDialog(polygon.getColor());
-            
+
             Optional<ShapePropertiesResult> result = dialog.showAndWait();
             result.ifPresent(props -> {
                 polygon.setColor(props.getColor());

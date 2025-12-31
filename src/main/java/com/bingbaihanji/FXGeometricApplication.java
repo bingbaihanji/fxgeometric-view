@@ -12,7 +12,7 @@ import com.bingbaihanji.view.FXGeometricView;
 public class FXGeometricApplication {
     public static void main(String[] args) {
         // 设置英文环境
-        // java.util.Locale.setDefault(java.util.Locale.US);
+//         java.util.Locale.setDefault(java.util.Locale.US);
         FXGeometricView.launch(FXGeometricView.class, args);
 
     }

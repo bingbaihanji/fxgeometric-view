@@ -18,28 +18,29 @@ public class ShapePropertiesDialog extends Dialog<ShapePropertiesResult> {
 
     private final ColorPicker colorPicker;
     private final TextField radiusField;
+    private final TextField centerNameField; // 圆心名称输入框
     private final boolean isCircle;
 
     /**
      * 为普通图形创建属性对话框（仅支持颜色修改）
      */
     public ShapePropertiesDialog(Color currentColor) {
-        this(currentColor, 0, false);
+        this(currentColor, 0, null, false);
     }
 
     /**
-     * 为圆形创建属性对话框（支持颜色和半径修改）
+     * 为圆形创建属性对话框（支持颜色、半径和圆心名称修改）
      */
-    public ShapePropertiesDialog(Color currentColor, double currentRadius) {
-        this(currentColor, currentRadius, true);
+    public ShapePropertiesDialog(Color currentColor, double currentRadius, String currentCenterName) {
+        this(currentColor, currentRadius, currentCenterName, true);
     }
 
     /**
      * 内部构造函数
      */
-    private ShapePropertiesDialog(Color currentColor, double currentRadius, boolean isCircle) {
+    private ShapePropertiesDialog(Color currentColor, double currentRadius, String currentCenterName, boolean isCircle) {
         this.isCircle = isCircle;
-        
+
         setTitle(I18nUtil.getString("geo.dialog.properties.title"));
         setHeaderText(I18nUtil.getString("geo.dialog.properties.header"));
 
@@ -56,22 +57,33 @@ public class ShapePropertiesDialog extends Dialog<ShapePropertiesResult> {
         grid.add(colorLabel, 0, 0);
         grid.add(colorPicker, 1, 0);
 
-        // 如果是圆形，添加半径输入框
+        // 如果是圆形，添加半径和圆心名称输入框
         radiusField = new TextField();
+        centerNameField = new TextField();
         if (isCircle) {
+            // 半径输入框
             Label radiusLabel = new Label(I18nUtil.getString("geo.dialog.properties.radius"));
             radiusField.setText(String.format("%.2f", currentRadius));
             radiusField.setPrefWidth(200);
-            
+
             // 添加输入验证
             radiusField.textProperty().addListener((obs, oldVal, newVal) -> {
                 if (!newVal.matches("\\d*\\.?\\d*")) {
                     radiusField.setText(oldVal);
                 }
             });
-            
+
             grid.add(radiusLabel, 0, 1);
             grid.add(radiusField, 1, 1);
+
+            // 圆心名称输入框
+            Label centerNameLabel = new Label(I18nUtil.getString("geo.dialog.properties.centerName"));
+            centerNameField.setText(currentCenterName != null ? currentCenterName : "");
+            centerNameField.setPrefWidth(200);
+            centerNameField.setPromptText(I18nUtil.getString("geo.dialog.properties.centerName.prompt"));
+
+            grid.add(centerNameLabel, 0, 2);
+            grid.add(centerNameField, 1, 2);
         }
 
         getDialogPane().setContent(grid);
@@ -82,7 +94,8 @@ public class ShapePropertiesDialog extends Dialog<ShapePropertiesResult> {
             if (buttonType == ButtonType.OK) {
                 Color selectedColor = colorPicker.getValue();
                 double radius = 0;
-                
+                String centerName = null;
+
                 if (isCircle) {
                     try {
                         radius = Double.parseDouble(radiusField.getText());
@@ -94,9 +107,17 @@ public class ShapePropertiesDialog extends Dialog<ShapePropertiesResult> {
                         showErrorAlert(I18nUtil.getString("geo.dialog.properties.error.invalid"));
                         return null;
                     }
+
+                    // 获取圆心名称
+                    centerName = centerNameField.getText().trim();
+                    if (centerName.isEmpty()) {
+                        centerName = null; // 空名称设为 null
+                    }
+
+                    return new ShapePropertiesResult(selectedColor, radius, centerName);
                 }
-                
-                return new ShapePropertiesResult(selectedColor, radius);
+
+                return new ShapePropertiesResult(selectedColor);
             }
             return null;
         });

@@ -1,10 +1,13 @@
 package com.bingbaihanji.view.layout.draw.geometry.impl;
 
+import com.bingbaihanji.util.PointNameManager;
 import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.TextAlignment;
 
 import java.util.List;
 
@@ -15,12 +18,25 @@ public class CircleGeo implements WorldObject {
     private double cy;
     private boolean hover = false;
     private Color color = StyleManager.GEOMETRY_LINE;
+    private String centerName; // 圆心名称
 
 
     public CircleGeo(double cx, double cy, double r) {
         this.cx = cx;
         this.cy = cy;
         this.r = r;
+        // 自动为圆心分配名称
+        this.centerName = PointNameManager.getInstance().assignName(cx, cy);
+    }
+
+    public CircleGeo(double cx, double cy, double r, boolean autoNameCenter) {
+        this.cx = cx;
+        this.cy = cy;
+        this.r = r;
+        // 根据参数决定是否为圆心自动命名
+        if (autoNameCenter) {
+            this.centerName = PointNameManager.getInstance().assignName(cx, cy);
+        }
     }
 
     // Getter methods for intersection calculations
@@ -46,6 +62,14 @@ public class CircleGeo implements WorldObject {
 
     public void setColor(Color color) {
         this.color = color;
+    }
+
+    public String getCenterName() {
+        return centerName;
+    }
+
+    public void setCenterName(String centerName) {
+        this.centerName = centerName;
     }
 
     @Override
@@ -74,6 +98,14 @@ public class CircleGeo implements WorldObject {
         double pointRadius = hover ? 4 : 3;
         gc.fillOval(sx - pointRadius, sy - pointRadius, pointRadius * 2, pointRadius * 2);
 
+        // 绘制圆心名称
+        if (centerName != null && !centerName.isEmpty()) {
+            gc.setFill(Color.BLACK);
+            gc.setFont(Font.font(12));
+            gc.setTextAlign(TextAlignment.LEFT);
+            // 在圆心的右上方显示名称
+            gc.fillText(centerName, sx + 8, sy - 8);
+        }
     }
 
     @Override
