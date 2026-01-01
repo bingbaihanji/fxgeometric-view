@@ -5,7 +5,7 @@ import javafx.application.Platform;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
-import java.util.Objects;
+import java.net.URL;
 
 
 /**
@@ -24,20 +24,49 @@ public class FXGeometricView extends Application {
 
     @Override
     public void stop() throws Exception {
-        super.stop();
-        Runtime.getRuntime().addShutdownHook(
-                new Thread(() -> {
-                    Platform.exit();
-                    System.out.println("程序已退出");
-                })
-        );
-
+        // 清理资源
+        try {
+            // 保存用户配置（如果有）
+            // TODO: 实现配置保存逻辑
+            
+            super.stop();
+        } finally {
+            Platform.exit();
+        }
     }
 
     @Override
     public void start(Stage stage) throws Exception {
-        Stage init = new InitView(stage).init();
-        init.getIcons().add(new Image(Objects.requireNonNull(getClass().getResource("/logo.png")).toExternalForm()));
-        init.show();
+        try {
+            // 设置应用图标
+            URL logoUrl = getClass().getResource("/logo.png");
+            if (logoUrl != null) {
+                stage.getIcons().add(new Image(logoUrl.toExternalForm()));
+            }
+            
+            // 初始化主界面
+            InitView initView = new InitView(stage);
+            initView.init();
+            
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            showErrorDialog("应用启动失败", e.getMessage());
+            throw e;
+        }
+    }
+    
+    /**
+     * 显示错误对话框
+     */
+    private void showErrorDialog(String title, String message) {
+        Platform.runLater(() -> {
+            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+                javafx.scene.control.Alert.AlertType.ERROR);
+            alert.setTitle(title);
+            alert.setHeaderText(null);
+            alert.setContentText(message);
+            alert.showAndWait();
+        });
     }
 }

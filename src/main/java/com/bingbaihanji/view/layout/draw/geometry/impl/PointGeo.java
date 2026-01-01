@@ -18,6 +18,13 @@ public class PointGeo extends AbstractWorldObject {
     private double y;
 
     private PointConstraint constraint = null; // 点的约束（可选）
+    
+    /**
+     * 标记此点是否是多边形内部创建的顶点
+     * 如果是内部顶点，多边形负责绘制它；
+     * 如果是外部复用的点，点自己绘制自己
+     */
+    private boolean polygonVertex = false;
 
     public PointGeo(double x, double y) {
         super(ObjectType.POINT_FREE); // 默认为自由点
@@ -72,26 +79,53 @@ public class PointGeo extends AbstractWorldObject {
     public boolean isConstrained() {
         return constraint != null;
     }
+    
+    /**
+     * 判断是否是多边形内部创建的顶点
+     */
+    public boolean isPolygonVertex() {
+        return polygonVertex;
+    }
+    
+    /**
+     * 设置是否是多边形内部顶点
+     */
+    public void setPolygonVertex(boolean polygonVertex) {
+        this.polygonVertex = polygonVertex;
+    }
 
-    // 更新点的位置（用于创建约束点后设置投影位置）
+    // 更新点的位置（支持约束处理）
     public void updatePosition(double newX, double newY) {
         // 保存旧位置
         double oldX = this.x;
         double oldY = this.y;
 
-        // 更新坐标
-        this.x = newX;
-        this.y = newY;
+        if (constraint != null) {
+            // 如果有约束，计算新参数并根据参数更新位置
+            double newParameter = constraint.calculateParameter(newX, newY);
+            constraint.setParameter(newParameter);
+            Point2D newPos = constraint.getPointFromParameter();
+            this.x = newPos.getX();
+            this.y = newPos.getY();
+        } else {
+            // 无约束，直接更新坐标
+            this.x = newX;
+            this.y = newY;
+        }
 
         // 如果该点有名称，更新PointNameManager中的映射
         if (this.label != null && !this.label.isEmpty()) {
-            PointNameManager.getInstance().updatePosition(oldX, oldY, newX, newY);
+            PointNameManager.getInstance().updatePosition(oldX, oldY, this.x, this.y);
         }
     }
 
     @Override
     public void paint(GraphicsContext gc, WorldTransform t, double w, double h) {
-
+        // 多边形内部顶点由多边形负责绘制，这里不绘制
+        if (polygonVertex) {
+            return;
+        }
+        
         double sx = t.worldToScreenX(x);
         double sy = t.worldToScreenY(y);
 

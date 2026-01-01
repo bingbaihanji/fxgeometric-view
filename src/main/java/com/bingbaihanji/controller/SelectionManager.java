@@ -14,8 +14,19 @@ import java.util.stream.Collectors;
  * @author bingbaihanji
  * @date 2025-12-31
  * @description 管理几何对象的选择状态，参考 GeoGebra 的 SelectionManager 设计
+ *              支持单选、多选、框选、批量操作等功能
  */
 public class SelectionManager {
+
+    /**
+     * 框选区域（用于框选模式）
+     */
+    private SelectionRectangle selectionRectangle = null;
+
+    /**
+     * 是否启用框选模式
+     */
+    private boolean rectangleSelectionEnabled = true;
 
     //   选中对象列表  
 
@@ -251,6 +262,113 @@ public class SelectionManager {
                 .collect(Collectors.toList());
     }
 
+    //   框选功能  
+
+    /**
+     * 开始框选（记录起始点）
+     *
+     * @param worldX 起始点X坐标（世界坐标）
+     * @param worldY 起始点Y坐标（世界坐标）
+     */
+    public void startRectangleSelection(double worldX, double worldY) {
+        if (!rectangleSelectionEnabled) {
+            return;
+        }
+        selectionRectangle = new SelectionRectangle(worldX, worldY);
+    }
+
+    /**
+     * 更新框选区域（更新结束点）
+     *
+     * @param worldX 当前点X坐标（世界坐标）
+     * @param worldY 当前点Y坐标（世界坐标）
+     */
+    public void updateRectangleSelection(double worldX, double worldY) {
+        if (selectionRectangle != null) {
+            selectionRectangle.updateEnd(worldX, worldY);
+        }
+    }
+
+    /**
+     * 完成框选（根据区域选中对象）
+     *
+     * @param allObjects 所有对象列表
+     * @param append     是否追加到现有选择（true）或替换（false）
+     */
+    public void finishRectangleSelection(List<WorldObject> allObjects, boolean append) {
+        if (selectionRectangle == null) {
+            return;
+        }
+
+        List<WorldObject> objectsInRect = selectionRectangle.getObjectsInRectangle(allObjects);
+
+        if (!append) {
+            clearSelection(false);
+        }
+
+        for (WorldObject obj : objectsInRect) {
+            addSelectedObject(obj, false);
+        }
+
+        notifySelectionChanged();
+        selectionRectangle = null;
+    }
+
+    /**
+     * 取消框选
+     */
+    public void cancelRectangleSelection() {
+        selectionRectangle = null;
+    }
+
+    /**
+     * 获取当前框选区域（用于绘制）
+     */
+    public SelectionRectangle getSelectionRectangle() {
+        return selectionRectangle;
+    }
+
+    /**
+     * 是否正在进行框选
+     */
+    public boolean isRectangleSelecting() {
+        return selectionRectangle != null;
+    }
+
+    /**
+     * 设置是否启用框选功能
+     */
+    public void setRectangleSelectionEnabled(boolean enabled) {
+        this.rectangleSelectionEnabled = enabled;
+        if (!enabled) {
+            selectionRectangle = null;
+        }
+    }
+
+    //   批量操作  
+
+    /**
+     * 删除所有选中的对象
+     *
+     * @param removeAction 删除动作（接收对象列表）
+     */
+    public void deleteSelectedObjects(java.util.function.Consumer<List<WorldObject>> removeAction) {
+        if (selectedObjects.isEmpty()) {
+            return;
+        }
+
+        List<WorldObject> toDelete = new ArrayList<>(selectedObjects);
+        removeAction.accept(toDelete);
+        clearSelection();
+    }
+
+    /**
+     * 对所有选中对象执行操作
+     */
+    public void forEachSelected(java.util.function.Consumer<WorldObject> action) {
+        selectedObjects.forEach(action);
+    }
+
     //   监听器管理  
 
     /**
@@ -291,5 +409,73 @@ public class SelectionManager {
          * @param selectedObjects 当前选中的对象列表
          */
         void onSelectionChanged(List<WorldObject> selectedObjects);
+    }
+
+    /**
+     * 框选区域类
+     */
+    public static class SelectionRectangle {
+        private final double startX;
+        private final double startY;
+        private double endX;
+        private double endY;
+
+        public SelectionRectangle(double startX, double startY) {
+            this.startX = startX;
+            this.startY = startY;
+            this.endX = startX;
+            this.endY = startY;
+        }
+
+        public void updateEnd(double x, double y) {
+            this.endX = x;
+            this.endY = y;
+        }
+
+        /**
+         * 获取区域内的所有对象
+         */
+        public List<WorldObject> getObjectsInRectangle(List<WorldObject> allObjects) {
+            double minX = Math.min(startX, endX);
+            double maxX = Math.max(startX, endX);
+            double minY = Math.min(startY, endY);
+            double maxY = Math.max(startY, endY);
+
+            return allObjects.stream()
+                    .filter(obj -> {
+                        double[] bbox = obj.getBoundingBox();
+                        if (bbox == null) {
+                            return false;
+                        }
+                        // 检查边界框是否与选择区域相交
+                        return bbox[0] <= maxX && bbox[1] >= minX &&
+                               bbox[2] <= maxY && bbox[3] >= minY;
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        public double getMinX() {
+            return Math.min(startX, endX);
+        }
+
+        public double getMaxX() {
+            return Math.max(startX, endX);
+        }
+
+        public double getMinY() {
+            return Math.min(startY, endY);
+        }
+
+        public double getMaxY() {
+            return Math.max(startY, endY);
+        }
+
+        public double getWidth() {
+            return Math.abs(endX - startX);
+        }
+
+        public double getHeight() {
+            return Math.abs(endY - startY);
+        }
     }
 }

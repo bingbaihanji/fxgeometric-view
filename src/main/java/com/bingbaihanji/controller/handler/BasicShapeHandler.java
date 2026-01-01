@@ -4,6 +4,8 @@ import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.constant.DrawingState;
 import com.bingbaihanji.controller.DrawingContext;
 import com.bingbaihanji.util.CommandHistory;
+import com.bingbaihanji.util.EdgeSnapManager;
+import com.bingbaihanji.util.PointReuseManager;
 import com.bingbaihanji.util.SpecialPointManager.SpecialPoint;
 import com.bingbaihanji.util.constraint.PointConstraint;
 import com.bingbaihanji.view.layout.core.WorldTransform;
@@ -41,6 +43,10 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
      * 第一次点击时的现有特殊点（用于圆心吸附）
      */
     private SpecialPoint firstClickExistingPoint = null;
+    /**
+     * 第一次点击时复用的点引用
+     */
+    private PointGeo firstPointRef = null;
     /**
      * 预览半径
      */
@@ -139,6 +145,18 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             previewRadius = Math.sqrt(
                     Math.pow(worldX - firstPointX, 2) + Math.pow(worldY - firstPointY, 2)
             );
+            
+            // 检测圆相切吸附
+            double tangentThreshold = 15.0 / context.getTransform().getScale();
+            EdgeSnapManager.CircleTangentResult tangentResult = 
+                    EdgeSnapManager.findCircleTangentSnap(firstPointX, firstPointY, previewRadius, 
+                            context.getObjects(), tangentThreshold);
+            
+            // 如果找到相切吸附，使用调整后的半径预览
+            if (tangentResult != null) {
+                previewRadius = tangentResult.getRadius();
+            }
+            
             // 更新CircleDrawingTool的预览参数
             circleTool.setPreviewParams(firstPointX, firstPointY, previewRadius);
         }
@@ -221,6 +239,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
         firstPointX = 0;
         firstPointY = 0;
         firstClickExistingPoint = null;
+        firstPointRef = null;
         previewRadius = 0;
         circleTool.reset();
     }
@@ -292,6 +311,10 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
 
         // 检查第一次点击是否靠近现有特殊点（用于圆心吸附）
         firstClickExistingPoint = context.getSnappingHandler().findNearestSpecialPoint(rawX, rawY, context);
+        
+        // 检查第一次点击位置是否已有点对象（用于复用）
+        double scale = context.getTransform().getScale();
+        firstPointRef = PointReuseManager.getExistingPointOrNull(worldX, worldY, context.getObjects(), scale);
 
         // 对于圆形绘制，初始化预览参数
         if (context.getDrawMode() == DrawMode.CIRCLE) {
@@ -303,14 +326,27 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
      * 处理第二次点击
      */
     private void handleSecondClick(double worldX, double worldY, DrawingContext context) {
+        double scale = context.getTransform().getScale();
+        
+        // 检查第二次点击位置是否已有点对象（用于复用）
+        PointGeo secondPointRef = PointReuseManager.getExistingPointOrNull(worldX, worldY, context.getObjects(), scale);
+        
         switch (context.getDrawMode()) {
             case CIRCLE -> {
                 double radius = Math.sqrt(
                         Math.pow(worldX - firstPointX, 2) + Math.pow(worldY - firstPointY, 2)
                 );
+                
+                // 检测圆相切吸附
+                double tangentThreshold = 15.0 / scale;
+                EdgeSnapManager.CircleTangentResult tangentResult = 
+                        EdgeSnapManager.findCircleTangentSnap(firstPointX, firstPointY, radius, 
+                                context.getObjects(), tangentThreshold);
+                
+                double finalRadius = (tangentResult != null) ? tangentResult.getRadius() : radius;
 
-                // 创建圆，圆心会自动获得名称
-                CircleGeo newCircle = new CircleGeo(firstPointX, firstPointY, radius);
+                // 创建圆，复用已有的圆心点
+                CircleGeo newCircle = new CircleGeo(firstPointRef, firstPointX, firstPointY, finalRadius);
 
                 // 计算此圆产生的所有交点
                 List<PointGeo> intersectionPoints = context.getIntersectionHandler()
@@ -319,9 +355,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                 context.executeCommand(new CommandHistory.Command() {
                     @Override
                     public void execute() {
-                        // 只添加圆，不添加独立的圆心点
                         context.addObject(newCircle);
-                        // 添加交点
                         for (PointGeo point : intersectionPoints) {
                             context.addObject(point);
                         }
@@ -330,22 +364,21 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                     @Override
                     public void undo() {
                         context.removeObject(newCircle);
-                        // 移除交点
                         for (PointGeo point : intersectionPoints) {
                             context.removeObject(point);
                         }
                     }
                 });
 
-                // 重置CircleDrawingTool状态
                 circleTool.reset();
-                // 重置第一次点击的现有点标记
                 firstClickExistingPoint = null;
+                firstPointRef = null;
             }
             case LINE -> {
-                // 只创建线段对象，不创建独立的端点
-                LineGeo newLine = new LineGeo(firstPointX, firstPointY, worldX, worldY);
-                // 计算此线段产生的所有交点
+                // 创建线段，复用已有的端点
+                LineGeo newLine = new LineGeo(firstPointRef, firstPointX, firstPointY, 
+                                              secondPointRef, worldX, worldY);
+                
                 List<PointGeo> intersectionPoints = context.getIntersectionHandler()
                         .checkIntersections(newLine, context);
 
@@ -353,7 +386,6 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                     @Override
                     public void execute() {
                         context.addObject(newLine);
-                        // 添加交点
                         for (PointGeo point : intersectionPoints) {
                             context.addObject(point);
                         }
@@ -362,17 +394,19 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                     @Override
                     public void undo() {
                         context.removeObject(newLine);
-                        // 移除交点
                         for (PointGeo point : intersectionPoints) {
                             context.removeObject(point);
                         }
                     }
                 });
+                
+                firstPointRef = null;
             }
             case INFINITE_LINE -> {
-                // 创建无限直线对象
-                InfiniteLineGeo newLine = new InfiniteLineGeo(firstPointX, firstPointY, worldX, worldY);
-                // 计算此无限直线产生的所有交点
+                // 创建无限直线，复用已有的端点
+                InfiniteLineGeo newLine = new InfiniteLineGeo(firstPointRef, firstPointX, firstPointY,
+                                                               secondPointRef, worldX, worldY);
+                
                 List<PointGeo> intersectionPoints = context.getIntersectionHandler()
                         .checkIntersections(newLine, context);
 
@@ -380,7 +414,6 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                     @Override
                     public void execute() {
                         context.addObject(newLine);
-                        // 添加交点
                         for (PointGeo point : intersectionPoints) {
                             context.addObject(point);
                         }
@@ -389,16 +422,16 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                     @Override
                     public void undo() {
                         context.removeObject(newLine);
-                        // 移除交点
                         for (PointGeo point : intersectionPoints) {
                             context.removeObject(point);
                         }
                     }
                 });
+                
+                firstPointRef = null;
             }
         }
 
-        // 清除预览，回到空闲状态
         context.setState(DrawingState.IDLE);
         previewRadius = 0;
         context.redraw();

@@ -4,6 +4,7 @@ import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.constant.DrawingState;
 import com.bingbaihanji.controller.handler.*;
 import com.bingbaihanji.util.CommandHistory;
+import com.bingbaihanji.util.Logger;
 import com.bingbaihanji.util.PointNameManager;
 import com.bingbaihanji.view.DetachedCanvasWindow;
 import com.bingbaihanji.view.layout.core.GridChartView;
@@ -28,6 +29,8 @@ import java.util.List;
  * @date 2025-12-31（重构版本）
  */
 public class DrawingController {
+    
+    private static final Logger logger = Logger.getLogger(DrawingController.class);
 
     /**
      * 绘制上下文
@@ -111,12 +114,16 @@ public class DrawingController {
      * 鼠标点击事件
      */
     public void handleMouseClicked(MouseEvent e) {
-        for (DrawingHandler handler : handlers) {
-            if (handler.canHandle(context.getDrawMode())) {
-                if (handler.handleMouseClicked(e, context)) {
-                    break; // 已处理，停止传递
+        try {
+            for (DrawingHandler handler : handlers) {
+                if (handler.canHandle(context.getDrawMode())) {
+                    if (handler.handleMouseClicked(e, context)) {
+                        break; // 已处理，停止传递
+                    }
                 }
             }
+        } catch (Exception ex) {
+            logger.error("处理鼠标点击事件时发生错误", ex);
         }
     }
 
@@ -189,6 +196,13 @@ public class DrawingController {
      * 设置绘制模式
      */
     public void setDrawMode(DrawMode mode) {
+        if (mode == null) {
+            logger.warn("尝试设置null绘制模式，已忽略");
+            return;
+        }
+        
+        logger.debug("切换绘制模式: {} -> {}", context.getDrawMode(), mode);
+        
         // 重置所有 Handler 状态
         for (DrawingHandler handler : handlers) {
             handler.reset();
@@ -210,23 +224,35 @@ public class DrawingController {
      * 清空画布
      */
     public void clearAll() {
-        // 保存当前所有对象，用于撤销
-        List<WorldObject> objectsToClear = new ArrayList<>(context.getObjects());
-        context.executeCommand(new CommandHistory.Command() {
-            @Override
-            public void execute() {
-                context.getGridChartPane().clearAllObjects();
-                // 清除点命名管理器
-                PointNameManager.getInstance().clear();
+        try {
+            // 保存当前所有对象，用于撤销
+            List<WorldObject> objectsToClear = new ArrayList<>(context.getObjects());
+            
+            if (objectsToClear.isEmpty()) {
+                logger.debug("画布已为空，无需清空");
+                return;
             }
-
-            @Override
-            public void undo() {
-                for (WorldObject obj : objectsToClear) {
-                    context.addObject(obj);
+            
+            logger.info("清空画布，共删除{}个对象", objectsToClear.size());
+            
+            context.executeCommand(new CommandHistory.Command() {
+                @Override
+                public void execute() {
+                    context.getGridChartPane().clearAllObjects();
+                    // 清除点命名管理器
+                    PointNameManager.getInstance().clear();
                 }
-            }
-        });
+
+                @Override
+                public void undo() {
+                    for (WorldObject obj : objectsToClear) {
+                        context.addObject(obj);
+                    }
+                }
+            });
+        } catch (Exception e) {
+            logger.error("清空画布时发生错误", e);
+        }
     }
 
     /**

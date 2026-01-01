@@ -12,8 +12,18 @@ import javafx.scene.text.TextAlignment;
 
 import java.util.List;
 
+/**
+ * 线段几何图形
+ * <p>
+ * 支持点复用：如果端点位置已有PointGeo，直接引用而不是创建新点
+ */
 public class LineGeo extends AbstractWorldObject {
 
+    // 端点引用（如果复用已有点）
+    private PointGeo startPointRef;
+    private PointGeo endPointRef;
+    
+    // 内部坐标（当没有引用时使用）
     private double startX;
     private double startY;
     private double endX;
@@ -21,49 +31,106 @@ public class LineGeo extends AbstractWorldObject {
 
     private String startPointName; // 起点名称
     private String endPointName;   // 终点名称
+    
+    // 标记端点是否是内部创建的（需要由线段绘制）
+    private boolean startIsInternal = true;
+    private boolean endIsInternal = true;
 
+    /**
+     * 基础构造函数（坐标方式）
+     */
     public LineGeo(double startX, double startY, double endX, double endY) {
         this(startX, startY, endX, endY, true);
     }
 
+    /**
+     * 构造函数（坐标方式，可选自动命名）
+     */
     public LineGeo(double startX, double startY, double endX, double endY, boolean autoName) {
         super(ObjectType.SEGMENT);
         this.startX = startX;
         this.startY = startY;
         this.endX = endX;
         this.endY = endY;
-        this.color = StyleManager.GEOMETRY_LINE; // 线段颜色
-        // 根据参数决定是否为起点和终点分配名称
+        this.color = StyleManager.GEOMETRY_LINE;
         if (autoName) {
             PointNameManager manager = PointNameManager.getInstance();
             this.startPointName = manager.assignName(startX, startY);
             this.endPointName = manager.assignName(endX, endY);
         }
     }
+    
+    /**
+     * 构造函数（点引用方式）- 复用已有点
+     * 
+     * @param startPoint 起点引用（可为null，表示内部创建）
+     * @param startX 起点X坐标
+     * @param startY 起点Y坐标
+     * @param endPoint 终点引用（可为null，表示内部创建）
+     * @param endX 终点X坐标
+     * @param endY 终点Y坐标
+     */
+    public LineGeo(PointGeo startPoint, double startX, double startY, 
+                   PointGeo endPoint, double endX, double endY) {
+        super(ObjectType.SEGMENT);
+        this.startPointRef = startPoint;
+        this.endPointRef = endPoint;
+        this.startX = startX;
+        this.startY = startY;
+        this.endX = endX;
+        this.endY = endY;
+        this.color = StyleManager.GEOMETRY_LINE;
+        
+        // 如果有引用，使用引用点的名称；否则分配新名称
+        PointNameManager manager = PointNameManager.getInstance();
+        if (startPoint != null) {
+            this.startPointName = startPoint.getName();
+            this.startIsInternal = false; // 复用外部点，不由线段绘制
+        } else {
+            this.startPointName = manager.assignName(startX, startY);
+            this.startIsInternal = true;
+        }
+        
+        if (endPoint != null) {
+            this.endPointName = endPoint.getName();
+            this.endIsInternal = false;
+        } else {
+            this.endPointName = manager.assignName(endX, endY);
+            this.endIsInternal = true;
+        }
+    }
 
 
     public double getStartX() {
-        return startX;
+        return startPointRef != null ? startPointRef.getX() : startX;
     }
 
     public double getStartY() {
-        return startY;
+        return startPointRef != null ? startPointRef.getY() : startY;
     }
 
     public double getEndX() {
-        return endX;
+        return endPointRef != null ? endPointRef.getX() : endX;
     }
 
     public double getEndY() {
-        return endY;
+        return endPointRef != null ? endPointRef.getY() : endY;
+    }
+    
+    public PointGeo getStartPointRef() {
+        return startPointRef;
+    }
+    
+    public PointGeo getEndPointRef() {
+        return endPointRef;
     }
 
     @Override
     public void paint(GraphicsContext gc, WorldTransform transform, double w, double h) {
-        double sx1 = transform.worldToScreenX(startX);
-        double sy1 = transform.worldToScreenY(startY);
-        double sx2 = transform.worldToScreenX(endX);
-        double sy2 = transform.worldToScreenY(endY);
+        double sx1 = transform.worldToScreenX(getStartX());
+        double sy1 = transform.worldToScreenY(getStartY());
+        double sx2 = transform.worldToScreenX(getEndX());
+        double sy2 = transform.worldToScreenY(getEndY());
 
         // 应用线型
         LineStyleUtil.applyLineStyle(gc, lineType);
@@ -74,40 +141,51 @@ public class LineGeo extends AbstractWorldObject {
         // 重置线型
         LineStyleUtil.resetLineStyle(gc);
 
-        // 绘制端点
+        // 只绘制内部创建的端点，复用的外部点由它们自己绘制
         gc.setFill(getEffectiveColor());
         double pointRadius = hover ? 5 : 4;
-        gc.fillOval(sx1 - pointRadius, sy1 - pointRadius, pointRadius * 2, pointRadius * 2);
-        gc.fillOval(sx2 - pointRadius, sy2 - pointRadius, pointRadius * 2, pointRadius * 2);
-
-        // 绘制端点名称
-        gc.setFill(Color.BLACK);
-        gc.setFont(Font.font(12));
-        gc.setTextAlign(TextAlignment.LEFT);
-        if (startPointName != null && !startPointName.isEmpty()) {
-            gc.fillText(startPointName, sx1 + 8, sy1 - 8);
+        
+        if (startIsInternal) {
+            gc.fillOval(sx1 - pointRadius, sy1 - pointRadius, pointRadius * 2, pointRadius * 2);
+            // 绘制起点名称
+            if (startPointName != null && !startPointName.isEmpty()) {
+                gc.setFill(Color.BLACK);
+                gc.setFont(Font.font(12));
+                gc.setTextAlign(TextAlignment.LEFT);
+                gc.fillText(startPointName, sx1 + 8, sy1 - 8);
+                gc.setFill(getEffectiveColor());
+            }
         }
-        if (endPointName != null && !endPointName.isEmpty()) {
-            gc.fillText(endPointName, sx2 + 8, sy2 - 8);
+        
+        if (endIsInternal) {
+            gc.fillOval(sx2 - pointRadius, sy2 - pointRadius, pointRadius * 2, pointRadius * 2);
+            // 绘制终点名称
+            if (endPointName != null && !endPointName.isEmpty()) {
+                gc.setFill(Color.BLACK);
+                gc.setFont(Font.font(12));
+                gc.setTextAlign(TextAlignment.LEFT);
+                gc.fillText(endPointName, sx2 + 8, sy2 - 8);
+            }
         }
     }
 
     @Override
     public boolean hitTest(double x, double y, double tolerance) {
+        double sX = getStartX();
+        double sY = getStartY();
+        double eX = getEndX();
+        double eY = getEndY();
+        
         // 点到线段的距离计算
-        double dx = endX - startX;
-        double dy = endY - startY;
+        double dx = eX - sX;
+        double dy = eY - sY;
         double length = Math.sqrt(dx * dx + dy * dy);
 
         if (length == 0) {
-            // 如果是点（起点和终点重合）
-            return Math.hypot(x - startX, y - startY) <= tolerance;
+            return Math.hypot(x - sX, y - sY) <= tolerance;
         }
 
-        // 计算点到直线的距离
-        double distance = Math.abs(dy * x - dx * y + endX * startY - endY * startX) / length;
-
-        // 检查点是否在线段的延长线上，但距离在容差范围内
+        double distance = Math.abs(dy * x - dx * y + eX * sY - eY * sX) / length;
         return distance <= tolerance;
     }
 
@@ -120,13 +198,22 @@ public class LineGeo extends AbstractWorldObject {
     public List<DraggablePoint> getDraggablePoints() {
         // 线段的两个端点可拖动
         return List.of(
-                new DraggablePoint(startX, startY, (newX, newY) -> {
-                    startX = newX;
-                    startY = newY;
+                new DraggablePoint(getStartX(), getStartY(), (newX, newY) -> {
+                    if (startPointRef != null) {
+                        // 复用的外部点，更新其位置
+                        startPointRef.updatePosition(newX, newY);
+                    } else {
+                        startX = newX;
+                        startY = newY;
+                    }
                 }),
-                new DraggablePoint(endX, endY, (newX, newY) -> {
-                    endX = newX;
-                    endY = newY;
+                new DraggablePoint(getEndX(), getEndY(), (newX, newY) -> {
+                    if (endPointRef != null) {
+                        endPointRef.updatePosition(newX, newY);
+                    } else {
+                        endX = newX;
+                        endY = newY;
+                    }
                 })
         );
     }
@@ -136,26 +223,47 @@ public class LineGeo extends AbstractWorldObject {
         double cos = Math.cos(angle);
         double sin = Math.sin(angle);
 
-        // 旋转起点
-        double dx1 = startX - centerX;
-        double dy1 = startY - centerY;
-        startX = centerX + dx1 * cos - dy1 * sin;
-        startY = centerY + dx1 * sin + dy1 * cos;
+        // 旋转起点（只旋转内部点）
+        if (startPointRef != null && !startPointRef.isConstrained()) {
+            double dx1 = startPointRef.getX() - centerX;
+            double dy1 = startPointRef.getY() - centerY;
+            startPointRef.updatePosition(
+                centerX + dx1 * cos - dy1 * sin,
+                centerY + dx1 * sin + dy1 * cos
+            );
+        } else if (startPointRef == null) {
+            double dx1 = startX - centerX;
+            double dy1 = startY - centerY;
+            startX = centerX + dx1 * cos - dy1 * sin;
+            startY = centerY + dx1 * sin + dy1 * cos;
+        }
 
         // 旋转终点
-        double dx2 = endX - centerX;
-        double dy2 = endY - centerY;
-        endX = centerX + dx2 * cos - dy2 * sin;
-        endY = centerY + dx2 * sin + dy2 * cos;
+        if (endPointRef != null && !endPointRef.isConstrained()) {
+            double dx2 = endPointRef.getX() - centerX;
+            double dy2 = endPointRef.getY() - centerY;
+            endPointRef.updatePosition(
+                centerX + dx2 * cos - dy2 * sin,
+                centerY + dx2 * sin + dy2 * cos
+            );
+        } else if (endPointRef == null) {
+            double dx2 = endX - centerX;
+            double dy2 = endY - centerY;
+            endX = centerX + dx2 * cos - dy2 * sin;
+            endY = centerY + dx2 * sin + dy2 * cos;
+        }
     }
 
     @Override
     public double[] getBoundingBox() {
-        // 线段的边界框包含两个端点
-        double minX = Math.min(startX, endX);
-        double maxX = Math.max(startX, endX);
-        double minY = Math.min(startY, endY);
-        double maxY = Math.max(startY, endY);
+        double sX = getStartX();
+        double sY = getStartY();
+        double eX = getEndX();
+        double eY = getEndY();
+        double minX = Math.min(sX, eX);
+        double maxX = Math.max(sX, eX);
+        double minY = Math.min(sY, eY);
+        double maxY = Math.max(sY, eY);
         return new double[]{minX, maxX, minY, maxY};
     }
 }

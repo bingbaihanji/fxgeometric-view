@@ -16,12 +16,18 @@ import java.util.List;
  * 无限直线几何图形
  * <p>
  * 通过两个点定义一条无限直线，直线会延伸至屏幕边界
+ * 支持点复用：如果定义点位置已有PointGeo，直接引用而不是创建新点
  *
  * @author bingbaihanji
  * @date 2025-12-23
  */
 public class InfiniteLineGeo extends AbstractWorldObject {
 
+    // 定义点引用（如果复用已有点）
+    private PointGeo point1Ref;
+    private PointGeo point2Ref;
+    
+    // 内部坐标（当没有引用时使用）
     private double point1X;
     private double point1Y;
     private double point2X;
@@ -29,7 +35,14 @@ public class InfiniteLineGeo extends AbstractWorldObject {
 
     private String point1Name; // 定义点1名称
     private String point2Name; // 定义点2名称
+    
+    // 标记定义点是否是内部创建的
+    private boolean point1IsInternal = true;
+    private boolean point2IsInternal = true;
 
+    /**
+     * 基础构造函数（坐标方式）
+     */
     public InfiniteLineGeo(double point1X, double point1Y, double point2X, double point2Y) {
         super(ObjectType.LINE);
         this.point1X = point1X;
@@ -37,67 +50,98 @@ public class InfiniteLineGeo extends AbstractWorldObject {
         this.point2X = point2X;
         this.point2Y = point2Y;
         this.color = StyleManager.GEOMETRY_LINE;
-        // 为定义点分配名称
         PointNameManager manager = PointNameManager.getInstance();
         this.point1Name = manager.assignName(point1X, point1Y);
         this.point2Name = manager.assignName(point2X, point2Y);
     }
+    
+    /**
+     * 构造函数（点引用方式）- 复用已有点
+     */
+    public InfiniteLineGeo(PointGeo point1, double point1X, double point1Y,
+                           PointGeo point2, double point2X, double point2Y) {
+        super(ObjectType.LINE);
+        this.point1Ref = point1;
+        this.point2Ref = point2;
+        this.point1X = point1X;
+        this.point1Y = point1Y;
+        this.point2X = point2X;
+        this.point2Y = point2Y;
+        this.color = StyleManager.GEOMETRY_LINE;
+        
+        PointNameManager manager = PointNameManager.getInstance();
+        if (point1 != null) {
+            this.point1Name = point1.getName();
+            this.point1IsInternal = false;
+        } else {
+            this.point1Name = manager.assignName(point1X, point1Y);
+            this.point1IsInternal = true;
+        }
+        
+        if (point2 != null) {
+            this.point2Name = point2.getName();
+            this.point2IsInternal = false;
+        } else {
+            this.point2Name = manager.assignName(point2X, point2Y);
+            this.point2IsInternal = true;
+        }
+    }
 
     public double getPoint1X() {
-        return point1X;
+        return point1Ref != null ? point1Ref.getX() : point1X;
     }
 
     public double getPoint1Y() {
-        return point1Y;
+        return point1Ref != null ? point1Ref.getY() : point1Y;
     }
 
     public double getPoint2X() {
-        return point2X;
+        return point2Ref != null ? point2Ref.getX() : point2X;
     }
 
     public double getPoint2Y() {
-        return point2Y;
+        return point2Ref != null ? point2Ref.getY() : point2Y;
     }
 
     @Override
     public void paint(GraphicsContext gc, WorldTransform transform, double w, double h) {
-        // 转换两个点到屏幕坐标
-        double sx1 = transform.worldToScreenX(point1X);
-        double sy1 = transform.worldToScreenY(point1Y);
-        double sx2 = transform.worldToScreenX(point2X);
-        double sy2 = transform.worldToScreenY(point2Y);
-
-        // 计算直线的斜率和截距
-        double dx = sx2 - sx1;
-        double dy = sy2 - sy1;
+        double sx1 = transform.worldToScreenX(getPoint1X());
+        double sy1 = transform.worldToScreenY(getPoint1Y());
+        double sx2 = transform.worldToScreenX(getPoint2X());
+        double sy2 = transform.worldToScreenY(getPoint2Y());
 
         // 计算直线与屏幕边界的交点
         double[] endpoints = calculateLineScreenIntersection(sx1, sy1, sx2, sy2, w, h);
 
-        // 应用线型
         LineStyleUtil.applyLineStyle(gc, lineType);
         gc.setStroke(getEffectiveColor());
         gc.setLineWidth(getEffectiveLineWidth());
         gc.strokeLine(endpoints[0], endpoints[1], endpoints[2], endpoints[3]);
-
-        // 重置线型
         LineStyleUtil.resetLineStyle(gc);
 
-        // 绘制两个定义点
+        // 只绘制内部创建的定义点
         gc.setFill(getEffectiveColor());
         double pointRadius = hover ? 5 : 4;
-        gc.fillOval(sx1 - pointRadius, sy1 - pointRadius, pointRadius * 2, pointRadius * 2);
-        gc.fillOval(sx2 - pointRadius, sy2 - pointRadius, pointRadius * 2, pointRadius * 2);
-
-        // 绘制定义点名称
-        gc.setFill(Color.BLACK);
-        gc.setFont(Font.font(12));
-        gc.setTextAlign(TextAlignment.LEFT);
-        if (point1Name != null && !point1Name.isEmpty()) {
-            gc.fillText(point1Name, sx1 + 8, sy1 - 8);
+        
+        if (point1IsInternal) {
+            gc.fillOval(sx1 - pointRadius, sy1 - pointRadius, pointRadius * 2, pointRadius * 2);
+            if (point1Name != null && !point1Name.isEmpty()) {
+                gc.setFill(Color.BLACK);
+                gc.setFont(Font.font(12));
+                gc.setTextAlign(TextAlignment.LEFT);
+                gc.fillText(point1Name, sx1 + 8, sy1 - 8);
+                gc.setFill(getEffectiveColor());
+            }
         }
-        if (point2Name != null && !point2Name.isEmpty()) {
-            gc.fillText(point2Name, sx2 + 8, sy2 - 8);
+        
+        if (point2IsInternal) {
+            gc.fillOval(sx2 - pointRadius, sy2 - pointRadius, pointRadius * 2, pointRadius * 2);
+            if (point2Name != null && !point2Name.isEmpty()) {
+                gc.setFill(Color.BLACK);
+                gc.setFont(Font.font(12));
+                gc.setTextAlign(TextAlignment.LEFT);
+                gc.fillText(point2Name, sx2 + 8, sy2 - 8);
+            }
         }
     }
 
@@ -145,19 +189,20 @@ public class InfiniteLineGeo extends AbstractWorldObject {
 
     @Override
     public boolean hitTest(double x, double y, double tolerance) {
-        // 计算点到直线的距离
-        double dx = point2X - point1X;
-        double dy = point2Y - point1Y;
+        double p1X = getPoint1X();
+        double p1Y = getPoint1Y();
+        double p2X = getPoint2X();
+        double p2Y = getPoint2Y();
+        
+        double dx = p2X - p1X;
+        double dy = p2Y - p1Y;
         double length = Math.sqrt(dx * dx + dy * dy);
 
         if (length == 0) {
-            // 如果是点（两点重合）
-            return Math.hypot(x - point1X, y - point1Y) <= tolerance;
+            return Math.hypot(x - p1X, y - p1Y) <= tolerance;
         }
 
-        // 计算点到直线的距离（使用行列式公式）
-        double distance = Math.abs(dy * x - dx * y + point2X * point1Y - point2Y * point1X) / length;
-
+        double distance = Math.abs(dy * x - dx * y + p2X * p1Y - p2Y * p1X) / length;
         return distance <= tolerance;
     }
 
@@ -168,15 +213,22 @@ public class InfiniteLineGeo extends AbstractWorldObject {
 
     @Override
     public List<DraggablePoint> getDraggablePoints() {
-        // 直线的两个定义点可拖动
         return List.of(
-                new DraggablePoint(point1X, point1Y, (newX, newY) -> {
-                    point1X = newX;
-                    point1Y = newY;
+                new DraggablePoint(getPoint1X(), getPoint1Y(), (newX, newY) -> {
+                    if (point1Ref != null) {
+                        point1Ref.updatePosition(newX, newY);
+                    } else {
+                        point1X = newX;
+                        point1Y = newY;
+                    }
                 }),
-                new DraggablePoint(point2X, point2Y, (newX, newY) -> {
-                    point2X = newX;
-                    point2Y = newY;
+                new DraggablePoint(getPoint2X(), getPoint2Y(), (newX, newY) -> {
+                    if (point2Ref != null) {
+                        point2Ref.updatePosition(newX, newY);
+                    } else {
+                        point2X = newX;
+                        point2Y = newY;
+                    }
                 })
         );
     }
@@ -186,16 +238,32 @@ public class InfiniteLineGeo extends AbstractWorldObject {
         double cos = Math.cos(angle);
         double sin = Math.sin(angle);
 
-        // 旋转定义点1
-        double dx1 = point1X - centerX;
-        double dy1 = point1Y - centerY;
-        point1X = centerX + dx1 * cos - dy1 * sin;
-        point1Y = centerY + dx1 * sin + dy1 * cos;
+        if (point1Ref != null && !point1Ref.isConstrained()) {
+            double dx1 = point1Ref.getX() - centerX;
+            double dy1 = point1Ref.getY() - centerY;
+            point1Ref.updatePosition(
+                centerX + dx1 * cos - dy1 * sin,
+                centerY + dx1 * sin + dy1 * cos
+            );
+        } else if (point1Ref == null) {
+            double dx1 = point1X - centerX;
+            double dy1 = point1Y - centerY;
+            point1X = centerX + dx1 * cos - dy1 * sin;
+            point1Y = centerY + dx1 * sin + dy1 * cos;
+        }
 
-        // 旋转定义点2
-        double dx2 = point2X - centerX;
-        double dy2 = point2Y - centerY;
-        point2X = centerX + dx2 * cos - dy2 * sin;
-        point2Y = centerY + dx2 * sin + dy2 * cos;
+        if (point2Ref != null && !point2Ref.isConstrained()) {
+            double dx2 = point2Ref.getX() - centerX;
+            double dy2 = point2Ref.getY() - centerY;
+            point2Ref.updatePosition(
+                centerX + dx2 * cos - dy2 * sin,
+                centerY + dx2 * sin + dy2 * cos
+            );
+        } else if (point2Ref == null) {
+            double dx2 = point2X - centerX;
+            double dy2 = point2Y - centerY;
+            point2X = centerX + dx2 * cos - dy2 * sin;
+            point2Y = centerY + dx2 * sin + dy2 * cos;
+        }
     }
 }

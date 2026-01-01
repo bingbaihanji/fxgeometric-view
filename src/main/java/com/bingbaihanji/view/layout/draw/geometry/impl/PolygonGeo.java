@@ -12,6 +12,7 @@ import java.util.List;
  * 多边形几何图形
  * <p>
  * 支持依次选点绘制多边形，当终点与起点重合时完成绘制
+ * 多边形直接引用PointGeo对象作为顶点，实现点复用
  *
  * @author bingbaihanji
  * @date 2025-12-23
@@ -19,10 +20,10 @@ import java.util.List;
 public class PolygonGeo extends AbstractWorldObject {
 
     /**
-     * 多边形顶点列表（世界坐标）
+     * 多边形顶点列表（直接引用PointGeo对象）
+     * 多边形不再自己管理顶点坐标，而是从引用的PointGeo获取
      */
-    private final List<Point> vertices;
-    private final List<String> vertexNames; // 顶点名称列表
+    private final List<PointGeo> vertexPoints;
 
     /**
      * 构造函数
@@ -38,93 +39,90 @@ public class PolygonGeo extends AbstractWorldObject {
             throw new IllegalArgumentException("顶点坐标数组长度必须是偶数");
         }
 
-        this.vertices = new ArrayList<>();
-        this.vertexNames = new ArrayList<>();
+        this.vertexPoints = new ArrayList<>();
         this.color = StyleManager.GEOMETRY_LINE;
-        PointNameManager manager = PointNameManager.getInstance();
+        
+        // 为每个坐标创建内部顶点点对象（不显示名称，作为多边形内部顶点）
         for (int i = 0; i < vertices.length; i += 2) {
-            this.vertices.add(new Point(vertices[i], vertices[i + 1]));
-            // 为每个顶点分配名称
-            this.vertexNames.add(manager.assignName(vertices[i], vertices[i + 1]));
+            PointGeo point = new PointGeo(vertices[i], vertices[i + 1]);
+            point.setPolygonVertex(true); // 标记为多边形内部顶点
+            this.vertexPoints.add(point);
         }
     }
 
     /**
-     * 构造函数（从点列表）
+     * 构造函数（从PointGeo引用列表）
+     * 直接复用已有的点对象
      *
-     * @param points 顶点列表
+     * @param pointRefs 点对象引用列表
      */
-    public PolygonGeo(List<javafx.geometry.Point2D> points) {
+    public PolygonGeo(List<PointGeo> pointRefs) {
         super(ObjectType.POLYGON);
-        if (points.size() < 3) {
+        if (pointRefs.size() < 3) {
             throw new IllegalArgumentException("多边形至少需要3个顶点");
         }
 
-        this.vertices = new ArrayList<>();
-        this.vertexNames = new ArrayList<>();
+        this.vertexPoints = new ArrayList<>(pointRefs);
         this.color = StyleManager.GEOMETRY_LINE;
-        PointNameManager manager = PointNameManager.getInstance();
-        for (javafx.geometry.Point2D p : points) {
-            this.vertices.add(new Point(p.getX(), p.getY()));
-            // 为每个顶点分配名称
-            this.vertexNames.add(manager.assignName(p.getX(), p.getY()));
-        }
     }
 
     @Override
     public void paint(GraphicsContext gc, WorldTransform transform, double w, double h) {
-        if (vertices.isEmpty()) return;
+        if (vertexPoints.isEmpty()) return;
 
-        // 转换顶点到屏幕坐标
-        double[] xPoints = new double[vertices.size()];
-        double[] yPoints = new double[vertices.size()];
+        // 从引用的点对象获取坐标
+        double[] xPoints = new double[vertexPoints.size()];
+        double[] yPoints = new double[vertexPoints.size()];
 
-        for (int i = 0; i < vertices.size(); i++) {
-            Point vertex = vertices.get(i);
-            xPoints[i] = transform.worldToScreenX(vertex.x);
-            yPoints[i] = transform.worldToScreenY(vertex.y);
+        for (int i = 0; i < vertexPoints.size(); i++) {
+            PointGeo point = vertexPoints.get(i);
+            xPoints[i] = transform.worldToScreenX(point.getX());
+            yPoints[i] = transform.worldToScreenY(point.getY());
         }
 
         // 先绘制填充
         FillRenderer.fillPolygon(gc, fillType, fillColor, fillOpacity,
-                hatchAngle, hatchDistance, xPoints, yPoints, vertices.size());
+                hatchAngle, hatchDistance, xPoints, yPoints, vertexPoints.size());
 
         // 再绘制多边形边框
         // 应用线型
         LineStyleUtil.applyLineStyle(gc, lineType);
         gc.setStroke(getEffectiveColor());
         gc.setLineWidth(getEffectiveLineWidth());
-        gc.strokePolygon(xPoints, yPoints, vertices.size());
+        gc.strokePolygon(xPoints, yPoints, vertexPoints.size());
 
         // 重置线型
         LineStyleUtil.resetLineStyle(gc);
 
-        // 绘制顶点
+        // 只绘制多边形自己创建的内部顶点（isPolygonVertex=true的点）
+        // 复用的外部点由它们自己负责绘制
         gc.setFill(getEffectiveColor());
         double pointRadius = 3;
-        for (int i = 0; i < vertices.size(); i++) {
-            gc.fillOval(xPoints[i] - pointRadius, yPoints[i] - pointRadius,
-                    pointRadius * 2, pointRadius * 2);
-        }
-
-        // 使用LabelRenderer绘制顶点名称
-        for (int i = 0; i < vertices.size(); i++) {
-            String name = vertexNames.get(i);
-            if (name != null && !name.isEmpty()) {
-                LabelRenderer.renderLabel(gc, name, xPoints[i], yPoints[i]);
+        for (int i = 0; i < vertexPoints.size(); i++) {
+            PointGeo point = vertexPoints.get(i);
+            if (point.isPolygonVertex()) {
+                // 这是多边形内部创建的点，需要绘制
+                gc.fillOval(xPoints[i] - pointRadius, yPoints[i] - pointRadius,
+                        pointRadius * 2, pointRadius * 2);
+                // 绘制名称
+                String name = point.getName();
+                if (name != null && !name.isEmpty()) {
+                    LabelRenderer.renderLabel(gc, name, xPoints[i], yPoints[i]);
+                }
             }
+            // 复用的外部点不在这里绘制，它们作为独立对象会自己绘制
         }
     }
 
     @Override
     public boolean hitTest(double wx, double wy, double tol) {
         // 简单的命中测试：检查是否在多边形边界附近或内部
-        for (int i = 0; i < vertices.size(); i++) {
-            Point p1 = vertices.get(i);
-            Point p2 = vertices.get((i + 1) % vertices.size());
+        for (int i = 0; i < vertexPoints.size(); i++) {
+            PointGeo p1 = vertexPoints.get(i);
+            PointGeo p2 = vertexPoints.get((i + 1) % vertexPoints.size());
 
             // 检查点到线段的距离
-            double dist = pointToSegmentDistance(wx, wy, p1.x, p1.y, p2.x, p2.y);
+            double dist = pointToSegmentDistance(wx, wy, p1.getX(), p1.getY(), p2.getX(), p2.getY());
             if (dist < tol) {
                 return true;
             }
@@ -161,15 +159,29 @@ public class PolygonGeo extends AbstractWorldObject {
      * 获取顶点数量
      */
     public int getVertexCount() {
-        return vertices.size();
+        return vertexPoints.size();
     }
 
     /**
-     * 获取指定索引的顶点
+     * 获取指定索引的顶点坐标
      */
     public javafx.geometry.Point2D getVertex(int index) {
-        Point p = vertices.get(index);
-        return new javafx.geometry.Point2D(p.x, p.y);
+        PointGeo p = vertexPoints.get(index);
+        return new javafx.geometry.Point2D(p.getX(), p.getY());
+    }
+    
+    /**
+     * 获取指定索引的顶点点对象
+     */
+    public PointGeo getVertexPoint(int index) {
+        return vertexPoints.get(index);
+    }
+    
+    /**
+     * 获取所有顶点点对象
+     */
+    public List<PointGeo> getVertexPoints() {
+        return vertexPoints;
     }
 
     /**
@@ -179,10 +191,10 @@ public class PolygonGeo extends AbstractWorldObject {
      */
     public List<LineGeo> getEdges() {
         List<LineGeo> edges = new ArrayList<>();
-        for (int i = 0; i < vertices.size(); i++) {
-            Point p1 = vertices.get(i);
-            Point p2 = vertices.get((i + 1) % vertices.size());
-            edges.add(new LineGeo(p1.x, p1.y, p2.x, p2.y, false));  // 不自动命名
+        for (int i = 0; i < vertexPoints.size(); i++) {
+            PointGeo p1 = vertexPoints.get(i);
+            PointGeo p2 = vertexPoints.get((i + 1) % vertexPoints.size());
+            edges.add(new LineGeo(p1.getX(), p1.getY(), p2.getX(), p2.getY(), false));  // 不自动命名
         }
         return edges;
     }
@@ -191,12 +203,14 @@ public class PolygonGeo extends AbstractWorldObject {
     public List<DraggablePoint> getDraggablePoints() {
         // 所有顶点都可拖动
         List<DraggablePoint> points = new ArrayList<>();
-        for (int i = 0; i < vertices.size(); i++) {
+        for (int i = 0; i < vertexPoints.size(); i++) {
             final int index = i;
-            Point vertex = vertices.get(index);
-            points.add(new DraggablePoint(vertex.x, vertex.y, (newX, newY) -> {
-                vertices.get(index).x = newX;
-                vertices.get(index).y = newY;
+            PointGeo vertexPoint = vertexPoints.get(index);
+            
+            points.add(new DraggablePoint(vertexPoint.getX(), vertexPoint.getY(), (newX, newY) -> {
+                // 直接更新点对象的位置
+                // 如果点有约束，updatePosition会自动处理约束逻辑
+                vertexPoint.updatePosition(newX, newY);
             }));
         }
         return points;
@@ -207,18 +221,22 @@ public class PolygonGeo extends AbstractWorldObject {
         double cos = Math.cos(angle);
         double sin = Math.sin(angle);
 
-        // 旋转所有顶点
-        for (Point vertex : vertices) {
-            double dx = vertex.x - centerX;
-            double dy = vertex.y - centerY;
-            vertex.x = centerX + dx * cos - dy * sin;
-            vertex.y = centerY + dx * sin + dy * cos;
+        // 旋转所有顶点（只旋转多边形自己创建的内部顶点）
+        for (PointGeo point : vertexPoints) {
+            if (point.isPolygonVertex() && !point.isConstrained()) {
+                double dx = point.getX() - centerX;
+                double dy = point.getY() - centerY;
+                double newX = centerX + dx * cos - dy * sin;
+                double newY = centerY + dx * sin + dy * cos;
+                point.updatePosition(newX, newY);
+            }
+            // 有约束的点或外部复用的点不参与旋转
         }
     }
 
     @Override
     public double[] getBoundingBox() {
-        if (vertices.isEmpty()) {
+        if (vertexPoints.isEmpty()) {
             return null;
         }
 
@@ -228,26 +246,13 @@ public class PolygonGeo extends AbstractWorldObject {
         double minY = Double.MAX_VALUE;
         double maxY = Double.MIN_VALUE;
 
-        for (Point vertex : vertices) {
-            minX = Math.min(minX, vertex.x);
-            maxX = Math.max(maxX, vertex.x);
-            minY = Math.min(minY, vertex.y);
-            maxY = Math.max(maxY, vertex.y);
+        for (PointGeo point : vertexPoints) {
+            minX = Math.min(minX, point.getX());
+            maxX = Math.max(maxX, point.getX());
+            minY = Math.min(minY, point.getY());
+            maxY = Math.max(maxY, point.getY());
         }
 
         return new double[]{minX, maxX, minY, maxY};
-    }
-
-    /**
-     * 内部点类
-     */
-    private static class Point {
-        double x;
-        double y;
-
-        Point(double x, double y) {
-            this.x = x;
-            this.y = y;
-        }
     }
 }

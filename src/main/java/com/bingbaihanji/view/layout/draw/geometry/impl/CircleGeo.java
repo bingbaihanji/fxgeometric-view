@@ -7,43 +7,85 @@ import javafx.scene.canvas.GraphicsContext;
 
 import java.util.List;
 
+/**
+ * 圆几何图形
+ * <p>
+ * 支持圆心点复用：如果圆心位置已有PointGeo，直接引用而不是创建新点
+ */
 public class CircleGeo extends AbstractWorldObject {
 
     private double r;
+    
+    // 圆心引用（如果复用已有点）
+    private PointGeo centerPointRef;
+    
+    // 内部坐标（当没有引用时使用）
     private double cx;
     private double cy;
+    
     private String centerName; // 圆心名称
+    
+    // 标记圆心是否是内部创建的（需要由圆绘制）
+    private boolean centerIsInternal = true;
 
-
+    /**
+     * 基础构造函数（坐标方式）
+     */
     public CircleGeo(double cx, double cy, double r) {
         super(ObjectType.CIRCLE);
         this.cx = cx;
         this.cy = cy;
         this.r = r;
         this.color = StyleManager.GEOMETRY_LINE;
-        // 自动为圆心分配名称
         this.centerName = PointNameManager.getInstance().assignName(cx, cy);
     }
 
+    /**
+     * 构造函数（坐标方式，可选自动命名）
+     */
     public CircleGeo(double cx, double cy, double r, boolean autoNameCenter) {
         super(ObjectType.CIRCLE);
         this.cx = cx;
         this.cy = cy;
         this.r = r;
         this.color = StyleManager.GEOMETRY_LINE;
-        // 根据参数决定是否为圆心自动命名
         if (autoNameCenter) {
             this.centerName = PointNameManager.getInstance().assignName(cx, cy);
         }
     }
+    
+    /**
+     * 构造函数（点引用方式）- 复用已有点作为圆心
+     * 
+     * @param centerPoint 圆心点引用（可为null，表示内部创建）
+     * @param cx 圆心X坐标
+     * @param cy 圆心Y坐标
+     * @param r 半径
+     */
+    public CircleGeo(PointGeo centerPoint, double cx, double cy, double r) {
+        super(ObjectType.CIRCLE);
+        this.centerPointRef = centerPoint;
+        this.cx = cx;
+        this.cy = cy;
+        this.r = r;
+        this.color = StyleManager.GEOMETRY_LINE;
+        
+        if (centerPoint != null) {
+            this.centerName = centerPoint.getName();
+            this.centerIsInternal = false; // 复用外部点，不由圆绘制
+        } else {
+            this.centerName = PointNameManager.getInstance().assignName(cx, cy);
+            this.centerIsInternal = true;
+        }
+    }
 
-    // Getter methods for intersection calculations
+    // Getter methods
     public double getCx() {
-        return cx;
+        return centerPointRef != null ? centerPointRef.getX() : cx;
     }
 
     public double getCy() {
-        return cy;
+        return centerPointRef != null ? centerPointRef.getY() : cy;
     }
 
     public double getR() {
@@ -61,6 +103,10 @@ public class CircleGeo extends AbstractWorldObject {
     public void setCenterName(String centerName) {
         this.centerName = centerName;
     }
+    
+    public PointGeo getCenterPointRef() {
+        return centerPointRef;
+    }
 
     @Override
     public void paint(GraphicsContext gc,
@@ -68,8 +114,8 @@ public class CircleGeo extends AbstractWorldObject {
                       double w,
                       double h) {
 
-        double sx = transform.worldToScreenX(cx);
-        double sy = transform.worldToScreenY(cy);
+        double sx = transform.worldToScreenX(getCx());
+        double sy = transform.worldToScreenY(getCy());
         double sr = r * transform.getScale();
 
         // 先绘制填充
@@ -77,7 +123,6 @@ public class CircleGeo extends AbstractWorldObject {
                 hatchAngle, hatchDistance, sx, sy, sr);
 
         // 再绘制边框
-        // 应用线型
         LineStyleUtil.applyLineStyle(gc, lineType);
         gc.setStroke(getEffectiveColor());
         gc.setLineWidth(getEffectiveLineWidth());
@@ -92,21 +137,22 @@ public class CircleGeo extends AbstractWorldObject {
         // 重置线型
         LineStyleUtil.resetLineStyle(gc);
 
-        // 根据项目规范要求,绘制圆形时显示圆心点
-        // 绘制圆心点以便提供明确的几何定位反馈
-        gc.setFill(getEffectiveColor());
-        double pointRadius = hover ? 4 : 3;
-        gc.fillOval(sx - pointRadius, sy - pointRadius, pointRadius * 2, pointRadius * 2);
+        // 只绘制内部创建的圆心，复用的外部点由它们自己绘制
+        if (centerIsInternal) {
+            gc.setFill(getEffectiveColor());
+            double pointRadius = hover ? 4 : 3;
+            gc.fillOval(sx - pointRadius, sy - pointRadius, pointRadius * 2, pointRadius * 2);
 
-        // 使用LabelRenderer绘制圆心名称
-        if (centerName != null && !centerName.isEmpty()) {
-            LabelRenderer.renderLabel(gc, centerName, sx, sy);
+            // 使用LabelRenderer绘制圆心名称
+            if (centerName != null && !centerName.isEmpty()) {
+                LabelRenderer.renderLabel(gc, centerName, sx, sy);
+            }
         }
     }
 
     @Override
     public boolean hitTest(double x, double y, double tolerance) {
-        double d = Math.hypot(x - cx, y - cy);
+        double d = Math.hypot(x - getCx(), y - getCy());
         return Math.abs(d - r) <= tolerance;
     }
 
@@ -119,9 +165,14 @@ public class CircleGeo extends AbstractWorldObject {
     public List<DraggablePoint> getDraggablePoints() {
         // 圆心可拖动
         return List.of(
-                new DraggablePoint(cx, cy, (newX, newY) -> {
-                    cx = newX;
-                    cy = newY;
+                new DraggablePoint(getCx(), getCy(), (newX, newY) -> {
+                    if (centerPointRef != null) {
+                        // 复用的外部点，更新其位置
+                        centerPointRef.updatePosition(newX, newY);
+                    } else {
+                        cx = newX;
+                        cy = newY;
+                    }
                 })
         );
     }
@@ -131,15 +182,26 @@ public class CircleGeo extends AbstractWorldObject {
         // 旋转圆心
         double cos = Math.cos(angle);
         double sin = Math.sin(angle);
-        double dx = cx - centerX;
-        double dy = cy - centerY;
-        cx = centerX + dx * cos - dy * sin;
-        cy = centerY + dx * sin + dy * cos;
+        
+        if (centerPointRef != null && !centerPointRef.isConstrained()) {
+            double dx = centerPointRef.getX() - centerX;
+            double dy = centerPointRef.getY() - centerY;
+            centerPointRef.updatePosition(
+                centerX + dx * cos - dy * sin,
+                centerY + dx * sin + dy * cos
+            );
+        } else if (centerPointRef == null) {
+            double dx = cx - centerX;
+            double dy = cy - centerY;
+            cx = centerX + dx * cos - dy * sin;
+            cy = centerY + dx * sin + dy * cos;
+        }
     }
 
     @Override
     public double[] getBoundingBox() {
-        // 圆的边界框
-        return new double[]{cx - r, cx + r, cy - r, cy + r};
+        double centerX = getCx();
+        double centerY = getCy();
+        return new double[]{centerX - r, centerX + r, centerY - r, centerY + r};
     }
 }
