@@ -14,33 +14,30 @@ import java.util.stream.Collectors;
  * @author bingbaihanji
  * @date 2025-12-31
  * @description 管理几何对象的选择状态，参考 GeoGebra 的 SelectionManager 设计
- *              支持单选、多选、框选、批量操作等功能
+ * 支持单选、多选、框选、批量操作等功能
  */
 public class SelectionManager {
-
-    /**
-     * 框选区域（用于框选模式）
-     */
-    private SelectionRectangle selectionRectangle = null;
-
-    /**
-     * 是否启用框选模式
-     */
-    private boolean rectangleSelectionEnabled = true;
-
-    //   选中对象列表  
 
     /**
      * 主选择列表（所有选中的对象）
      */
     private final List<WorldObject> selectedObjects = new ArrayList<>();
-
-    //   选择变化监听器  
-
     /**
      * 选择变化监听器列表
      */
     private final List<SelectionChangeListener> listeners = new ArrayList<>();
+
+    //   选中对象列表  
+    /**
+     * 框选区域（用于框选模式）
+     */
+    private SelectionRectangle selectionRectangle = null;
+
+    //   选择变化监听器  
+    /**
+     * 是否启用框选模式
+     */
+    private boolean rectangleSelectionEnabled = true;
 
     //   选择操作  
 
@@ -449,7 +446,7 @@ public class SelectionManager {
                         }
                         // 检查边界框是否与选择区域相交
                         return bbox[0] <= maxX && bbox[1] >= minX &&
-                               bbox[2] <= maxY && bbox[3] >= minY;
+                                bbox[2] <= maxY && bbox[3] >= minY;
                     })
                     .collect(Collectors.toList());
         }

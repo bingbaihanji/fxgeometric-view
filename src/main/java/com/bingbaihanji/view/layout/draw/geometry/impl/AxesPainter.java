@@ -254,8 +254,9 @@ public class AxesPainter implements WorldPainter {
             gc.setLineWidth(2);
             gc.strokeLine(sx, tickY - 4, sx, tickY + 4);
 
-            // 绘制刻度数值标签
-            gc.fillText(formatNumber(x, settings.getUnitLabelType()), sx + 2, tickY - 6);
+            // 绘制刻度数值标签（π单位模式下，X轴用π，Y轴用数值）
+            UnitLabelType xAxisUnitType = settings.getUnitLabelType();
+            gc.fillText(formatNumber(x, xAxisUnitType), sx + 2, tickY - 6);
 
             // 绘制次刻度
             if (drawMinor) {
@@ -281,8 +282,11 @@ public class AxesPainter implements WorldPainter {
             gc.setLineWidth(2);
             gc.strokeLine(tickX - 4, sy, tickX + 4, sy);
 
-            // 绘制刻度数值标签
-            gc.fillText(formatNumber(y, settings.getUnitLabelType()), tickX + 6, sy + 4);
+            // 绘制刻度数值标签（π单位模式下，Y轴始终用数值）
+            UnitLabelType yAxisUnitType = settings.getUnitLabelType() == UnitLabelType.PI
+                    ? UnitLabelType.NUMERIC
+                    : settings.getUnitLabelType();
+            gc.fillText(formatNumber(y, yAxisUnitType), tickX + 6, sy + 4);
 
             // 绘制次刻度
             if (drawMinor) {

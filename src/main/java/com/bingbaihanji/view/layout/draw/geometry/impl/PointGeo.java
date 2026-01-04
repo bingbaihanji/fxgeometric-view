@@ -6,6 +6,7 @@ import com.bingbaihanji.util.PointNameManager;
 import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.util.constraint.PointConstraint;
 import com.bingbaihanji.view.layout.core.WorldTransform;
+import com.bingbaihanji.view.layout.draw.geometry.GeometryVisitor;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -18,7 +19,7 @@ public class PointGeo extends AbstractWorldObject {
     private double y;
 
     private PointConstraint constraint = null; // 点的约束（可选）
-    
+
     /**
      * 标记此点是否是多边形内部创建的顶点
      * 如果是内部顶点，多边形负责绘制它；
@@ -79,14 +80,14 @@ public class PointGeo extends AbstractWorldObject {
     public boolean isConstrained() {
         return constraint != null;
     }
-    
+
     /**
      * 判断是否是多边形内部创建的顶点
      */
     public boolean isPolygonVertex() {
         return polygonVertex;
     }
-    
+
     /**
      * 设置是否是多边形内部顶点
      */
@@ -125,7 +126,7 @@ public class PointGeo extends AbstractWorldObject {
         if (polygonVertex) {
             return;
         }
-        
+
         double sx = t.worldToScreenX(x);
         double sy = t.worldToScreenY(y);
 
@@ -201,5 +202,10 @@ public class PointGeo extends AbstractWorldObject {
         // 点的边界框是一个很小的区域
         double margin = 0.1;
         return new double[]{x - margin, x + margin, y - margin, y + margin};
+    }
+
+    @Override
+    public <T> T accept(GeometryVisitor<T> visitor) {
+        return visitor.visitPoint(this);
     }
 }

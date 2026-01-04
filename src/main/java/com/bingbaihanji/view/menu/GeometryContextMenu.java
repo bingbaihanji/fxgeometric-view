@@ -502,6 +502,15 @@ public class GeometryContextMenu {
                 polygon.setColor(props.getColor());
                 canvas.redraw();
             });
+        } else if (shape instanceof FunctionGeo function) {
+            // 函数曲线：支持颜色、线宽修改
+            dialog = new ShapePropertiesDialog(function.getColor());
+
+            Optional<ShapePropertiesResult> result = dialog.showAndWait();
+            result.ifPresent(props -> {
+                function.setColor(props.getColor());
+                canvas.redraw();
+            });
         }
     }
 

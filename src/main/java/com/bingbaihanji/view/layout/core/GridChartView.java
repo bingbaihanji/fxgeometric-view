@@ -1,6 +1,7 @@
 package com.bingbaihanji.view.layout.core;
 
 import com.bingbaihanji.constant.SnapMode;
+import com.bingbaihanji.constant.UnitLabelType;
 import com.bingbaihanji.util.AxisTickCalculator;
 import com.bingbaihanji.util.SpecialPointManager;
 import com.bingbaihanji.util.SpecialPointManager.SpecialPoint;
@@ -8,6 +9,7 @@ import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import com.bingbaihanji.view.layout.draw.geometry.WorldPainter;
 import com.bingbaihanji.view.layout.draw.geometry.impl.AxesPainter;
 import com.bingbaihanji.view.layout.draw.geometry.impl.GridPainter;
+import com.bingbaihanji.view.layout.draw.geometry.impl.TrigonometricFunctionGeo;
 import com.bingbaihanji.view.layout.draw.tools.CircleDrawingTool;
 import javafx.animation.PauseTransition;
 import javafx.scene.Cursor;
@@ -706,14 +708,34 @@ public class GridChartView extends Pane {
 
     public void addObject(WorldObject obj) {
         objects.add(obj);
+        updateAxisUnitTypeBasedOnFunctions();  // 自动检测三角函数
         notifyObjectChange();
         redraw();
     }
 
     public void removeObject(WorldObject obj) {
         objects.remove(obj);
+        updateAxisUnitTypeBasedOnFunctions();  // 自动检测三角函数
         notifyObjectChange();
         redraw();
+    }
+
+    /**
+     * 根据当前对象列表中是否有三角函数来自动调整坐标轴单位类型
+     * 如果有三角函数：自动设置为π单位（X轴显示π，Y轴显示数值）
+     * 如果没有三角函数：恢复为普通数值单位
+     */
+    private void updateAxisUnitTypeBasedOnFunctions() {
+        boolean hasTrigFunction = objects.stream()
+                .anyMatch(obj -> obj instanceof TrigonometricFunctionGeo);
+
+        if (hasTrigFunction) {
+            // 有三角函数：设置为π单位模式
+            settings.setUnitLabelType(UnitLabelType.PI);
+        } else {
+            // 没有三角函数：恢复为普通数值模式
+            settings.setUnitLabelType(UnitLabelType.NUMERIC);
+        }
     }
 
     /**
@@ -721,6 +743,7 @@ public class GridChartView extends Pane {
      */
     public void clearAllObjects() {
         objects.clear();
+        updateAxisUnitTypeBasedOnFunctions();  // 清空后恢复默认坐标轴
         redraw();
     }
 

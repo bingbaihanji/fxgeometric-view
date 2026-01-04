@@ -9,10 +9,8 @@ import com.bingbaihanji.view.menu.MenuEvent;
 import com.bingbaihanji.view.menu.MenuView;
 import javafx.application.Platform;
 import javafx.geometry.Orientation;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.SplitPane;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
@@ -41,50 +39,50 @@ public class InitView {
     public Stage init() {
         BorderPane root = createMainLayout();
         Scene scene = createScene(root);
-        
+
         stage.setTitle(I18nUtil.getString("application.name"));
         stage.setScene(scene);
-        
+
         // 添加窗口关闭事件处理
         stage.setOnCloseRequest(event -> handleWindowClose());
-        
+
         return stage;
     }
-    
+
     /**
      * 创建主布局
      */
     private BorderPane createMainLayout() {
         BorderPane root = new BorderPane();
-        
+
         // 1. 创建坐标系面板
         GridChartView gridChartPane = new GridChartView();
-        
+
         // 2. 创建工具栏
         ShapeToolPane toolPane = new ShapeToolPane();
-        
+
         // 3. 创建绘制控制器
         DrawingController drawingController = new DrawingController(gridChartPane);
         this.drawingController = drawingController;
-        
+
         // 4. 绑定事件
         bindToolPaneEvents(toolPane, drawingController);
-        
+
         // 5. 设置中央分割面板
         SplitPane central = createCentralSplitPane(toolPane, gridChartPane);
         root.setCenter(central);
-        
+
         // 6. 设置预览绘制回调
         gridChartPane.setPreviewPainter(drawingController::paintPreview);
-        
+
         // 7. 创建菜单栏
         MenuView menuView = new MenuView();
         MenuEvent menuEvent = new MenuEvent(menuView);
         root.setTop(menuEvent.getMenuView(stage, gridChartPane));
-        
+
         return root;
     }
-    
+
     /**
      * 绑定工具栏事件
      */
@@ -93,13 +91,16 @@ public class InitView {
         toolPane.drawModeProperty().addListener((obs, oldMode, newMode) -> {
             controller.setDrawMode(newMode);
         });
-        
+
         // 绑定撤销/恢复/清空按钮
         toolPane.setOnUndo(controller::undo);
         toolPane.setOnRedo(controller::redo);
         toolPane.setOnClear(controller::clearAll);
+
+        // 绑定函数绘制按钮
+        toolPane.setOnFunctionClick(controller::showFunctionDialog);
     }
-    
+
     /**
      * 创建中央分割面板
      */
@@ -107,7 +108,7 @@ public class InitView {
         SplitPane central = new SplitPane(toolPane, gridChartPane);
         central.setOrientation(Orientation.HORIZONTAL);
         central.setDividerPositions(0.23);
-        
+
         // 限制分隔条的移动范围
         central.getDividers().forEach(div -> {
             div.positionProperty().addListener((obs, oldPos, newPos) -> {
@@ -121,25 +122,25 @@ public class InitView {
                 }
             });
         });
-        
+
         return central;
     }
-    
+
     /**
      * 创建场景并添加快捷键支持
      */
     private Scene createScene(BorderPane root) {
         Scene scene = new Scene(root, 1000, 700);
-        
+
         // 添加快捷键支持
         scene.setOnKeyPressed(event -> handleKeyPressed(event));
-        
+
         // 添加语言变化监听器
         setupLocaleChangeListener();
-        
+
         return scene;
     }
-    
+
     /**
      * 设置语言变化监听器
      */
@@ -167,7 +168,7 @@ public class InitView {
             drawingController.closeAllChildWindows();
         }
     }
-    
+
     /**
      * 处理快捷键事件
      */
@@ -175,7 +176,7 @@ public class InitView {
         if (drawingController == null) {
             return;
         }
-        
+
         if (event.isControlDown()) {
             switch (event.getCode()) {
                 case Z:

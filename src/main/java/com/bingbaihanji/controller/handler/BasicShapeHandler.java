@@ -102,7 +102,8 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             boolean nearConstrainableShape = false;
             for (WorldObject obj : context.getObjects()) {
                 if (obj instanceof LineGeo || obj instanceof InfiniteLineGeo ||
-                        obj instanceof CircleGeo || obj instanceof PolygonGeo || obj instanceof PathGeo) {
+                        obj instanceof CircleGeo || obj instanceof PolygonGeo ||
+                        obj instanceof PathGeo || obj instanceof FunctionGeo) {
                     PointConstraint tempConstraint = context.getConstraintHandler().createConstraint(obj);
                     double distance = tempConstraint.distanceToShape(rawX, rawY);
 
@@ -145,18 +146,18 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             previewRadius = Math.sqrt(
                     Math.pow(worldX - firstPointX, 2) + Math.pow(worldY - firstPointY, 2)
             );
-            
+
             // 检测圆相切吸附
             double tangentThreshold = 15.0 / context.getTransform().getScale();
-            EdgeSnapManager.CircleTangentResult tangentResult = 
-                    EdgeSnapManager.findCircleTangentSnap(firstPointX, firstPointY, previewRadius, 
+            EdgeSnapManager.CircleTangentResult tangentResult =
+                    EdgeSnapManager.findCircleTangentSnap(firstPointX, firstPointY, previewRadius,
                             context.getObjects(), tangentThreshold);
-            
+
             // 如果找到相切吸附，使用调整后的半径预览
             if (tangentResult != null) {
                 previewRadius = tangentResult.getRadius();
             }
-            
+
             // 更新CircleDrawingTool的预览参数
             circleTool.setPreviewParams(firstPointX, firstPointY, previewRadius);
         }
@@ -311,7 +312,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
 
         // 检查第一次点击是否靠近现有特殊点（用于圆心吸附）
         firstClickExistingPoint = context.getSnappingHandler().findNearestSpecialPoint(rawX, rawY, context);
-        
+
         // 检查第一次点击位置是否已有点对象（用于复用）
         double scale = context.getTransform().getScale();
         firstPointRef = PointReuseManager.getExistingPointOrNull(worldX, worldY, context.getObjects(), scale);
@@ -327,22 +328,22 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
      */
     private void handleSecondClick(double worldX, double worldY, DrawingContext context) {
         double scale = context.getTransform().getScale();
-        
+
         // 检查第二次点击位置是否已有点对象（用于复用）
         PointGeo secondPointRef = PointReuseManager.getExistingPointOrNull(worldX, worldY, context.getObjects(), scale);
-        
+
         switch (context.getDrawMode()) {
             case CIRCLE -> {
                 double radius = Math.sqrt(
                         Math.pow(worldX - firstPointX, 2) + Math.pow(worldY - firstPointY, 2)
                 );
-                
+
                 // 检测圆相切吸附
                 double tangentThreshold = 15.0 / scale;
-                EdgeSnapManager.CircleTangentResult tangentResult = 
-                        EdgeSnapManager.findCircleTangentSnap(firstPointX, firstPointY, radius, 
+                EdgeSnapManager.CircleTangentResult tangentResult =
+                        EdgeSnapManager.findCircleTangentSnap(firstPointX, firstPointY, radius,
                                 context.getObjects(), tangentThreshold);
-                
+
                 double finalRadius = (tangentResult != null) ? tangentResult.getRadius() : radius;
 
                 // 创建圆，复用已有的圆心点
@@ -376,9 +377,9 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             }
             case LINE -> {
                 // 创建线段，复用已有的端点
-                LineGeo newLine = new LineGeo(firstPointRef, firstPointX, firstPointY, 
-                                              secondPointRef, worldX, worldY);
-                
+                LineGeo newLine = new LineGeo(firstPointRef, firstPointX, firstPointY,
+                        secondPointRef, worldX, worldY);
+
                 List<PointGeo> intersectionPoints = context.getIntersectionHandler()
                         .checkIntersections(newLine, context);
 
@@ -399,14 +400,14 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                         }
                     }
                 });
-                
+
                 firstPointRef = null;
             }
             case INFINITE_LINE -> {
                 // 创建无限直线，复用已有的端点
                 InfiniteLineGeo newLine = new InfiniteLineGeo(firstPointRef, firstPointX, firstPointY,
-                                                               secondPointRef, worldX, worldY);
-                
+                        secondPointRef, worldX, worldY);
+
                 List<PointGeo> intersectionPoints = context.getIntersectionHandler()
                         .checkIntersections(newLine, context);
 
@@ -427,7 +428,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                         }
                     }
                 });
-                
+
                 firstPointRef = null;
             }
         }

@@ -32,7 +32,7 @@ public class PolygonHandler extends AbstractDrawingHandler {
      * 直接存储PointGeo引用，实现点复用
      */
     private final List<PointGeo> vertexPoints = new ArrayList<>();
-    
+
     /**
      * 多边形内部创建的新点列表（用于撤销时删除）
      */
@@ -178,7 +178,7 @@ public class PolygonHandler extends AbstractDrawingHandler {
     private void handlePolygonClick(double worldX, double worldY, DrawingContext context) {
         double scale = context.getTransform().getScale();
         double threshold = 15.0 / scale; // 15像素的吸附范围
-        
+
         // 检查是否与起点重合（闭合多边形）
         if (!vertexPoints.isEmpty()) {
             PointGeo firstVertex = vertexPoints.get(0);
@@ -193,7 +193,7 @@ public class PolygonHandler extends AbstractDrawingHandler {
 
         // 检查点击位置是否已有点对象（复用已有点）
         PointGeo existingPoint = PointReuseManager.getExistingPointOrNull(worldX, worldY, context.getObjects(), scale);
-        
+
         if (existingPoint != null) {
             // 复用已有的点
             vertexPoints.add(existingPoint);
@@ -222,10 +222,10 @@ public class PolygonHandler extends AbstractDrawingHandler {
 
         // 创建多边形对象，直接传入点引用列表
         PolygonGeo polygon = new PolygonGeo(new ArrayList<>(vertexPoints));
-        
+
         // 复制新创建的点列表（用于撤销时删除）
         List<PointGeo> createdPoints = new ArrayList<>(newCreatedPoints);
-        
+
         // 计算此多边形产生的所有交点
         List<PointGeo> intersectionPoints = context.getIntersectionHandler()
                 .checkIntersections(polygon, context);

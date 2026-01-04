@@ -28,7 +28,7 @@ public class FXGeometricView extends Application {
         try {
             // 保存用户配置（如果有）
             // TODO: 实现配置保存逻辑
-            
+
             super.stop();
         } finally {
             Platform.exit();
@@ -43,11 +43,11 @@ public class FXGeometricView extends Application {
             if (logoUrl != null) {
                 stage.getIcons().add(new Image(logoUrl.toExternalForm()));
             }
-            
+
             // 初始化主界面
             InitView initView = new InitView(stage);
             initView.init();
-            
+
             stage.show();
         } catch (Exception e) {
             e.printStackTrace();
@@ -55,14 +55,14 @@ public class FXGeometricView extends Application {
             throw e;
         }
     }
-    
+
     /**
      * 显示错误对话框
      */
     private void showErrorDialog(String title, String message) {
         Platform.runLater(() -> {
             javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
-                javafx.scene.control.Alert.AlertType.ERROR);
+                    javafx.scene.control.Alert.AlertType.ERROR);
             alert.setTitle(title);
             alert.setHeaderText(null);
             alert.setContentText(message);

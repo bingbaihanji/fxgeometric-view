@@ -3,6 +3,7 @@ package com.bingbaihanji.view.layout.draw.geometry.impl;
 import com.bingbaihanji.constant.ObjectType;
 import com.bingbaihanji.util.*;
 import com.bingbaihanji.view.layout.core.WorldTransform;
+import com.bingbaihanji.view.layout.draw.geometry.GeometryVisitor;
 import javafx.scene.canvas.GraphicsContext;
 
 import java.util.List;
@@ -15,16 +16,16 @@ import java.util.List;
 public class CircleGeo extends AbstractWorldObject {
 
     private double r;
-    
+
     // 圆心引用（如果复用已有点）
     private PointGeo centerPointRef;
-    
+
     // 内部坐标（当没有引用时使用）
     private double cx;
     private double cy;
-    
+
     private String centerName; // 圆心名称
-    
+
     // 标记圆心是否是内部创建的（需要由圆绘制）
     private boolean centerIsInternal = true;
 
@@ -53,14 +54,14 @@ public class CircleGeo extends AbstractWorldObject {
             this.centerName = PointNameManager.getInstance().assignName(cx, cy);
         }
     }
-    
+
     /**
      * 构造函数（点引用方式）- 复用已有点作为圆心
-     * 
+     *
      * @param centerPoint 圆心点引用（可为null，表示内部创建）
-     * @param cx 圆心X坐标
-     * @param cy 圆心Y坐标
-     * @param r 半径
+     * @param cx          圆心X坐标
+     * @param cy          圆心Y坐标
+     * @param r           半径
      */
     public CircleGeo(PointGeo centerPoint, double cx, double cy, double r) {
         super(ObjectType.CIRCLE);
@@ -69,7 +70,7 @@ public class CircleGeo extends AbstractWorldObject {
         this.cy = cy;
         this.r = r;
         this.color = StyleManager.GEOMETRY_LINE;
-        
+
         if (centerPoint != null) {
             this.centerName = centerPoint.getName();
             this.centerIsInternal = false; // 复用外部点，不由圆绘制
@@ -103,7 +104,7 @@ public class CircleGeo extends AbstractWorldObject {
     public void setCenterName(String centerName) {
         this.centerName = centerName;
     }
-    
+
     public PointGeo getCenterPointRef() {
         return centerPointRef;
     }
@@ -182,13 +183,13 @@ public class CircleGeo extends AbstractWorldObject {
         // 旋转圆心
         double cos = Math.cos(angle);
         double sin = Math.sin(angle);
-        
+
         if (centerPointRef != null && !centerPointRef.isConstrained()) {
             double dx = centerPointRef.getX() - centerX;
             double dy = centerPointRef.getY() - centerY;
             centerPointRef.updatePosition(
-                centerX + dx * cos - dy * sin,
-                centerY + dx * sin + dy * cos
+                    centerX + dx * cos - dy * sin,
+                    centerY + dx * sin + dy * cos
             );
         } else if (centerPointRef == null) {
             double dx = cx - centerX;
@@ -203,5 +204,10 @@ public class CircleGeo extends AbstractWorldObject {
         double centerX = getCx();
         double centerY = getCy();
         return new double[]{centerX - r, centerX + r, centerY - r, centerY + r};
+    }
+
+    @Override
+    public <T> T accept(GeometryVisitor<T> visitor) {
+        return visitor.visitCircle(this);
     }
 }

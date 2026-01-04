@@ -358,6 +358,19 @@ public interface WorldObject extends WorldPainter {
     }
 
     /**
+     * 接受访问者（访问者模式）
+     * <p>
+     * 允许在不修改几何对象类的情况下，为它们添加新的操作
+     *
+     * @param visitor 访问者对象
+     * @param <T>     返回值类型
+     * @return 访问结果
+     */
+    default <T> T accept(GeometryVisitor<T> visitor) {
+        return visitor.visitOther(this);
+    }
+
+    /**
      * 点位置更新器
      */
     @FunctionalInterface

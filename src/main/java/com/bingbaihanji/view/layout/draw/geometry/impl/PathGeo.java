@@ -5,6 +5,7 @@ import com.bingbaihanji.util.LineStyleUtil;
 import com.bingbaihanji.util.PointNameManager;
 import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;
+import com.bingbaihanji.view.layout.draw.geometry.GeometryVisitor;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -238,5 +239,10 @@ public class PathGeo extends AbstractWorldObject {
             this.x = x;
             this.y = y;
         }
+    }
+
+    @Override
+    public <T> T accept(GeometryVisitor<T> visitor) {
+        return visitor.visitPath(this);
     }
 }

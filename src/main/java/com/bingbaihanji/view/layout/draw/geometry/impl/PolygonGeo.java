@@ -1,8 +1,12 @@
 package com.bingbaihanji.view.layout.draw.geometry.impl;
 
 import com.bingbaihanji.constant.ObjectType;
-import com.bingbaihanji.util.*;
+import com.bingbaihanji.util.FillRenderer;
+import com.bingbaihanji.util.LabelRenderer;
+import com.bingbaihanji.util.LineStyleUtil;
+import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;
+import com.bingbaihanji.view.layout.draw.geometry.GeometryVisitor;
 import javafx.scene.canvas.GraphicsContext;
 
 import java.util.ArrayList;
@@ -41,7 +45,7 @@ public class PolygonGeo extends AbstractWorldObject {
 
         this.vertexPoints = new ArrayList<>();
         this.color = StyleManager.GEOMETRY_LINE;
-        
+
         // 为每个坐标创建内部顶点点对象（不显示名称，作为多边形内部顶点）
         for (int i = 0; i < vertices.length; i += 2) {
             PointGeo point = new PointGeo(vertices[i], vertices[i + 1]);
@@ -169,14 +173,14 @@ public class PolygonGeo extends AbstractWorldObject {
         PointGeo p = vertexPoints.get(index);
         return new javafx.geometry.Point2D(p.getX(), p.getY());
     }
-    
+
     /**
      * 获取指定索引的顶点点对象
      */
     public PointGeo getVertexPoint(int index) {
         return vertexPoints.get(index);
     }
-    
+
     /**
      * 获取所有顶点点对象
      */
@@ -206,7 +210,7 @@ public class PolygonGeo extends AbstractWorldObject {
         for (int i = 0; i < vertexPoints.size(); i++) {
             final int index = i;
             PointGeo vertexPoint = vertexPoints.get(index);
-            
+
             points.add(new DraggablePoint(vertexPoint.getX(), vertexPoint.getY(), (newX, newY) -> {
                 // 直接更新点对象的位置
                 // 如果点有约束，updatePosition会自动处理约束逻辑
@@ -254,5 +258,10 @@ public class PolygonGeo extends AbstractWorldObject {
         }
 
         return new double[]{minX, maxX, minY, maxY};
+    }
+
+    @Override
+    public <T> T accept(GeometryVisitor<T> visitor) {
+        return visitor.visitPolygon(this);
     }
 }

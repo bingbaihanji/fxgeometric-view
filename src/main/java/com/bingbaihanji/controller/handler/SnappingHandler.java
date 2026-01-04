@@ -23,7 +23,7 @@ public class SnappingHandler {
      * 点吸附阈值（像素）
      */
     private static final double POINT_SNAP_THRESHOLD_PIXELS = 15.0;
-    
+
     /**
      * 边吸附阈值（像素）- 比点吸附弱一点
      */
@@ -48,7 +48,7 @@ public class SnappingHandler {
         // 查找最近的特殊点
         return SpecialPointManager.findNearestSpecialPoint(x, y, specialPoints, threshold);
     }
-    
+
     /**
      * 查找最近的边吸附点
      *
@@ -61,7 +61,7 @@ public class SnappingHandler {
         // 计算吸附阈值（像素距离转换为世界坐标距离）
         double scale = context.getTransform().getScale();
         double threshold = EDGE_SNAP_THRESHOLD_PIXELS / scale;
-        
+
         // 查找最近的边
         return EdgeSnapManager.findNearestEdge(x, y, context.getObjects(), threshold);
     }
@@ -84,13 +84,13 @@ public class SnappingHandler {
         if (nearestPoint != null) {
             return new double[]{nearestPoint.getX(), nearestPoint.getY()};
         }
-        
+
         // 2. 如果没有点吸附，尝试边吸附
         EdgeSnapManager.EdgeSnapResult edgeSnap = findNearestEdge(x, y, context);
         if (edgeSnap != null) {
             return new double[]{edgeSnap.getX(), edgeSnap.getY()};
         }
-        
+
         // 3. 如果都没有，返回原始坐标
         return new double[]{x, y};
     }

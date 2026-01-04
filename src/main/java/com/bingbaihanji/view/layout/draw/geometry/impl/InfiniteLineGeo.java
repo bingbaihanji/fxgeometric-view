@@ -5,6 +5,7 @@ import com.bingbaihanji.util.LineStyleUtil;
 import com.bingbaihanji.util.PointNameManager;
 import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;
+import com.bingbaihanji.view.layout.draw.geometry.GeometryVisitor;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -26,7 +27,7 @@ public class InfiniteLineGeo extends AbstractWorldObject {
     // 定义点引用（如果复用已有点）
     private PointGeo point1Ref;
     private PointGeo point2Ref;
-    
+
     // 内部坐标（当没有引用时使用）
     private double point1X;
     private double point1Y;
@@ -35,7 +36,7 @@ public class InfiniteLineGeo extends AbstractWorldObject {
 
     private String point1Name; // 定义点1名称
     private String point2Name; // 定义点2名称
-    
+
     // 标记定义点是否是内部创建的
     private boolean point1IsInternal = true;
     private boolean point2IsInternal = true;
@@ -54,7 +55,7 @@ public class InfiniteLineGeo extends AbstractWorldObject {
         this.point1Name = manager.assignName(point1X, point1Y);
         this.point2Name = manager.assignName(point2X, point2Y);
     }
-    
+
     /**
      * 构造函数（点引用方式）- 复用已有点
      */
@@ -68,7 +69,7 @@ public class InfiniteLineGeo extends AbstractWorldObject {
         this.point2X = point2X;
         this.point2Y = point2Y;
         this.color = StyleManager.GEOMETRY_LINE;
-        
+
         PointNameManager manager = PointNameManager.getInstance();
         if (point1 != null) {
             this.point1Name = point1.getName();
@@ -77,7 +78,7 @@ public class InfiniteLineGeo extends AbstractWorldObject {
             this.point1Name = manager.assignName(point1X, point1Y);
             this.point1IsInternal = true;
         }
-        
+
         if (point2 != null) {
             this.point2Name = point2.getName();
             this.point2IsInternal = false;
@@ -122,7 +123,7 @@ public class InfiniteLineGeo extends AbstractWorldObject {
         // 只绘制内部创建的定义点
         gc.setFill(getEffectiveColor());
         double pointRadius = hover ? 5 : 4;
-        
+
         if (point1IsInternal) {
             gc.fillOval(sx1 - pointRadius, sy1 - pointRadius, pointRadius * 2, pointRadius * 2);
             if (point1Name != null && !point1Name.isEmpty()) {
@@ -133,7 +134,7 @@ public class InfiniteLineGeo extends AbstractWorldObject {
                 gc.setFill(getEffectiveColor());
             }
         }
-        
+
         if (point2IsInternal) {
             gc.fillOval(sx2 - pointRadius, sy2 - pointRadius, pointRadius * 2, pointRadius * 2);
             if (point2Name != null && !point2Name.isEmpty()) {
@@ -193,7 +194,7 @@ public class InfiniteLineGeo extends AbstractWorldObject {
         double p1Y = getPoint1Y();
         double p2X = getPoint2X();
         double p2Y = getPoint2Y();
-        
+
         double dx = p2X - p1X;
         double dy = p2Y - p1Y;
         double length = Math.sqrt(dx * dx + dy * dy);
@@ -242,8 +243,8 @@ public class InfiniteLineGeo extends AbstractWorldObject {
             double dx1 = point1Ref.getX() - centerX;
             double dy1 = point1Ref.getY() - centerY;
             point1Ref.updatePosition(
-                centerX + dx1 * cos - dy1 * sin,
-                centerY + dx1 * sin + dy1 * cos
+                    centerX + dx1 * cos - dy1 * sin,
+                    centerY + dx1 * sin + dy1 * cos
             );
         } else if (point1Ref == null) {
             double dx1 = point1X - centerX;
@@ -256,8 +257,8 @@ public class InfiniteLineGeo extends AbstractWorldObject {
             double dx2 = point2Ref.getX() - centerX;
             double dy2 = point2Ref.getY() - centerY;
             point2Ref.updatePosition(
-                centerX + dx2 * cos - dy2 * sin,
-                centerY + dx2 * sin + dy2 * cos
+                    centerX + dx2 * cos - dy2 * sin,
+                    centerY + dx2 * sin + dy2 * cos
             );
         } else if (point2Ref == null) {
             double dx2 = point2X - centerX;
@@ -265,5 +266,10 @@ public class InfiniteLineGeo extends AbstractWorldObject {
             point2X = centerX + dx2 * cos - dy2 * sin;
             point2Y = centerY + dx2 * sin + dy2 * cos;
         }
+    }
+
+    @Override
+    public <T> T accept(GeometryVisitor<T> visitor) {
+        return visitor.visitInfiniteLine(this);
     }
 }

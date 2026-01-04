@@ -44,6 +44,11 @@ public class ShapeToolPane extends VBox {
      */
     private Runnable onClear;
 
+    /**
+     * 函数绘制回调
+     */
+    private Runnable onFunctionClick;
+
 
 
     /*构造*/
@@ -98,7 +103,8 @@ public class ShapeToolPane extends VBox {
                 createTool("geo.perpendicularBisector", DrawMode.PERPENDICULAR_BISECTOR, group),
                 createTool("geo.parallel", DrawMode.PARALLEL, group),
                 createTool("geo.tangent", DrawMode.TANGENT, group),
-                createTool("geo.rotating", DrawMode.ROTATE, group)
+                createTool("geo.rotating", DrawMode.ROTATE, group),
+                createActionButton("geo.function", this::handleFunctionClick)
 
         );
 
@@ -139,6 +145,7 @@ public class ShapeToolPane extends VBox {
             case "geo.parallel" -> "icon/parallel.png";
             case "geo.tangent" -> "icon/tangent.png";
             case "geo.rotating" -> "icon/rotating.png";
+            case "geo.function" -> "icon/function.png";
             default -> null;
         };
     }
@@ -365,6 +372,22 @@ public class ShapeToolPane extends VBox {
     private void handleClear() {
         if (onClear != null) {
             onClear.run();
+        }
+    }
+
+    /**
+     * 设置函数绘制回调
+     */
+    public void setOnFunctionClick(Runnable callback) {
+        this.onFunctionClick = callback;
+    }
+
+    /**
+     * 处理函数点击
+     */
+    private void handleFunctionClick() {
+        if (onFunctionClick != null) {
+            onFunctionClick.run();
         }
     }
 

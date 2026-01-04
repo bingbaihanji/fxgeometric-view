@@ -34,6 +34,24 @@ public class ConstraintHandler {
             return new PolygonConstraint(polygon);
         } else if (shape instanceof PathGeo path) {
             return new PathConstraint(path);
+        } else if (shape instanceof LinearFunctionGeo linearFunction) {
+            return new LinearFunctionConstraint(linearFunction);
+        } else if (shape instanceof QuadraticFunctionGeo quadraticFunction) {
+            return new QuadraticFunctionConstraint(quadraticFunction);
+        } else if (shape instanceof ReciprocalFunctionGeo reciprocalFunction) {
+            return new ReciprocalFunctionConstraint(reciprocalFunction);
+        } else if (shape instanceof TrigonometricFunctionGeo trigFunction) {
+            return new TrigonometricFunctionConstraint(trigFunction);
+        } else if (shape instanceof EllipseFunctionGeo ellipseFunction) {
+            return new EllipseFunctionConstraint(ellipseFunction);
+        } else if (shape instanceof HyperbolaFunctionGeo hyperbolaFunction) {
+            return new HyperbolaFunctionConstraint(hyperbolaFunction);
+        } else if (shape instanceof ParabolaConicFunctionGeo parabolaFunction) {
+            return new ParabolaConicFunctionConstraint(parabolaFunction);
+        } else if (shape instanceof ExponentialFunctionGeo exponentialFunction) {
+            return new ExponentialFunctionConstraint(exponentialFunction);
+        } else if (shape instanceof LogarithmicFunctionGeo logarithmicFunction) {
+            return new LogarithmicFunctionConstraint(logarithmicFunction);
         }
         throw new IllegalArgumentException("不支持的图形类型: " + shape.getClass().getName());
     }
