@@ -3,6 +3,7 @@ package com.bingbaihanji.controller.handler;
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.controller.DrawingContext;
 import com.bingbaihanji.util.CommandHistory;
+import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.util.SpecialPointManager.SpecialPoint;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
@@ -261,7 +262,7 @@ public class DragHandler extends AbstractDrawingHandler {
             double deltaY = dragEndY - dragStartY;
 
             // 只有位置实际改变才记录命令
-            if (Math.abs(deltaX) > 1e-10 || Math.abs(deltaY) > 1e-10) {
+            if (!MathCalculationUtils.isZero(deltaX) || !MathCalculationUtils.isZero(deltaY)) {
                 // 保存对控制点的引用和位置
                 final Map<WorldObject.DraggablePoint, double[]> savedInitialPositions = new HashMap<>(initialPositions);
                 final double finalDeltaX = deltaX;
@@ -303,8 +304,8 @@ public class DragHandler extends AbstractDrawingHandler {
         } else if (draggingPoint != null) {
             // 单个控制点拖动结束
             // 只有位置实际改变才记录命令
-            if (Math.abs(dragStartX - dragEndX) > 1e-10 ||
-                    Math.abs(dragStartY - dragEndY) > 1e-10) {
+            if (!MathCalculationUtils.isZero(dragStartX - dragEndX) ||
+                    !MathCalculationUtils.isZero(dragStartY - dragEndY)) {
 
                 // 保存对点的持久引用和坐标
                 final WorldObject.DraggablePoint pointRef = draggingPoint;

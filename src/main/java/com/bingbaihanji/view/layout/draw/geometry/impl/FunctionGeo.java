@@ -3,6 +3,7 @@ package com.bingbaihanji.view.layout.draw.geometry.impl;
 import com.bingbaihanji.constant.ObjectType;
 import com.bingbaihanji.util.LabelRenderer;
 import com.bingbaihanji.util.LineStyleUtil;
+import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.util.constraint.PointConstraint;
 import com.bingbaihanji.view.layout.core.WorldTransform;
@@ -270,24 +271,7 @@ public abstract class FunctionGeo extends AbstractWorldObject {
      */
     protected double pointToSegmentDistance(double px, double py,
                                             double x1, double y1, double x2, double y2) {
-        double dx = x2 - x1;
-        double dy = y2 - y1;
-        double lengthSquared = dx * dx + dy * dy;
-
-        if (lengthSquared < 1e-10) {
-            // 线段退化为点
-            return Math.hypot(px - x1, py - y1);
-        }
-
-        // 计算投影参数t
-        double t = ((px - x1) * dx + (py - y1) * dy) / lengthSquared;
-        t = Math.max(0, Math.min(1, t));
-
-        // 计算最近点
-        double nearestX = x1 + t * dx;
-        double nearestY = y1 + t * dy;
-
-        return Math.hypot(px - nearestX, py - nearestY);
+        return MathCalculationUtils.pointToSegmentDistance(px, py, x1, y1, x2, y2);
     }
 
     /**
@@ -338,8 +322,8 @@ public abstract class FunctionGeo extends AbstractWorldObject {
     /**
      * 计算采样点数
      *
-     * @param scale  缩放比例
-     * @param range  采样范围
+     * @param scale 缩放比例
+     * @param range 采样范围
      * @return 采样点数
      */
     protected int calculateSampleCount(double scale, double range) {

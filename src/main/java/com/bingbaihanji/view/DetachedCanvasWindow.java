@@ -194,18 +194,16 @@ public class DetachedCanvasWindow {
                 ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", file);
 
                 // 显示成功提示
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle(I18nUtil.getString("geo.dialog.export.success.title"));
-                alert.setHeaderText(null);
-                alert.setContentText(I18nUtil.getString("geo.dialog.export.success.content"));
-                alert.showAndWait();
+                FxTools.showInfoAlert(
+                        I18nUtil.getString("geo.dialog.export.success.title"),
+                        I18nUtil.getString("geo.dialog.export.success.content")
+                );
             } catch (IOException e) {
                 // 显示错误提示
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle(I18nUtil.getString("geo.dialog.export.error.title"));
-                alert.setHeaderText(null);
-                alert.setContentText(I18nUtil.getString("geo.dialog.export.error.content") + "\n" + e.getMessage());
-                alert.showAndWait();
+                FxTools.showErrorAlert(
+                        I18nUtil.getString("geo.dialog.export.error.title"),
+                        I18nUtil.getString("geo.dialog.export.error.content") + "\n" + e.getMessage()
+                );
             }
         }
     }

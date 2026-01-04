@@ -165,6 +165,13 @@ public class EuclidianViewSettings {
     private double polarAngleStep = Math.PI / 6; // 30度
 
     /**
+     * 是否启用网格吸附
+     * true: 鼠标在网格交点附近时自动吸附
+     * false: 禁用网格吸附
+     */
+    private boolean gridSnapEnabled = true;
+
+    /**
      * 网格距离因子（用于计算网格间距相对于坐标轴刻度的倍数）
      * 默认为1.0，表示网格间距 = 坐标轴刻度间距 * 1.0
      * 参考 GeoGebra 的 DEFAULT_GRID_DIST_FACTOR
@@ -492,6 +499,14 @@ public class EuclidianViewSettings {
         this.yAxisPiUnit = yAxisPiUnit;
     }
 
+    public boolean isGridSnapEnabled() {
+        return gridSnapEnabled;
+    }
+
+    public void setGridSnapEnabled(boolean gridSnapEnabled) {
+        this.gridSnapEnabled = gridSnapEnabled;
+    }
+
     /**
      * 克隆配置
      *
@@ -534,6 +549,7 @@ public class EuclidianViewSettings {
         copy.syncGridWithAxes = this.syncGridWithAxes;
         copy.xAxisPiUnit = this.xAxisPiUnit;
         copy.yAxisPiUnit = this.yAxisPiUnit;
+        copy.gridSnapEnabled = this.gridSnapEnabled;
         return copy;
     }
 }

@@ -228,6 +228,11 @@ public class PathGeo extends AbstractWorldObject {
         return new double[]{minX, maxX, minY, maxY};
     }
 
+    @Override
+    public <T> T accept(GeometryVisitor<T> visitor) {
+        return visitor.visitPath(this);
+    }
+
     /**
      * 内部点类
      */
@@ -239,10 +244,5 @@ public class PathGeo extends AbstractWorldObject {
             this.x = x;
             this.y = y;
         }
-    }
-
-    @Override
-    public <T> T accept(GeometryVisitor<T> visitor) {
-        return visitor.visitPath(this);
     }
 }

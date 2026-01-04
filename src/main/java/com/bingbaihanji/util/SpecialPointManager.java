@@ -179,7 +179,7 @@ public class SpecialPointManager {
             if (obj == null || getClass() != obj.getClass()) return false;
             SpecialPoint that = (SpecialPoint) obj;
             // 考虑到浮点数精度问题，使用一个小的容差值进行比较
-            return Math.abs(that.x - x) < 1e-10 && Math.abs(that.y - y) < 1e-10;
+            return MathCalculationUtils.equals(that.x, x) && MathCalculationUtils.equals(that.y, y);
         }
 
         @Override

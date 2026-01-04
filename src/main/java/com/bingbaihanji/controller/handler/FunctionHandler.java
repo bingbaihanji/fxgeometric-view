@@ -4,6 +4,7 @@ import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.controller.DrawingContext;
 import com.bingbaihanji.model.FunctionInputResult;
 import com.bingbaihanji.util.CommandHistory;
+import com.bingbaihanji.util.Logger;
 import com.bingbaihanji.view.layout.draw.geometry.impl.*;
 import com.bingbaihanji.view.menu.FunctionInputDialog;
 import javafx.application.Platform;
@@ -22,6 +23,8 @@ import java.util.Optional;
  * @date 2026-01-04
  */
 public class FunctionHandler extends AbstractDrawingHandler {
+
+    private static final Logger logger = Logger.getLogger(FunctionHandler.class);
 
     @Override
     public boolean canHandle(DrawMode mode) {
@@ -141,11 +144,11 @@ public class FunctionHandler extends AbstractDrawingHandler {
                     return new ParabolaConicFunctionGeo(params.get("p"));
 
                 default:
-                    System.err.println("不支持的函数类型: " + input.getType());
+                    logger.error("不支持的函数类型: {}", input.getType());
                     return null;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("创建函数对象时发生错误", e);
             return null;
         }
     }

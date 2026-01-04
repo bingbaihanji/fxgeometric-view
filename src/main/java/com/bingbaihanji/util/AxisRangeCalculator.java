@@ -42,10 +42,10 @@ public class AxisRangeCalculator {
         for (WorldObject obj : objects) {
             double[] bounds = obj.getBoundingBox();
             if (bounds != null && bounds.length == 4) {
-                minX = Math.min(minX, bounds[0]);
-                maxX = Math.max(maxX, bounds[1]);
-                minY = Math.min(minY, bounds[2]);
-                maxY = Math.max(maxY, bounds[3]);
+                minX = MathCalculationUtils.min(minX, bounds[0]);
+                maxX = MathCalculationUtils.max(maxX, bounds[1]);
+                minY = MathCalculationUtils.min(minY, bounds[2]);
+                maxY = MathCalculationUtils.max(maxY, bounds[3]);
             }
         }
 

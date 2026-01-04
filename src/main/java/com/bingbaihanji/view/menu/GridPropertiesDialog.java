@@ -2,6 +2,7 @@ package com.bingbaihanji.view.menu;
 
 import com.bingbaihanji.constant.GridType;
 import com.bingbaihanji.constant.LineType;
+import com.bingbaihanji.util.FxTools;
 import com.bingbaihanji.util.I18nUtil;
 import com.bingbaihanji.view.layout.core.EuclidianViewSettings;
 import javafx.geometry.Insets;
@@ -31,6 +32,9 @@ public class GridPropertiesDialog extends Dialog<ButtonType> {
     private ColorPicker gridColorPicker;
     private ColorPicker subGridColorPicker;
 
+    // 新增：吸附开关
+    private CheckBox cbGridSnapEnabled;
+
     // 新增：同步相关控件
     private CheckBox cbSyncGridWithAxes;
     private Slider sliderGridDistFactor;
@@ -42,12 +46,18 @@ public class GridPropertiesDialog extends Dialog<ButtonType> {
         setTitle(I18nUtil.getString("menu.gridProperties"));
         setHeaderText(I18nUtil.getString("menu.gridProperties.header"));
 
+        // 设置对话框图标
+        FxTools.setDialogIcon(this, "/icon/grid.png");
+
+
         // 创建UI
         VBox content = new VBox(15);
         content.setPadding(new Insets(20));
 
         content.getChildren().addAll(
                 createVisibilitySection(),
+                new Separator(),
+                createSnapSection(),
                 new Separator(),
                 createTypeSection(),
                 new Separator(),
@@ -88,6 +98,22 @@ public class GridPropertiesDialog extends Dialog<ButtonType> {
         cbShowGrid = new CheckBox(I18nUtil.getString("grid.showGrid"));
 
         section.getChildren().addAll(title, cbShowGrid);
+        return section;
+    }
+
+    /**
+     * 创建吸附设置区
+     */
+    private VBox createSnapSection() {
+        VBox section = new VBox(10);
+
+        Label title = new Label(I18nUtil.getString("grid.snap"));
+        title.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+
+        cbGridSnapEnabled = new CheckBox(I18nUtil.getString("grid.snap.enable"));
+        cbGridSnapEnabled.setTooltip(new Tooltip(I18nUtil.getString("grid.snap.hint")));
+
+        section.getChildren().addAll(title, cbGridSnapEnabled);
         return section;
     }
 
@@ -290,6 +316,9 @@ public class GridPropertiesDialog extends Dialog<ButtonType> {
         cbShowGrid.setSelected(settings.isShowGrid());
         cmbGridType.setValue(settings.getGridType());
 
+        // 新增：加载吸附设置
+        cbGridSnapEnabled.setSelected(settings.isGridSnapEnabled());
+
         // 新增：加载同步设置
         cbSyncGridWithAxes.setSelected(settings.isSyncGridWithAxes());
         sliderGridDistFactor.setValue(settings.getGridDistanceFactor());
@@ -319,6 +348,9 @@ public class GridPropertiesDialog extends Dialog<ButtonType> {
     private void saveSettings() {
         settings.setShowGrid(cbShowGrid.isSelected());
         settings.setGridType(cmbGridType.getValue());
+
+        // 新增：保存吸附设置
+        settings.setGridSnapEnabled(cbGridSnapEnabled.isSelected());
 
         // 新增：保存同步设置
         settings.setSyncGridWithAxes(cbSyncGridWithAxes.isSelected());

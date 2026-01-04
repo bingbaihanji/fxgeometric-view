@@ -944,8 +944,10 @@ public class GridChartView extends Pane {
         }
 
         // 3. 网格吸附（最低优先级）
-        if (snapModes.contains(SnapMode.GRID)) {
+        // 检查是否启用网格吸附开关且模式包含 GRID
+        if (settings.isGridSnapEnabled() && snapModes.contains(SnapMode.GRID)) {
             // 使用统一的刻度计算器（确保与网格和坐标轴一致）
+            // 网格吸附精度随坐标轴刻度动态变化
             double step = AxisTickCalculator.calculateAxisTickDistance(
                     transform.getScale(),
                     false  // 网格吸附通常不使用π单位

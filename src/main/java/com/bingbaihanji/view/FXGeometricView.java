@@ -1,5 +1,7 @@
 package com.bingbaihanji.view;
 
+import com.bingbaihanji.config.ConfigManager;
+import com.bingbaihanji.util.ExceptionHandler;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.image.Image;
@@ -26,8 +28,8 @@ public class FXGeometricView extends Application {
     public void stop() throws Exception {
         // 清理资源
         try {
-            // 保存用户配置（如果有）
-            // TODO: 实现配置保存逻辑
+            // 保存用户配置
+            ConfigManager.getInstance().saveConfig();
 
             super.stop();
         } finally {
@@ -50,23 +52,12 @@ public class FXGeometricView extends Application {
 
             stage.show();
         } catch (Exception e) {
-            e.printStackTrace();
-            showErrorDialog("应用启动失败", e.getMessage());
+            ExceptionHandler.handleExceptionWithDialog(
+                    "应用启动失败",
+                    "启动应用程序时发生错误，请查看详细信息。",
+                    e
+            );
             throw e;
         }
-    }
-
-    /**
-     * 显示错误对话框
-     */
-    private void showErrorDialog(String title, String message) {
-        Platform.runLater(() -> {
-            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
-                    javafx.scene.control.Alert.AlertType.ERROR);
-            alert.setTitle(title);
-            alert.setHeaderText(null);
-            alert.setContentText(message);
-            alert.showAndWait();
-        });
     }
 }

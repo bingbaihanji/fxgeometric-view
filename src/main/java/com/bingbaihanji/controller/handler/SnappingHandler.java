@@ -1,18 +1,21 @@
 package com.bingbaihanji.controller.handler;
 
 import com.bingbaihanji.controller.DrawingContext;
+import com.bingbaihanji.util.AxisTickCalculator;
 import com.bingbaihanji.util.EdgeSnapManager;
 import com.bingbaihanji.util.SpecialPointManager;
 import com.bingbaihanji.util.SpecialPointManager.SpecialPoint;
+import com.bingbaihanji.view.layout.core.EuclidianViewSettings;
 
 import java.util.List;
 
 /**
  * 磁性吸附处理器
  * <p>
- * 处理特殊点和几何图形边的磁性吸附功能
+ * 处理特殊点、几何图形边和网格点的磁性吸附功能
  * - 点吸附：阈值为 15 像素（优先级高）
- * - 边吸附：阈值为 10 像素（优先级低）
+ * - 边吸附：阈值为 10 像素（优先级中）
+ * - 网格吸附：阈值为 8 像素（优先级低）
  *
  * @author bingbaihanji
  * @date 2025-12-31
@@ -28,6 +31,11 @@ public class SnappingHandler {
      * 边吸附阈值（像素）- 比点吸附弱一点
      */
     private static final double EDGE_SNAP_THRESHOLD_PIXELS = 10.0;
+
+    /**
+     * 网格吸附阈值（像素）
+     */
+    private static final double GRID_SNAP_THRESHOLD_PIXELS = 8.0;
 
     /**
      * 查找最近的特殊点
@@ -67,11 +75,12 @@ public class SnappingHandler {
     }
 
     /**
-     * 应用吸附逻辑（点优先，其次边）
+     * 应用吸附逻辑（点优先，其次边，最后网格）
      * <p>
      * 1. 如果在阈值范围内有特殊点，返回该特殊点的坐标（优先级高）
-     * 2. 如果没有点，尝试吸附到最近的边（优先级低）
-     * 3. 都没有则返回原坐标
+     * 2. 如果没有点，尝试吸附到最近的边（优先级中）
+     * 3. 如果启用了网格吸附，尝试吸附到网格点（优先级低）
+     * 4. 都没有则返回原坐标
      *
      * @param x       世界坐标 X
      * @param y       世界坐标 Y
@@ -91,7 +100,59 @@ public class SnappingHandler {
             return new double[]{edgeSnap.getX(), edgeSnap.getY()};
         }
 
-        // 3. 如果都没有，返回原始坐标
+        // 3. 如果启用了网格吸附，尝试吸附到网格点
+        EuclidianViewSettings settings = context.getGridChartPane().getSettings();
+        if (settings.isGridSnapEnabled()) {
+            double[] gridSnapped = snapToGrid(x, y, context);
+            if (gridSnapped != null) {
+                return gridSnapped;
+            }
+        }
+
+        // 4. 如果都没有，返回原始坐标
         return new double[]{x, y};
+    }
+
+    /**
+     * 吸附到网格点
+     * <p>
+     * 网格精度随坐标轴刻度动态变化
+     *
+     * @param x       世界坐标 X
+     * @param y       世界坐标 Y
+     * @param context 绘制上下文
+     * @return 吸附后的坐标，如果距离太远则返回 null
+     */
+    private double[] snapToGrid(double x, double y, DrawingContext context) {
+        double scale = context.getTransform().getScale();
+        double threshold = GRID_SNAP_THRESHOLD_PIXELS / scale;
+
+        // 使用统一的刻度计算器，确保网格吸附精度与坐标轴刻度一致
+        double step = AxisTickCalculator.calculateAxisTickDistance(scale, false);
+
+        // 计算最近的网格点
+        double gridX = Math.round(x / step) * step;
+        double gridY = Math.round(y / step) * step;
+
+        // 检查距离是否在阈值内
+        double distance = Math.hypot(gridX - x, gridY - y);
+        if (distance < threshold) {
+            // 消除浮点误差
+            gridX = stabilize(gridX);
+            gridY = stabilize(gridY);
+            return new double[]{gridX, gridY};
+        }
+
+        return null;
+    }
+
+    /**
+     * 消除浮点抖动
+     */
+    private double stabilize(double v) {
+        if (Math.abs(v - Math.round(v)) < 1e-9) {
+            return Math.round(v);
+        }
+        return v;
     }
 }

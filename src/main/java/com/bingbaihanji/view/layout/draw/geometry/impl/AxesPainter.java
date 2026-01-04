@@ -3,10 +3,7 @@ package com.bingbaihanji.view.layout.draw.geometry.impl;
 import com.bingbaihanji.constant.AxisArrowType;
 import com.bingbaihanji.constant.AxisTickStyle;
 import com.bingbaihanji.constant.UnitLabelType;
-import com.bingbaihanji.util.AxisTickCalculator;
-import com.bingbaihanji.util.I18nUtil;
-import com.bingbaihanji.util.LineStyleUtil;
-import com.bingbaihanji.util.StyleManager;
+import com.bingbaihanji.util.*;
 import com.bingbaihanji.view.layout.core.EuclidianViewSettings;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.WorldPainter;
@@ -246,7 +243,7 @@ public class AxesPainter implements WorldPainter {
         boolean drawMinor = settings.getXTickStyle() == AxisTickStyle.MAJOR_MINOR;
 
         for (double x = Math.floor(worldLeft / step) * step; x <= worldRight; x += step) {
-            if (Math.abs(x) < 1e-8) continue; // 跳过原点
+            if (MathCalculationUtils.isZero(x, 1e-8)) continue; // 跳过原点
 
             double sx = transform.worldToScreenX(x);
 
@@ -274,7 +271,7 @@ public class AxesPainter implements WorldPainter {
         boolean drawMinor = settings.getYTickStyle() == AxisTickStyle.MAJOR_MINOR;
 
         for (double y = Math.floor(worldBottom / step) * step; y <= worldTop; y += step) {
-            if (Math.abs(y) < 1e-8) continue; // 跳过原点
+            if (MathCalculationUtils.isZero(y, 1e-8)) continue; // 跳过原点
 
             double sy = transform.worldToScreenY(y);
 
@@ -508,7 +505,7 @@ public class AxesPainter implements WorldPainter {
         double piMultiple = v / Math.PI;
 
         // 检查是否接近整数或简单分数
-        if (Math.abs(piMultiple) < 1e-6) {
+        if (MathCalculationUtils.isZero(piMultiple, 1e-6)) {
             return "0";
         }
 
@@ -525,23 +522,23 @@ public class AxesPainter implements WorldPainter {
         }
 
         // 检查是否接近 1/2
-        if (Math.abs(piMultiple - 0.5) < 1e-4) {
+        if (MathCalculationUtils.equals(piMultiple, 0.5, 1e-4)) {
             return "π/2";
-        } else if (Math.abs(piMultiple + 0.5) < 1e-4) {
+        } else if (MathCalculationUtils.equals(piMultiple, -0.5, 1e-4)) {
             return "-π/2";
         }
 
         // 检查是否接近 1/4
-        if (Math.abs(piMultiple - 0.25) < 1e-4) {
+        if (MathCalculationUtils.equals(piMultiple, 0.25, 1e-4)) {
             return "π/4";
-        } else if (Math.abs(piMultiple + 0.25) < 1e-4) {
+        } else if (MathCalculationUtils.equals(piMultiple, -0.25, 1e-4)) {
             return "-π/4";
         }
 
         // 检查是否接近 3/2
-        if (Math.abs(piMultiple - 1.5) < 1e-4) {
+        if (MathCalculationUtils.equals(piMultiple, 1.5, 1e-4)) {
             return "3π/2";
-        } else if (Math.abs(piMultiple + 1.5) < 1e-4) {
+        } else if (MathCalculationUtils.equals(piMultiple, -1.5, 1e-4)) {
             return "-3π/2";
         }
 

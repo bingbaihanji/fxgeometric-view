@@ -1,5 +1,6 @@
 package com.bingbaihanji.view.menu;
 
+import com.bingbaihanji.util.FxTools;
 import com.bingbaihanji.util.I18nUtil;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
@@ -30,6 +31,9 @@ public class SystemSettingsDialog extends Dialog<ButtonType> {
         setHeaderText(null);
         initModality(Modality.APPLICATION_MODAL);
         setResizable(false);
+
+        // 设置对话框图标
+        FxTools.setDialogIcon(this, "/icon/setting.png");
 
         // 创建主面板
         GridPane gridPane = new GridPane();

@@ -4,6 +4,7 @@ import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.constant.DrawingState;
 import com.bingbaihanji.controller.DrawingContext;
 import com.bingbaihanji.util.CommandHistory;
+import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.util.PointReuseManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.impl.PointGeo;
@@ -66,14 +67,14 @@ public class PolygonHandler extends AbstractDrawingHandler {
 
     @Override
     public boolean handleMouseMoved(MouseEvent e, DrawingContext context) {
-        if (!canHandle(context.getDrawMode()) || context.getState() != DrawingState.POLYGON_DRAWING) {
+        if (!canHandle(context.getDrawMode())) {
             return false;
         }
 
         double rawX = context.getGridChartPane().screenToWorldX(e.getX());
         double rawY = context.getGridChartPane().screenToWorldY(e.getY());
 
-        // 应用特殊点磁性吸附
+        // 应用网格吸附
         double[] snapped = context.getSnappingHandler().applySnapping(rawX, rawY, context);
         double worldX = snapped[0];
         double worldY = snapped[1];
@@ -82,14 +83,36 @@ public class PolygonHandler extends AbstractDrawingHandler {
         context.setCurrentMouseX(worldX);
         context.setCurrentMouseY(worldY);
 
-        // 重绘以显示预览
+        // 重绘以显示预览（IDLE 和 POLYGON_DRAWING 状态都需要重绘）
         context.redraw();
         return true;
     }
 
     @Override
     public void paintPreview(GraphicsContext gc, WorldTransform transform, DrawingContext context) {
-        if (!canHandle(context.getDrawMode()) || context.getState() != DrawingState.POLYGON_DRAWING) {
+        if (!canHandle(context.getDrawMode())) {
+            return;
+        }
+
+        double pointRadius = 3;
+
+        // IDLE 状态：显示吸附预览点（第一次点击前）
+        if (context.getState() == DrawingState.IDLE) {
+            double mouseScreenX = transform.worldToScreenX(context.getCurrentMouseX());
+            double mouseScreenY = transform.worldToScreenY(context.getCurrentMouseY());
+
+            // 绘制吸附预览点（浅色圆圈 + 中心点）
+            gc.setStroke(Color.valueOf("#759eb2"));
+            gc.setLineWidth(1.5);
+            gc.strokeOval(mouseScreenX - 6, mouseScreenY - 6, 12, 12);
+
+            gc.setFill(Color.valueOf("#759eb2").deriveColor(0, 1, 1, 0.6));
+            gc.fillOval(mouseScreenX - pointRadius, mouseScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
+            return;
+        }
+
+        // POLYGON_DRAWING 状态：绘制多边形预览
+        if (context.getState() != DrawingState.POLYGON_DRAWING) {
             return;
         }
 
@@ -127,7 +150,6 @@ public class PolygonHandler extends AbstractDrawingHandler {
 
         // 绘制顶点（小圆点）
         gc.setFill(Color.valueOf("#759eb2"));
-        double pointRadius = 3;
         for (PointGeo vertex : vertexPoints) {
             double vx = transform.worldToScreenX(vertex.getX());
             double vy = transform.worldToScreenY(vertex.getY());
@@ -135,19 +157,19 @@ public class PolygonHandler extends AbstractDrawingHandler {
         }
 
         // 高亮第一个顶点（可以闭合多边形）
+        boolean nearFirstVertex = false;
         if (vertexPoints.size() >= 3) {
             PointGeo firstVertex = vertexPoints.get(0);
             double fx = transform.worldToScreenX(firstVertex.getX());
             double fy = transform.worldToScreenY(firstVertex.getY());
 
             // 检查鼠标是否靠近第一个顶点
-            double mouseScreenX = transform.worldToScreenX(context.getCurrentMouseX());
-            double mouseScreenY = transform.worldToScreenY(context.getCurrentMouseY());
-            double screenDistance = Math.hypot(mouseScreenX - fx, mouseScreenY - fy);
+            double screenDistance = MathCalculationUtils.hypot(currentScreenX - fx, currentScreenY - fy);
 
             double threshold = 15.0; // 屏幕像素阈值
 
             if (screenDistance < threshold) {
+                nearFirstVertex = true;
                 // 鼠标靠近第一个顶点，显示更明显的闭合提示
                 gc.setFill(Color.LIGHTGREEN);
                 gc.fillOval(fx - pointRadius * 2, fy - pointRadius * 2, pointRadius * 4, pointRadius * 4);
@@ -163,6 +185,16 @@ public class PolygonHandler extends AbstractDrawingHandler {
                 gc.setFill(Color.LIGHTGREEN);
                 gc.fillOval(fx - pointRadius * 1.5, fy - pointRadius * 1.5, pointRadius * 3, pointRadius * 3);
             }
+        }
+
+        // 绘制当前鼠标位置的吸附预览点（如果不是靠近第一个顶点）
+        if (!nearFirstVertex) {
+            gc.setStroke(Color.valueOf("#759eb2"));
+            gc.setLineWidth(1.5);
+            gc.strokeOval(currentScreenX - 6, currentScreenY - 6, 12, 12);
+
+            gc.setFill(Color.valueOf("#759eb2").deriveColor(0, 1, 1, 0.6));
+            gc.fillOval(currentScreenX - pointRadius, currentScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
         }
     }
 
@@ -182,7 +214,7 @@ public class PolygonHandler extends AbstractDrawingHandler {
         // 检查是否与起点重合（闭合多边形）
         if (!vertexPoints.isEmpty()) {
             PointGeo firstVertex = vertexPoints.get(0);
-            double distance = Math.hypot(worldX - firstVertex.getX(), worldY - firstVertex.getY());
+            double distance = MathCalculationUtils.hypot(worldX - firstVertex.getX(), worldY - firstVertex.getY());
 
             if (distance < threshold && vertexPoints.size() >= 3) {
                 // 完成多边形绘制

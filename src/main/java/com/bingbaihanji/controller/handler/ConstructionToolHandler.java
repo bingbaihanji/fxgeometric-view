@@ -5,6 +5,7 @@ import com.bingbaihanji.constant.DrawingState;
 import com.bingbaihanji.controller.DrawingContext;
 import com.bingbaihanji.util.CommandHistory;
 import com.bingbaihanji.util.IntersectionUtils;
+import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import com.bingbaihanji.view.layout.draw.geometry.impl.CircleGeo;
@@ -213,7 +214,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
                         // 扩展为无限直线
                         double dx = px2 - px1;
                         double dy = py2 - py1;
-                        double len = Math.hypot(dx, dy);
+                        double len = MathCalculationUtils.hypot(dx, dy);
                         if (len > 1e-10) {
                             double extendScale = 10000.0;
                             double ux = dx / len;
@@ -254,10 +255,10 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
             for (WorldObject obj : context.getObjects()) {
                 if (obj instanceof CircleGeo circle) {
                     // 计算点击位置到圆心的距离
-                    double distance = Math.hypot(worldX - circle.getCx(), worldY - circle.getCy());
+                    double distance = MathCalculationUtils.hypot(worldX - circle.getCx(), worldY - circle.getCy());
 
                     // 检查是否靠近圆
-                    if (Math.abs(distance - circle.getR()) <= tangentTolerance) {
+                    if (MathCalculationUtils.abs(distance - circle.getR()) <= tangentTolerance) {
                         // 高亮显示圆
                         circle.setHover(true);
                         circle.paint(gc, transform, context.getGridChartPane().getWidth(), context.getGridChartPane().getHeight());
@@ -266,7 +267,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
                         // 计算切点（投影到圆周上）
                         double dx = worldX - circle.getCx();
                         double dy = worldY - circle.getCy();
-                        double len = Math.hypot(dx, dy);
+                        double len = MathCalculationUtils.hypot(dx, dy);
 
                         if (len > 1e-10) {
                             double tangentPointX = circle.getCx() + (dx / len) * circle.getR();
@@ -292,7 +293,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
                             // 扩展为无限直线
                             double tdx = tx2 - tx1;
                             double tdy = ty2 - ty1;
-                            double tlen = Math.hypot(tdx, tdy);
+                            double tlen = MathCalculationUtils.hypot(tdx, tdy);
                             if (tlen > 1e-10) {
                                 double extendScale = 10000.0;
                                 double tux = tdx / tlen;
@@ -369,7 +370,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
             // 计算方向向量并扩展
             double dx = px2 - px1;
             double dy = py2 - py1;
-            double len = Math.hypot(dx, dy);
+            double len = MathCalculationUtils.hypot(dx, dy);
             if (len > 1e-10) {
                 double extendScale = 10000.0;
                 double ux = dx / len;
@@ -690,14 +691,14 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
         for (WorldObject obj : context.getObjects()) {
             if (obj instanceof CircleGeo circle) {
                 // 计算点击位置到圆心的距离
-                double distance = Math.hypot(worldX - circle.getCx(), worldY - circle.getCy());
+                double distance = MathCalculationUtils.hypot(worldX - circle.getCx(), worldY - circle.getCy());
 
                 // 检查是否靠近圆（允许一定容差）
-                if (Math.abs(distance - circle.getR()) <= tolerance) {
+                if (MathCalculationUtils.abs(distance - circle.getR()) <= tolerance) {
                     // 计算离点击位置最近的圆周上的点（将点击位置投影到圆周上）
                     double dx = worldX - circle.getCx();
                     double dy = worldY - circle.getCy();
-                    double len = Math.hypot(dx, dy);
+                    double len = MathCalculationUtils.hypot(dx, dy);
 
                     // 归一化方向向量并乘以半径，得到圆周上的点
                     double tangentPointX = circle.getCx() + (dx / len) * circle.getR();

@@ -2,8 +2,7 @@ package com.bingbaihanji.util;
 
 import com.bingbaihanji.util.visitor.EdgeSnapVisitor;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
-import com.bingbaihanji.view.layout.draw.geometry.impl.*;
-import javafx.geometry.Point2D;
+import com.bingbaihanji.view.layout.draw.geometry.impl.CircleGeo;
 
 import java.util.List;
 
@@ -14,8 +13,8 @@ import java.util.List;
  * 使用访问者模式消除instanceof判断，提高扩展性和类型安全
  *
  * @author bingbaihanji
- * @date 2025-01-01
  * @version 2.0 (2025-01-04 使用访问者模式重构)
+ * @date 2025-01-01
  */
 public class EdgeSnapManager {
 

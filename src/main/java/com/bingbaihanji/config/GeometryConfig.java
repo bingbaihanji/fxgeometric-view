@@ -38,7 +38,8 @@ public final class GeometryConfig {
          */
         public static final double CIRCLE_TANGENT_THRESHOLD_PIXELS = 15.0;
 
-        private Snapping() {}
+        private Snapping() {
+        }
     }
 
     /**
@@ -75,7 +76,8 @@ public final class GeometryConfig {
          */
         public static final double BOUNDING_BOX_MARGIN = 0.1;
 
-        private PointRendering() {}
+        private PointRendering() {
+        }
     }
 
     /**
@@ -107,7 +109,8 @@ public final class GeometryConfig {
          */
         public static final double CONSTRAINT_SNAP_DISTANCE_PIXELS = 15.0;
 
-        private Tolerance() {}
+        private Tolerance() {
+        }
     }
 
     /**
@@ -139,7 +142,8 @@ public final class GeometryConfig {
          */
         public static final double INFINITE_LINE_EXTENSION_FACTOR = 10000.0;
 
-        private LineStyle() {}
+        private LineStyle() {
+        }
     }
 
     /**
@@ -166,7 +170,8 @@ public final class GeometryConfig {
          */
         public static final double[] CLOSE_DASH_PATTERN = {4.0};
 
-        private Preview() {}
+        private Preview() {
+        }
     }
 
     /**
@@ -188,7 +193,8 @@ public final class GeometryConfig {
          */
         public static final int MAX_SAMPLES = 10000;
 
-        private FunctionSampling() {}
+        private FunctionSampling() {
+        }
     }
 
     /**
@@ -206,7 +212,8 @@ public final class GeometryConfig {
         public static final double LABEL_OFFSET_X = 8.0;
         public static final double LABEL_OFFSET_Y = -8.0;
 
-        private Label() {}
+        private Label() {
+        }
     }
 
     /**
@@ -228,7 +235,8 @@ public final class GeometryConfig {
          */
         public static final double MIN_VALID_DISTANCE = 1e-10;
 
-        private Performance() {}
+        private Performance() {
+        }
     }
 
     /**
@@ -250,6 +258,7 @@ public final class GeometryConfig {
          */
         public static final double ROTATION_STEP = Math.PI / 12;
 
-        private Transform() {}
+        private Transform() {
+        }
     }
 }

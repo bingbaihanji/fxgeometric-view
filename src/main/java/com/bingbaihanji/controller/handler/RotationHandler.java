@@ -4,20 +4,17 @@ import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.constant.DrawingState;
 import com.bingbaihanji.controller.DrawingContext;
 import com.bingbaihanji.util.CommandHistory;
+import com.bingbaihanji.util.FxTools;
 import com.bingbaihanji.util.I18nUtil;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import com.bingbaihanji.view.layout.draw.geometry.impl.PointGeo;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
-import javafx.stage.Stage;
-import javafx.stage.Window;
 import javafx.util.Pair;
 
-import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -212,15 +209,8 @@ public class RotationHandler extends AbstractDrawingHandler {
         dialog.setTitle(I18nUtil.getString("rotating.windows.title"));
         dialog.setHeaderText(I18nUtil.getString("rotating.windows.header"));
 
-        // 显示对话框后获取Stage并设置图标
-        dialog.showingProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue) { // 对话框正在显示
-                Window window = dialog.getDialogPane().getScene().getWindow();
-                if (window instanceof Stage stage) {
-                    stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResource("/icon/rotating.png")).toExternalForm()));
-                }
-            }
-        });
+        // 设置对话框图标
+        FxTools.setDialogIcon(dialog, "/icon/rotating.png");
 
         // 设置按钮
         ButtonType confirmButtonType = new ButtonType(I18nUtil.getString("rotating.windows.okButton"), ButtonBar.ButtonData.OK_DONE);

@@ -5,6 +5,7 @@ import com.bingbaihanji.constant.DrawingState;
 import com.bingbaihanji.controller.DrawingContext;
 import com.bingbaihanji.util.CommandHistory;
 import com.bingbaihanji.util.EdgeSnapManager;
+import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.util.PointReuseManager;
 import com.bingbaihanji.util.SpecialPointManager.SpecialPoint;
 import com.bingbaihanji.util.constraint.PointConstraint;
@@ -91,10 +92,20 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             return false;
         }
 
+        double rawX = context.getGridChartPane().screenToWorldX(e.getX());
+        double rawY = context.getGridChartPane().screenToWorldY(e.getY());
+
+        // 应用网格吸附（所有模式都应用）
+        double[] snapped = context.getSnappingHandler().applySnapping(rawX, rawY, context);
+        double worldX = snapped[0];
+        double worldY = snapped[1];
+
+        // 保存当前鼠标位置用于预览
+        context.setCurrentMouseX(worldX);
+        context.setCurrentMouseY(worldY);
+
         // 点模式：检测是否靠近可约束的图形，改变光标
         if (context.getDrawMode() == DrawMode.POINT) {
-            double rawX = context.getGridChartPane().screenToWorldX(e.getX());
-            double rawY = context.getGridChartPane().screenToWorldY(e.getY());
             double scale = context.getTransform().getScale();
             double snapDistance = 15.0 / scale; // 吸附距离阈值
 
@@ -121,30 +132,22 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                 context.getGridChartPane().setCursor(context.getGridChartPane().getDefaultCursor());
             }
 
+            // 重绘以显示吸附预览点
+            context.redraw();
             return true;
         }
 
         // 其他模式：预览逻辑
         if (context.getState() != DrawingState.FIRST_CLICK) {
-            return false;
+            // 即使在 IDLE 状态，也重绘以显示吸附预览点
+            context.redraw();
+            return true;
         }
-
-        double rawX = context.getGridChartPane().screenToWorldX(e.getX());
-        double rawY = context.getGridChartPane().screenToWorldY(e.getY());
-
-        // 应用特殊点磁性吸附
-        double[] snapped = context.getSnappingHandler().applySnapping(rawX, rawY, context);
-        double worldX = snapped[0];
-        double worldY = snapped[1];
-
-        // 保存当前鼠标位置用于预览
-        context.setCurrentMouseX(worldX);
-        context.setCurrentMouseY(worldY);
 
         if (context.getDrawMode() == DrawMode.CIRCLE) {
             // 计算预览半径
-            previewRadius = Math.sqrt(
-                    Math.pow(worldX - firstPointX, 2) + Math.pow(worldY - firstPointY, 2)
+            previewRadius = MathCalculationUtils.sqrt(
+                    MathCalculationUtils.pow(worldX - firstPointX, 2) + MathCalculationUtils.pow(worldY - firstPointY, 2)
             );
 
             // 检测圆相切吸附
@@ -169,7 +172,28 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
 
     @Override
     public void paintPreview(GraphicsContext gc, WorldTransform transform, DrawingContext context) {
-        if (!canHandle(context.getDrawMode()) || context.getState() != DrawingState.FIRST_CLICK) {
+        if (!canHandle(context.getDrawMode())) {
+            return;
+        }
+
+        double pointRadius = 4;
+
+        // 在 IDLE 状态下，显示吸附预览点（让用户看到吸附效果）
+        if (context.getState() == DrawingState.IDLE) {
+            double mouseScreenX = transform.worldToScreenX(context.getCurrentMouseX());
+            double mouseScreenY = transform.worldToScreenY(context.getCurrentMouseY());
+
+            // 绘制吸附预览点（浅色圆圈 + 中心点）
+            gc.setStroke(Color.valueOf("#759eb2"));
+            gc.setLineWidth(1.5);
+            gc.strokeOval(mouseScreenX - 6, mouseScreenY - 6, 12, 12);
+
+            gc.setFill(Color.valueOf("#759eb2").deriveColor(0, 1, 1, 0.6));
+            gc.fillOval(mouseScreenX - pointRadius, mouseScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
+            return;
+        }
+
+        if (context.getState() != DrawingState.FIRST_CLICK) {
             return;
         }
 
@@ -177,7 +201,6 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
         double firstPointScreenX = transform.worldToScreenX(firstPointX);
         double firstPointScreenY = transform.worldToScreenY(firstPointY);
         gc.setFill(Color.valueOf("#759eb2"));
-        double pointRadius = 4;
         gc.fillOval(firstPointScreenX - pointRadius, firstPointScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
 
         if (context.getDrawMode() == DrawMode.CIRCLE) {
@@ -201,18 +224,18 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                 double dy = sy2 - sy1;
                 double scale = 10000; // 一个足够高的扩展值
 
-                if (Math.abs(dx) < 1e-10) {
+                if (MathCalculationUtils.isZero(dx)) {
                     // 竖直线
                     sx2 = sx1;
                     sy1 = -scale;
                     sy2 = scale;
-                } else if (Math.abs(dy) < 1e-10) {
+                } else if (MathCalculationUtils.isZero(dy)) {
                     // 水平线
                     sx1 = -scale;
                     sx2 = scale;
                 } else {
                     // 一般情况
-                    double t = scale / Math.hypot(dx, dy);
+                    double t = scale / MathCalculationUtils.distance(0, 0, dx, dy);
                     double p1x = sx1 - t * dx;
                     double p1y = sy1 - t * dy;
                     double p2x = sx1 + t * dx;
@@ -334,8 +357,8 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
 
         switch (context.getDrawMode()) {
             case CIRCLE -> {
-                double radius = Math.sqrt(
-                        Math.pow(worldX - firstPointX, 2) + Math.pow(worldY - firstPointY, 2)
+                double radius = MathCalculationUtils.sqrt(
+                        MathCalculationUtils.pow(worldX - firstPointX, 2) + MathCalculationUtils.pow(worldY - firstPointY, 2)
                 );
 
                 // 检测圆相切吸附

@@ -1,5 +1,6 @@
 package com.bingbaihanji.util.constraint;
 
+import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import com.bingbaihanji.view.layout.draw.geometry.impl.CircleGeo;
 import javafx.geometry.Point2D;
@@ -34,9 +35,7 @@ public class CircleConstraint implements PointConstraint {
      * 将角度规范化到[0, 2π]范围
      */
     private double normalizeAngle(double angle) {
-        while (angle < 0) angle += 2 * Math.PI;
-        while (angle >= 2 * Math.PI) angle -= 2 * Math.PI;
-        return angle;
+        return MathCalculationUtils.normalizeAngle(angle);
     }
 
     @Override
@@ -46,8 +45,8 @@ public class CircleConstraint implements PointConstraint {
         double r = circle.getR();
 
         // 根据角度参数θ计算位置
-        double x = cx + r * Math.cos(parameter);
-        double y = cy + r * Math.sin(parameter);
+        double x = cx + r * MathCalculationUtils.cos(parameter);
+        double y = cy + r * MathCalculationUtils.sin(parameter);
 
         return new Point2D(x, y);
     }
@@ -61,7 +60,7 @@ public class CircleConstraint implements PointConstraint {
         double dx = x - cx;
         double dy = y - cy;
 
-        double angle = Math.atan2(dy, dx);
+        double angle = MathCalculationUtils.atan2(dy, dx);
         return normalizeAngle(angle);
     }
 
@@ -92,9 +91,9 @@ public class CircleConstraint implements PointConstraint {
         double r = circle.getR();
 
         // 计算点到圆心的距离
-        double distToCenter = Math.hypot(x - cx, y - cy);
+        double distToCenter = MathCalculationUtils.hypot(x - cx, y - cy);
 
         // 返回点到圆周的距离
-        return Math.abs(distToCenter - r);
+        return MathCalculationUtils.abs(distToCenter - r);
     }
 }

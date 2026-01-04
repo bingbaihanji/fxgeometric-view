@@ -1,5 +1,6 @@
 package com.bingbaihanji.util.constraint;
 
+import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import com.bingbaihanji.view.layout.draw.geometry.impl.LineGeo;
 import javafx.geometry.Point2D;
@@ -25,7 +26,7 @@ public class LineConstraint implements PointConstraint {
 
     public LineConstraint(LineGeo line, double parameter) {
         this.line = line;
-        this.parameter = Math.max(0, Math.min(1, parameter)); // 限制在[0,1]
+        this.parameter = MathCalculationUtils.max(0, MathCalculationUtils.min(1, parameter)); // 限制在[0,1]
     }
 
     public LineConstraint(LineGeo line) {
@@ -69,7 +70,7 @@ public class LineConstraint implements PointConstraint {
         double t = ((x - x1) * dx + (y - y1) * dy) / lengthSquared;
 
         // 限制在线段范围内 [0, 1]
-        return Math.max(0, Math.min(1, t));
+        return MathCalculationUtils.max(0, MathCalculationUtils.min(1, t));
     }
 
     @Override
@@ -79,7 +80,7 @@ public class LineConstraint implements PointConstraint {
 
     @Override
     public void setParameter(double parameter) {
-        this.parameter = Math.max(0, Math.min(1, parameter));
+        this.parameter = MathCalculationUtils.max(0, MathCalculationUtils.min(1, parameter));
     }
 
     @Override
@@ -106,18 +107,18 @@ public class LineConstraint implements PointConstraint {
 
         if (lengthSquared < 1e-10) {
             // 线段退化为点
-            return Math.hypot(x - x1, y - y1);
+            return MathCalculationUtils.hypot(x - x1, y - y1);
         }
 
         // 计算投影参数
         double t = ((x - x1) * dx + (y - y1) * dy) / lengthSquared;
-        t = Math.max(0, Math.min(1, t)); // 限制在线段范围内
+        t = MathCalculationUtils.max(0, MathCalculationUtils.min(1, t)); // 限制在线段范围内
 
         // 计算投影点
         double projX = x1 + t * dx;
         double projY = y1 + t * dy;
 
         // 返回距离
-        return Math.hypot(x - projX, y - projY);
+        return MathCalculationUtils.hypot(x - projX, y - projY);
     }
 }

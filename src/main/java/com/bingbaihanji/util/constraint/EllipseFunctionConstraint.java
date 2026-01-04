@@ -1,5 +1,6 @@
 package com.bingbaihanji.util.constraint;
 
+import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import com.bingbaihanji.view.layout.draw.geometry.impl.EllipseFunctionGeo;
 import javafx.geometry.Point2D;
@@ -31,14 +32,12 @@ public class EllipseFunctionConstraint implements PointConstraint {
         double dx = (x - ellipse.getCx()) / ellipse.getA();
         double dy = (y - ellipse.getCy()) / ellipse.getB();
 
-        double angle = Math.atan2(dy, dx);
+        double angle = MathCalculationUtils.atan2(dy, dx);
         return normalizeAngle(angle);
     }
 
     private double normalizeAngle(double angle) {
-        while (angle < 0) angle += 2 * Math.PI;
-        while (angle >= 2 * Math.PI) angle -= 2 * Math.PI;
-        return angle;
+        return MathCalculationUtils.normalizeAngle(angle);
     }
 
     @Override
@@ -67,6 +66,6 @@ public class EllipseFunctionConstraint implements PointConstraint {
         double angle = calculateParameter(x, y);
         Point2D pointOnEllipse = ellipse.evaluateParametric(angle);
 
-        return Math.hypot(x - pointOnEllipse.getX(), y - pointOnEllipse.getY());
+        return MathCalculationUtils.hypot(x - pointOnEllipse.getX(), y - pointOnEllipse.getY());
     }
 }

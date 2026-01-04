@@ -1,5 +1,6 @@
 package com.bingbaihanji.util;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.view.layout.draw.geometry.impl.CircleGeo;
 import com.bingbaihanji.view.layout.draw.geometry.impl.InfiniteLineGeo;
 import com.bingbaihanji.view.layout.draw.geometry.impl.LineGeo;
@@ -35,7 +36,7 @@ public class IntersectionUtils {
         double y4 = line2.getEndY();
 
         double denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
-        if (Math.abs(denom) < 1e-10) {
+        if (MathCalculationUtils.isZero(denom, GeometryConfig.Performance.MIN_VALID_DISTANCE)) {
             // 线段平行或重合
             return intersections;
         }
@@ -93,7 +94,7 @@ public class IntersectionUtils {
             return intersections;
         }
 
-        if (Math.abs(discriminant) < 1e-10) {
+        if (MathCalculationUtils.isZero(discriminant, GeometryConfig.Performance.MIN_VALID_DISTANCE)) {
             // 一个解，线段与圆相切
             double t = -b / (2 * a);
             if (t >= 0 && t <= 1) {
@@ -103,7 +104,7 @@ public class IntersectionUtils {
             }
         } else {
             // 两个解，线段与圆相交于两点
-            double sqrtDiscriminant = Math.sqrt(discriminant);
+            double sqrtDiscriminant = MathCalculationUtils.sqrt(discriminant);
             double t1 = (-b + sqrtDiscriminant) / (2 * a);
             double t2 = (-b - sqrtDiscriminant) / (2 * a);
 
@@ -142,7 +143,7 @@ public class IntersectionUtils {
         double r2 = circle2.getR();
 
         // 计算两圆心之间的距离
-        double d = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+        double d = MathCalculationUtils.distance(x1, y1, x2, y2);
 
         // 检查特殊情况
         if (d > r1 + r2) {
@@ -160,7 +161,7 @@ public class IntersectionUtils {
 
         // 计算交点
         double a = (r1 * r1 - r2 * r2 + d * d) / (2 * d);
-        double h = Math.sqrt(r1 * r1 - a * a);
+        double h = MathCalculationUtils.sqrt(r1 * r1 - a * a);
 
         // 计算P2点坐标
         double x3 = x1 + a * (x2 - x1) / d;
@@ -176,7 +177,7 @@ public class IntersectionUtils {
         intersections.add(new Point2D(ix1, iy1));
 
         // 如果两交点不重合，则添加第二个交点
-        if (Math.abs(ix1 - ix2) > 1e-10 || Math.abs(iy1 - iy2) > 1e-10) {
+        if (!MathCalculationUtils.equals(ix1, ix2) || !MathCalculationUtils.equals(iy1, iy2)) {
             intersections.add(new Point2D(ix2, iy2));
         }
 
@@ -204,7 +205,7 @@ public class IntersectionUtils {
         double y4 = line.getEndY();
 
         double denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
-        if (Math.abs(denom) < 1e-10) {
+        if (MathCalculationUtils.isZero(denom, GeometryConfig.Performance.MIN_VALID_DISTANCE)) {
             // 直线平行或重合
             return intersections;
         }
@@ -262,7 +263,7 @@ public class IntersectionUtils {
             return intersections;
         }
 
-        if (Math.abs(discriminant) < 1e-10) {
+        if (MathCalculationUtils.isZero(discriminant, GeometryConfig.Performance.MIN_VALID_DISTANCE)) {
             // 一个解，直线与圆相切
             double t = -b / (2 * a);
             double ix = x1 + t * dx;
@@ -270,7 +271,7 @@ public class IntersectionUtils {
             intersections.add(new Point2D(ix, iy));
         } else {
             // 两个解，直线与圆相交于两点
-            double sqrtDiscriminant = Math.sqrt(discriminant);
+            double sqrtDiscriminant = MathCalculationUtils.sqrt(discriminant);
             double t1 = (-b + sqrtDiscriminant) / (2 * a);
             double t2 = (-b - sqrtDiscriminant) / (2 * a);
 
@@ -307,7 +308,7 @@ public class IntersectionUtils {
         double y4 = line2.getPoint2Y();
 
         double denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
-        if (Math.abs(denom) < 1e-10) {
+        if (MathCalculationUtils.isZero(denom, GeometryConfig.Performance.MIN_VALID_DISTANCE)) {
             // 直线平行或重合
             return intersections;
         }
@@ -333,7 +334,7 @@ public class IntersectionUtils {
      * @return 中点坐标
      */
     public static Point2D getMidpoint(double x1, double y1, double x2, double y2) {
-        return new Point2D((x1 + x2) / 2, (y1 + y2) / 2);
+        return MathCalculationUtils.midpoint(x1, y1, x2, y2);
     }
 
     /**
@@ -359,11 +360,9 @@ public class IntersectionUtils {
         double perpDy = dx;
 
         // 归一化方向向量
-        double length = Math.sqrt(perpDx * perpDx + perpDy * perpDy);
-        if (length > 1e-10) {
-            perpDx /= length;
-            perpDy /= length;
-        }
+        double[] normalized = MathCalculationUtils.normalize(perpDx, perpDy);
+        perpDx = normalized[0];
+        perpDy = normalized[1];
 
         // 生成垂线上的两个点（距离给定点足够远）
         double scale = 10000; // 扩展距离
@@ -396,11 +395,9 @@ public class IntersectionUtils {
         double perpDy = dx;
 
         // 归一化方向向量
-        double length = Math.sqrt(perpDx * perpDx + perpDy * perpDy);
-        if (length > 1e-10) {
-            perpDx /= length;
-            perpDy /= length;
-        }
+        double[] normalized = MathCalculationUtils.normalize(perpDx, perpDy);
+        perpDx = normalized[0];
+        perpDy = normalized[1];
 
         // 生成垂直平分线上的两个点（从给定点出发）
         double scale = 10000; // 扩展距离
@@ -428,11 +425,9 @@ public class IntersectionUtils {
         double dy = lineY2 - lineY1;
 
         // 归一化方向向量
-        double length = Math.sqrt(dx * dx + dy * dy);
-        if (length > 1e-10) {
-            dx /= length;
-            dy /= length;
-        }
+        double[] normalized = MathCalculationUtils.normalize(dx, dy);
+        dx = normalized[0];
+        dy = normalized[1];
 
         // 生成平行线上的两个点（距离给定点足够远）
         double scale = 10000; // 扩展距离
@@ -462,11 +457,9 @@ public class IntersectionUtils {
         double tangentDy = dx;
 
         // 归一化方向向量
-        double length = Math.sqrt(tangentDx * tangentDx + tangentDy * tangentDy);
-        if (length > 1e-10) {
-            tangentDx /= length;
-            tangentDy /= length;
-        }
+        double[] normalized = MathCalculationUtils.normalize(tangentDx, tangentDy);
+        tangentDx = normalized[0];
+        tangentDy = normalized[1];
 
         // 生成切线上的两个点（距离切点足够远）
         double scale = 10000; // 扩展距离

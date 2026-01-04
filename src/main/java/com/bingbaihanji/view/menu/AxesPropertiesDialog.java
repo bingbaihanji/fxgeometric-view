@@ -4,6 +4,7 @@ import com.bingbaihanji.constant.AxisArrowType;
 import com.bingbaihanji.constant.AxisTickStyle;
 import com.bingbaihanji.constant.LineType;
 import com.bingbaihanji.constant.UnitLabelType;
+import com.bingbaihanji.util.FxTools;
 import com.bingbaihanji.util.I18nUtil;
 import com.bingbaihanji.view.layout.core.EuclidianViewSettings;
 import javafx.geometry.Insets;
@@ -52,6 +53,9 @@ public class AxesPropertiesDialog extends Dialog<ButtonType> {
 
         setTitle(I18nUtil.getString("menu.axesProperties"));
         setHeaderText(I18nUtil.getString("menu.axesProperties.header"));
+
+        // 设置对话框图标
+        FxTools.setDialogIcon(this, "/icon/axes.png");
 
         // 创建UI
         VBox content = new VBox(15);

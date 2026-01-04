@@ -1,6 +1,7 @@
 package com.bingbaihanji.controller;
 
 import com.bingbaihanji.constant.ObjectType;
+import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 
 import java.util.ArrayList;
@@ -433,10 +434,10 @@ public class SelectionManager {
          * 获取区域内的所有对象
          */
         public List<WorldObject> getObjectsInRectangle(List<WorldObject> allObjects) {
-            double minX = Math.min(startX, endX);
-            double maxX = Math.max(startX, endX);
-            double minY = Math.min(startY, endY);
-            double maxY = Math.max(startY, endY);
+            double minX = MathCalculationUtils.min(startX, endX);
+            double maxX = MathCalculationUtils.max(startX, endX);
+            double minY = MathCalculationUtils.min(startY, endY);
+            double maxY = MathCalculationUtils.max(startY, endY);
 
             return allObjects.stream()
                     .filter(obj -> {
@@ -452,27 +453,27 @@ public class SelectionManager {
         }
 
         public double getMinX() {
-            return Math.min(startX, endX);
+            return MathCalculationUtils.min(startX, endX);
         }
 
         public double getMaxX() {
-            return Math.max(startX, endX);
+            return MathCalculationUtils.max(startX, endX);
         }
 
         public double getMinY() {
-            return Math.min(startY, endY);
+            return MathCalculationUtils.min(startY, endY);
         }
 
         public double getMaxY() {
-            return Math.max(startY, endY);
+            return MathCalculationUtils.max(startY, endY);
         }
 
         public double getWidth() {
-            return Math.abs(endX - startX);
+            return MathCalculationUtils.abs(endX - startX);
         }
 
         public double getHeight() {
-            return Math.abs(endY - startY);
+            return MathCalculationUtils.abs(endY - startY);
         }
     }
 }

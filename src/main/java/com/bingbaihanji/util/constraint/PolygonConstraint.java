@@ -1,5 +1,6 @@
 package com.bingbaihanji.util.constraint;
 
+import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import com.bingbaihanji.view.layout.draw.geometry.impl.PolygonGeo;
 import javafx.geometry.Point2D;
@@ -110,7 +111,7 @@ public class PolygonConstraint implements PointConstraint {
                 t = 0.0;
             } else {
                 t = ((x - x1) * dx + (y - y1) * dy) / lengthSquared;
-                t = Math.max(0, Math.min(1, t)); // 限制在边上
+                t = MathCalculationUtils.max(0, MathCalculationUtils.min(1, t)); // 限制在边上
             }
 
             // 计算投影点
@@ -118,7 +119,7 @@ public class PolygonConstraint implements PointConstraint {
             double projY = y1 + t * dy;
 
             // 计算距离
-            double distance = Math.hypot(x - projX, y - projY);
+            double distance = MathCalculationUtils.hypot(x - projX, y - projY);
 
             // 更新最近的边
             if (distance < minDistance) {
@@ -177,18 +178,18 @@ public class PolygonConstraint implements PointConstraint {
             double distance;
             if (lengthSquared < 1e-10) {
                 // 线段退化为点
-                distance = Math.hypot(x - x1, y - y1);
+                distance = MathCalculationUtils.hypot(x - x1, y - y1);
             } else {
                 double t = ((x - x1) * dx + (y - y1) * dy) / lengthSquared;
-                t = Math.max(0, Math.min(1, t));
+                t = MathCalculationUtils.max(0, MathCalculationUtils.min(1, t));
 
                 double projX = x1 + t * dx;
                 double projY = y1 + t * dy;
 
-                distance = Math.hypot(x - projX, y - projY);
+                distance = MathCalculationUtils.hypot(x - projX, y - projY);
             }
 
-            minDistance = Math.min(minDistance, distance);
+            minDistance = MathCalculationUtils.min(minDistance, distance);
         }
 
         return minDistance;

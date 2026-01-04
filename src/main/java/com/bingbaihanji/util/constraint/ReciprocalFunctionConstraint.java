@@ -1,5 +1,6 @@
 package com.bingbaihanji.util.constraint;
 
+import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import com.bingbaihanji.view.layout.draw.geometry.impl.ReciprocalFunctionGeo;
 import javafx.geometry.Point2D;
@@ -25,7 +26,7 @@ public class ReciprocalFunctionConstraint implements PointConstraint {
     @Override
     public Point2D getPointFromParameter() {
         // 确保参数不在断点附近
-        if (Math.abs(parameter) < 1e-3) {
+        if (MathCalculationUtils.isZero(parameter, 1e-3)) {
             parameter = parameter > 0 ? 1e-3 : -1e-3;
         }
 
@@ -37,7 +38,7 @@ public class ReciprocalFunctionConstraint implements PointConstraint {
     public double calculateParameter(double x, double y) {
         // 对于显函数，参数就是x坐标
         // 但需要避开x=0附近
-        if (Math.abs(x) < 1e-3) {
+        if (MathCalculationUtils.isZero(x, 1e-3)) {
             x = x > 0 ? 1e-3 : -1e-3;
         }
 
@@ -63,7 +64,7 @@ public class ReciprocalFunctionConstraint implements PointConstraint {
     @Override
     public void setParameter(double parameter) {
         // 确保参数不在断点附近
-        if (Math.abs(parameter) < 1e-3) {
+        if (MathCalculationUtils.isZero(parameter, 1e-3)) {
             this.parameter = parameter > 0 ? 1e-3 : -1e-3;
         } else {
             this.parameter = parameter;
@@ -83,7 +84,7 @@ public class ReciprocalFunctionConstraint implements PointConstraint {
     @Override
     public double distanceToShape(double x, double y) {
         // 避开断点
-        if (Math.abs(x) < 1e-3) {
+        if (MathCalculationUtils.isZero(x, 1e-3)) {
             return Double.POSITIVE_INFINITY;
         }
 

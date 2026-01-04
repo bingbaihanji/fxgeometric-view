@@ -1,5 +1,6 @@
 package com.bingbaihanji.util.constraint;
 
+import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import com.bingbaihanji.view.layout.draw.geometry.impl.InfiniteLineGeo;
 import javafx.geometry.Point2D;
@@ -100,16 +101,16 @@ public class InfiniteLineConstraint implements PointConstraint {
         // 计算点到直线的距离（使用点到直线距离公式）
         double dx = x2 - x1;
         double dy = y2 - y1;
-        double length = Math.hypot(dx, dy);
+        double length = MathCalculationUtils.hypot(dx, dy);
 
         if (length < 1e-10) {
             // 直线退化为点
-            return Math.hypot(x - x1, y - y1);
+            return MathCalculationUtils.hypot(x - x1, y - y1);
         }
 
         // 使用点到直线距离公式: |ax + by + c| / sqrt(a^2 + b^2)
         // 直线方程: (y2-y1)x - (x2-x1)y + (x2-x1)y1 - (y2-y1)x1 = 0
 
-        return Math.abs(dy * x - dx * y + dx * y1 - dy * x1) / length;
+        return MathCalculationUtils.abs(dy * x - dx * y + dx * y1 - dy * x1) / length;
     }
 }

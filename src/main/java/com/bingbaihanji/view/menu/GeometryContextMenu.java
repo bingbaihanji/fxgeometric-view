@@ -2,6 +2,7 @@ package com.bingbaihanji.view.menu;
 
 import com.bingbaihanji.controller.DrawingController;
 import com.bingbaihanji.util.CommandHistory;
+import com.bingbaihanji.util.FxTools;
 import com.bingbaihanji.util.I18nUtil;
 import com.bingbaihanji.view.DetachedCanvasWindow;
 import com.bingbaihanji.view.layout.core.GridChartView;
@@ -522,6 +523,8 @@ public class GeometryContextMenu {
         dialog.setTitle(I18nUtil.getString("geo.dialog.bgColor.title"));
         dialog.setHeaderText(I18nUtil.getString("geo.dialog.bgColor.header"));
 
+        // 设置对话框图标
+        FxTools.setDialogIcon(dialog, "/icon/rgb.png");
         ColorPicker picker = new ColorPicker(canvas.getBackgroundColor());
         picker.setPrefWidth(200);
 

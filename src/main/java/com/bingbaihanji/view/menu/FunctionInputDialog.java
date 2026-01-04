@@ -3,6 +3,7 @@ package com.bingbaihanji.view.menu;
 import com.bingbaihanji.constant.FunctionType;
 import com.bingbaihanji.model.FunctionInputResult;
 import com.bingbaihanji.model.FunctionParameter;
+import com.bingbaihanji.util.FxTools;
 import com.bingbaihanji.util.I18nUtil;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import javafx.geometry.Insets;
@@ -42,6 +43,9 @@ public class FunctionInputDialog extends Dialog<FunctionInputResult> {
     public FunctionInputDialog(WorldTransform transform, double canvasWidth, double canvasHeight) {
         setTitle(I18nUtil.getString("function.dialog.title"));
         setHeaderText(I18nUtil.getString("function.dialog.header"));
+
+        // 设置对话框图标
+        FxTools.setDialogIcon(this, "/icon/function.png");
 
         // 创建主布局
         VBox mainContent = new VBox(15);
@@ -299,9 +303,6 @@ public class FunctionInputDialog extends Dialog<FunctionInputResult> {
      * 显示错误提示
      */
     private void showError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(I18nUtil.getString("function.error.title"));
-        alert.setContentText(message);
-        alert.showAndWait();
+        FxTools.showErrorAlert(I18nUtil.getString("function.error.title"), message);
     }
 }

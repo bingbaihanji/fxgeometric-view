@@ -32,7 +32,7 @@ public class PointReuseManager {
 
         for (WorldObject obj : objects) {
             if (obj instanceof PointGeo point) {
-                double dist = Math.hypot(point.getX() - x, point.getY() - y);
+                double dist = MathCalculationUtils.hypot(point.getX() - x, point.getY() - y);
                 if (dist < minDist) {
                     minDist = dist;
                     nearest = point;
@@ -88,7 +88,7 @@ public class PointReuseManager {
         for (WorldObject obj : objects) {
             // 检查独立点
             if (obj instanceof PointGeo point) {
-                double dist = Math.hypot(point.getX() - x, point.getY() - y);
+                double dist = MathCalculationUtils.hypot(point.getX() - x, point.getY() - y);
                 if (dist < minDist) {
                     minDist = dist;
                     nearest = new Point2D(point.getX(), point.getY());
@@ -96,8 +96,8 @@ public class PointReuseManager {
             }
             // 检查线段端点
             else if (obj instanceof LineGeo line) {
-                double dist1 = Math.hypot(line.getStartX() - x, line.getStartY() - y);
-                double dist2 = Math.hypot(line.getEndX() - x, line.getEndY() - y);
+                double dist1 = MathCalculationUtils.hypot(line.getStartX() - x, line.getStartY() - y);
+                double dist2 = MathCalculationUtils.hypot(line.getEndX() - x, line.getEndY() - y);
                 if (dist1 < minDist) {
                     minDist = dist1;
                     nearest = new Point2D(line.getStartX(), line.getStartY());
@@ -109,7 +109,7 @@ public class PointReuseManager {
             }
             // 检查圆心
             else if (obj instanceof CircleGeo circle) {
-                double dist = Math.hypot(circle.getCx() - x, circle.getCy() - y);
+                double dist = MathCalculationUtils.hypot(circle.getCx() - x, circle.getCy() - y);
                 if (dist < minDist) {
                     minDist = dist;
                     nearest = new Point2D(circle.getCx(), circle.getCy());
@@ -119,7 +119,7 @@ public class PointReuseManager {
             else if (obj instanceof PolygonGeo polygon) {
                 for (int i = 0; i < polygon.getVertexCount(); i++) {
                     Point2D vertex = polygon.getVertex(i);
-                    double dist = Math.hypot(vertex.getX() - x, vertex.getY() - y);
+                    double dist = MathCalculationUtils.hypot(vertex.getX() - x, vertex.getY() - y);
                     if (dist < minDist) {
                         minDist = dist;
                         nearest = vertex;
@@ -128,8 +128,8 @@ public class PointReuseManager {
             }
             // 检查无限直线的定义点
             else if (obj instanceof InfiniteLineGeo infLine) {
-                double dist1 = Math.hypot(infLine.getPoint1X() - x, infLine.getPoint1Y() - y);
-                double dist2 = Math.hypot(infLine.getPoint2X() - x, infLine.getPoint2Y() - y);
+                double dist1 = MathCalculationUtils.hypot(infLine.getPoint1X() - x, infLine.getPoint1Y() - y);
+                double dist2 = MathCalculationUtils.hypot(infLine.getPoint2X() - x, infLine.getPoint2Y() - y);
                 if (dist1 < minDist) {
                     minDist = dist1;
                     nearest = new Point2D(infLine.getPoint1X(), infLine.getPoint1Y());
