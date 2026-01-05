@@ -11,6 +11,7 @@ import javafx.application.Platform;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.SplitPane;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
@@ -174,6 +175,13 @@ public class InitView {
      */
     private void handleKeyPressed(KeyEvent event) {
         if (drawingController == null) {
+            return;
+        }
+
+        // ESC键：清除选择
+        if (event.getCode() == KeyCode.ESCAPE) {
+            drawingController.clearSelection();
+            event.consume();
             return;
         }
 

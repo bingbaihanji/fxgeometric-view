@@ -2,6 +2,7 @@ package com.bingbaihanji.util;
 
 import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.view.layout.draw.geometry.impl.CircleGeo;
+import com.bingbaihanji.view.layout.draw.geometry.impl.FunctionGeo;
 import com.bingbaihanji.view.layout.draw.geometry.impl.InfiniteLineGeo;
 import com.bingbaihanji.view.layout.draw.geometry.impl.LineGeo;
 import javafx.geometry.Point2D;
@@ -11,7 +12,7 @@ import java.util.List;
 
 /**
  * 几何图形交点计算工具类
- * 提供线段与线段、线段与圆、圆与圆、无限直线与其他图形之间的交点计算功能
+ * 提供线段与线段、线段与圆、圆与圆、函数与函数、无限直线与其他图形之间的交点计算功能
  */
 public class IntersectionUtils {
 
@@ -467,5 +468,128 @@ public class IntersectionUtils {
         Point2D point2 = new Point2D(pointX - tangentDx * scale, pointY - tangentDy * scale);
 
         return new Point2D[]{point1, point2};
+    }
+
+    /**
+     * 计算两个函数图像的交点
+     * <p>
+     * 通过遍历采样点，检测函数值符号变化来近似查找交点
+     * 使用线性插值精确定位交点位置
+     *
+     * @param function1 第一个函数
+     * @param function2 第二个函数
+     * @return 交点列表
+     */
+    public static List<Point2D> getFunctionFunctionIntersections(FunctionGeo function1, FunctionGeo function2) {
+        List<Point2D> intersections = new ArrayList<>();
+
+        List<Point2D> points1 = function1.getSampledPoints();
+        List<Point2D> points2 = function2.getSampledPoints();
+
+        if (points1 == null || points1.size() < 2 || points2 == null || points2.size() < 2) {
+            return intersections;
+        }
+
+        // 遍历第一个函数的所有采样点段
+        for (int i = 0; i < points1.size() - 1; i++) {
+            Point2D p1a = points1.get(i);
+            Point2D p1b = points1.get(i + 1);
+
+            if (!isValidPoint(p1a) || !isValidPoint(p1b)) {
+                continue;
+            }
+
+            // 遍历第二个函数的所有采样点段
+            for (int j = 0; j < points2.size() - 1; j++) {
+                Point2D p2a = points2.get(j);
+                Point2D p2b = points2.get(j + 1);
+
+                if (!isValidPoint(p2a) || !isValidPoint(p2b)) {
+                    continue;
+                }
+
+                // 检查两个线段的x范围是否重叠
+                double x1Min = Math.min(p1a.getX(), p1b.getX());
+                double x1Max = Math.max(p1a.getX(), p1b.getX());
+                double x2Min = Math.min(p2a.getX(), p2b.getX());
+                double x2Max = Math.max(p2a.getX(), p2b.getX());
+
+                // 如果x范围不重叠，跳过
+                if (x1Max < x2Min || x2Max < x1Min) {
+                    continue;
+                }
+
+                // 计算两条线段的交点
+                List<Point2D> segmentIntersections = getSegmentSegmentIntersections(
+                        p1a.getX(), p1a.getY(), p1b.getX(), p1b.getY(),
+                        p2a.getX(), p2a.getY(), p2b.getX(), p2b.getY()
+                );
+
+                intersections.addAll(segmentIntersections);
+            }
+        }
+
+        // 去重：移除非常接近的点
+        return removeDuplicatePoints(intersections, GeometryConfig.Performance.MIN_VALID_DISTANCE * 10);
+    }
+
+    /**
+     * 计算两条线段的交点（内部辅助方法）
+     */
+    private static List<Point2D> getSegmentSegmentIntersections(
+            double x1, double y1, double x2, double y2,
+            double x3, double y3, double x4, double y4) {
+        List<Point2D> intersections = new ArrayList<>();
+
+        double denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+        if (MathCalculationUtils.isZero(denom, GeometryConfig.Performance.MIN_VALID_DISTANCE)) {
+            // 线段平行或重合
+            return intersections;
+        }
+
+        double tNum = (x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4);
+        double uNum = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3));
+
+        double t = tNum / denom;
+        double u = uNum / denom;
+
+        // 检查交点是否在两条线段上
+        if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
+            double ix = x1 + t * (x2 - x1);
+            double iy = y1 + t * (y2 - y1);
+            intersections.add(new Point2D(ix, iy));
+        }
+
+        return intersections;
+    }
+
+    /**
+     * 检查点是否有效（非null且坐标有限）
+     */
+    private static boolean isValidPoint(Point2D p) {
+        return p != null && Double.isFinite(p.getX()) && Double.isFinite(p.getY());
+    }
+
+    /**
+     * 去除重复的点（距离小于阈值的点视为重复）
+     */
+    private static List<Point2D> removeDuplicatePoints(List<Point2D> points, double threshold) {
+        List<Point2D> result = new ArrayList<>();
+
+        for (Point2D point : points) {
+            boolean isDuplicate = false;
+            for (Point2D existing : result) {
+                double distance = Math.hypot(point.getX() - existing.getX(), point.getY() - existing.getY());
+                if (distance < threshold) {
+                    isDuplicate = true;
+                    break;
+                }
+            }
+            if (!isDuplicate) {
+                result.add(point);
+            }
+        }
+
+        return result;
     }
 }

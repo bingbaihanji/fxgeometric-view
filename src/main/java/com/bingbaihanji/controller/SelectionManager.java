@@ -23,6 +23,10 @@ public class SelectionManager {
      * 主选择列表（所有选中的对象）
      */
     private final List<WorldObject> selectedObjects = new ArrayList<>();
+
+    // 已禁用：边界框（用于显示选中对象的边界和句柄）
+    // private final BoundingBox boundingBox = new BoundingBox();
+
     /**
      * 选择变化监听器列表
      */
@@ -57,6 +61,9 @@ public class SelectionManager {
         selectedObjects.add(object);
         object.setSelected(true);
 
+        // 已禁用：更新边界框
+        // updateBoundingBox();
+
         if (notify) {
             notifySelectionChanged();
         }
@@ -85,6 +92,9 @@ public class SelectionManager {
 
         selectedObjects.remove(object);
         object.setSelected(false);
+
+        // 已禁用：更新边界框
+        // updateBoundingBox();
 
         if (notify) {
             notifySelectionChanged();
@@ -136,6 +146,9 @@ public class SelectionManager {
         }
 
         selectedObjects.clear();
+
+        // 已禁用：清空边界框
+        // boundingBox.clear();
 
         if (notify) {
             notifySelectionChanged();
@@ -393,6 +406,39 @@ public class SelectionManager {
             listener.onSelectionChanged(selectedObjects);
         }
     }
+
+    // ========== BoundingBox 相关方法（已禁用） ==========
+
+    /**
+     * 更新边界框（已禁用）
+     */
+    /*
+    private void updateBoundingBox() {
+        if (selectedObjects.isEmpty()) {
+            boundingBox.clear();
+        } else {
+            boundingBox.setObjects(selectedObjects);
+        }
+    }
+    */
+
+    /**
+     * 获取边界框（已禁用）
+     */
+    /*
+    public BoundingBox getBoundingBox() {
+        return boundingBox;
+    }
+    */
+
+    /**
+     * 是否有边界框（已禁用）
+     */
+    /*
+    public boolean hasBoundingBox() {
+        return !boundingBox.isEmpty();
+    }
+    */
 
     //   监听器接口  
 

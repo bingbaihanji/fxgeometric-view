@@ -5,13 +5,12 @@ import com.bingbaihanji.controller.DrawingContext;
 import com.bingbaihanji.model.FunctionInputResult;
 import com.bingbaihanji.util.CommandHistory;
 import com.bingbaihanji.util.Logger;
-import com.bingbaihanji.view.layout.draw.geometry.impl.*;
+import com.bingbaihanji.view.layout.draw.geometry.impl.FunctionGeo;
 import com.bingbaihanji.view.menu.FunctionInputDialog;
 import javafx.application.Platform;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -85,68 +84,12 @@ public class FunctionHandler extends AbstractDrawingHandler {
 
     /**
      * 根据输入结果创建函数对象
+     * <p>
+     * 委托给 FunctionFactory 工厂类创建，避免代码重复
      */
     private FunctionGeo createFunction(FunctionInputResult input) {
-        Map<String, Double> params = input.getParameters();
-
         try {
-            switch (input.getType()) {
-                case LINEAR:
-                    return new LinearFunctionGeo(
-                            params.get("k"),
-                            params.get("b")
-                    );
-
-                case QUADRATIC:
-                    return new QuadraticFunctionGeo(
-                            params.get("a"),
-                            params.get("b"),
-                            params.get("c")
-                    );
-
-                case RECIPROCAL:
-                    return new ReciprocalFunctionGeo(params.get("k"));
-
-                case SINE:
-                case COSINE:
-                case TANGENT:
-                    return new TrigonometricFunctionGeo(
-                            input.getType(),
-                            params.get("A"),
-                            params.get("omega"),
-                            params.get("phi"),
-                            params.get("k")
-                    );
-
-                case EXPONENTIAL:
-                    return new ExponentialFunctionGeo(params.get("a"));
-
-                case LOGARITHMIC:
-                    return new LogarithmicFunctionGeo(params.get("a"));
-
-                case ELLIPSE:
-                    return new EllipseFunctionGeo(
-                            params.get("cx"),
-                            params.get("cy"),
-                            params.get("a"),
-                            params.get("b")
-                    );
-
-                case HYPERBOLA:
-                    return new HyperbolaFunctionGeo(
-                            params.get("cx"),
-                            params.get("cy"),
-                            params.get("a"),
-                            params.get("b")
-                    );
-
-                case PARABOLA_CONIC:
-                    return new ParabolaConicFunctionGeo(params.get("p"));
-
-                default:
-                    logger.error("不支持的函数类型: {}", input.getType());
-                    return null;
-            }
+            return com.bingbaihanji.factory.FunctionFactory.createFunction(input);
         } catch (Exception e) {
             logger.error("创建函数对象时发生错误", e);
             return null;

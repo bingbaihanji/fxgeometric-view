@@ -6,6 +6,7 @@ import com.bingbaihanji.util.EdgeSnapManager;
 import com.bingbaihanji.util.SpecialPointManager;
 import com.bingbaihanji.util.SpecialPointManager.SpecialPoint;
 import com.bingbaihanji.view.layout.core.EuclidianViewSettings;
+import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 
 import java.util.List;
 
@@ -16,6 +17,8 @@ import java.util.List;
  * - 点吸附：阈值为 15 像素（优先级高）
  * - 边吸附：阈值为 10 像素（优先级中）
  * - 网格吸附：阈值为 8 像素（优先级低）
+ * <p>
+ * 优化：使用缓存机制避免重复计算特殊点，提高拖动性能
  *
  * @author bingbaihanji
  * @date 2025-12-31
@@ -38,7 +41,25 @@ public class SnappingHandler {
     private static final double GRID_SNAP_THRESHOLD_PIXELS = 8.0;
 
     /**
-     * 查找最近的特殊点
+     * 特殊点缓存
+     */
+    private List<SpecialPoint> cachedSpecialPoints = null;
+
+    /**
+     * 缓存是否有效
+     */
+    private boolean cacheValid = false;
+
+    /**
+     * 使缓存失效（当几何对象发生变化时调用）
+     */
+    public void invalidateCache() {
+        cacheValid = false;
+        cachedSpecialPoints = null;
+    }
+
+    /**
+     * 查找最近的特殊点（带缓存优化）
      *
      * @param x       世界坐标 X
      * @param y       世界坐标 Y
@@ -46,15 +67,40 @@ public class SnappingHandler {
      * @return 最近的特殊点，如果在阈值范围内没有则返回 null
      */
     public SpecialPoint findNearestSpecialPoint(double x, double y, DrawingContext context) {
-        // 获取所有特殊点
-        List<SpecialPoint> specialPoints = SpecialPointManager.extractSpecialPoints(context.getObjects());
+        return findNearestSpecialPoint(x, y, context, null);
+    }
+
+    /**
+     * 查找最近的特殊点（带排除对象）
+     *
+     * @param x              世界坐标 X
+     * @param y              世界坐标 Y
+     * @param context        绘制上下文
+     * @param excludedObject 要排除的对象（通常是正在拖动的对象）
+     * @return 最近的特殊点，如果在阈值范围内没有则返回 null
+     */
+    public SpecialPoint findNearestSpecialPoint(double x, double y, DrawingContext context, WorldObject excludedObject) {
+        // 如果缓存无效，重新提取特殊点
+        if (!cacheValid || cachedSpecialPoints == null) {
+            cachedSpecialPoints = SpecialPointManager.extractSpecialPoints(context.getObjects());
+            cacheValid = true;
+        }
 
         // 计算吸附阈值（像素距离转换为世界坐标距离）
         double scale = context.getTransform().getScale();
         double threshold = POINT_SNAP_THRESHOLD_PIXELS / scale;
 
+        // 如果需要排除某个对象，过滤掉该对象的特殊点
+        List<SpecialPoint> pointsToCheck = cachedSpecialPoints;
+        if (excludedObject != null) {
+            pointsToCheck = SpecialPointManager.extractSpecialPoints(context.getObjects());
+            // 移除被排除对象的特殊点
+            List<SpecialPoint> excludedPoints = SpecialPointManager.extractSpecialPoints(List.of(excludedObject));
+            pointsToCheck.removeAll(excludedPoints);
+        }
+
         // 查找最近的特殊点
-        return SpecialPointManager.findNearestSpecialPoint(x, y, specialPoints, threshold);
+        return SpecialPointManager.findNearestSpecialPoint(x, y, pointsToCheck, threshold);
     }
 
     /**
@@ -66,12 +112,33 @@ public class SnappingHandler {
      * @return 最近的边吸附结果，如果在阈值范围内没有则返回 null
      */
     public EdgeSnapManager.EdgeSnapResult findNearestEdge(double x, double y, DrawingContext context) {
+        return findNearestEdge(x, y, context, null);
+    }
+
+    /**
+     * 查找最近的边吸附点（带排除对象）
+     *
+     * @param x              世界坐标 X
+     * @param y              世界坐标 Y
+     * @param context        绘制上下文
+     * @param excludedObject 要排除的对象（通常是正在拖动的对象）
+     * @return 最近的边吸附结果，如果在阈值范围内没有则返回 null
+     */
+    public EdgeSnapManager.EdgeSnapResult findNearestEdge(double x, double y, DrawingContext context, WorldObject excludedObject) {
         // 计算吸附阈值（像素距离转换为世界坐标距离）
         double scale = context.getTransform().getScale();
         double threshold = EDGE_SNAP_THRESHOLD_PIXELS / scale;
 
+        // 获取要检查的对象列表
+        List<WorldObject> objectsToCheck = context.getObjects();
+        if (excludedObject != null) {
+            objectsToCheck = context.getObjects().stream()
+                    .filter(obj -> obj != excludedObject)
+                    .toList();
+        }
+
         // 查找最近的边
-        return EdgeSnapManager.findNearestEdge(x, y, context.getObjects(), threshold);
+        return EdgeSnapManager.findNearestEdge(x, y, objectsToCheck, threshold);
     }
 
     /**

@@ -104,6 +104,22 @@ public class InfiniteLineGeo extends AbstractWorldObject {
         return point2Ref != null ? point2Ref.getY() : point2Y;
     }
 
+    public String getPoint1Name() {
+        return point1Name;
+    }
+
+    public String getPoint2Name() {
+        return point2Name;
+    }
+
+    public PointGeo getPoint1Ref() {
+        return point1Ref;
+    }
+
+    public PointGeo getPoint2Ref() {
+        return point2Ref;
+    }
+
     @Override
     public void paint(GraphicsContext gc, WorldTransform transform, double w, double h) {
         double sx1 = transform.worldToScreenX(getPoint1X());

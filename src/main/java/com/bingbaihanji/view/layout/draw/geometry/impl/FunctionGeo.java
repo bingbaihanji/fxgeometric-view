@@ -8,7 +8,6 @@ import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.util.constraint.PointConstraint;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.GeometryVisitor;
-import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 
@@ -390,7 +389,7 @@ public abstract class FunctionGeo extends AbstractWorldObject {
     }
 
     @Override
-    public List<WorldObject.DraggablePoint> getDraggablePoints() {
+    public List<DraggablePoint> getDraggablePoints() {
         // 函数曲线本身不可拖动，返回空列表
         return new ArrayList<>();
     }

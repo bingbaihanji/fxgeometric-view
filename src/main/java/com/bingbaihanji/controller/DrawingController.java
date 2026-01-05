@@ -11,7 +11,8 @@ import com.bingbaihanji.view.DetachedCanvasWindow;
 import com.bingbaihanji.view.layout.core.GridChartView;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
-import com.bingbaihanji.view.layout.draw.geometry.impl.*;
+import com.bingbaihanji.view.layout.draw.geometry.impl.FunctionGeo;
+import com.bingbaihanji.view.layout.draw.geometry.impl.PointGeo;
 import com.bingbaihanji.view.menu.FunctionInputDialog;
 import com.bingbaihanji.view.menu.GeometryContextMenu;
 import javafx.application.Platform;
@@ -22,7 +23,6 @@ import javafx.scene.input.MouseEvent;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -57,6 +57,11 @@ public class DrawingController {
     private DetachedCanvasWindow parentWindow;
 
     /**
+     * 当前显示的右键菜单（用于在显示新菜单前关闭旧菜单）
+     */
+    private ContextMenu currentContextMenu = null;
+
+    /**
      * 构造函数
      */
     public DrawingController(GridChartView gridChartPane) {
@@ -77,6 +82,18 @@ public class DrawingController {
 
         // 初始化鼠标事件监听
         initMouseHandlers();
+
+        // 设置预览绘制回调
+        gridChartPane.setPreviewPainter(this::paintPreview);
+
+        // 已禁用：设置 BoundingBox 绘制回调
+        /*
+        gridChartPane.setBoundingBoxPainter((gc, transform) -> {
+            if (context.getSelectionManager().hasBoundingBox()) {
+                context.getSelectionManager().getBoundingBox().paint(gc, transform);
+            }
+        });
+        */
     }
 
     /**
@@ -187,9 +204,13 @@ public class DrawingController {
     }
 
     /**
-     * 绘制预览图形
+     * 绘制预览图形(统一由 PreviewManager 管理)
      */
     public void paintPreview(GraphicsContext gc, WorldTransform transform) {
+        // 统一预览绘制: PreviewManager 管理所有 Previewable 对象
+        context.getPreviewManager().paintAll(gc, transform);
+
+        // Handler 的补充预览(用于特殊效果,如高亮、吸附提示等)
         for (DrawingHandler handler : handlers) {
             if (handler.canHandle(context.getDrawMode())) {
                 handler.paintPreview(gc, transform, context);
@@ -214,6 +235,12 @@ public class DrawingController {
         for (DrawingHandler handler : handlers) {
             handler.reset();
         }
+
+        // 重置 PreviewManager(清除所有预览对象)
+        context.getPreviewManager().resetAll();
+
+        // 重置移动模式
+        context.setMoveMode(com.bingbaihanji.constant.MoveMode.MOVE_NONE);
 
         context.setDrawMode(mode);
         context.setState(DrawingState.IDLE);
@@ -326,68 +353,12 @@ public class DrawingController {
 
     /**
      * 根据输入结果创建函数对象
+     * <p>
+     * 委托给 FunctionFactory 工厂类创建，避免代码重复
      */
     private FunctionGeo createFunction(FunctionInputResult input) {
-        Map<String, Double> params = input.getParameters();
-
         try {
-            switch (input.getType()) {
-                case LINEAR:
-                    return new LinearFunctionGeo(
-                            params.get("k"),
-                            params.get("b")
-                    );
-
-                case QUADRATIC:
-                    return new QuadraticFunctionGeo(
-                            params.get("a"),
-                            params.get("b"),
-                            params.get("c")
-                    );
-
-                case RECIPROCAL:
-                    return new ReciprocalFunctionGeo(params.get("k"));
-
-                case SINE:
-                case COSINE:
-                case TANGENT:
-                    return new TrigonometricFunctionGeo(
-                            input.getType(),
-                            params.get("A"),
-                            params.get("omega"),
-                            params.get("phi"),
-                            params.get("k")
-                    );
-
-                case EXPONENTIAL:
-                    return new ExponentialFunctionGeo(params.get("a"));
-
-                case LOGARITHMIC:
-                    return new LogarithmicFunctionGeo(params.get("a"));
-
-                case ELLIPSE:
-                    return new EllipseFunctionGeo(
-                            params.get("cx"),
-                            params.get("cy"),
-                            params.get("a"),
-                            params.get("b")
-                    );
-
-                case HYPERBOLA:
-                    return new HyperbolaFunctionGeo(
-                            params.get("cx"),
-                            params.get("cy"),
-                            params.get("a"),
-                            params.get("b")
-                    );
-
-                case PARABOLA_CONIC:
-                    return new ParabolaConicFunctionGeo(params.get("p"));
-
-                default:
-                    logger.error("不支持的函数类型: " + input.getType());
-                    return null;
-            }
+            return com.bingbaihanji.factory.FunctionFactory.createFunction(input);
         } catch (Exception e) {
             logger.error("创建函数对象时发生错误", e);
             return null;
@@ -415,6 +386,78 @@ public class DrawingController {
         return context;
     }
 
+    /**
+     * 清除选择（ESC键和点击空白区域时调用）
+     */
+    public void clearSelection() {
+        context.getSelectionManager().clearSelection();
+        context.redraw();
+    }
+
+    // ========== 层级管理方法 ==========
+
+    /**
+     * 将选中对象上移一层
+     */
+    public void bringSelectionForward() {
+        List<WorldObject> selectedObjects = context.getSelectionManager().getSelectedObjects();
+        if (selectedObjects.isEmpty()) return;
+
+        List<WorldObject> allObjects = context.getObjects();
+        for (WorldObject obj : selectedObjects) {
+            int index = allObjects.indexOf(obj);
+            if (index < allObjects.size() - 1) {
+                allObjects.remove(index);
+                allObjects.add(index + 1, obj);
+            }
+        }
+        context.redraw();
+    }
+
+    /**
+     * 将选中对象下移一层
+     */
+    public void sendSelectionBackward() {
+        List<WorldObject> selectedObjects = context.getSelectionManager().getSelectedObjects();
+        if (selectedObjects.isEmpty()) return;
+
+        List<WorldObject> allObjects = context.getObjects();
+        for (WorldObject obj : selectedObjects) {
+            int index = allObjects.indexOf(obj);
+            if (index > 0) {
+                allObjects.remove(index);
+                allObjects.add(index - 1, obj);
+            }
+        }
+        context.redraw();
+    }
+
+    /**
+     * 将选中对象置于顶层
+     */
+    public void bringSelectionToFront() {
+        List<WorldObject> selectedObjects = context.getSelectionManager().getSelectedObjects();
+        if (selectedObjects.isEmpty()) return;
+
+        List<WorldObject> allObjects = context.getObjects();
+        allObjects.removeAll(selectedObjects);
+        allObjects.addAll(selectedObjects);
+        context.redraw();
+    }
+
+    /**
+     * 将选中对象置于底层
+     */
+    public void sendSelectionToBack() {
+        List<WorldObject> selectedObjects = context.getSelectionManager().getSelectedObjects();
+        if (selectedObjects.isEmpty()) return;
+
+        List<WorldObject> allObjects = context.getObjects();
+        allObjects.removeAll(selectedObjects);
+        allObjects.addAll(0, selectedObjects);
+        context.redraw();
+    }
+
     // 窗口管理方法（保留）
 
     /**
@@ -440,32 +483,96 @@ public class DrawingController {
      * 处理右键菜单事件
      */
     private void handleContextMenu(ContextMenuEvent event) {
+        // 如果当前有菜单显示，先关闭它并返回（不显示新菜单）
+        if (currentContextMenu != null && currentContextMenu.isShowing()) {
+            hideCurrentContextMenu();
+            event.consume();
+            return;
+        }
+
         double worldX = context.getGridChartPane().screenToWorldX(event.getX());
         double worldY = context.getGridChartPane().screenToWorldY(event.getY());
         double scale = context.getTransform().getScale();
         double vertexTolerance = 10.0 / scale; // 顶点使用更大的容差
         double objectTolerance = 5.0 / scale;  // 对象使用较小的容差
 
-        //   优先级1：检查是否点击了图形的顶点  
         List<WorldObject> objects = context.getObjects();
-        for (WorldObject obj : objects) {
-            for (WorldObject.DraggablePoint point : obj.getDraggablePoints()) {
+
+        //   已禁用：优先级0：检查是否点击了BoundingBox区域  
+        /*
+        // 如果有选中对象，且右键点击在BoundingBox边界内，显示BoundingBox菜单
+        if (context.getSelectionManager().hasBoundingBox()) {
+            double[] bounds = context.getSelectionManager().getBoundingBox().getBounds();
+            double minX = bounds[0];
+            double maxX = bounds[1];
+            double minY = bounds[2];
+            double maxY = bounds[3];
+            
+            // 检查点击是否在BoundingBox边界内部（除非点击的是独立点）
+            if (worldX >= minX && worldX <= maxX && worldY >= minY && worldY <= maxY) {
+                // 检查是否点击的是独立点对象（独立点优先级更高）
+                boolean clickedPoint = false;
+                for (int i = objects.size() - 1; i >= 0; i--) {
+                    WorldObject obj = objects.get(i);
+                    if (obj instanceof PointGeo point) {
+                        if (point.hitTest(worldX, worldY, vertexTolerance)) {
+                            clickedPoint = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (!clickedPoint) {
+                    // 没有点击独立点，显示BoundingBox菜单
+                    ContextMenu menu = GeometryContextMenu.createBoundingBoxMenu(context.getGridChartPane(), this);
+                    showContextMenu(menu, event);
+                    return;
+                }
+            }
+        }
+        */
+
+        //   优先级1：检查是否点击了独立的点对象（PointGeo）  
+        // 独立点对象应该使用专用的点菜单
+        // 注意：即使该位置同时是其他图形的顶点，也优先显示点菜单
+        for (int i = objects.size() - 1; i >= 0; i--) {
+            WorldObject obj = objects.get(i);
+            if (obj instanceof PointGeo point) {
                 if (point.hitTest(worldX, worldY, vertexTolerance)) {
-                    // 点击了顶点，显示顶点菜单
-                    ContextMenu menu = GeometryContextMenu.createVertexMenu(
-                            point, obj, context.getGridChartPane(), this
-                    );
-                    menu.show(context.getGridChartPane(), event.getScreenX(), event.getScreenY());
-                    event.consume();
+                    // 点击了独立的点对象，显示点菜单
+                    ContextMenu menu = GeometryContextMenu.createPointMenu(point, context.getGridChartPane(), this);
+                    showContextMenu(menu, event);
                     return;
                 }
             }
         }
 
-        //   优先级2：检查是否点击了独立的点对象  
+        //   优先级2：检查是否点击了图形的顶点（排除PointGeo）  
+        for (WorldObject obj : objects) {
+            // 跳过独立的点对象，它们已经在上面处理了
+            if (obj instanceof PointGeo) {
+                continue;
+            }
+            for (WorldObject.DraggablePoint point : obj.getDraggablePoints()) {
+                if (point.hitTest(worldX, worldY, vertexTolerance)) {
+                    // 点击了图形的顶点，显示顶点菜单
+                    ContextMenu menu = GeometryContextMenu.createVertexMenu(
+                            point, obj, context.getGridChartPane(), this
+                    );
+                    showContextMenu(menu, event);
+                    return;
+                }
+            }
+        }
+
+        //   优先级3：检查是否点击了其他图形对象  
         WorldObject clickedObject = null;
         for (int i = objects.size() - 1; i >= 0; i--) {
             WorldObject obj = objects.get(i);
+            // 跳过独立的点对象
+            if (obj instanceof PointGeo) {
+                continue;
+            }
             if (obj.hitTest(worldX, worldY, objectTolerance)) {
                 clickedObject = obj;
                 break;
@@ -473,10 +580,7 @@ public class DrawingController {
         }
 
         ContextMenu menu;
-        if (clickedObject instanceof com.bingbaihanji.view.layout.draw.geometry.impl.PointGeo point) {
-            // 点的右键菜单
-            menu = GeometryContextMenu.createPointMenu(point, context.getGridChartPane(), this);
-        } else if (clickedObject != null) {
+        if (clickedObject != null) {
             // 其他图形的右键菜单
             menu = GeometryContextMenu.createShapeMenu(clickedObject, context.getGridChartPane(), this);
         } else {
@@ -484,7 +588,25 @@ public class DrawingController {
             menu = GeometryContextMenu.createCanvasMenu(context.getGridChartPane(), this, parentWindow);
         }
 
+        showContextMenu(menu, event);
+    }
+
+    /**
+     * 显示右键菜单并保存引用
+     */
+    private void showContextMenu(ContextMenu menu, ContextMenuEvent event) {
+        currentContextMenu = menu;
         menu.show(context.getGridChartPane(), event.getScreenX(), event.getScreenY());
         event.consume();
+    }
+
+    /**
+     * 隐藏当前显示的右键菜单
+     */
+    private void hideCurrentContextMenu() {
+        if (currentContextMenu != null && currentContextMenu.isShowing()) {
+            currentContextMenu.hide();
+        }
+        currentContextMenu = null;
     }
 }

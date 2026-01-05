@@ -205,36 +205,22 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
                                 midX, midY
                         );
 
-                        // 绘制垂直平分线预览
+                        // 绘制垂直平分线预览（IntersectionUtils已经返回了扩展后的点，直接使用）
                         double px1 = bisectorLine[0].getX();
                         double py1 = bisectorLine[0].getY();
                         double px2 = bisectorLine[1].getX();
                         double py2 = bisectorLine[1].getY();
 
-                        // 扩展为无限直线
-                        double dx = px2 - px1;
-                        double dy = py2 - py1;
-                        double len = MathCalculationUtils.hypot(dx, dy);
-                        if (len > 1e-10) {
-                            double extendScale = 10000.0;
-                            double ux = dx / len;
-                            double uy = dy / len;
-                            double extX1 = px1 - ux * extendScale;
-                            double extY1 = py1 - uy * extendScale;
-                            double extX2 = px1 + ux * extendScale;
-                            double extY2 = py1 + uy * extendScale;
+                        double sx1 = transform.worldToScreenX(px1);
+                        double sy1 = transform.worldToScreenY(py1);
+                        double sx2 = transform.worldToScreenX(px2);
+                        double sy2 = transform.worldToScreenY(py2);
 
-                            double sx1 = transform.worldToScreenX(extX1);
-                            double sy1 = transform.worldToScreenY(extY1);
-                            double sx2 = transform.worldToScreenX(extX2);
-                            double sy2 = transform.worldToScreenY(extY2);
-
-                            gc.setStroke(Color.valueOf("#759eb2"));
-                            gc.setLineWidth(2);
-                            gc.setLineDashes(6);
-                            gc.strokeLine(sx1, sy1, sx2, sy2);
-                            gc.setLineDashes(null);
-                        }
+                        gc.setStroke(Color.valueOf("#759eb2"));
+                        gc.setLineWidth(2);
+                        gc.setLineDashes(6);
+                        gc.strokeLine(sx1, sy1, sx2, sy2);
+                        gc.setLineDashes(null);
 
                         // 绘制中点
                         double midScreenX = transform.worldToScreenX(midX);
@@ -290,30 +276,17 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
                             double tx2 = tangentLine[1].getX();
                             double ty2 = tangentLine[1].getY();
 
-                            // 扩展为无限直线
-                            double tdx = tx2 - tx1;
-                            double tdy = ty2 - ty1;
-                            double tlen = MathCalculationUtils.hypot(tdx, tdy);
-                            if (tlen > 1e-10) {
-                                double extendScale = 10000.0;
-                                double tux = tdx / tlen;
-                                double tuy = tdy / tlen;
-                                double extX1 = tx1 - tux * extendScale;
-                                double extY1 = ty1 - tuy * extendScale;
-                                double extX2 = tx1 + tux * extendScale;
-                                double extY2 = ty1 + tuy * extendScale;
+                            // IntersectionUtils已经返回了扩展后的点，直接转换为屏幕坐标绘制
+                            double tsx1 = transform.worldToScreenX(tx1);
+                            double tsy1 = transform.worldToScreenY(ty1);
+                            double tsx2 = transform.worldToScreenX(tx2);
+                            double tsy2 = transform.worldToScreenY(ty2);
 
-                                double tsx1 = transform.worldToScreenX(extX1);
-                                double tsy1 = transform.worldToScreenY(extY1);
-                                double tsx2 = transform.worldToScreenX(extX2);
-                                double tsy2 = transform.worldToScreenY(extY2);
-
-                                gc.setStroke(Color.ORANGE);
-                                gc.setLineWidth(2);
-                                gc.setLineDashes(6);
-                                gc.strokeLine(tsx1, tsy1, tsx2, tsy2);
-                                gc.setLineDashes(null);
-                            }
+                            gc.setStroke(Color.ORANGE);
+                            gc.setLineWidth(2);
+                            gc.setLineDashes(6);
+                            gc.strokeLine(tsx1, tsy1, tsx2, tsy2);
+                            gc.setLineDashes(null);
                         }
                         break;
                     }
@@ -361,37 +334,23 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
         }
 
         if (previewLine != null) {
-            // 扩展为无限直线的屏幕坐标
+            // IntersectionUtils已经返回了扩展后的点，直接转换为屏幕坐标绘制
             double px1 = previewLine[0].getX();
             double py1 = previewLine[0].getY();
             double px2 = previewLine[1].getX();
             double py2 = previewLine[1].getY();
 
-            // 计算方向向量并扩展
-            double dx = px2 - px1;
-            double dy = py2 - py1;
-            double len = MathCalculationUtils.hypot(dx, dy);
-            if (len > 1e-10) {
-                double extendScale = 10000.0;
-                double ux = dx / len;
-                double uy = dy / len;
-                double extX1 = px1 - ux * extendScale;
-                double extY1 = py1 - uy * extendScale;
-                double extX2 = px1 + ux * extendScale;
-                double extY2 = py1 + uy * extendScale;
+            double sx1 = transform.worldToScreenX(px1);
+            double sy1 = transform.worldToScreenY(py1);
+            double sx2 = transform.worldToScreenX(px2);
+            double sy2 = transform.worldToScreenY(py2);
 
-                double sx1 = transform.worldToScreenX(extX1);
-                double sy1 = transform.worldToScreenY(extY1);
-                double sx2 = transform.worldToScreenX(extX2);
-                double sy2 = transform.worldToScreenY(extY2);
-
-                // 绘制虚线预览
-                gc.setStroke(Color.valueOf("#759eb2"));
-                gc.setLineWidth(2);
-                gc.setLineDashes(6);
-                gc.strokeLine(sx1, sy1, sx2, sy2);
-                gc.setLineDashes(null);
-            }
+            // 绘制虚线预览
+            gc.setStroke(Color.valueOf("#759eb2"));
+            gc.setLineWidth(2);
+            gc.setLineDashes(6);
+            gc.strokeLine(sx1, sy1, sx2, sy2);
+            gc.setLineDashes(null);
 
             // 绘制鼠标位置的点
             double mouseScreenX = transform.worldToScreenX(context.getCurrentMouseX());

@@ -1,14 +1,17 @@
 package com.bingbaihanji.util;
 
+import com.bingbaihanji.config.GeometryConfig;
 import javafx.geometry.Point2D;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 点命名管理器
  * <p>
  * 按照出现顺序自动为点命名：A, B, C, ..., Z, A1, B1, ..., Z1, A2, B2, ...
+ * <p>
+ * 线程安全的单例实现，使用 ConcurrentHashMap 保证并发安全
  *
  * @author bingbaihanji
  * @date 2025-12-24
@@ -18,19 +21,19 @@ public class PointNameManager {
     /**
      * 坐标精度阈值（用于判断两个点是否相同）
      */
-    private static final double EPSILON = 1e-6;
+    private static final double EPSILON = GeometryConfig.Mathematics.ZERO_THRESHOLD;
     /**
      * 单例实例
      */
     private static PointNameManager instance;
     /**
-     * 点坐标到名称的映射
+     * 点坐标到名称的映射（线程安全）
      */
-    private final Map<String, String> pointNameMap = new HashMap<>();
+    private final Map<String, String> pointNameMap = new ConcurrentHashMap<>();
     /**
-     * 名称到索引的映射（用于跟踪已使用的索引）
+     * 名称到索引的映射（用于跟踪已使用的索引，线程安全）
      */
-    private final Map<String, Integer> nameToIndexMap = new HashMap<>();
+    private final Map<String, Integer> nameToIndexMap = new ConcurrentHashMap<>();
     /**
      * 下一个可用的命名索引
      */
@@ -51,12 +54,14 @@ public class PointNameManager {
 
     /**
      * 为点分配名称（如果已存在则返回现有名称）
+     * <p>
+     * 线程安全的实现
      *
      * @param x 点的X坐标
      * @param y 点的Y坐标
      * @return 点的名称
      */
-    public String assignName(double x, double y) {
+    public synchronized String assignName(double x, double y) {
         String key = getPointKey(x, y);
 
         // 如果点已存在，返回已有名称
@@ -114,8 +119,10 @@ public class PointNameManager {
 
     /**
      * 移除点的名称
+     * <p>
+     * 线程安全的实现
      */
-    public void removeName(double x, double y) {
+    public synchronized void removeName(double x, double y) {
         String key = getPointKey(x, y);
         String name = pointNameMap.remove(key);
         if (name != null) {
@@ -127,13 +134,15 @@ public class PointNameManager {
      * 更新点的位置（用于点移动时更新映射关系）
      * <p>
      * 将点的名称从旧位置映射移除，并在新位置建立映射
+     * <p>
+     * 线程安全的实现
      *
      * @param oldX 旧X坐标
      * @param oldY 旧Y坐标
      * @param newX 新X坐标
      * @param newY 新Y坐标
      */
-    public void updatePosition(double oldX, double oldY, double newX, double newY) {
+    public synchronized void updatePosition(double oldX, double oldY, double newX, double newY) {
         String oldKey = getPointKey(oldX, oldY);
         String newKey = getPointKey(newX, newY);
 
@@ -160,8 +169,10 @@ public class PointNameManager {
 
     /**
      * 清除所有命名
+     * <p>
+     * 线程安全的实现
      */
-    public void clear() {
+    public synchronized void clear() {
         pointNameMap.clear();
         nameToIndexMap.clear();
         nextAvailableIndex = 0;

@@ -76,15 +76,17 @@ public enum LabelPosition {
      * @return [offsetX, offsetY]
      */
     public double[] getOffset(double baseX, double baseY) {
-        final double OFFSET = 8.0; // 默认偏移像素
+        // 使用 GeometryConfig 中的常量
+        final double OFFSET = com.bingbaihanji.config.GeometryConfig.Label.LABEL_OFFSET_X;
+        final double FONT_HEIGHT = com.bingbaihanji.config.GeometryConfig.Label.DEFAULT_FONT_SIZE;
 
         return switch (this) {
             case TOP_RIGHT, AUTO -> new double[]{OFFSET, -OFFSET};
-            case BOTTOM_RIGHT -> new double[]{OFFSET, OFFSET + 12};
+            case BOTTOM_RIGHT -> new double[]{OFFSET, OFFSET + FONT_HEIGHT};
             case TOP_LEFT -> new double[]{-OFFSET - 20, -OFFSET};
-            case BOTTOM_LEFT -> new double[]{-OFFSET - 20, OFFSET + 12};
-            case TOP -> new double[]{0, -OFFSET - 12};
-            case BOTTOM -> new double[]{0, OFFSET + 12};
+            case BOTTOM_LEFT -> new double[]{-OFFSET - 20, OFFSET + FONT_HEIGHT};
+            case TOP -> new double[]{0, -OFFSET - FONT_HEIGHT};
+            case BOTTOM -> new double[]{0, OFFSET + FONT_HEIGHT};
             case LEFT -> new double[]{-OFFSET - 20, 4};
             case RIGHT -> new double[]{OFFSET, 4};
             case CENTER -> new double[]{0, 4};

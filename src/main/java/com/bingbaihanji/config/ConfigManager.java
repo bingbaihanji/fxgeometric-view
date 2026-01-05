@@ -14,6 +14,8 @@ import java.util.Properties;
  * 配置管理器
  * <p>
  * 管理应用程序配置的保存和加载
+ * <p>
+ * 线程安全的单例模式实现（双重检查锁定）
  *
  * @author bingbaihanji
  * @date 2026-01-04
@@ -35,10 +37,16 @@ public class ConfigManager {
 
     /**
      * 获取单例实例
+     * <p>
+     * 使用双重检查锁定模式保证线程安全
      */
-    public static synchronized ConfigManager getInstance() {
+    public static ConfigManager getInstance() {
         if (instance == null) {
-            instance = new ConfigManager();
+            synchronized (ConfigManager.class) {
+                if (instance == null) {
+                    instance = new ConfigManager();
+                }
+            }
         }
         return instance;
     }
@@ -59,6 +67,8 @@ public class ConfigManager {
             } else {
                 logger.info("配置文件不存在，使用默认配置");
                 setDefaultConfig();
+                // 初始化时保存默认配置
+                saveConfig();
             }
         } catch (IOException e) {
             logger.error("加载配置文件失败", e);
@@ -68,8 +78,10 @@ public class ConfigManager {
 
     /**
      * 保存配置
+     * <p>
+     * 线程安全的实现
      */
-    public void saveConfig() {
+    public synchronized void saveConfig() {
         try {
             Files.createDirectories(configPath.getParent());
             try (OutputStream out = Files.newOutputStream(configPath)) {

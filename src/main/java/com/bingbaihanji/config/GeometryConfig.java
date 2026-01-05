@@ -240,6 +240,24 @@ public final class GeometryConfig {
     }
 
     /**
+     * 数学计算相关常量
+     */
+    public static class Mathematics {
+        /**
+         * 极小值阈值（用于避免除零和断点检测）
+         */
+        public static final double TINY_VALUE = 1e-3;
+
+        /**
+         * 零值判定阈值
+         */
+        public static final double ZERO_THRESHOLD = 1e-6;
+
+        private Mathematics() {
+        }
+    }
+
+    /**
      * 旋转和变换相关常量
      */
     public static class Transform {

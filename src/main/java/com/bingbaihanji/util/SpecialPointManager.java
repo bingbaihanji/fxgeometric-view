@@ -56,6 +56,9 @@ public class SpecialPointManager {
             } else if (obj instanceof PointGeo point) {
                 // 添加点对象的坐标（包括交点）
                 specialPointsSet.add(new SpecialPoint(point.getX(), point.getY(), "INTERSECTION"));
+            } else if (obj instanceof FunctionGeo function) {
+                // 添加函数与坐标轴的交点
+                specialPointsSet.addAll(extractFunctionAxisIntersections(function));
             }
         }
 
@@ -77,6 +80,65 @@ public class SpecialPointManager {
 
         // 转换为列表并返回
         return new ArrayList<>(specialPointsSet);
+    }
+
+    /**
+     * 提取函数与坐标轴的交点
+     * <p>
+     * 通过遍历采样点近似查找与x轴(y=0)和y轴(x=0)的交点
+     *
+     * @param function 函数对象
+     * @return 与坐标轴的交点列表
+     */
+    private static List<SpecialPoint> extractFunctionAxisIntersections(FunctionGeo function) {
+        List<SpecialPoint> intersections = new ArrayList<>();
+        List<Point2D> sampledPoints = function.getSampledPoints();
+
+        if (sampledPoints == null || sampledPoints.size() < 2) {
+            return intersections;
+        }
+
+        // 遍历采样点，查找与x轴的交点（y=0）
+        for (int i = 0; i < sampledPoints.size() - 1; i++) {
+            Point2D p1 = sampledPoints.get(i);
+            Point2D p2 = sampledPoints.get(i + 1);
+
+            if (!isValidPoint(p1) || !isValidPoint(p2)) {
+                continue;
+            }
+
+            // 检查y值符号变化（穿过x轴）
+            if (p1.getY() * p2.getY() < 0) {
+                // 线性插值找到交点
+                double t = Math.abs(p1.getY()) / (Math.abs(p1.getY()) + Math.abs(p2.getY()));
+                double xIntersect = p1.getX() + t * (p2.getX() - p1.getX());
+                intersections.add(new SpecialPoint(xIntersect, 0, "AXIS_INTERSECTION"));
+            }
+            // 特殊情况：某个点恰好在x轴上
+            else if (Math.abs(p1.getY()) < 1e-6) {
+                intersections.add(new SpecialPoint(p1.getX(), 0, "AXIS_INTERSECTION"));
+            }
+        }
+
+        // 对于显函数，查找与y轴的交点（x=0）
+        double yAtZero = function.evaluate(0);
+        if (Double.isFinite(yAtZero)) {
+            // 检查x=0是否在定义域内
+            double domainMin = function.getDomainMin();
+            double domainMax = function.getDomainMax();
+            if (0 >= domainMin && 0 <= domainMax) {
+                intersections.add(new SpecialPoint(0, yAtZero, "AXIS_INTERSECTION"));
+            }
+        }
+
+        return intersections;
+    }
+
+    /**
+     * 检查点是否有效
+     */
+    private static boolean isValidPoint(Point2D p) {
+        return p != null && Double.isFinite(p.getX()) && Double.isFinite(p.getY());
     }
 
     /**
@@ -118,6 +180,10 @@ public class SpecialPointManager {
         // 无限直线与无限直线的交点
         else if (obj1 instanceof InfiniteLineGeo && obj2 instanceof InfiniteLineGeo) {
             intersections.addAll(IntersectionUtils.getInfiniteLineInfiniteLineIntersections((InfiniteLineGeo) obj1, (InfiniteLineGeo) obj2));
+        }
+        // 函数与函数的交点
+        else if (obj1 instanceof FunctionGeo && obj2 instanceof FunctionGeo) {
+            intersections.addAll(IntersectionUtils.getFunctionFunctionIntersections((FunctionGeo) obj1, (FunctionGeo) obj2));
         }
 
         return intersections;

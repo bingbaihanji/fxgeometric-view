@@ -89,6 +89,14 @@ public class ShapePropertiesDialog extends Dialog<ShapePropertiesResult> {
         getDialogPane().setContent(grid);
         getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
+        // 添加 Escape 键关闭对话框支持
+        getDialogPane().setOnKeyPressed(event -> {
+            if (event.getCode() == javafx.scene.input.KeyCode.ESCAPE) {
+                close();
+                event.consume();
+            }
+        });
+
         // 设置结果转换器
         setResultConverter(buttonType -> {
             if (buttonType == ButtonType.OK) {
@@ -131,6 +139,15 @@ public class ShapePropertiesDialog extends Dialog<ShapePropertiesResult> {
         alert.setTitle(I18nUtil.getString("geo.dialog.properties.error.title"));
         alert.setHeaderText(null);
         alert.setContentText(message);
+
+        // 添加 Escape 键关闭支持
+        alert.getDialogPane().setOnKeyPressed(event -> {
+            if (event.getCode() == javafx.scene.input.KeyCode.ESCAPE) {
+                alert.close();
+                event.consume();
+            }
+        });
+
         alert.showAndWait();
     }
 

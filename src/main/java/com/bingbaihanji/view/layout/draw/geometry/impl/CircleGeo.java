@@ -171,8 +171,15 @@ public class CircleGeo extends AbstractWorldObject {
                         // 复用的外部点，更新其位置
                         centerPointRef.updatePosition(newX, newY);
                     } else {
+                        // 内部坐标，更新坐标并同步复用组
+                        double oldX = cx;
+                        double oldY = cy;
                         cx = newX;
                         cy = newY;
+                        // 更新名称映射
+                        if (centerName != null && !centerName.isEmpty()) {
+                            PointNameManager.getInstance().updatePosition(oldX, oldY, cx, cy);
+                        }
                     }
                 })
         );

@@ -126,6 +126,14 @@ public class LineGeo extends AbstractWorldObject {
         return endPointRef;
     }
 
+    public String getStartPointName() {
+        return startPointName;
+    }
+
+    public String getEndPointName() {
+        return endPointName;
+    }
+
     @Override
     public void paint(GraphicsContext gc, WorldTransform transform, double w, double h) {
         double sx1 = transform.worldToScreenX(getStartX());

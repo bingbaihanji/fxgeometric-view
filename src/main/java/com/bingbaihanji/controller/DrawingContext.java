@@ -2,10 +2,12 @@ package com.bingbaihanji.controller;
 
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.constant.DrawingState;
+import com.bingbaihanji.constant.MoveMode;
 import com.bingbaihanji.controller.handler.ConstraintHandler;
 import com.bingbaihanji.controller.handler.IntersectionHandler;
 import com.bingbaihanji.controller.handler.SnappingHandler;
 import com.bingbaihanji.util.CommandHistory;
+import com.bingbaihanji.util.CursorManager;
 import com.bingbaihanji.view.layout.core.GridChartView;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
@@ -31,38 +33,47 @@ public class DrawingContext {
      * 命令历史管理器
      */
     private final CommandHistory commandHistory;
-
+    /**
+     * 预览管理器
+     */
+    private final PreviewManager previewManager;
+    /**
+     * 光标管理器
+     */
+    private final CursorManager cursorManager;
+    /**
+     * 吸附控制器（状态机）
+     */
+    private final SnapController snapController;
     /**
      * 当前绘制模式
      */
     private DrawMode drawMode = DrawMode.NONE;
-
     /**
      * 当前绘制状态
      */
     private DrawingState state = DrawingState.IDLE;
-
+    /**
+     * 当前移动模式
+     */
+    private MoveMode moveMode = MoveMode.MOVE_NONE;
     /**
      * 当前鼠标位置（世界坐标）
      */
     private double currentMouseX;
     private double currentMouseY;
-
     /**
      * 交点计算处理器
      */
     private IntersectionHandler intersectionHandler;
-
     /**
      * 约束管理处理器
      */
     private ConstraintHandler constraintHandler;
-
     /**
      * 磁性吸附处理器
      */
     private SnappingHandler snappingHandler;
-
     /**
      * 选择管理器
      */
@@ -78,6 +89,9 @@ public class DrawingContext {
         this.gridChartPane = gridChartPane;
         this.commandHistory = commandHistory;
         this.selectionManager = new SelectionManager();
+        this.previewManager = new PreviewManager();
+        this.cursorManager = new CursorManager();
+        this.snapController = new SnapController();
     }
 
     // 状态管理
@@ -108,6 +122,20 @@ public class DrawingContext {
      */
     public void setState(DrawingState state) {
         this.state = state;
+    }
+
+    /**
+     * 获取当前移动模式
+     */
+    public MoveMode getMoveMode() {
+        return moveMode;
+    }
+
+    /**
+     * 设置当前移动模式
+     */
+    public void setMoveMode(MoveMode moveMode) {
+        this.moveMode = moveMode;
     }
 
     /**
@@ -161,6 +189,10 @@ public class DrawingContext {
      */
     public void addObject(WorldObject obj) {
         gridChartPane.addObject(obj);
+        // 使吸附缓存失效，因为新对象可能产生新的特殊点
+        if (snappingHandler != null) {
+            snappingHandler.invalidateCache();
+        }
     }
 
     /**
@@ -170,6 +202,10 @@ public class DrawingContext {
      */
     public void removeObject(WorldObject obj) {
         gridChartPane.removeObject(obj);
+        // 使吸附缓存失效，因为移除对象会减少特殊点
+        if (snappingHandler != null) {
+            snappingHandler.invalidateCache();
+        }
     }
 
     /**
@@ -269,5 +305,32 @@ public class DrawingContext {
      */
     public void setSelectionManager(SelectionManager selectionManager) {
         this.selectionManager = selectionManager;
+    }
+
+    // PreviewManager 管理
+
+    /**
+     * 获取预览管理器
+     */
+    public PreviewManager getPreviewManager() {
+        return previewManager;
+    }
+
+    // CursorManager 管理
+
+    /**
+     * 获取光标管理器
+     */
+    public CursorManager getCursorManager() {
+        return cursorManager;
+    }
+
+    // SnapController 管理
+
+    /**
+     * 获取吸附控制器
+     */
+    public SnapController getSnapController() {
+        return snapController;
     }
 }

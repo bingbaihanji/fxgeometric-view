@@ -1,18 +1,26 @@
 package com.bingbaihanji.view.menu;
 
+import com.bingbaihanji.controller.DrawingContext;
 import com.bingbaihanji.controller.DrawingController;
-import com.bingbaihanji.util.CommandHistory;
-import com.bingbaihanji.util.FxTools;
-import com.bingbaihanji.util.I18nUtil;
+import com.bingbaihanji.util.*;
+import com.bingbaihanji.util.constraint.PointConstraint;
 import com.bingbaihanji.view.DetachedCanvasWindow;
 import com.bingbaihanji.view.layout.core.GridChartView;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import com.bingbaihanji.view.layout.draw.geometry.impl.*;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.*;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
 
+import javax.imageio.ImageIO;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -48,6 +56,37 @@ public class GeometryContextMenu {
         MenuItem positionItem = new MenuItem(I18nUtil.getString("geo.menu.position"));
         positionItem.setOnAction(e -> showPositionDialog(point, canvas, controller));
 
+        menu.getItems().addAll(renameItem, colorItem, positionItem);
+
+        // 检查有多少图形在使用这个点
+        List<WorldObject> usingShapes = findShapesUsingPoint(point, canvas.getObjects());
+        System.out.println("[DEBUG] 点 " + point.getName() + " 被 " + usingShapes.size() + " 个图形使用");
+        if (!usingShapes.isEmpty()) {
+            menu.getItems().add(new SeparatorMenuItem());
+            MenuItem usageInfoItem = new MenuItem(
+                    I18nUtil.getString("geo.menu.pointUsedBy", usingShapes.size()));
+            usageInfoItem.setDisable(true);
+            menu.getItems().add(usageInfoItem);
+
+            // 显示使用该点的图形列表（最多显示5个）
+            int displayCount = Math.min(usingShapes.size(), 5);
+            for (int i = 0; i < displayCount; i++) {
+                WorldObject shape = usingShapes.get(i);
+                String shapeName = getShapeDisplayName(shape);
+                MenuItem shapeItem = new MenuItem("  \u2022 " + shapeName);
+                shapeItem.setDisable(true);
+                menu.getItems().add(shapeItem);
+            }
+            if (usingShapes.size() > 5) {
+                MenuItem moreItem = new MenuItem("  ... 还有 " + (usingShapes.size() - 5) + " 个");
+                moreItem.setDisable(true);
+                menu.getItems().add(moreItem);
+            }
+        }
+
+        // ==================== 约束属性菜单 ====================
+        menu.getItems().add(new SeparatorMenuItem());
+
         // 移除约束（仅约束点显示）
         if (point.isConstrained()) {
             MenuItem removeConstraintItem = new MenuItem(I18nUtil.getString("geo.menu.removeConstraint"));
@@ -56,15 +95,417 @@ public class GeometryContextMenu {
                 canvas.redraw();
             });
             menu.getItems().add(removeConstraintItem);
-            menu.getItems().add(new SeparatorMenuItem());
+        } else {
+            // 添加约束菜单（选择附近的几何图形作为约束对象）
+            Menu addConstraintMenu = new Menu(I18nUtil.getString("geo.menu.addConstraint"));
+            List<WorldObject> nearbyShapes = findNearbyConstrainableShapes(point, canvas, controller);
+
+            if (nearbyShapes.isEmpty()) {
+                MenuItem noShapeItem = new MenuItem(I18nUtil.getString("geo.menu.noConstraintTarget"));
+                noShapeItem.setDisable(true);
+                addConstraintMenu.getItems().add(noShapeItem);
+            } else {
+                for (WorldObject shape : nearbyShapes) {
+                    String shapeName = getShapeDisplayName(shape);
+                    MenuItem shapeItem = new MenuItem(shapeName);
+                    shapeItem.setOnAction(e -> {
+                        addConstraintToPoint(point, shape, controller, canvas);
+                    });
+                    addConstraintMenu.getItems().add(shapeItem);
+                }
+            }
+            menu.getItems().add(addConstraintMenu);
+        }
+
+        // ==================== 复用属性菜单 ====================
+        menu.getItems().add(new SeparatorMenuItem());
+
+        if (point.isInReuseGroup()) {
+            // 已在复用组中，显示禁用复用选项
+            PointReuseGroup group = point.getReuseGroup();
+
+            // 复用组信息 - 显示更详细的信息
+            MenuItem groupInfoItem = new MenuItem(
+                    I18nUtil.getString("geo.menu.reuseGroupInfo", group.getMemberCount()) +
+                            " - " + group.getMembersInfo());
+            groupInfoItem.setDisable(true);
+            menu.getItems().add(groupInfoItem);
+
+            // 启用/禁用复用切换
+            String toggleText = group.isEnabled() ?
+                    I18nUtil.getString("geo.menu.disableReuse") :
+                    I18nUtil.getString("geo.menu.enableReuseToggle");
+            MenuItem toggleReuseItem = new MenuItem(toggleText);
+            toggleReuseItem.setOnAction(e -> {
+                group.setEnabled(!group.isEnabled());
+                canvas.redraw();
+            });
+            menu.getItems().add(toggleReuseItem);
+
+            // 从复用组移除（不解散组）
+            MenuItem removeFromGroupItem = new MenuItem(I18nUtil.getString("geo.menu.removeFromReuseGroup"));
+            removeFromGroupItem.setOnAction(e -> {
+                PointReuseManager.disableReuse(point);
+                canvas.redraw();
+            });
+            menu.getItems().add(removeFromGroupItem);
+
+            // 解散复用组
+            if (group.getMemberCount() > 1) {
+                MenuItem dissolveGroupItem = new MenuItem(I18nUtil.getString("geo.menu.dissolveReuseGroup"));
+                dissolveGroupItem.setOnAction(e -> {
+                    group.dissolve();
+                    canvas.redraw();
+                });
+                menu.getItems().add(dissolveGroupItem);
+            }
+        } else {
+            // 未在复用组中，检查是否有重合的点
+            double scale = canvas.getTransform().getScale();
+            double threshold = 10.0 / scale;
+            List<PointGeo> overlappingPoints = PointReuseManager.findOverlappingPoints(
+                    point, canvas.getObjects(), threshold);
+
+            if (!overlappingPoints.isEmpty()) {
+                // 启用复用子菜单
+                Menu enableReuseMenu = new Menu(I18nUtil.getString("geo.menu.enableReuse") +
+                        " (" + overlappingPoints.size() + ")");
+
+                for (PointGeo overlapping : overlappingPoints) {
+                    String pointName = overlapping.getName() != null && !overlapping.getName().isEmpty() ?
+                            overlapping.getName() :
+                            String.format("点(%.2f, %.2f)", overlapping.getX(), overlapping.getY());
+
+                    // 显示点是否已在其他复用组
+                    if (overlapping.isInReuseGroup()) {
+                        pointName += " [已复用]";
+                    }
+
+                    MenuItem pointItem = new MenuItem(
+                            I18nUtil.getString("geo.menu.reuseWith", pointName));
+                    pointItem.setOnAction(e -> {
+                        PointReuseManager.enableReuse(point, overlapping);
+                        canvas.redraw();
+                    });
+                    enableReuseMenu.getItems().add(pointItem);
+                }
+
+                // 与所有重合点启用复用
+                if (overlappingPoints.size() > 1) {
+                    enableReuseMenu.getItems().add(new SeparatorMenuItem());
+                    MenuItem reuseAllItem = new MenuItem(I18nUtil.getString("geo.menu.reuseWithAll"));
+                    reuseAllItem.setOnAction(e -> {
+                        PointReuseGroup group = PointReuseGroup.getManager().createGroup();
+                        group.addMember(point);
+                        for (PointGeo overlapping : overlappingPoints) {
+                            group.addMember(overlapping);
+                        }
+                        canvas.redraw();
+                    });
+                    enableReuseMenu.getItems().add(reuseAllItem);
+                }
+
+                menu.getItems().add(enableReuseMenu);
+            } else {
+                // 没有重合的点
+                MenuItem noOverlapItem = new MenuItem(I18nUtil.getString("geo.menu.noOverlappingPoints"));
+                noOverlapItem.setDisable(true);
+                menu.getItems().add(noOverlapItem);
+            }
         }
 
         // 删除
+        menu.getItems().add(new SeparatorMenuItem());
         MenuItem deleteItem = new MenuItem(I18nUtil.getString("geo.menu.delete"));
         deleteItem.setOnAction(e -> deleteObject(point, canvas, controller));
+        menu.getItems().add(deleteItem);
 
-        menu.getItems().addAll(renameItem, colorItem, positionItem, new SeparatorMenuItem(), deleteItem);
         return menu;
+    }
+
+    /**
+     * 添加复用功能菜单项
+     */
+    private static void addReuseMenuItems(ContextMenu menu, PointGeo point, GridChartView canvas, DrawingController controller) {
+        if (point.isInReuseGroup()) {
+            // 已在复用组中
+            PointReuseGroup group = point.getReuseGroup();
+
+            MenuItem groupInfoItem = new MenuItem(
+                    I18nUtil.getString("geo.menu.reuseGroupInfo", group.getMemberCount()) +
+                            " - " + group.getMembersInfo());
+            groupInfoItem.setDisable(true);
+            menu.getItems().add(groupInfoItem);
+
+            String toggleText = group.isEnabled() ?
+                    I18nUtil.getString("geo.menu.disableReuse") :
+                    I18nUtil.getString("geo.menu.enableReuseToggle");
+            MenuItem toggleReuseItem = new MenuItem(toggleText);
+            toggleReuseItem.setOnAction(e -> {
+                group.setEnabled(!group.isEnabled());
+                canvas.redraw();
+            });
+            menu.getItems().add(toggleReuseItem);
+
+            MenuItem removeFromGroupItem = new MenuItem(I18nUtil.getString("geo.menu.removeFromReuseGroup"));
+            removeFromGroupItem.setOnAction(e -> {
+                PointReuseManager.disableReuse(point);
+                canvas.redraw();
+            });
+            menu.getItems().add(removeFromGroupItem);
+
+            if (group.getMemberCount() > 1) {
+                MenuItem dissolveGroupItem = new MenuItem(I18nUtil.getString("geo.menu.dissolveReuseGroup"));
+                dissolveGroupItem.setOnAction(e -> {
+                    group.dissolve();
+                    canvas.redraw();
+                });
+                menu.getItems().add(dissolveGroupItem);
+            }
+        } else {
+            // 未在复用组中
+            double scale = canvas.getTransform().getScale();
+            double threshold = 10.0 / scale;
+            List<PointGeo> overlappingPoints = PointReuseManager.findOverlappingPoints(
+                    point, canvas.getObjects(), threshold);
+
+            if (!overlappingPoints.isEmpty()) {
+                Menu enableReuseMenu = new Menu(I18nUtil.getString("geo.menu.enableReuse") +
+                        " (" + overlappingPoints.size() + ")");
+
+                for (PointGeo overlapping : overlappingPoints) {
+                    String pointName = overlapping.getName() != null && !overlapping.getName().isEmpty() ?
+                            overlapping.getName() :
+                            String.format("点(%.2f, %.2f)", overlapping.getX(), overlapping.getY());
+
+                    if (overlapping.isInReuseGroup()) {
+                        pointName += " [已复用]";
+                    }
+
+                    MenuItem pointItem = new MenuItem(
+                            I18nUtil.getString("geo.menu.reuseWith", pointName));
+                    pointItem.setOnAction(e -> {
+                        PointReuseManager.enableReuse(point, overlapping);
+                        canvas.redraw();
+                    });
+                    enableReuseMenu.getItems().add(pointItem);
+                }
+
+                if (overlappingPoints.size() > 1) {
+                    enableReuseMenu.getItems().add(new SeparatorMenuItem());
+                    MenuItem reuseAllItem = new MenuItem(I18nUtil.getString("geo.menu.reuseWithAll"));
+                    reuseAllItem.setOnAction(e -> {
+                        PointReuseGroup group = PointReuseGroup.getManager().createGroup();
+                        group.addMember(point);
+                        for (PointGeo overlapping : overlappingPoints) {
+                            group.addMember(overlapping);
+                        }
+                        canvas.redraw();
+                    });
+                    enableReuseMenu.getItems().add(reuseAllItem);
+                }
+
+                menu.getItems().add(enableReuseMenu);
+            } else {
+                MenuItem noOverlapItem = new MenuItem(I18nUtil.getString("geo.menu.noOverlappingPoints"));
+                noOverlapItem.setDisable(true);
+                menu.getItems().add(noOverlapItem);
+            }
+        }
+    }
+
+    /**
+     * 添加约束功能菜单项
+     */
+    private static void addConstraintMenuItems(ContextMenu menu, PointGeo point, GridChartView canvas, DrawingController controller) {
+        if (point.isConstrained()) {
+            MenuItem removeConstraintItem = new MenuItem(I18nUtil.getString("geo.menu.removeConstraint"));
+            removeConstraintItem.setOnAction(e -> {
+                point.setConstraint(null);
+                canvas.redraw();
+            });
+            menu.getItems().add(removeConstraintItem);
+        } else {
+            Menu addConstraintMenu = new Menu(I18nUtil.getString("geo.menu.addConstraint"));
+            List<WorldObject> nearbyShapes = findNearbyConstrainableShapes(point, canvas, controller);
+
+            if (nearbyShapes.isEmpty()) {
+                MenuItem noShapeItem = new MenuItem(I18nUtil.getString("geo.menu.noConstraintTarget"));
+                noShapeItem.setDisable(true);
+                addConstraintMenu.getItems().add(noShapeItem);
+            } else {
+                for (WorldObject shape : nearbyShapes) {
+                    String shapeName = getShapeDisplayName(shape);
+                    MenuItem shapeItem = new MenuItem(shapeName);
+                    shapeItem.setOnAction(e -> {
+                        addConstraintToPoint(point, shape, controller, canvas);
+                    });
+                    addConstraintMenu.getItems().add(shapeItem);
+                }
+            }
+            menu.getItems().add(addConstraintMenu);
+        }
+    }
+
+    /**
+     * 查找附近可以作为约束对象的几何图形
+     */
+    private static List<WorldObject> findNearbyConstrainableShapes(
+            PointGeo point, GridChartView canvas, DrawingController controller) {
+        List<WorldObject> result = new java.util.ArrayList<>();
+        double scale = canvas.getTransform().getScale();
+        double threshold = 20.0 / scale; // 距离阈值
+
+        for (WorldObject obj : canvas.getObjects()) {
+            if (obj == point) continue;
+
+            // 检查是否是可约束的图形类型
+            if (isConstrainableShape(obj)) {
+                // 检查点是否在图形附近
+                if (isPointNearShape(point.getX(), point.getY(), obj, threshold)) {
+                    result.add(obj);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * 判断图形是否可以作为约束对象
+     */
+    private static boolean isConstrainableShape(WorldObject obj) {
+        return obj instanceof LineGeo ||
+                obj instanceof InfiniteLineGeo ||
+                obj instanceof CircleGeo ||
+                obj instanceof PolygonGeo ||
+                obj instanceof PathGeo ||
+                obj instanceof FunctionGeo;
+    }
+
+    /**
+     * 检查点是否在图形附近
+     */
+    private static boolean isPointNearShape(double x, double y, WorldObject shape, double threshold) {
+        if (shape instanceof LineGeo line) {
+            return pointToLineDistance(x, y, line.getStartX(), line.getStartY(),
+                    line.getEndX(), line.getEndY()) < threshold;
+        } else if (shape instanceof InfiniteLineGeo infLine) {
+            return pointToInfiniteLineDistance(x, y, infLine) < threshold;
+        } else if (shape instanceof CircleGeo circle) {
+            double dist = Math.abs(Math.hypot(x - circle.getCx(), y - circle.getCy()) - circle.getR());
+            return dist < threshold;
+        } else if (shape instanceof PolygonGeo polygon) {
+            for (int i = 0; i < polygon.getVertexCount(); i++) {
+                javafx.geometry.Point2D v1 = polygon.getVertex(i);
+                javafx.geometry.Point2D v2 = polygon.getVertex((i + 1) % polygon.getVertexCount());
+                if (pointToLineDistance(x, y, v1.getX(), v1.getY(), v2.getX(), v2.getY()) < threshold) {
+                    return true;
+                }
+            }
+            return false;
+        } else if (shape instanceof FunctionGeo function) {
+            // 简化处理：检查y坐标是否接近函数值
+            try {
+                double fy = function.evaluate(x);
+                return Double.isFinite(fy) && Math.abs(y - fy) < threshold;
+            } catch (Exception e) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 计算点到线段的距离
+     */
+    private static double pointToLineDistance(double px, double py,
+                                              double x1, double y1, double x2, double y2) {
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+        double lenSq = dx * dx + dy * dy;
+
+        if (lenSq < 1e-10) {
+            return Math.hypot(px - x1, py - y1);
+        }
+
+        double t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / lenSq));
+        double projX = x1 + t * dx;
+        double projY = y1 + t * dy;
+
+        return Math.hypot(px - projX, py - projY);
+    }
+
+    /**
+     * 计算点到无限直线的距离
+     */
+    private static double pointToInfiniteLineDistance(double px, double py, InfiniteLineGeo line) {
+        double x1 = line.getPoint1X();
+        double y1 = line.getPoint1Y();
+        double x2 = line.getPoint2X();
+        double y2 = line.getPoint2Y();
+
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+        double len = Math.hypot(dx, dy);
+
+        if (len < 1e-10) {
+            return Math.hypot(px - x1, py - y1);
+        }
+
+        // 点到直线的距离公式
+        return Math.abs((y2 - y1) * px - (x2 - x1) * py + x2 * y1 - y2 * x1) / len;
+    }
+
+    /**
+     * 获取图形的显示名称
+     */
+    private static String getShapeDisplayName(WorldObject shape) {
+        if (shape instanceof LineGeo line) {
+            return I18nUtil.getString("geo.shape.segment",
+                    line.getStartPointName(), line.getEndPointName());
+        } else if (shape instanceof InfiniteLineGeo infLine) {
+            return I18nUtil.getString("geo.shape.line",
+                    infLine.getPoint1Name(), infLine.getPoint2Name());
+        } else if (shape instanceof CircleGeo circle) {
+            return I18nUtil.getString("geo.shape.circle", circle.getCenterName());
+        } else if (shape instanceof PolygonGeo polygon) {
+            return I18nUtil.getString("geo.shape.polygon", polygon.getVertexCount());
+        } else if (shape instanceof PathGeo) {
+            return I18nUtil.getString("geo.shape.path");
+        } else if (shape instanceof FunctionGeo function) {
+            return I18nUtil.getString("geo.shape.function", function.getExpression());
+        }
+        return shape.getClass().getSimpleName();
+    }
+
+    /**
+     * 为点添加约束
+     */
+    private static void addConstraintToPoint(PointGeo point, WorldObject shape,
+                                             DrawingController controller, GridChartView canvas) {
+        try {
+            DrawingContext context = controller.getContext();
+            PointConstraint constraint = context.getConstraintHandler().createConstraint(shape);
+
+            // 计算参数
+            double parameter = constraint.calculateParameter(point.getX(), point.getY());
+            constraint.setParameter(parameter);
+
+            // 设置约束
+            point.setConstraint(constraint);
+
+            // 更新点位置到约束位置
+            javafx.geometry.Point2D newPos = constraint.getPointFromParameter();
+            point.updatePosition(newPos.getX(), newPos.getY());
+
+            canvas.redraw();
+        } catch (Exception e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle(I18nUtil.getString("geo.dialog.error.title"));
+            alert.setContentText(I18nUtil.getString("geo.dialog.constraint.error", e.getMessage()));
+            alert.showAndWait();
+        }
     }
 
     /**
@@ -78,11 +519,71 @@ public class GeometryContextMenu {
     ) {
         ContextMenu menu = new ContextMenu();
 
+        // 获取顶点位置
+        double vx = vertex.getX();
+        double vy = vertex.getY();
+
+        // 检查该位置是否已有独立的 PointGeo
+        double scale = canvas.getTransform().getScale();
+        double threshold = 5.0 / scale;
+        PointGeo existingPoint = PointReuseManager.findExistingPoint(vx, vy, canvas.getObjects(), threshold);
+
+        // 检查是否有其他重合的点（包括多边形顶点、线段端点、圆心等）
+        // 注意：这里要检查所有图形的关键点，不只是独立的 PointGeo
+        boolean hasOverlappingPoints = false;
+        if (existingPoint == null) {
+            // 创建一个临时点来检测重合
+            PointGeo tempPoint = new PointGeo(vx, vy, false);
+            // 使用更大的阈值来检测附近的点
+            List<PointGeo> overlapping = PointReuseManager.findOverlappingPoints(
+                    tempPoint, canvas.getObjects(), 10.0 / scale);
+
+            // 额外检查：是否有多个圆心在此位置（同心圆情况）
+            int circleCount = 0;
+            for (WorldObject obj : canvas.getObjects()) {
+                if (obj instanceof CircleGeo circle) {
+                    double dist = Math.hypot(circle.getCx() - vx, circle.getCy() - vy);
+                    if (dist < 10.0 / scale) {
+                        circleCount++;
+                    }
+                }
+            }
+
+            hasOverlappingPoints = !overlapping.isEmpty() || circleCount > 1;
+        }
+
+        if (existingPoint != null) {
+            // 已有独立点，创建完整的复用/约束菜单项
+            MenuItem convertInfo = new MenuItem("✓ 已有独立点");
+            convertInfo.setDisable(true);
+            menu.getItems().add(convertInfo);
+            menu.getItems().add(new SeparatorMenuItem());
+
+            // 添加复用功能
+            addReuseMenuItems(menu, existingPoint, canvas, controller);
+
+            // 添加约束功能
+            menu.getItems().add(new SeparatorMenuItem());
+            addConstraintMenuItems(menu, existingPoint, canvas, controller);
+
+        } else if (hasOverlappingPoints) {
+            // 没有独立点，但有重合的点（如多边形顶点、同心圆等），提供创建选项
+            MenuItem convertItem = new MenuItem(I18nUtil.getString("geo.menu.createPointHere"));
+            convertItem.setOnAction(e -> {
+                // 在此位置创建独立的 PointGeo
+                PointGeo newPoint = new PointGeo(vx, vy);
+                controller.getContext().addObject(newPoint);
+                canvas.redraw();
+            });
+            menu.getItems().add(convertItem);
+            menu.getItems().add(new SeparatorMenuItem());
+        }
+
         // 设置位置
         MenuItem positionItem = new MenuItem(I18nUtil.getString("geo.menu.position"));
         positionItem.setOnAction(e -> showVertexPositionDialog(vertex, parentShape, canvas, controller));
-
         menu.getItems().add(positionItem);
+
         return menu;
     }
 
@@ -105,6 +606,28 @@ public class GeometryContextMenu {
         deleteItem.setOnAction(e -> deleteObject(shape, canvas, controller));
 
         menu.getItems().addAll(propertiesItem, new SeparatorMenuItem(), deleteItem);
+        return menu;
+    }
+
+    /**
+     * 为选中对象创建右键菜单（BoundingBox菜单）
+     *
+     * @param canvas     画布视图
+     * @param controller 绘制控制器
+     * @return 右键菜单
+     */
+    public static ContextMenu createBoundingBoxMenu(
+            GridChartView canvas,
+            DrawingController controller
+    ) {
+        ContextMenu menu = new ContextMenu();
+
+        // 导出PNG
+        MenuItem exportPngItem = new MenuItem(I18nUtil.getString("geo.menu.exportPNG"));
+        exportPngItem.setOnAction(e -> exportSelectionToPNG(canvas, controller));
+
+        menu.getItems().add(exportPngItem);
+
         return menu;
     }
 
@@ -276,6 +799,9 @@ public class GeometryContextMenu {
         dialog.setHeaderText(I18nUtil.getString("geo.dialog.rename.header"));
         dialog.setContentText(I18nUtil.getString("geo.dialog.rename.content"));
 
+        // 添加 Escape 键关闭对话框支持
+        addEscapeKeyHandler(dialog);
+
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(name -> {
             if (!name.trim().isEmpty()) {
@@ -298,6 +824,9 @@ public class GeometryContextMenu {
 
         dialog.getDialogPane().setContent(picker);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        // 添加 Escape 键关闭对话框支持
+        addEscapeKeyHandler(dialog);
 
         dialog.setResultConverter(buttonType -> {
             if (buttonType == ButtonType.OK) {
@@ -338,6 +867,9 @@ public class GeometryContextMenu {
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
+        // 添加 Escape 键关闭对话框支持
+        addEscapeKeyHandler(dialog);
+
         // 处理确定按钮
         Optional<ButtonType> result = dialog.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
@@ -369,6 +901,7 @@ public class GeometryContextMenu {
                 alert.setTitle(I18nUtil.getString("geo.dialog.position.error.title"));
                 alert.setHeaderText(null);
                 alert.setContentText(I18nUtil.getString("geo.dialog.position.error.invalid"));
+                addEscapeKeyHandler(alert); // Alert 也添加 Escape 键支持
                 alert.showAndWait();
             }
         }
@@ -403,6 +936,9 @@ public class GeometryContextMenu {
 
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        // 添加 Escape 键关闭对话框支持
+        addEscapeKeyHandler(dialog);
 
         // 处理确定按钮
         Optional<ButtonType> result = dialog.showAndWait();
@@ -441,6 +977,7 @@ public class GeometryContextMenu {
                 alert.setTitle(I18nUtil.getString("geo.dialog.position.error.title"));
                 alert.setHeaderText(null);
                 alert.setContentText(I18nUtil.getString("geo.dialog.position.error.invalid"));
+                addEscapeKeyHandler(alert); // Alert 也添加 Escape 键支持
                 alert.showAndWait();
             }
         }
@@ -531,6 +1068,9 @@ public class GeometryContextMenu {
         dialog.getDialogPane().setContent(picker);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
+        // 添加 Escape 键关闭对话框支持
+        addEscapeKeyHandler(dialog);
+
         dialog.setResultConverter(buttonType -> {
             if (buttonType == ButtonType.OK) {
                 return picker.getValue();
@@ -558,5 +1098,113 @@ public class GeometryContextMenu {
         // 删除对象
         canvas.removeObject(obj);
         canvas.redraw();
+    }
+
+    /**
+     * 查找使用指定点的所有图形
+     *
+     * @param point   点对象
+     * @param objects 所有图形列表
+     * @return 使用该点的图形列表
+     */
+    private static List<WorldObject> findShapesUsingPoint(PointGeo point, List<WorldObject> objects) {
+        List<WorldObject> result = new java.util.ArrayList<>();
+        double px = point.getX();
+        double py = point.getY();
+        double threshold = 0.01; // 坐标匹配阈值
+
+        for (WorldObject obj : objects) {
+            if (obj == point) continue;
+
+            // 检查线段
+            if (obj instanceof LineGeo line) {
+                if (line.getStartPointRef() == point || line.getEndPointRef() == point) {
+                    result.add(obj);
+                }
+            }
+            // 检查无限直线
+            else if (obj instanceof InfiniteLineGeo infLine) {
+                if (infLine.getPoint1Ref() == point || infLine.getPoint2Ref() == point) {
+                    result.add(obj);
+                }
+            }
+            // 检查圆（既检查引用，也检查坐标）
+            else if (obj instanceof CircleGeo circle) {
+                // 检查是否直接引用该点
+                if (circle.getCenterPointRef() == point) {
+                    result.add(obj);
+                }
+                // 检查圆心坐标是否与点重合（处理内部坐标的情况）
+                else if (Math.abs(circle.getCx() - px) < threshold &&
+                        Math.abs(circle.getCy() - py) < threshold) {
+                    result.add(obj);
+                }
+            }
+            // 检查多边形
+            else if (obj instanceof PolygonGeo polygon) {
+                for (PointGeo vertex : polygon.getVertexPoints()) {
+                    if (vertex == point) {
+                        result.add(obj);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * 为对话框添加 Escape 键关闭功能
+     * <p>
+     * 监听 Escape 键，自动关闭对话框（等同于点击 Cancel 按钮）
+     *
+     * @param dialog 任意 JavaFX Dialog 对象
+     */
+    private static void addEscapeKeyHandler(Dialog<?> dialog) {
+        dialog.getDialogPane().setOnKeyPressed(event -> {
+            if (event.getCode() == javafx.scene.input.KeyCode.ESCAPE) {
+                dialog.close();
+                event.consume();
+            }
+        });
+    }
+
+    /**
+     * 导出选中对象为PNG
+     *
+     * @param canvas     画布视图
+     * @param controller 绘制控制器
+     */
+    private static void exportSelectionToPNG(GridChartView canvas, DrawingController controller) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle(I18nUtil.getString("geo.dialog.export.title"));
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("PNG Image", "*.png")
+        );
+        fileChooser.setInitialFileName("selection.png");
+
+        File file = fileChooser.showSaveDialog(canvas.getScene().getWindow());
+        if (file != null) {
+            try {
+                // 创建快照
+                WritableImage image = canvas.snapshot(new SnapshotParameters(), null);
+
+                // 保存为PNG
+                ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", file);
+
+                // 显示成功提示
+                FxTools.showInfoAlert(
+                        I18nUtil.getString("geo.dialog.export.success.title"),
+                        I18nUtil.getString("geo.dialog.export.success.content")
+                );
+            } catch (IOException e) {
+                // 显示错误提示
+                FxTools.showErrorAlert(
+                        I18nUtil.getString("geo.dialog.export.error.title"),
+                        I18nUtil.getString("geo.dialog.export.error.content") + "\n" + e.getMessage()
+                );
+            }
+        }
     }
 }

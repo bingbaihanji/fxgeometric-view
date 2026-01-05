@@ -2,6 +2,7 @@ package com.bingbaihanji.util;
 
 import java.io.*;
 import java.net.URISyntaxException;
+import java.text.MessageFormat;
 import java.util.*;
 
 /**
@@ -51,6 +52,29 @@ public class I18nUtil {
     public static String getString(String key) {
         try {
             return resourceBundle.getString(key);
+        } catch (Exception e) {
+            return key;
+        }
+    }
+
+    /**
+     * 获取国际化文本（带参数格式化）
+     * <p>
+     * 支持 MessageFormat 模式，例如：
+     * - "Hello, {0}!" + ["World"] -> "Hello, World!"
+     * - "复用组（{0}个点）" + [3] -> "复用组（3个点）"
+     *
+     * @param key    配置文件中的key
+     * @param params 格式化参数
+     * @return 格式化后的文本
+     */
+    public static String getString(String key, Object... params) {
+        try {
+            String pattern = resourceBundle.getString(key);
+            if (params == null || params.length == 0) {
+                return pattern;
+            }
+            return MessageFormat.format(pattern, params);
         } catch (Exception e) {
             return key;
         }

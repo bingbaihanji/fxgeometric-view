@@ -1,5 +1,6 @@
 package com.bingbaihanji.util.constraint;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import com.bingbaihanji.view.layout.draw.geometry.impl.ReciprocalFunctionGeo;
@@ -26,8 +27,8 @@ public class ReciprocalFunctionConstraint implements PointConstraint {
     @Override
     public Point2D getPointFromParameter() {
         // 确保参数不在断点附近
-        if (MathCalculationUtils.isZero(parameter, 1e-3)) {
-            parameter = parameter > 0 ? 1e-3 : -1e-3;
+        if (MathCalculationUtils.isZero(parameter, GeometryConfig.Mathematics.TINY_VALUE)) {
+            parameter = parameter > 0 ? GeometryConfig.Mathematics.TINY_VALUE : -GeometryConfig.Mathematics.TINY_VALUE;
         }
 
         double y = function.evaluate(parameter);
@@ -38,8 +39,8 @@ public class ReciprocalFunctionConstraint implements PointConstraint {
     public double calculateParameter(double x, double y) {
         // 对于显函数，参数就是x坐标
         // 但需要避开x=0附近
-        if (MathCalculationUtils.isZero(x, 1e-3)) {
-            x = x > 0 ? 1e-3 : -1e-3;
+        if (MathCalculationUtils.isZero(x, GeometryConfig.Mathematics.TINY_VALUE)) {
+            x = x > 0 ? GeometryConfig.Mathematics.TINY_VALUE : -GeometryConfig.Mathematics.TINY_VALUE;
         }
 
         // 限制在定义域内
@@ -64,8 +65,8 @@ public class ReciprocalFunctionConstraint implements PointConstraint {
     @Override
     public void setParameter(double parameter) {
         // 确保参数不在断点附近
-        if (MathCalculationUtils.isZero(parameter, 1e-3)) {
-            this.parameter = parameter > 0 ? 1e-3 : -1e-3;
+        if (MathCalculationUtils.isZero(parameter, GeometryConfig.Mathematics.TINY_VALUE)) {
+            this.parameter = parameter > 0 ? GeometryConfig.Mathematics.TINY_VALUE : -GeometryConfig.Mathematics.TINY_VALUE;
         } else {
             this.parameter = parameter;
         }
@@ -84,7 +85,7 @@ public class ReciprocalFunctionConstraint implements PointConstraint {
     @Override
     public double distanceToShape(double x, double y) {
         // 避开断点
-        if (MathCalculationUtils.isZero(x, 1e-3)) {
+        if (MathCalculationUtils.isZero(x, GeometryConfig.Mathematics.TINY_VALUE)) {
             return Double.POSITIVE_INFINITY;
         }
 

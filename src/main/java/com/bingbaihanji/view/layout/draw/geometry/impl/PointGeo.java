@@ -3,6 +3,7 @@ package com.bingbaihanji.view.layout.draw.geometry.impl;
 import com.bingbaihanji.constant.ObjectType;
 import com.bingbaihanji.util.LabelRenderer;
 import com.bingbaihanji.util.PointNameManager;
+import com.bingbaihanji.util.PointReuseGroup;
 import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.util.constraint.PointConstraint;
 import com.bingbaihanji.view.layout.core.WorldTransform;
@@ -26,6 +27,18 @@ public class PointGeo extends AbstractWorldObject {
      * 如果是外部复用的点，点自己绘制自己
      */
     private boolean polygonVertex = false;
+
+    /**
+     * 点所属的复用组
+     * 当多个点重合并启用复用时，它们会被添加到同一个复用组
+     * 移动任意一个点，组内其他点会同步移动
+     */
+    private PointReuseGroup reuseGroup = null;
+
+    /**
+     * 标记是否正在同步更新位置（防止递归调用）
+     */
+    private transient boolean isSyncingPosition = false;
 
     public PointGeo(double x, double y) {
         super(ObjectType.POINT_FREE); // 默认为自由点
@@ -95,7 +108,7 @@ public class PointGeo extends AbstractWorldObject {
         this.polygonVertex = polygonVertex;
     }
 
-    // 更新点的位置（支持约束处理）
+    // 更新点的位置（支持约束处理和复用组同步）
     public void updatePosition(double newX, double newY) {
         // 保存旧位置
         double oldX = this.x;
@@ -118,6 +131,75 @@ public class PointGeo extends AbstractWorldObject {
         if (this.label != null && !this.label.isEmpty()) {
             PointNameManager.getInstance().updatePosition(oldX, oldY, this.x, this.y);
         }
+
+        // 同步复用组内的其他点（防止递归）
+        if (!isSyncingPosition && reuseGroup != null && reuseGroup.isEnabled()) {
+            reuseGroup.syncMove(this.x, this.y, this);
+        }
+    }
+
+    /**
+     * 直接设置位置（不触发复用组同步，用于复用组内部调用）
+     *
+     * @param newX 新X坐标
+     * @param newY 新Y坐标
+     */
+    public void setPositionDirectly(double newX, double newY) {
+        isSyncingPosition = true;
+        try {
+            // 保存旧位置
+            double oldX = this.x;
+            double oldY = this.y;
+
+            if (constraint != null) {
+                // 如果有约束，计算新参数并根据参数更新位置
+                double newParameter = constraint.calculateParameter(newX, newY);
+                constraint.setParameter(newParameter);
+                Point2D newPos = constraint.getPointFromParameter();
+                this.x = newPos.getX();
+                this.y = newPos.getY();
+            } else {
+                this.x = newX;
+                this.y = newY;
+            }
+
+            // 更新名称映射
+            if (this.label != null && !this.label.isEmpty()) {
+                PointNameManager.getInstance().updatePosition(oldX, oldY, this.x, this.y);
+            }
+        } finally {
+            isSyncingPosition = false;
+        }
+    }
+
+    // 复用组相关方法
+
+    /**
+     * 获取点所属的复用组
+     */
+    public PointReuseGroup getReuseGroup() {
+        return reuseGroup;
+    }
+
+    /**
+     * 设置点的复用组
+     */
+    public void setReuseGroup(PointReuseGroup reuseGroup) {
+        this.reuseGroup = reuseGroup;
+    }
+
+    /**
+     * 判断点是否在复用组中
+     */
+    public boolean isInReuseGroup() {
+        return reuseGroup != null;
+    }
+
+    /**
+     * 判断点是否正在同步位置
+     */
+    public boolean isSyncingPosition() {
+        return isSyncingPosition;
     }
 
     @Override
@@ -136,6 +218,11 @@ public class PointGeo extends AbstractWorldObject {
         // 约束点使用深蓝色
         if (isConstrained()) {
             displayColor = StyleManager.GEOMETRY_CONSTRAINED;
+        }
+
+        // 复用组内的点使用特殊颜色标识
+        if (isInReuseGroup() && reuseGroup.isEnabled()) {
+            displayColor = StyleManager.GEOMETRY_REUSED;
         }
 
         gc.setFill(displayColor);
@@ -162,27 +249,8 @@ public class PointGeo extends AbstractWorldObject {
         // 点本身可拖动
         return List.of(
                 new DraggablePoint(x, y, (newX, newY) -> {
-                    // 保存旧位置用于更新映射
-                    double oldX = this.x;
-                    double oldY = this.y;
-
-                    if (constraint != null) {
-                        // 如果有约束，计算新参数并根据参数更新位置
-                        double newParameter = constraint.calculateParameter(newX, newY);
-                        constraint.setParameter(newParameter);
-                        Point2D newPos = constraint.getPointFromParameter();
-                        this.x = newPos.getX();
-                        this.y = newPos.getY();
-                    } else {
-                        // 无约束，直接移动
-                        this.x = newX;
-                        this.y = newY;
-                    }
-
-                    // 如果该点有名称，更新PointNameManager中的映射
-                    if (this.label != null && !this.label.isEmpty()) {
-                        PointNameManager.getInstance().updatePosition(oldX, oldY, this.x, this.y);
-                    }
+                    // 使用 updatePosition 以支持约束和复用组同步
+                    updatePosition(newX, newY);
                 })
         );
     }
@@ -193,8 +261,11 @@ public class PointGeo extends AbstractWorldObject {
         double sin = Math.sin(angle);
         double dx = x - centerX;
         double dy = y - centerY;
-        x = centerX + dx * cos - dy * sin;
-        y = centerY + dx * sin + dy * cos;
+        double newX = centerX + dx * cos - dy * sin;
+        double newY = centerY + dx * sin + dy * cos;
+
+        // 使用 updatePosition 以支持复用组同步
+        updatePosition(newX, newY);
     }
 
     @Override

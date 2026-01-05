@@ -59,6 +59,8 @@ public class GridChartView extends Pane {
     private WorldObject hoverObject = null;
     // 预览绘制器
     private BiConsumer<GraphicsContext, WorldTransform> previewPainter;
+    // BoundingBox 绘制器
+    private BiConsumer<GraphicsContext, WorldTransform> boundingBoxPainter;
     /**
      * 初始化状态标志
      * <p>
@@ -188,8 +190,8 @@ public class GridChartView extends Pane {
 
         hoverTooltip.show(
                 this,
-                localToScreen(screenX + 12, screenY + 12).getX(),
-                localToScreen(screenX + 12, screenY + 12).getY()
+                localToScreen(screenX + 12, screenY + 24).getX(),
+                localToScreen(screenX + 12, screenY + 24).getY()
         );
 
         // 重绘以显示吸附提示
@@ -386,6 +388,11 @@ public class GridChartView extends Pane {
 
         for (WorldObject obj : objects) {
             obj.paint(gc, transform, w, h);
+        }
+
+        // 绘制 BoundingBox（通过回调函数绘制）
+        if (boundingBoxPainter != null) {
+            boundingBoxPainter.accept(gc, transform);
         }
 
         // 绘制预览图形
@@ -761,6 +768,13 @@ public class GridChartView extends Pane {
      */
     public void setPreviewPainter(BiConsumer<GraphicsContext, WorldTransform> previewPainter) {
         this.previewPainter = previewPainter;
+    }
+
+    /**
+     * 设置 BoundingBox 绘制器
+     */
+    public void setBoundingBoxPainter(BiConsumer<GraphicsContext, WorldTransform> boundingBoxPainter) {
+        this.boundingBoxPainter = boundingBoxPainter;
     }
 
     // 设置鼠标样式

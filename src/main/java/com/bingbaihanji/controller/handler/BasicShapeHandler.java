@@ -3,16 +3,15 @@ package com.bingbaihanji.controller.handler;
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.constant.DrawingState;
 import com.bingbaihanji.controller.DrawingContext;
+import com.bingbaihanji.controller.PreviewManager;
 import com.bingbaihanji.util.CommandHistory;
 import com.bingbaihanji.util.EdgeSnapManager;
 import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.util.PointReuseManager;
-import com.bingbaihanji.util.SpecialPointManager.SpecialPoint;
 import com.bingbaihanji.util.constraint.PointConstraint;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import com.bingbaihanji.view.layout.draw.geometry.impl.*;
-import com.bingbaihanji.view.layout.draw.tools.CircleDrawingTool;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseButton;
@@ -32,26 +31,24 @@ import java.util.List;
 public class BasicShapeHandler extends AbstractDrawingHandler {
 
     /**
-     * 圆形绘制工具
+     * 圆形预览对象
      */
-    private final CircleDrawingTool circleTool = new CircleDrawingTool();
+    private PreviewManager.CirclePreview circlePreview = null;
+
+    /**
+     * 线段/直线预览对象
+     */
+    private PreviewManager.LinePreview linePreview = null;
+
     /**
      * 第一个点的世界坐标（用于绘制圆、线段等）
      */
     private double firstPointX;
     private double firstPointY;
     /**
-     * 第一次点击时的现有特殊点（用于圆心吸附）
-     */
-    private SpecialPoint firstClickExistingPoint = null;
-    /**
      * 第一次点击时复用的点引用
      */
     private PointGeo firstPointRef = null;
-    /**
-     * 预览半径
-     */
-    private double previewRadius = 0;
 
     @Override
     public boolean canHandle(DrawMode mode) {
@@ -146,7 +143,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
 
         if (context.getDrawMode() == DrawMode.CIRCLE) {
             // 计算预览半径
-            previewRadius = MathCalculationUtils.sqrt(
+            double previewRadius = MathCalculationUtils.sqrt(
                     MathCalculationUtils.pow(worldX - firstPointX, 2) + MathCalculationUtils.pow(worldY - firstPointY, 2)
             );
 
@@ -156,13 +153,20 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                     EdgeSnapManager.findCircleTangentSnap(firstPointX, firstPointY, previewRadius,
                             context.getObjects(), tangentThreshold);
 
-            // 如果找到相切吸附，使用调整后的半径预览
+            // 如果找到相切吸附，使用调整后的半径
             if (tangentResult != null) {
                 previewRadius = tangentResult.getRadius();
             }
 
-            // 更新CircleDrawingTool的预览参数
-            circleTool.setPreviewParams(firstPointX, firstPointY, previewRadius);
+            // 更新圆形预览
+            if (circlePreview != null) {
+                circlePreview.updatePreview(worldX, worldY);
+            }
+        } else if (context.getDrawMode() == DrawMode.LINE || context.getDrawMode() == DrawMode.INFINITE_LINE) {
+            // 更新线段/直线预览
+            if (linePreview != null) {
+                linePreview.updatePreview(worldX, worldY);
+            }
         }
 
         // 重绘以显示预览
@@ -170,103 +174,6 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
         return true;
     }
 
-    @Override
-    public void paintPreview(GraphicsContext gc, WorldTransform transform, DrawingContext context) {
-        if (!canHandle(context.getDrawMode())) {
-            return;
-        }
-
-        double pointRadius = 4;
-
-        // 在 IDLE 状态下，显示吸附预览点（让用户看到吸附效果）
-        if (context.getState() == DrawingState.IDLE) {
-            double mouseScreenX = transform.worldToScreenX(context.getCurrentMouseX());
-            double mouseScreenY = transform.worldToScreenY(context.getCurrentMouseY());
-
-            // 绘制吸附预览点（浅色圆圈 + 中心点）
-            gc.setStroke(Color.valueOf("#759eb2"));
-            gc.setLineWidth(1.5);
-            gc.strokeOval(mouseScreenX - 6, mouseScreenY - 6, 12, 12);
-
-            gc.setFill(Color.valueOf("#759eb2").deriveColor(0, 1, 1, 0.6));
-            gc.fillOval(mouseScreenX - pointRadius, mouseScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
-            return;
-        }
-
-        if (context.getState() != DrawingState.FIRST_CLICK) {
-            return;
-        }
-
-        // 绘制第一个点（所有模式都需要显示）
-        double firstPointScreenX = transform.worldToScreenX(firstPointX);
-        double firstPointScreenY = transform.worldToScreenY(firstPointY);
-        gc.setFill(Color.valueOf("#759eb2"));
-        gc.fillOval(firstPointScreenX - pointRadius, firstPointScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
-
-        if (context.getDrawMode() == DrawMode.CIRCLE) {
-            // 圆形预览
-            circleTool.paintPreview(gc, transform);
-        } else if (context.getDrawMode() == DrawMode.LINE || context.getDrawMode() == DrawMode.INFINITE_LINE) {
-            // 绘制线段/直线的预览
-            double sx1 = transform.worldToScreenX(firstPointX);
-            double sy1 = transform.worldToScreenY(firstPointY);
-            double sx2 = transform.worldToScreenX(context.getCurrentMouseX());
-            double sy2 = transform.worldToScreenY(context.getCurrentMouseY());
-
-            // 设置浅色虚线样式用于预览
-            gc.setStroke(Color.valueOf("#759eb2"));
-            gc.setLineWidth(1);
-            gc.setLineDashes(6);
-
-            if (context.getDrawMode() == DrawMode.INFINITE_LINE) {
-                // 为无限直线扩展端点
-                double dx = sx2 - sx1;
-                double dy = sy2 - sy1;
-                double scale = 10000; // 一个足够高的扩展值
-
-                if (MathCalculationUtils.isZero(dx)) {
-                    // 竖直线
-                    sx2 = sx1;
-                    sy1 = -scale;
-                    sy2 = scale;
-                } else if (MathCalculationUtils.isZero(dy)) {
-                    // 水平线
-                    sx1 = -scale;
-                    sx2 = scale;
-                } else {
-                    // 一般情况
-                    double t = scale / MathCalculationUtils.distance(0, 0, dx, dy);
-                    double p1x = sx1 - t * dx;
-                    double p1y = sy1 - t * dy;
-                    double p2x = sx1 + t * dx;
-                    double p2y = sy1 + t * dy;
-                    sx1 = p1x;
-                    sy1 = p1y;
-                    sx2 = p2x;
-                    sy2 = p2y;
-                }
-            }
-
-            gc.strokeLine(sx1, sy1, sx2, sy2);
-            gc.setLineDashes(null);
-
-            // 绘制当前鼠标位置的点
-            double mouseScreenX = transform.worldToScreenX(context.getCurrentMouseX());
-            double mouseScreenY = transform.worldToScreenY(context.getCurrentMouseY());
-            gc.setFill(Color.LIGHTGRAY);
-            gc.fillOval(mouseScreenX - pointRadius, mouseScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
-        }
-    }
-
-    @Override
-    public void reset() {
-        firstPointX = 0;
-        firstPointY = 0;
-        firstClickExistingPoint = null;
-        firstPointRef = null;
-        previewRadius = 0;
-        circleTool.reset();
-    }
 
     /**
      * 处理点模式的绘制
@@ -333,16 +240,23 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
         firstPointY = worldY;
         context.setState(DrawingState.FIRST_CLICK);
 
-        // 检查第一次点击是否靠近现有特殊点（用于圆心吸附）
-        firstClickExistingPoint = context.getSnappingHandler().findNearestSpecialPoint(rawX, rawY, context);
-
         // 检查第一次点击位置是否已有点对象（用于复用）
         double scale = context.getTransform().getScale();
         firstPointRef = PointReuseManager.getExistingPointOrNull(worldX, worldY, context.getObjects(), scale);
 
-        // 对于圆形绘制，初始化预览参数
+        // 创建预览对象并注册到 PreviewManager
         if (context.getDrawMode() == DrawMode.CIRCLE) {
-            circleTool.setPreviewParams(firstPointX, firstPointY, 0);
+            circlePreview = new PreviewManager.CirclePreview();
+            circlePreview.setCenterPoint(firstPointX, firstPointY);
+            context.getPreviewManager().addPreviewable(circlePreview);
+        } else if (context.getDrawMode() == DrawMode.LINE) {
+            linePreview = new PreviewManager.LinePreview(false); // 普通线段
+            linePreview.setStartPoint(firstPointX, firstPointY);
+            context.getPreviewManager().addPreviewable(linePreview);
+        } else if (context.getDrawMode() == DrawMode.INFINITE_LINE) {
+            linePreview = new PreviewManager.LinePreview(true); // 无限直线
+            linePreview.setStartPoint(firstPointX, firstPointY);
+            context.getPreviewManager().addPreviewable(linePreview);
         }
     }
 
@@ -394,8 +308,11 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                     }
                 });
 
-                circleTool.reset();
-                firstClickExistingPoint = null;
+                // 清除预览对象
+                if (circlePreview != null) {
+                    context.getPreviewManager().removePreviewable(circlePreview);
+                    circlePreview = null;
+                }
                 firstPointRef = null;
             }
             case LINE -> {
@@ -424,6 +341,11 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                     }
                 });
 
+                // 清除预览对象
+                if (linePreview != null) {
+                    context.getPreviewManager().removePreviewable(linePreview);
+                    linePreview = null;
+                }
                 firstPointRef = null;
             }
             case INFINITE_LINE -> {
@@ -452,12 +374,59 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                     }
                 });
 
+                // 清除预览对象
+                if (linePreview != null) {
+                    context.getPreviewManager().removePreviewable(linePreview);
+                    linePreview = null;
+                }
                 firstPointRef = null;
             }
         }
 
         context.setState(DrawingState.IDLE);
-        previewRadius = 0;
         context.redraw();
+    }
+
+    @Override
+    public void reset() {
+        firstPointX = 0;
+        firstPointY = 0;
+        firstPointRef = null;
+
+        // 清除预览对象
+        circlePreview = null;
+        linePreview = null;
+    }
+
+    @Override
+    public void paintPreview(GraphicsContext gc, WorldTransform transform, DrawingContext context) {
+        // PreviewManager 统一管理，此处只绘制补充效果(吸附预览点)
+        if (!canHandle(context.getDrawMode())) {
+            return;
+        }
+
+        double pointRadius = 4;
+
+        // 在 IDLE 状态下，显示吸附预览点
+        if (context.getState() == DrawingState.IDLE) {
+            double mouseScreenX = transform.worldToScreenX(context.getCurrentMouseX());
+            double mouseScreenY = transform.worldToScreenY(context.getCurrentMouseY());
+
+            gc.setStroke(Color.valueOf("#759eb2"));
+            gc.setLineWidth(1.5);
+            gc.strokeOval(mouseScreenX - 6, mouseScreenY - 6, 12, 12);
+
+            gc.setFill(Color.valueOf("#759eb2").deriveColor(0, 1, 1, 0.6));
+            gc.fillOval(mouseScreenX - pointRadius, mouseScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
+            return;
+        }
+
+        // 在 FIRST_CLICK 状态下，绘制第一个点
+        if (context.getState() == DrawingState.FIRST_CLICK) {
+            double firstPointScreenX = transform.worldToScreenX(firstPointX);
+            double firstPointScreenY = transform.worldToScreenY(firstPointY);
+            gc.setFill(Color.valueOf("#759eb2"));
+            gc.fillOval(firstPointScreenX - pointRadius, firstPointScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
+        }
     }
 }

@@ -3,6 +3,7 @@ package com.bingbaihanji.controller.handler;
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.constant.DrawingState;
 import com.bingbaihanji.controller.DrawingContext;
+import com.bingbaihanji.controller.PreviewManager;
 import com.bingbaihanji.util.CommandHistory;
 import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.util.PointReuseManager;
@@ -38,6 +39,11 @@ public class PolygonHandler extends AbstractDrawingHandler {
      * 多边形内部创建的新点列表（用于撤销时删除）
      */
     private final List<PointGeo> newCreatedPoints = new ArrayList<>();
+
+    /**
+     * 多边形预览对象
+     */
+    private PreviewManager.PolygonPreview polygonPreview = null;
 
     @Override
     public boolean canHandle(DrawMode mode) {
@@ -83,6 +89,11 @@ public class PolygonHandler extends AbstractDrawingHandler {
         context.setCurrentMouseX(worldX);
         context.setCurrentMouseY(worldY);
 
+        // 更新多边形预览
+        if (polygonPreview != null && polygonPreview.isActive()) {
+            polygonPreview.updatePreview(worldX, worldY);
+        }
+
         // 重绘以显示预览（IDLE 和 POLYGON_DRAWING 状态都需要重绘）
         context.redraw();
         return true;
@@ -90,6 +101,7 @@ public class PolygonHandler extends AbstractDrawingHandler {
 
     @Override
     public void paintPreview(GraphicsContext gc, WorldTransform transform, DrawingContext context) {
+        // PreviewManager 统一管理，此处只绘制补充效果(吸附预览点、顶点高亮)
         if (!canHandle(context.getDrawMode())) {
             return;
         }
@@ -111,7 +123,7 @@ public class PolygonHandler extends AbstractDrawingHandler {
             return;
         }
 
-        // POLYGON_DRAWING 状态：绘制多边形预览
+        // POLYGON_DRAWING 状态：绘制顶点和高亮效果
         if (context.getState() != DrawingState.POLYGON_DRAWING) {
             return;
         }
@@ -119,34 +131,6 @@ public class PolygonHandler extends AbstractDrawingHandler {
         if (vertexPoints.isEmpty()) {
             return;
         }
-
-        // 绘制已有的边（浅色虚线）
-        gc.setStroke(Color.valueOf("#759eb2"));
-        gc.setLineWidth(1);
-        gc.setLineDashes(6);
-
-        for (int i = 0; i < vertexPoints.size() - 1; i++) {
-            PointGeo p1 = vertexPoints.get(i);
-            PointGeo p2 = vertexPoints.get(i + 1);
-
-            double sx1 = transform.worldToScreenX(p1.getX());
-            double sy1 = transform.worldToScreenY(p1.getY());
-            double sx2 = transform.worldToScreenX(p2.getX());
-            double sy2 = transform.worldToScreenY(p2.getY());
-
-            gc.strokeLine(sx1, sy1, sx2, sy2);
-        }
-
-        // 绘制从最后一个顶点到当前鼠标位置的边
-        PointGeo lastVertex = vertexPoints.get(vertexPoints.size() - 1);
-        double lastScreenX = transform.worldToScreenX(lastVertex.getX());
-        double lastScreenY = transform.worldToScreenY(lastVertex.getY());
-        double currentScreenX = transform.worldToScreenX(context.getCurrentMouseX());
-        double currentScreenY = transform.worldToScreenY(context.getCurrentMouseY());
-
-        gc.strokeLine(lastScreenX, lastScreenY, currentScreenX, currentScreenY);
-
-        gc.setLineDashes(null);
 
         // 绘制顶点（小圆点）
         gc.setFill(Color.valueOf("#759eb2"));
@@ -163,9 +147,11 @@ public class PolygonHandler extends AbstractDrawingHandler {
             double fx = transform.worldToScreenX(firstVertex.getX());
             double fy = transform.worldToScreenY(firstVertex.getY());
 
-            // 检查鼠标是否靠近第一个顶点
-            double screenDistance = MathCalculationUtils.hypot(currentScreenX - fx, currentScreenY - fy);
+            double mouseScreenX = transform.worldToScreenX(context.getCurrentMouseX());
+            double mouseScreenY = transform.worldToScreenY(context.getCurrentMouseY());
 
+            // 检查鼠标是否靠近第一个顶点
+            double screenDistance = MathCalculationUtils.hypot(mouseScreenX - fx, mouseScreenY - fy);
             double threshold = 15.0; // 屏幕像素阈值
 
             if (screenDistance < threshold) {
@@ -175,6 +161,10 @@ public class PolygonHandler extends AbstractDrawingHandler {
                 gc.fillOval(fx - pointRadius * 2, fy - pointRadius * 2, pointRadius * 4, pointRadius * 4);
 
                 // 绘制闭合线（从最后一个顶点到第一个顶点）
+                PointGeo lastVertex = vertexPoints.get(vertexPoints.size() - 1);
+                double lastScreenX = transform.worldToScreenX(lastVertex.getX());
+                double lastScreenY = transform.worldToScreenY(lastVertex.getY());
+
                 gc.setStroke(Color.LIGHTGREEN);
                 gc.setLineWidth(2);
                 gc.setLineDashes(4);
@@ -189,12 +179,15 @@ public class PolygonHandler extends AbstractDrawingHandler {
 
         // 绘制当前鼠标位置的吸附预览点（如果不是靠近第一个顶点）
         if (!nearFirstVertex) {
+            double mouseScreenX = transform.worldToScreenX(context.getCurrentMouseX());
+            double mouseScreenY = transform.worldToScreenY(context.getCurrentMouseY());
+
             gc.setStroke(Color.valueOf("#759eb2"));
             gc.setLineWidth(1.5);
-            gc.strokeOval(currentScreenX - 6, currentScreenY - 6, 12, 12);
+            gc.strokeOval(mouseScreenX - 6, mouseScreenY - 6, 12, 12);
 
             gc.setFill(Color.valueOf("#759eb2").deriveColor(0, 1, 1, 0.6));
-            gc.fillOval(currentScreenX - pointRadius, currentScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
+            gc.fillOval(mouseScreenX - pointRadius, mouseScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
         }
     }
 
@@ -202,6 +195,9 @@ public class PolygonHandler extends AbstractDrawingHandler {
     public void reset() {
         vertexPoints.clear();
         newCreatedPoints.clear();
+
+        // 清除预览对象
+        polygonPreview = null;
     }
 
     /**
@@ -236,6 +232,15 @@ public class PolygonHandler extends AbstractDrawingHandler {
             vertexPoints.add(newPoint);
             newCreatedPoints.add(newPoint); // 记录新创建的点，用于撤销
         }
+
+        // 创建或更新预览对象
+        if (polygonPreview == null) {
+            // 第一个点：创建预览对象并注册
+            polygonPreview = new PreviewManager.PolygonPreview();
+            context.getPreviewManager().addPreviewable(polygonPreview);
+        }
+        // 添加点到预览对象
+        polygonPreview.addPoint(worldX, worldY);
 
         // 进入多边形绘制状态
         context.setState(DrawingState.POLYGON_DRAWING);
@@ -290,6 +295,12 @@ public class PolygonHandler extends AbstractDrawingHandler {
                 }
             }
         });
+
+        // 清除预览对象
+        if (polygonPreview != null) {
+            context.getPreviewManager().removePreviewable(polygonPreview);
+            polygonPreview = null;
+        }
 
         // 重置状态
         vertexPoints.clear();

@@ -257,7 +257,7 @@ public class IntersectionHandler {
     /**
      * 重新计算所有图形之间的交点
      * <p>
-     * 用于拖动后更新交点位置
+     * 用于拖动时更新交点位置，支持实时更新
      *
      * @param context 绘制上下文
      */
@@ -302,8 +302,8 @@ public class IntersectionHandler {
             context.addObject(point);
         }
 
-        // 4. 重绘
-        context.redraw();
+        // 注意：不在这里调用 redraw()，由调用者统一负责重绘
+        // 这样可以避免拖动过程中的重复绘制，提高性能
     }
 
     /**
@@ -416,6 +416,9 @@ public class IntersectionHandler {
                     intersections.addAll(IntersectionUtils.getInfiniteLineLineIntersections(infiniteLine, edge));
                 }
             }
+        } else if (obj1 instanceof FunctionGeo && obj2 instanceof FunctionGeo) {
+            // 函数与函数的交点
+            intersections.addAll(IntersectionUtils.getFunctionFunctionIntersections((FunctionGeo) obj1, (FunctionGeo) obj2));
         }
 
         return intersections;
