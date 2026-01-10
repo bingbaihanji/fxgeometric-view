@@ -401,4 +401,103 @@ public class PreviewManager {
             return new double[]{minX, maxX, minY, maxY};
         }
     }
+
+    /**
+     * 正多边形预览对象
+     */
+    public static class RegularPolygonPreview implements Previewable {
+        private double cx, cy;        // 中心(固定)
+        private double radius;        // 半径(跟随鼠标)
+        private int sideCount = 6;    // 边数
+        private double mouseX, mouseY; // 当前鼠标位置(世界坐标)
+        private boolean active = false;
+
+        public void setCenterPoint(double x, double y) {
+            this.cx = x;
+            this.cy = y;
+            this.active = true;
+        }
+
+        public void setSideCount(int sideCount) {
+            this.sideCount = Math.max(3, Math.min(10, sideCount));
+        }
+
+        /**
+         * 更新预览（带半径参数）
+         */
+        public void updatePreview(double mouseX, double mouseY, double radius) {
+            this.mouseX = mouseX;
+            this.mouseY = mouseY;
+            this.radius = radius;
+        }
+
+        /**
+         * 更新预览（鼠标位置作为顶点位置）
+         */
+        public void updatePreviewWithVertex(double vertexX, double vertexY) {
+            this.mouseX = vertexX;
+            this.mouseY = vertexY;
+            // 计算半径：从中心到顶点的距离
+            this.radius = Math.sqrt(Math.pow(vertexX - cx, 2) + Math.pow(vertexY - cy, 2));
+        }
+
+        @Override
+        public void updatePreview(double mouseX, double mouseY) {
+            this.mouseX = mouseX;
+            this.mouseY = mouseY;
+            this.radius = Math.sqrt(Math.pow(mouseX - cx, 2) + Math.pow(mouseY - cy, 2));
+        }
+
+        @Override
+        public void paintPreview(GraphicsContext gc, WorldTransform transform) {
+            if (!active || radius < 1e-6) return;
+
+            gc.save();
+            gc.setStroke(javafx.scene.paint.Color.rgb(117, 158, 178, 0.6));
+            gc.setLineWidth(1.5);
+            gc.setLineDashes(6);
+
+            // 计算第一个顶点指向鼠标的角度
+            double angleToMouse = Math.atan2(mouseY - cy, mouseX - cx);
+
+            // 计算顶点坐标（第一个顶点在鼠标位置方向）
+            double[] xPoints = new double[sideCount];
+            double[] yPoints = new double[sideCount];
+
+            double angleStep = 2 * Math.PI / sideCount;
+
+            for (int i = 0; i < sideCount; i++) {
+                double angle = angleToMouse + i * angleStep;
+                double worldX = cx + radius * Math.cos(angle);
+                double worldY = cy + radius * Math.sin(angle);
+
+                xPoints[i] = transform.worldToScreenX(worldX);
+                yPoints[i] = transform.worldToScreenY(worldY);
+            }
+
+            // 绘制正多边形
+            gc.strokePolygon(xPoints, yPoints, sideCount);
+
+            // 绘制半径线：从中心指向第一个顶点（鼠标位置）
+            gc.setLineDashes(2);
+            double screenCx = transform.worldToScreenX(cx);
+            double screenCy = transform.worldToScreenY(cy);
+            double mouseScreenX = transform.worldToScreenX(mouseX);
+            double mouseScreenY = transform.worldToScreenY(mouseY);
+            gc.strokeLine(screenCx, screenCy, mouseScreenX, mouseScreenY);
+
+            gc.restore();
+        }
+
+        @Override
+        public boolean isActive() {
+            return active;
+        }
+
+        @Override
+        public void reset() {
+            active = false;
+            radius = 0;
+        }
+    }
 }

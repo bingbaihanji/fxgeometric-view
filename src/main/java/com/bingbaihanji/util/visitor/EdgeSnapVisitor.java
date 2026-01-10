@@ -101,6 +101,31 @@ public class EdgeSnapVisitor implements GeometryVisitor<EdgeSnapVisitor.SnapResu
     }
 
     @Override
+    public SnapResult visitRegularPolygon(RegularPolygonGeo regularPolygon) {
+        List<Point2D> vertices = regularPolygon.getVertices();
+        SnapResult bestSnap = null;
+
+        // 遍历正多边形的所有边
+        for (int i = 0; i < vertices.size(); i++) {
+            Point2D p1 = vertices.get(i);
+            Point2D p2 = vertices.get((i + 1) % vertices.size());
+
+            Point2D projected = projectPointOntoSegment(
+                    mouseX, mouseY,
+                    p1.getX(), p1.getY(),
+                    p2.getX(), p2.getY()
+            );
+            double distance = Math.hypot(projected.getX() - mouseX, projected.getY() - mouseY);
+
+            if (distance < threshold && (bestSnap == null || distance < bestSnap.distance)) {
+                bestSnap = new SnapResult(projected.getX(), projected.getY(), distance, "REGULAR_POLYGON_EDGE");
+            }
+        }
+
+        return bestSnap;
+    }
+
+    @Override
     public SnapResult visitPath(PathGeo path) {
         List<LineGeo> edges = path.getEdges();
         SnapResult bestSnap = null;

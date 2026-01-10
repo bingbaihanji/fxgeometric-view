@@ -85,6 +85,8 @@ public class DetachedCanvasWindow {
         toolPane.setOnUndo(drawingController::undo);
         toolPane.setOnRedo(drawingController::redo);
         toolPane.setOnClear(drawingController::clearAll);
+        toolPane.setOnFunctionClick(drawingController::showFunctionDialog);
+        toolPane.setOnRegularPolygonClick(drawingController::showRegularPolygonDialog);
 
         // 设置预览绘制回调
         detachedView.setPreviewPainter(drawingController::paintPreview);

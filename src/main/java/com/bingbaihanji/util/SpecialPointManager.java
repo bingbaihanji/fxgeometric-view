@@ -44,6 +44,18 @@ public class SpecialPointManager {
                     Point2D vertex = polygon.getVertex(i);
                     specialPointsSet.add(new SpecialPoint(vertex.getX(), vertex.getY(), "VERTEX"));
                 }
+            } else if (obj instanceof RegularPolygonGeo regularPolygon) {
+                // 添加正多边形的所有顶点
+                List<Point2D> vertices = regularPolygon.getVertices();
+                for (Point2D vertex : vertices) {
+                    specialPointsSet.add(new SpecialPoint(vertex.getX(), vertex.getY(), "VERTEX"));
+                }
+                // 添加正多边形的中心点
+                specialPointsSet.add(new SpecialPoint(
+                        regularPolygon.getCenterX(),
+                        regularPolygon.getCenterY(),
+                        "CENTER"
+                ));
             } else if (obj instanceof PathGeo path) {
                 // 添加手绘路径的起点和终点
                 List<LineGeo> edges = path.getEdges();
@@ -151,6 +163,20 @@ public class SpecialPointManager {
     private static List<Point2D> calculateIntersections(WorldObject obj1, WorldObject obj2) {
         List<Point2D> intersections = new ArrayList<>();
 
+        // 如果涉及函数对象，先检查采样点是否有效
+        if (obj1 instanceof FunctionGeo) {
+            FunctionGeo func = (FunctionGeo) obj1;
+            if (func.getSampledPoints() == null || func.getSampledPoints().isEmpty()) {
+                return intersections; // 采样点未生成，跳过
+            }
+        }
+        if (obj2 instanceof FunctionGeo) {
+            FunctionGeo func = (FunctionGeo) obj2;
+            if (func.getSampledPoints() == null || func.getSampledPoints().isEmpty()) {
+                return intersections; // 采样点未生成，跳过
+            }
+        }
+
         // 线段与线段的交点
         if (obj1 instanceof LineGeo && obj2 instanceof LineGeo) {
             intersections.addAll(IntersectionUtils.getLineLineIntersections((LineGeo) obj1, (LineGeo) obj2));
@@ -180,6 +206,52 @@ public class SpecialPointManager {
         // 无限直线与无限直线的交点
         else if (obj1 instanceof InfiniteLineGeo && obj2 instanceof InfiniteLineGeo) {
             intersections.addAll(IntersectionUtils.getInfiniteLineInfiniteLineIntersections((InfiniteLineGeo) obj1, (InfiniteLineGeo) obj2));
+        }
+        // 线段与函数的交点
+        else if (obj1 instanceof LineGeo && obj2 instanceof FunctionGeo) {
+            intersections.addAll(IntersectionUtils.getLineFunctionIntersections((LineGeo) obj1, (FunctionGeo) obj2));
+        } else if (obj1 instanceof FunctionGeo && obj2 instanceof LineGeo) {
+            intersections.addAll(IntersectionUtils.getLineFunctionIntersections((LineGeo) obj2, (FunctionGeo) obj1));
+        }
+        // 无限直线与函数的交点
+        else if (obj1 instanceof InfiniteLineGeo && obj2 instanceof FunctionGeo) {
+            intersections.addAll(IntersectionUtils.getInfiniteLineFunctionIntersections((InfiniteLineGeo) obj1, (FunctionGeo) obj2));
+        } else if (obj1 instanceof FunctionGeo && obj2 instanceof InfiniteLineGeo) {
+            intersections.addAll(IntersectionUtils.getInfiniteLineFunctionIntersections((InfiniteLineGeo) obj2, (FunctionGeo) obj1));
+        }
+        // 圆与函数的交点
+        else if (obj1 instanceof CircleGeo && obj2 instanceof FunctionGeo) {
+            intersections.addAll(IntersectionUtils.getCircleFunctionIntersections((CircleGeo) obj1, (FunctionGeo) obj2));
+        } else if (obj1 instanceof FunctionGeo && obj2 instanceof CircleGeo) {
+            intersections.addAll(IntersectionUtils.getCircleFunctionIntersections((CircleGeo) obj2, (FunctionGeo) obj1));
+        }
+        // 多边形与函数的交点（将多边形的每条边与函数求交点）
+        else if (obj1 instanceof PolygonGeo && obj2 instanceof FunctionGeo) {
+            PolygonGeo polygon = (PolygonGeo) obj1;
+            FunctionGeo function = (FunctionGeo) obj2;
+            for (LineGeo edge : polygon.getEdges()) {
+                intersections.addAll(IntersectionUtils.getLineFunctionIntersections(edge, function));
+            }
+        } else if (obj1 instanceof FunctionGeo && obj2 instanceof PolygonGeo) {
+            PolygonGeo polygon = (PolygonGeo) obj2;
+            FunctionGeo function = (FunctionGeo) obj1;
+            for (LineGeo edge : polygon.getEdges()) {
+                intersections.addAll(IntersectionUtils.getLineFunctionIntersections(edge, function));
+            }
+        }
+        // 正多边形与函数的交点（将正多边形的每条边与函数求交点）
+        else if (obj1 instanceof RegularPolygonGeo && obj2 instanceof FunctionGeo) {
+            RegularPolygonGeo regularPolygon = (RegularPolygonGeo) obj1;
+            FunctionGeo function = (FunctionGeo) obj2;
+            for (LineGeo edge : regularPolygon.getEdges()) {
+                intersections.addAll(IntersectionUtils.getLineFunctionIntersections(edge, function));
+            }
+        } else if (obj1 instanceof FunctionGeo && obj2 instanceof RegularPolygonGeo) {
+            RegularPolygonGeo regularPolygon = (RegularPolygonGeo) obj2;
+            FunctionGeo function = (FunctionGeo) obj1;
+            for (LineGeo edge : regularPolygon.getEdges()) {
+                intersections.addAll(IntersectionUtils.getLineFunctionIntersections(edge, function));
+            }
         }
         // 函数与函数的交点
         else if (obj1 instanceof FunctionGeo && obj2 instanceof FunctionGeo) {

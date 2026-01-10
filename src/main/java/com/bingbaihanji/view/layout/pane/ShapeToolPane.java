@@ -49,6 +49,11 @@ public class ShapeToolPane extends VBox {
      */
     private Runnable onFunctionClick;
 
+    /**
+     * 正多边形按钮点击回调
+     */
+    private Runnable onRegularPolygonClick;
+
 
 
     /*构造*/
@@ -74,6 +79,7 @@ public class ShapeToolPane extends VBox {
                 createTool("geo.line", DrawMode.INFINITE_LINE, group),
                 createTool("geo.circle", DrawMode.CIRCLE, group),
                 createTool("geo.polygon", DrawMode.POLYGON, group),
+                createTool("geo.regularPolygon", DrawMode.REGULAR_POLYGON, group),
                 createTool("geo.handpainted", DrawMode.FREEHAND, group)
         );
 
@@ -133,6 +139,7 @@ public class ShapeToolPane extends VBox {
             case "geo.segment" -> "icon/segment.png";
             case "geo.circle" -> "icon/circle.png";
             case "geo.polygon" -> "icon/rectangle.png";
+            case "geo.regularPolygon" -> "icon/regularPolygons.png";
             case "geo.restore" -> "icon/restore.png";
             case "geo.revoke" -> "icon/revoke.png";
             case "geo.empty" -> "icon/empty.png";
@@ -280,9 +287,17 @@ public class ShapeToolPane extends VBox {
         tooltip.setStyle(StyleManager.getTooltipStyle());
         Tooltip.install(button, tooltip);
 
-        button.setOnAction(e ->
-                drawMode.set(button.isSelected() ? mode : DrawMode.NONE)
-        );
+        button.setOnAction(e -> {
+            if (button.isSelected()) {
+                // 如果是正多边形模式，先触发回调
+                if (mode == DrawMode.REGULAR_POLYGON && onRegularPolygonClick != null) {
+                    onRegularPolygonClick.run();
+                }
+                drawMode.set(mode);
+            } else {
+                drawMode.set(DrawMode.NONE);
+            }
+        });
 
         return button;
     }
@@ -380,6 +395,13 @@ public class ShapeToolPane extends VBox {
      */
     public void setOnFunctionClick(Runnable callback) {
         this.onFunctionClick = callback;
+    }
+
+    /**
+     * 设置正多边形按钮点击回调
+     */
+    public void setOnRegularPolygonClick(Runnable callback) {
+        this.onRegularPolygonClick = callback;
     }
 
     /**

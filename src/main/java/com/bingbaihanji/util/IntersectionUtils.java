@@ -592,4 +592,149 @@ public class IntersectionUtils {
 
         return result;
     }
+
+    /**
+     * 计算线段与函数的交点
+     *
+     * @param line     线段
+     * @param function 函数
+     * @return 交点列表
+     */
+    public static List<Point2D> getLineFunctionIntersections(LineGeo line, FunctionGeo function) {
+        List<Point2D> intersections = new ArrayList<>();
+        List<Point2D> sampledPoints = function.getSampledPoints();
+
+        if (sampledPoints == null || sampledPoints.size() < 2) {
+            return intersections;
+        }
+
+        double x1 = line.getStartX();
+        double y1 = line.getStartY();
+        double x2 = line.getEndX();
+        double y2 = line.getEndY();
+
+        // 遍历函数采样点，检测与线段的交点
+        for (int i = 0; i < sampledPoints.size() - 1; i++) {
+            Point2D p1 = sampledPoints.get(i);
+            Point2D p2 = sampledPoints.get(i + 1);
+
+            if (!isValidPoint(p1) || !isValidPoint(p2)) {
+                continue;
+            }
+
+            // 计算两条线段的交点
+            List<Point2D> segmentIntersections = getSegmentSegmentIntersections(
+                    x1, y1, x2, y2,
+                    p1.getX(), p1.getY(), p2.getX(), p2.getY()
+            );
+
+            intersections.addAll(segmentIntersections);
+        }
+
+        return removeDuplicatePoints(intersections, GeometryConfig.Performance.MIN_VALID_DISTANCE * 10);
+    }
+
+    /**
+     * 计算无限直线与函数的交点
+     *
+     * @param infiniteLine 无限直线
+     * @param function     函数
+     * @return 交点列表
+     */
+    public static List<Point2D> getInfiniteLineFunctionIntersections(InfiniteLineGeo infiniteLine, FunctionGeo function) {
+        List<Point2D> intersections = new ArrayList<>();
+        List<Point2D> sampledPoints = function.getSampledPoints();
+
+        if (sampledPoints == null || sampledPoints.size() < 2) {
+            return intersections;
+        }
+
+        double x1 = infiniteLine.getPoint1X();
+        double y1 = infiniteLine.getPoint1Y();
+        double x2 = infiniteLine.getPoint2X();
+        double y2 = infiniteLine.getPoint2Y();
+
+        // 计算直线的方向向量和法向量
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+
+        // 遍历函数采样点，检测与无限直线的交点
+        for (int i = 0; i < sampledPoints.size() - 1; i++) {
+            Point2D p1 = sampledPoints.get(i);
+            Point2D p2 = sampledPoints.get(i + 1);
+
+            if (!isValidPoint(p1) || !isValidPoint(p2)) {
+                continue;
+            }
+
+            // 计算函数采样线段与无限直线的交点
+            double x3 = p1.getX();
+            double y3 = p1.getY();
+            double x4 = p2.getX();
+            double y4 = p2.getY();
+
+            double denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+            if (MathCalculationUtils.isZero(denom, GeometryConfig.Performance.MIN_VALID_DISTANCE)) {
+                continue;
+            }
+
+            double uNum = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3));
+            double u = uNum / denom;
+
+            // 只检查交点是否在函数采样线段上
+            if (u >= 0 && u <= 1) {
+                double tNum = (x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4);
+                double t = tNum / denom;
+                double ix = x1 + t * (x2 - x1);
+                double iy = y1 + t * (y2 - y1);
+                intersections.add(new Point2D(ix, iy));
+            }
+        }
+
+        return removeDuplicatePoints(intersections, GeometryConfig.Performance.MIN_VALID_DISTANCE * 10);
+    }
+
+    /**
+     * 计算圆与函数的交点
+     *
+     * @param circle   圆
+     * @param function 函数
+     * @return 交点列表
+     */
+    public static List<Point2D> getCircleFunctionIntersections(CircleGeo circle, FunctionGeo function) {
+        List<Point2D> intersections = new ArrayList<>();
+        List<Point2D> sampledPoints = function.getSampledPoints();
+
+        if (sampledPoints == null || sampledPoints.size() < 2) {
+            return intersections;
+        }
+
+        double cx = circle.getCx();
+        double cy = circle.getCy();
+        double r = circle.getR();
+
+        // 遍历函数采样线段，检测与圆的交点
+        for (int i = 0; i < sampledPoints.size() - 1; i++) {
+            Point2D p1 = sampledPoints.get(i);
+            Point2D p2 = sampledPoints.get(i + 1);
+
+            if (!isValidPoint(p1) || !isValidPoint(p2)) {
+                continue;
+            }
+
+            // 计算点到圆心的距离
+            double d1 = Math.hypot(p1.getX() - cx, p1.getY() - cy);
+            double d2 = Math.hypot(p2.getX() - cx, p2.getY() - cy);
+
+            // 检查是否跨越圆（一个点在圆内，一个点在圆外，或者恰好在圆上）
+            if ((d1 - r) * (d2 - r) <= 0 || Math.abs(d1 - r) < 1e-6 || Math.abs(d2 - r) < 1e-6) {
+                // 创建临时线段，使用线段-圆交点算法
+                LineGeo tempLine = new LineGeo(p1.getX(), p1.getY(), p2.getX(), p2.getY(), false);
+                List<Point2D> segmentIntersections = getLineCircleIntersections(tempLine, circle);
+                intersections.addAll(segmentIntersections);
+            }
+        }
+
+        return removeDuplicatePoints(intersections, GeometryConfig.Performance.MIN_VALID_DISTANCE * 10);
+    }
 }

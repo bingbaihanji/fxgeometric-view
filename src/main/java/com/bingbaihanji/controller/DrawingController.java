@@ -114,6 +114,7 @@ public class DrawingController {
         handlers.add(new DragHandler());              // 拖动在非绘制模式下优先
         handlers.add(new FreehandHandler());          // 手绘优先级高
         handlers.add(new BasicShapeHandler());        // 基础图形
+        handlers.add(new RegularPolygonHandler());    // 正多边形
         handlers.add(new PolygonHandler());           // 多边形
         handlers.add(new ConstructionToolHandler());  // 作图工具
         handlers.add(new RotationHandler());          // 旋转
@@ -349,6 +350,19 @@ public class DrawingController {
                 }
             }
         });
+    }
+
+    /**
+     * 显示正多边形边数选择对话框
+     */
+    public void showRegularPolygonDialog() {
+        // 找到RegularPolygonHandler并调用其对话框方法
+        for (DrawingHandler handler : handlers) {
+            if (handler instanceof com.bingbaihanji.controller.handler.RegularPolygonHandler) {
+                ((com.bingbaihanji.controller.handler.RegularPolygonHandler) handler).showSidesSelectionDialog();
+                break;
+            }
+        }
     }
 
     /**

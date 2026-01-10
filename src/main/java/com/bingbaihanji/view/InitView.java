@@ -100,6 +100,9 @@ public class InitView {
 
         // 绑定函数绘制按钮
         toolPane.setOnFunctionClick(controller::showFunctionDialog);
+
+        // 绑定正多边形按钮
+        toolPane.setOnRegularPolygonClick(controller::showRegularPolygonDialog);
     }
 
     /**

@@ -45,6 +45,11 @@ public interface GeometryVisitor<T> {
     T visitPolygon(PolygonGeo polygon);
 
     /**
+     * 访问正多边形对象
+     */
+    T visitRegularPolygon(RegularPolygonGeo regularPolygon);
+
+    /**
      * 访问手绘路径对象
      */
     T visitPath(PathGeo path);

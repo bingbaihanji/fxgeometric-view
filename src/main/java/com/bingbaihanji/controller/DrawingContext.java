@@ -220,6 +220,10 @@ public class DrawingContext {
      */
     public void redraw() {
         gridChartPane.redraw();
+        // 重绘后使吸附缓存失效，以便下次吸附时使用最新数据（包括函数交点）
+        if (snappingHandler != null) {
+            snappingHandler.invalidateCache();
+        }
     }
 
     // 命令历史管理

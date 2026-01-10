@@ -80,5 +80,10 @@ public enum DrawMode {
     /**
      * 函数（通过对话框输入参数绘制函数图像）
      */
-    FUNCTION
+    FUNCTION,
+
+    /**
+     * 正多边形（两次点击：中心和半径，边数可选3-10）
+     */
+    REGULAR_POLYGON
 }
