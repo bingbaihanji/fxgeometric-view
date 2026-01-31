@@ -38,7 +38,7 @@ public class CircleGeo extends AbstractWorldObject {
         this.cy = cy;
         this.r = r;
         this.color = StyleManager.GEOMETRY_LINE;
-        this.centerName = PointNameManager.getInstance().assignName(cx, cy);
+        this.centerName = PointNameManager.getInstance().assignCenterName(cx, cy);
     }
 
     /**
@@ -51,7 +51,7 @@ public class CircleGeo extends AbstractWorldObject {
         this.r = r;
         this.color = StyleManager.GEOMETRY_LINE;
         if (autoNameCenter) {
-            this.centerName = PointNameManager.getInstance().assignName(cx, cy);
+            this.centerName = PointNameManager.getInstance().assignCenterName(cx, cy);
         }
     }
 
@@ -75,7 +75,7 @@ public class CircleGeo extends AbstractWorldObject {
             this.centerName = centerPoint.getName();
             this.centerIsInternal = false; // 复用外部点，不由圆绘制
         } else {
-            this.centerName = PointNameManager.getInstance().assignName(cx, cy);
+            this.centerName = PointNameManager.getInstance().assignCenterName(cx, cy);
             this.centerIsInternal = true;
         }
     }

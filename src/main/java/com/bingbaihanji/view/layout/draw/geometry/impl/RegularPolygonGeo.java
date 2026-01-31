@@ -35,6 +35,9 @@ public class RegularPolygonGeo extends AbstractWorldObject {
     // 标记中心是否是内部创建的（需要由正多边形绘制）
     private boolean centerIsInternal = true;
 
+    // 顶点点对象列表（内部创建，标记为多边形顶点）
+    private List<PointGeo> vertexPoints;
+
     // 顶点缓存（从中心+半径+边数计算）
     private List<Point2D> cachedVertices;
     private boolean verticesCacheValid = false;
@@ -50,8 +53,12 @@ public class RegularPolygonGeo extends AbstractWorldObject {
         this.sideCount = Math.max(3, Math.min(10, sideCount)); // 限制在3-10之间
         this.startAngle = -Math.PI / 2; // 默认从正上方开始
         this.color = StyleManager.GEOMETRY_LINE;
-        this.centerName = PointNameManager.getInstance().assignName(cx, cy);
+        this.centerName = PointNameManager.getInstance().assignCenterName(cx, cy);
         this.cachedVertices = new ArrayList<>();
+        this.vertexPoints = new ArrayList<>();
+
+        // 创建顶点点对象
+        createVertexPoints();
     }
 
     /**
@@ -66,9 +73,13 @@ public class RegularPolygonGeo extends AbstractWorldObject {
         this.startAngle = -Math.PI / 2; // 默认从正上方开始
         this.color = StyleManager.GEOMETRY_LINE;
         if (autoNameCenter) {
-            this.centerName = PointNameManager.getInstance().assignName(cx, cy);
+            this.centerName = PointNameManager.getInstance().assignCenterName(cx, cy);
         }
         this.cachedVertices = new ArrayList<>();
+        this.vertexPoints = new ArrayList<>();
+
+        // 创建顶点点对象
+        createVertexPoints();
     }
 
     /**
@@ -108,10 +119,14 @@ public class RegularPolygonGeo extends AbstractWorldObject {
             this.centerName = centerPoint.getName();
             this.centerIsInternal = false; // 复用外部点，不由正多边形绘制
         } else {
-            this.centerName = PointNameManager.getInstance().assignName(cx, cy);
+            this.centerName = PointNameManager.getInstance().assignCenterName(cx, cy);
             this.centerIsInternal = true;
         }
         this.cachedVertices = new ArrayList<>();
+        this.vertexPoints = new ArrayList<>();
+
+        // 创建顶点点对象
+        createVertexPoints();
     }
 
     // Getter methods
@@ -172,7 +187,40 @@ public class RegularPolygonGeo extends AbstractWorldObject {
             cachedVertices.add(new Point2D(x, y));
         }
 
+        // 同步更新顶点点对象的位置
+        for (int i = 0; i < vertexPoints.size() && i < cachedVertices.size(); i++) {
+            Point2D vertex = cachedVertices.get(i);
+            vertexPoints.get(i).updatePosition(vertex.getX(), vertex.getY());
+        }
+
         verticesCacheValid = true;
+    }
+
+    /**
+     * 创建顶点点对象，并按A, B, C...命名
+     */
+    private void createVertexPoints() {
+        vertexPoints.clear();
+        calculateVertices();
+
+        for (int i = 0; i < cachedVertices.size(); i++) {
+            Point2D vertex = cachedVertices.get(i);
+            PointGeo vertexPoint = new PointGeo(vertex.getX(), vertex.getY());
+            vertexPoint.setPolygonVertex(true); // 标记为多边形顶点
+
+            // 使用普通的A, B, C...命名
+            String name = PointNameManager.getInstance().assignName(vertex.getX(), vertex.getY());
+            vertexPoint.setName(name);
+
+            vertexPoints.add(vertexPoint);
+        }
+    }
+
+    /**
+     * 获取顶点点对象列表
+     */
+    public List<PointGeo> getVertexPoints() {
+        return vertexPoints;
     }
 
     /**
@@ -243,6 +291,21 @@ public class RegularPolygonGeo extends AbstractWorldObject {
             // 使用LabelRenderer绘制中心名称
             if (centerName != null && !centerName.isEmpty()) {
                 LabelRenderer.renderLabel(gc, centerName, sx, sy);
+            }
+        }
+
+        // 绘制顶点点对象
+        gc.setFill(getEffectiveColor());
+        double pointRadius = 3;
+        for (int i = 0; i < vertexPoints.size(); i++) {
+            PointGeo vertexPoint = vertexPoints.get(i);
+            // 绘制顶点
+            gc.fillOval(xPoints[i] - pointRadius, yPoints[i] - pointRadius,
+                    pointRadius * 2, pointRadius * 2);
+            // 绘制顶点名称
+            String name = vertexPoint.getName();
+            if (name != null && !name.isEmpty()) {
+                LabelRenderer.renderLabel(gc, name, xPoints[i], yPoints[i]);
             }
         }
     }

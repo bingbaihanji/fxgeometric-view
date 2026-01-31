@@ -39,6 +39,11 @@ public class PointNameManager {
      */
     private int nextAvailableIndex = 0;
 
+    /**
+     * 下一个可用的中心点命名索引（用于O系列）
+     */
+    private int nextCenterIndex = 0;
+
     private PointNameManager() {
     }
 
@@ -88,6 +93,46 @@ public class PointNameManager {
      */
     public String assignName(Point2D point) {
         return assignName(point.getX(), point.getY());
+    }
+
+    /**
+     * 为中心点分配名称（圆心或正多边形中心）
+     * <p>
+     * 命名规则：O, O1, O2, O3, ...
+     * <p>
+     * 线程安全的实现
+     *
+     * @param x 点的X坐标
+     * @param y 点的Y坐标
+     * @return 点的名称
+     */
+    public synchronized String assignCenterName(double x, double y) {
+        String key = getPointKey(x, y);
+
+        // 如果点已存在，返回已有名称
+        if (pointNameMap.containsKey(key)) {
+            return pointNameMap.get(key);
+        }
+
+        // 找到下一个未使用的中心索引
+        while (isCenterIndexUsed(nextCenterIndex)) {
+            nextCenterIndex++;
+        }
+
+        // 生成新名称（O系列）
+        String name = generateCenterName(nextCenterIndex);
+        pointNameMap.put(key, name);
+        nameToIndexMap.put(name, nextCenterIndex);
+        nextCenterIndex++;
+
+        return name;
+    }
+
+    /**
+     * 为中心点分配名称（Point2D版本）
+     */
+    public String assignCenterName(Point2D point) {
+        return assignCenterName(point.getX(), point.getY());
     }
 
     /**
@@ -176,6 +221,7 @@ public class PointNameManager {
         pointNameMap.clear();
         nameToIndexMap.clear();
         nextAvailableIndex = 0;
+        nextCenterIndex = 0;
     }
 
     /**
@@ -221,6 +267,29 @@ public class PointNameManager {
      */
     private boolean isIndexUsed(int index) {
         String name = generateName(index);
+        return nameToIndexMap.containsKey(name);
+    }
+
+    /**
+     * 生成中心点名称（O系列）
+     * 规则：O, O1, O2, O3, ...
+     *
+     * @param index 索引（从0开始）
+     * @return 中心点名称
+     */
+    private String generateCenterName(int index) {
+        if (index == 0) {
+            return "O";
+        } else {
+            return "O" + index;
+        }
+    }
+
+    /**
+     * 检查中心索引是否已被使用
+     */
+    private boolean isCenterIndexUsed(int index) {
+        String name = generateCenterName(index);
         return nameToIndexMap.containsKey(name);
     }
 }

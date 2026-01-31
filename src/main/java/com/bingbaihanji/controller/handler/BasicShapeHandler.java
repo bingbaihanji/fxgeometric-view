@@ -472,12 +472,26 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             return;
         }
 
-        // 在 FIRST_CLICK 状态下，绘制第一个点
+        // 在 FIRST_CLICK 状态下，绘制第一个点和第二个点的预览
         if (context.getState() == DrawingState.FIRST_CLICK) {
+            // 绘制第一个点（实心点）
             double firstPointScreenX = transform.worldToScreenX(firstPointX);
             double firstPointScreenY = transform.worldToScreenY(firstPointY);
             gc.setFill(Color.valueOf("#759eb2"));
             gc.fillOval(firstPointScreenX - pointRadius, firstPointScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
+
+            // 绘制第二个点的预览（半透明点，跟随鼠标）
+            double mouseScreenX = transform.worldToScreenX(context.getCurrentMouseX());
+            double mouseScreenY = transform.worldToScreenY(context.getCurrentMouseY());
+
+            // 外圈光晕效果
+            gc.setStroke(Color.valueOf("#759eb2").deriveColor(0, 1, 1, 0.5));
+            gc.setLineWidth(1.5);
+            gc.strokeOval(mouseScreenX - 6, mouseScreenY - 6, 12, 12);
+
+            // 内部半透明填充点
+            gc.setFill(Color.valueOf("#759eb2").deriveColor(0, 1, 1, 0.6));
+            gc.fillOval(mouseScreenX - pointRadius, mouseScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
         }
     }
 }

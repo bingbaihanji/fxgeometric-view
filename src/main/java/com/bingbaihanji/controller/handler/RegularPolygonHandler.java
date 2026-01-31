@@ -154,6 +154,9 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
         // 创建正多边形，复用已有的中心点，并指定起始角度
         RegularPolygonGeo newPolygon = new RegularPolygonGeo(centerPointRef, centerX, centerY, radius, selectedSides, startAngle);
 
+        // 获取顶点点对象列表
+        List<PointGeo> vertexPoints = newPolygon.getVertexPoints();
+
         // 计算此正多边形产生的所有交点
         List<PointGeo> intersectionPoints = context.getIntersectionHandler()
                 .checkIntersections(newPolygon, context);
@@ -162,6 +165,11 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
             @Override
             public void execute() {
                 context.addObject(newPolygon);
+                // 添加顶点点对象到场景
+                for (PointGeo vertexPoint : vertexPoints) {
+                    context.addObject(vertexPoint);
+                }
+                // 添加交点
                 for (PointGeo point : intersectionPoints) {
                     context.addObject(point);
                 }
@@ -170,6 +178,11 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
             @Override
             public void undo() {
                 context.removeObject(newPolygon);
+                // 移除顶点点对象
+                for (PointGeo vertexPoint : vertexPoints) {
+                    context.removeObject(vertexPoint);
+                }
+                // 移除交点
                 for (PointGeo point : intersectionPoints) {
                     context.removeObject(point);
                 }
