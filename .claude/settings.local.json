@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /b /s)",
+      "Bash(tree:*)",
+      "Bash(cat:*)",
+      "Bash(xargs ls:*)",
+      "Bash(mvn compile:*)",
+      "Bash(mvn clean compile:*)",
+      "Bash(javac:*)",
+      "Bash(java:*)",
+      "Bash(for file in QuadraticFunctionConstraint.java TrigonometricFunctionConstraint.java HyperbolaFunctionConstraint.java ParabolaConicFunctionConstraint.java ExponentialFunctionConstraint.java LogarithmicFunctionConstraint.java EllipseFunctionConstraint.java ReciprocalFunctionConstraint.java)",
+      "Bash(do tail -2 \"$file\")",
+      "Bash(echo:*)",
+      "Bash(done)"
+    ]
+  }
+}

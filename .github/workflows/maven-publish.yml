@@ -1,0 +1,66 @@
+name: Maven Package
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        server-id: github
+        settings-path: ${{ github.workspace }}
+
+    - name: Configure Maven settings
+      run: |
+        mkdir -p ${{ github.workspace }}/.m2
+        echo "<settings xmlns=\"http://maven.apache.org/SETTINGS/1.0.0\"
+          xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"
+          xsi:schemaLocation=\"http://maven.apache.org/SETTINGS/1.0.0
+          http://maven.apache.org/xsd/settings-1.0.0.xsd\">
+          <servers>
+            <server>
+              <id>github</id>
+              <username>\${env.GITHUB_ACTOR}</username>
+              <password>\${env.GITHUB_TOKEN}</password>
+            </server>
+          </servers>
+        </settings>" > ${{ github.workspace }}/settings.xml
+
+    - name: Build with Maven
+      run: mvn -B clean package --file pom.xml
+
+    - name: Publish to GitHub Packages Apache Maven
+      run: |
+        # 首先安装到本地仓库
+        mvn install -DskipTests
+        
+        # 然后部署到GitHub Packages
+        mvn deploy \
+          -DskipTests \
+          -s ${{ github.workspace }}/settings.xml \
+          -DaltDeploymentRepository=github::default::https://maven.pkg.github.com/${{ github.repository }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload JAR as release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: target/FXGeometricView-1.0-SNAPSHOT.jar
+        asset_name: FXGeometricView.jar
+        asset_content_type: application/java-archive
