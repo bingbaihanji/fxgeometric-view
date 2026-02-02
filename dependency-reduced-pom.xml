@@ -27,6 +27,24 @@
         <version>3.0.0-M9</version>
       </plugin>
       <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <id>create-bin-directory</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <mkdir />
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-shade-plugin</artifactId>
         <version>3.4.1</version>
         <executions>
@@ -36,6 +54,9 @@
               <goal>shade</goal>
             </goals>
             <configuration>
+              <outputDirectory>${project.basedir}/bin</outputDirectory>
+              <finalName>FXGeometricView-1.0-SNAPSHOT</finalName>
+              <shadedArtifactAttached>false</shadedArtifactAttached>
               <transformers>
                 <transformer>
                   <mainClass>com.bingbaihanji.FXGeometricApplication</mainClass>

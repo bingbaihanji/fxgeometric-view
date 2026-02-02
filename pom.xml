@@ -116,6 +116,28 @@
             </plugin>
 
 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>create-bin-directory</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+
+                            <target>
+                                <mkdir dir="${project.basedir}/bin"/> <!-- 创建项目根目录下的bin -->
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+
             <!-- Maven Shade Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -128,6 +150,11 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <outputDirectory>${project.basedir}/bin</outputDirectory>
+                            <!-- 自定义JAR名称（无original前缀） -->
+                            <finalName>FXGeometricView-1.0-SNAPSHOT</finalName>
+                            <!--  关闭双JAR生成（只输出 fatJAR，不生成original-JAR） -->
+                            <shadedArtifactAttached>false</shadedArtifactAttached>
                             <transformers>
                                 <!-- 指定 Main-Class -->
                                 <transformer
