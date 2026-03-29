@@ -100,6 +100,34 @@ public class MenuEvent {
             });
         });
 
+        // 绘制设置菜单
+        menuView.setOnDrawingSettingsAction(() -> {
+            System.out.println("打开绘制设置");
+            Platform.runLater(() -> {
+                // 获取当前的 FreehandDrawingTool 配置
+                var freehandTool = com.bingbaihanji.controller.handler.FreehandHandler.getFreehandTool();
+                
+                DrawingSettingsDialog dialog = new DrawingSettingsDialog(
+                    freehandTool.getSimplifyEpsilon(),
+                    freehandTool.getSmoothSegments(),
+                    freehandTool.getTension(),
+                    freehandTool.getMinPointDistance(),
+                    freehandTool.isEnableSmoothing()
+                );
+                
+                var result = dialog.showAndWait();
+                result.ifPresent(settings -> {
+                    // 应用新的设置
+                    freehandTool.setSimplifyEpsilon(settings.getSimplifyEpsilon());
+                    freehandTool.setSmoothSegments(settings.getSmoothSegments());
+                    freehandTool.setTension(settings.getTension());
+                    freehandTool.setMinPointDistance(settings.getMinPointDistance());
+                    freehandTool.setEnableSmoothing(settings.isEnableSmoothing());
+                    System.out.println("绘制设置已更新");
+                });
+            });
+        });
+
         return menuView;
     }
 

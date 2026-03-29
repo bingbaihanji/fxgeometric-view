@@ -19,6 +19,7 @@ public class MenuView extends MenuBar {
     private RadioMenuItem hideAxis; // 隐藏坐标轴
 
     private MenuItem systemSettingsItem; // 系统设置菜单项
+    private MenuItem drawingSettingsItem; // 绘制设置菜单项
 
     public MenuView() {
         initializeMenus();
@@ -85,8 +86,10 @@ public class MenuView extends MenuBar {
         // 创建"系统设置"菜单项
         systemSettingsItem = new MenuItem(getMenuName("menu.settings.systemSettings"));
 
+        // 创建"绘制设置"菜单项
+        drawingSettingsItem = new MenuItem(getMenuName("menu.settings.drawingSettings"));
 
-        settingsMenu.getItems().add(systemSettingsItem);
+        settingsMenu.getItems().addAll(systemSettingsItem, drawingSettingsItem);
 
         // 4. 将所有菜单添加到菜单栏
         menus.addAll(toolMenu, viewMenu, settingsMenu);
@@ -128,6 +131,10 @@ public class MenuView extends MenuBar {
     public MenuItem getSystemSettingsItem() {
         return systemSettingsItem;
     }
+
+    public MenuItem getDrawingSettingsItem() {
+        return drawingSettingsItem;
+    }
     // 添加事件监听器的方法
 
     public void setOnScreenshotAction(Runnable action) {
@@ -152,5 +159,9 @@ public class MenuView extends MenuBar {
 
     public void setOnSystemSettingsAction(Runnable action) {
         systemSettingsItem.setOnAction(e -> action.run());
+    }
+
+    public void setOnDrawingSettingsAction(Runnable action) {
+        drawingSettingsItem.setOnAction(e -> action.run());
     }
 }

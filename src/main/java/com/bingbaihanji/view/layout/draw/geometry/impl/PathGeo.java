@@ -18,7 +18,9 @@ import java.util.List;
 /**
  * 手绘路径几何图形
  * <p>
- * 保留完整的曲线形状，但只显示起点和终点
+ * 保留完整的曲线形状，但只显示起点和终点。
+ * 注意：传入的 points 应该已经经过 CurveSmoothing 平滑处理，
+ * 包含足够密集的插值点，因此直接用直线段连接即可呈现平滑效果。
  *
  * @author bingbaihanji
  * @date 2025-12-23
@@ -63,23 +65,30 @@ public class PathGeo extends AbstractWorldObject {
     public void paint(GraphicsContext gc, WorldTransform transform, double w, double h) {
         if (pathPoints.size() < 2) return;
 
-        // 绘制曲线路径
-        // 应用线型
+        // 绘制曲线路径（使用 Path API 一次性绘制，性能更好）
         LineStyleUtil.applyLineStyle(gc, lineType);
         gc.setStroke(getEffectiveColor());
         gc.setLineWidth(getEffectiveLineWidth());
 
-        for (int i = 0; i < pathPoints.size() - 1; i++) {
-            Point p1 = pathPoints.get(i);
-            Point p2 = pathPoints.get(i + 1);
+        // 开始路径绘制
+        gc.beginPath();
 
-            double sx1 = transform.worldToScreenX(p1.x);
-            double sy1 = transform.worldToScreenY(p1.y);
-            double sx2 = transform.worldToScreenX(p2.x);
-            double sy2 = transform.worldToScreenY(p2.y);
+        // 移动到起点
+        Point firstPoint = pathPoints.get(0);
+        double sx = transform.worldToScreenX(firstPoint.x);
+        double sy = transform.worldToScreenY(firstPoint.y);
+        gc.moveTo(sx, sy);
 
-            gc.strokeLine(sx1, sy1, sx2, sy2);
+        // 连接后续所有点
+        for (int i = 1; i < pathPoints.size(); i++) {
+            Point p = pathPoints.get(i);
+            double screenX = transform.worldToScreenX(p.x);
+            double screenY = transform.worldToScreenY(p.y);
+            gc.lineTo(screenX, screenY);
         }
+
+        // 描边路径
+        gc.stroke();
 
         // 重置线型
         LineStyleUtil.resetLineStyle(gc);

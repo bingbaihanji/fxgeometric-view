@@ -25,9 +25,16 @@ import java.util.List;
 public class FreehandHandler extends AbstractDrawingHandler {
 
     /**
-     * 手绘工具
+     * 手绘工具（单例模式，全局共享配置）
      */
-    private final FreehandDrawingTool freehandTool = new FreehandDrawingTool();
+    private static final FreehandDrawingTool freehandTool = new FreehandDrawingTool();
+    
+    /**
+     * 获取手绘工具实例
+     */
+    public static FreehandDrawingTool getFreehandTool() {
+        return freehandTool;
+    }
 
     @Override
     public boolean canHandle(DrawMode mode) {
