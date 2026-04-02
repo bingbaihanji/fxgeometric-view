@@ -203,8 +203,7 @@ public class RegularPolygonGeo extends AbstractWorldObject {
         vertexPoints.clear();
         calculateVertices();
 
-        for (int i = 0; i < cachedVertices.size(); i++) {
-            Point2D vertex = cachedVertices.get(i);
+        for (Point2D vertex : cachedVertices) {
             PointGeo vertexPoint = new PointGeo(vertex.getX(), vertex.getY());
             vertexPoint.setPolygonVertex(true); // 标记为多边形顶点
 

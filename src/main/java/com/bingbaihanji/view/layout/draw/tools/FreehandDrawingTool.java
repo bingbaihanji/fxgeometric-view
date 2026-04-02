@@ -151,7 +151,7 @@ public class FreehandDrawingTool {
         gc.setLineDashes(null);
     }
 
-    // ========== Getter 和 Setter 方法 ==========
+    //   Getter 和 Setter 方法
 
     public double getSimplifyEpsilon() {
         return simplifyEpsilon;

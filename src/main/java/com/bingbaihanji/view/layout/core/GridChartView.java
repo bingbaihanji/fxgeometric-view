@@ -111,7 +111,7 @@ public class GridChartView extends Pane {
         redraw(); // 绘制 格点/网格
         initMouseClickOutput(); // 点击控制台显示坐标
         initMouseHoverTooltip(); // 悬浮气泡显示坐标
-        initMouseObjectHover();
+        initMouseObjectHover(); // 鼠标吸附
 
         // 使用配置初始化 Painters
         addPainter(new GridPainter(settings));
@@ -134,7 +134,7 @@ public class GridChartView extends Pane {
      */
     private void initMouseHoverTooltip() {
 
-        hoverTooltip.setAutoHide(true);
+        hoverTooltip.setAutoHide(true); // 设置提示框自动隐藏
         hoverTooltip.setStyle("""
                 -fx-font-size: 13px;
                 -fx-background-color: rgba(255, 224, 178, 0.9);
@@ -143,35 +143,39 @@ public class GridChartView extends Pane {
                 -fx-padding: 6 8 6 8;
                 """);
 
+        // 添加鼠标移动事件监听器
         addEventHandler(MouseEvent.MOUSE_MOVED, e -> {
 
-            double x = e.getX();
-            double y = e.getY();
+            double x = e.getX(); // 当前鼠标X坐标
+            double y = e.getY(); // 当前鼠标Y坐标
 
-            double dx = x - lastHoverX;
-            double dy = y - lastHoverY;
+            double dx = x - lastHoverX; // X方向移动距离
+            double dy = y - lastHoverY; // Y方向移动距离
 
+
+            // 如果鼠标移动距离超过阈值，则重新启动悬停计时器
             if (Math.hypot(dx, dy) > HOVER_MOVE_THRESHOLD) {
 
-                hoverTimer.stop();
-                hoverTooltip.hide();
+                hoverTimer.stop();      // 停止之前的计时器
+                hoverTooltip.hide();    // 隐藏可能正在显示的工具提示
 
-                lastHoverX = x;
+                lastHoverX = x; // 更新上次记录的鼠标位置
                 lastHoverY = y;
 
+                // 设置计时器结束后显示工具提示
                 hoverTimer.setOnFinished(ev ->
                         showHoverTooltip(x, y)
                 );
-                hoverTimer.playFromStart();
+                hoverTimer.playFromStart(); // 启动计时器
             }
         });
 
+        // 添加鼠标退出事件监听器：鼠标移出控件时停止计时并隐藏工具提示
         addEventHandler(MouseEvent.MOUSE_EXITED, e -> {
             hoverTimer.stop();
             hoverTooltip.hide();
         });
     }
-
     /**
      * 显示悬停点的坐标气泡
      */
@@ -400,7 +404,7 @@ public class GridChartView extends Pane {
             previewPainter.accept(gc, transform);
         }
 
-        // ：交互预览
+        // 交互预览
         if (circleTool != null) {
             // 现在CircleDrawingTool可以正确地与DrawingController协同工作
             // 预览绘制逻辑已经修复，可以正常显示圆形预览
@@ -480,6 +484,7 @@ public class GridChartView extends Pane {
         });
     }
 
+    // 吸附
     private void initMouseObjectHover() {
 
         addEventHandler(MouseEvent.MOUSE_MOVED, e -> {
