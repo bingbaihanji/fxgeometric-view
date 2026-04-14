@@ -18,7 +18,7 @@ import javafx.scene.layout.VBox;
 import java.net.URL;
 
 /**
- * 图形工具面板（左侧）
+ * 图形工具面板(左侧)
  *
  * @author bingbaihanji
  */
@@ -192,7 +192,7 @@ public class ShapeToolPane extends VBox {
     }
 
     /**
-     * 创建动作按钮（不是切换按钮）
+     * 创建动作按钮(不是切换按钮)
      */
     private Button createActionButton(String textKey, Runnable action) {
         String tooltipText = I18nUtil.getString(textKey);
@@ -236,7 +236,7 @@ public class ShapeToolPane extends VBox {
     }
 
     /**
-     * 单个工具按钮（图标 + 文本）
+     * 单个工具按钮(图标 + 文本)
      */
     private ToggleButton createTool(
             String textKey,
@@ -289,7 +289,7 @@ public class ShapeToolPane extends VBox {
 
         button.setOnAction(e -> {
             if (button.isSelected()) {
-                // 如果是正多边形模式，先触发回调
+                // 如果是正多边形模式,先触发回调
                 if (mode == DrawMode.REGULAR_POLYGON && onRegularPolygonClick != null) {
                     onRegularPolygonClick.run();
                 }

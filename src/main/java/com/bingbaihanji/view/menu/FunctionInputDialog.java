@@ -33,6 +33,9 @@ public class FunctionInputDialog extends Dialog<FunctionInputResult> {
     private TextField domainMinField;
     private TextField domainMaxField;
 
+    // 自定义表达式输入
+    private TextField customExpressionField;
+
     /**
      * 构造函数
      *
@@ -62,7 +65,7 @@ public class FunctionInputDialog extends Dialog<FunctionInputResult> {
 
         VBox typeSection = new VBox(10, typeLabel, functionTypeCombo);
 
-        // 参数输入区（动态）
+        // 参数输入区(动态)
         parametersPane = new VBox(10);
 
         // 定义域设置区
@@ -70,7 +73,7 @@ public class FunctionInputDialog extends Dialog<FunctionInputResult> {
 
         mainContent.getChildren().addAll(typeSection, parametersPane, domainSection);
 
-        // 监听类型变化，动态更新参数输入区
+        // 监听类型变化,动态更新参数输入区
         functionTypeCombo.valueProperty().addListener((obs, old, newVal) -> {
             updateParametersPane(newVal);
         });
@@ -95,38 +98,57 @@ public class FunctionInputDialog extends Dialog<FunctionInputResult> {
     private void updateParametersPane(FunctionType type) {
         parametersPane.getChildren().clear();
         parameterFields.clear();
+        customExpressionField = null;
 
         Label title = new Label(I18nUtil.getString("function.parameters"));
         title.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
         parametersPane.getChildren().add(title);
 
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(8);
-        grid.setPadding(new Insets(5, 0, 0, 0));
+        if (type == FunctionType.CUSTOM) {
+            // 自定义表达式输入区
+            Label exprLabel = new Label("表达式 f(x)：");
+            customExpressionField = new TextField();
+            customExpressionField.setPrefWidth(300);
+            customExpressionField.setPromptText("例如: sin(x) + x^2 或 2*x^3 - x");
 
-        int row = 0;
-        for (FunctionParameter param : type.getParameters()) {
-            Label label = new Label(param.getLabel() + ":");
-            TextField field = new TextField(param.getDefaultValue());
-            field.setPrefWidth(200);
-            field.setPromptText(param.getDescription());
+            Label hintLabel = new Label(
+                    "支持运算符: +  -  *  /  ^(幂)\n" +
+                            "内置函数: sin cos tan asin acos atan\n" +
+                            "         exp log log2 log10 sqrt abs ceil floor\n" +
+                            "常量: pi  e"
+            );
+            hintLabel.setStyle("-fx-text-fill: #666666; -fx-font-size: 11px;");
 
-            // 添加数值验证
-            field.textProperty().addListener((obs, old, newVal) -> {
-                if (!newVal.matches("-?\\d*\\.?\\d*")) {
-                    field.setText(old);
-                }
-            });
+            parametersPane.getChildren().addAll(exprLabel, customExpressionField, hintLabel);
+        } else {
+            GridPane grid = new GridPane();
+            grid.setHgap(10);
+            grid.setVgap(8);
+            grid.setPadding(new Insets(5, 0, 0, 0));
 
-            grid.add(label, 0, row);
-            grid.add(field, 1, row);
+            int row = 0;
+            for (FunctionParameter param : type.getParameters()) {
+                Label label = new Label(param.getLabel() + ":");
+                TextField field = new TextField(param.getDefaultValue());
+                field.setPrefWidth(200);
+                field.setPromptText(param.getDescription());
 
-            parameterFields.put(param.getName(), field);
-            row++;
+                // 添加数值验证
+                field.textProperty().addListener((obs, old, newVal) -> {
+                    if (!newVal.matches("-?\\d*\\.?\\d*")) {
+                        field.setText(old);
+                    }
+                });
+
+                grid.add(label, 0, row);
+                grid.add(field, 1, row);
+
+                parameterFields.put(param.getName(), field);
+                row++;
+            }
+
+            parametersPane.getChildren().add(grid);
         }
-
-        parametersPane.getChildren().add(grid);
     }
 
     /**
@@ -199,6 +221,30 @@ public class FunctionInputDialog extends Dialog<FunctionInputResult> {
 
         try {
             FunctionType type = functionTypeCombo.getValue();
+
+            // 读取定义域(对所有类型通用)
+            boolean autoRange = autoRangeCheckBox.isSelected();
+            double domainMin = autoRange ? Double.NEGATIVE_INFINITY
+                    : Double.parseDouble(domainMinField.getText());
+            double domainMax = autoRange ? Double.POSITIVE_INFINITY
+                    : Double.parseDouble(domainMaxField.getText());
+
+            if (!autoRange && domainMin >= domainMax) {
+                showError(I18nUtil.getString("function.error.invalidDomain"));
+                return null;
+            }
+
+            // 自定义表达式类型单独处理
+            if (type == FunctionType.CUSTOM) {
+                String expr = customExpressionField == null ? "" : customExpressionField.getText().trim();
+                String error = com.bingbaihanji.view.layout.draw.geometry.impl.CustomFunctionGeo.validate(expr);
+                if (error != null) {
+                    showError(error);
+                    return null;
+                }
+                return new FunctionInputResult(type, new HashMap<>(), domainMin, domainMax, autoRange, expr);
+            }
+
             Map<String, Double> parameters = new HashMap<>();
 
             // 读取所有参数
@@ -214,19 +260,6 @@ public class FunctionInputDialog extends Dialog<FunctionInputResult> {
 
             // 验证参数有效性
             if (!validateParameters(type, parameters)) {
-                return null;
-            }
-
-            // 读取定义域
-            boolean autoRange = autoRangeCheckBox.isSelected();
-            double domainMin = autoRange ? Double.NEGATIVE_INFINITY
-                    : Double.parseDouble(domainMinField.getText());
-            double domainMax = autoRange ? Double.POSITIVE_INFINITY
-                    : Double.parseDouble(domainMaxField.getText());
-
-            // 验证定义域
-            if (!autoRange && domainMin >= domainMax) {
-                showError(I18nUtil.getString("function.error.invalidDomain"));
                 return null;
             }
 

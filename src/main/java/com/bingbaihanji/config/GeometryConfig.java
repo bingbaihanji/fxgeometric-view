@@ -3,7 +3,7 @@ package com.bingbaihanji.config;
 /**
  * 几何绘图常量配置类
  * <p>
- * 统一管理所有魔数，提高代码可维护性
+ * 统一管理所有魔数,提高代码可维护性
  *
  * @author bingbaihanji
  * @date 2025-01-04
@@ -19,22 +19,22 @@ public final class GeometryConfig {
      */
     public static class Snapping {
         /**
-         * 点吸附阈值（像素）
+         * 点吸附阈值(像素)
          */
         public static final double POINT_SNAP_THRESHOLD_PIXELS = 15.0;
 
         /**
-         * 边吸附阈值（像素）
+         * 边吸附阈值(像素)
          */
         public static final double EDGE_SNAP_THRESHOLD_PIXELS = 10.0;
 
         /**
-         * 网格吸附阈值（像素）
+         * 网格吸附阈值(像素)
          */
         public static final double GRID_SNAP_THRESHOLD_PIXELS = 12.0;
 
         /**
-         * 圆相切吸附阈值（像素）
+         * 圆相切吸附阈值(像素)
          */
         public static final double CIRCLE_TANGENT_THRESHOLD_PIXELS = 15.0;
 
@@ -47,32 +47,32 @@ public final class GeometryConfig {
      */
     public static class PointRendering {
         /**
-         * 默认点半径（像素）
+         * 默认点半径(像素)
          */
         public static final double DEFAULT_POINT_RADIUS = 4.0;
 
         /**
-         * 悬停状态点半径（像素）
+         * 悬停状态点半径(像素)
          */
         public static final double HOVER_POINT_RADIUS = 6.0;
 
         /**
-         * 选中状态点半径（像素）
+         * 选中状态点半径(像素)
          */
         public static final double SELECTED_POINT_RADIUS = 6.0;
 
         /**
-         * 小点半径（像素）- 用于多边形顶点等
+         * 小点半径(像素)- 用于多边形顶点等
          */
         public static final double SMALL_POINT_RADIUS = 3.0;
 
         /**
-         * 预览点半径（像素）
+         * 预览点半径(像素)
          */
         public static final double PREVIEW_POINT_RADIUS = 4.0;
 
         /**
-         * 点的边界框边距（世界坐标）
+         * 点的边界框边距(世界坐标)
          */
         public static final double BOUNDING_BOX_MARGIN = 0.1;
 
@@ -85,27 +85,27 @@ public final class GeometryConfig {
      */
     public static class Tolerance {
         /**
-         * 点复用检测阈值（像素）
+         * 点复用检测阈值(像素)
          */
         public static final double POINT_REUSE_THRESHOLD_PIXELS = 10.0;
 
         /**
-         * 顶点命中测试容差（像素）
+         * 顶点命中测试容差(像素)
          */
         public static final double VERTEX_HIT_TEST_PIXELS = 10.0;
 
         /**
-         * 对象命中测试容差（像素）
+         * 对象命中测试容差(像素)
          */
         public static final double OBJECT_HIT_TEST_PIXELS = 5.0;
 
         /**
-         * 多边形闭合检测阈值（像素）
+         * 多边形闭合检测阈值(像素)
          */
         public static final double POLYGON_CLOSE_THRESHOLD_PIXELS = 15.0;
 
         /**
-         * 约束图形检测阈值（像素）
+         * 约束图形检测阈值(像素)
          */
         public static final double CONSTRAINT_SNAP_DISTANCE_PIXELS = 15.0;
 
@@ -118,22 +118,22 @@ public final class GeometryConfig {
      */
     public static class LineStyle {
         /**
-         * 默认线宽（像素）
+         * 默认线宽(像素)
          */
         public static final double DEFAULT_LINE_WIDTH = 2.0;
 
         /**
-         * 悬停状态线宽（像素）
+         * 悬停状态线宽(像素)
          */
         public static final double HOVER_LINE_WIDTH = 3.0;
 
         /**
-         * 预览线虚线长度（像素）
+         * 预览线虚线长度(像素)
          */
         public static final double PREVIEW_DASH_LENGTH = 6.0;
 
         /**
-         * 多边形预览虚线长度（像素）
+         * 多边形预览虚线长度(像素)
          */
         public static final double POLYGON_PREVIEW_DASH_LENGTH = 4.0;
 
@@ -207,7 +207,7 @@ public final class GeometryConfig {
         public static final double DEFAULT_FONT_SIZE = 12.0;
 
         /**
-         * 标签偏移量（像素）
+         * 标签偏移量(像素)
          */
         public static final double LABEL_OFFSET_X = 8.0;
         public static final double LABEL_OFFSET_Y = -8.0;
@@ -244,7 +244,7 @@ public final class GeometryConfig {
      */
     public static class Mathematics {
         /**
-         * 极小值阈值（用于避免除零和断点检测）
+         * 极小值阈值(用于避免除零和断点检测)
          */
         public static final double TINY_VALUE = 1e-3;
 
@@ -262,17 +262,17 @@ public final class GeometryConfig {
      */
     public static class Transform {
         /**
-         * 旋转中心点半径（像素）
+         * 旋转中心点半径(像素)
          */
         public static final double ROTATION_CENTER_RADIUS = 5.0;
 
         /**
-         * 旋转圆圈半径（像素）
+         * 旋转圆圈半径(像素)
          */
         public static final double ROTATION_CIRCLE_RADIUS = 30.0;
 
         /**
-         * 旋转步长（弧度）- 15度
+         * 旋转步长(弧度)- 15度
          */
         public static final double ROTATION_STEP = Math.PI / 12;
 

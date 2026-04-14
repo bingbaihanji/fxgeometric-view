@@ -37,7 +37,7 @@ public class LineStyleUtil {
      * 获取虚线模式数组
      *
      * @param lineType 线型
-     * @return 虚线模式数组，实线返回null
+     * @return 虚线模式数组,实线返回null
      */
     public static double[] getDashPattern(LineType lineType) {
         if (lineType == null) {

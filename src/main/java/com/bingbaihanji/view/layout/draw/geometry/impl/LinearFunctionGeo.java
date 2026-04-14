@@ -43,7 +43,7 @@ public class LinearFunctionGeo extends FunctionGeo {
                                 double scale) {
         sampledPoints.clear();
 
-        // 一次函数只需要两个点（视图边界）
+        // 一次函数只需要两个点(视图边界)
         double x1 = Double.isFinite(domainMin) ? Math.max(viewMinX, domainMin) : viewMinX;
         double x2 = Double.isFinite(domainMax) ? Math.min(viewMaxX, domainMax) : viewMaxX;
 

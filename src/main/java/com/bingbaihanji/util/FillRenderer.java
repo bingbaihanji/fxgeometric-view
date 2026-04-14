@@ -20,11 +20,11 @@ public class FillRenderer {
      * @param fillType    填充类型
      * @param fillColor   填充颜色
      * @param fillOpacity 填充透明度
-     * @param angle       填充角度（度）
-     * @param distance    填充间距（像素）
-     * @param centerX     圆心X（屏幕坐标）
-     * @param centerY     圆心Y（屏幕坐标）
-     * @param radius      半径（屏幕坐标）
+     * @param angle       填充角度(度)
+     * @param distance    填充间距(像素)
+     * @param centerX     圆心X(屏幕坐标)
+     * @param centerY     圆心Y(屏幕坐标)
+     * @param radius      半径(屏幕坐标)
      */
     public static void fillOval(GraphicsContext gc, FillType fillType, Color fillColor,
                                 double fillOpacity, int angle, int distance,
@@ -33,7 +33,7 @@ public class FillRenderer {
             return;
         }
 
-        // 计算实际填充颜色（带透明度）
+        // 计算实际填充颜色(带透明度)
         Color effectiveFillColor = new Color(
                 fillColor.getRed(),
                 fillColor.getGreen(),
@@ -47,7 +47,7 @@ public class FillRenderer {
             gc.fillOval(centerX - radius, centerY - radius, radius * 2, radius * 2);
         } else {
             // 其他填充类型：使用图案填充
-            // 先填充背景（可选）
+            // 先填充背景(可选)
             // gc.setFill(new Color(fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), fillOpacity * 0.2));
             // gc.fillOval(centerX - radius, centerY - radius, radius * 2, radius * 2);
 
@@ -74,10 +74,10 @@ public class FillRenderer {
      * @param fillType    填充类型
      * @param fillColor   填充颜色
      * @param fillOpacity 填充透明度
-     * @param angle       填充角度（度）
-     * @param distance    填充间距（像素）
-     * @param xPoints     X坐标数组（屏幕坐标）
-     * @param yPoints     Y坐标数组（屏幕坐标）
+     * @param angle       填充角度(度)
+     * @param distance    填充间距(像素)
+     * @param xPoints     X坐标数组(屏幕坐标)
+     * @param yPoints     Y坐标数组(屏幕坐标)
      * @param nPoints     点的数量
      */
     public static void fillPolygon(GraphicsContext gc, FillType fillType, Color fillColor,
@@ -87,7 +87,7 @@ public class FillRenderer {
             return;
         }
 
-        // 计算实际填充颜色（带透明度）
+        // 计算实际填充颜色(带透明度)
         Color effectiveFillColor = new Color(
                 fillColor.getRed(),
                 fillColor.getGreen(),
@@ -136,10 +136,10 @@ public class FillRenderer {
      * @param gc       GraphicsContext对象
      * @param fillType 填充类型
      * @param color    填充颜色
-     * @param angle    填充角度（度）
-     * @param distance 填充间距（像素）
-     * @param x        区域X（屏幕坐标）
-     * @param y        区域Y（屏幕坐标）
+     * @param angle    填充角度(度)
+     * @param distance 填充间距(像素)
+     * @param x        区域X(屏幕坐标)
+     * @param y        区域Y(屏幕坐标)
      * @param width    区域宽度
      * @param height   区域高度
      */
@@ -197,7 +197,7 @@ public class FillRenderer {
     /**
      * 绘制对角线填充
      *
-     * @param angleDeg 角度（度，45或-45）
+     * @param angleDeg 角度(度,45或-45)
      */
     private static void drawDiagonalHatch(GraphicsContext gc, int distance,
                                           double x, double y, double width, double height, double angleDeg) {
@@ -309,7 +309,7 @@ public class FillRenderer {
     }
 
     /**
-     * 绘制符号填充（小十字）
+     * 绘制符号填充(小十字)
      */
     private static void drawSymbolsPattern(GraphicsContext gc, int distance,
                                            double x, double y, double width, double height) {

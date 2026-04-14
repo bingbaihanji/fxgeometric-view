@@ -15,8 +15,8 @@ import java.util.List;
 /**
  * 多边形几何图形
  * <p>
- * 支持依次选点绘制多边形，当终点与起点重合时完成绘制
- * 多边形直接引用PointGeo对象作为顶点，实现点复用
+ * 支持依次选点绘制多边形,当终点与起点重合时完成绘制
+ * 多边形直接引用PointGeo对象作为顶点,实现点复用
  *
  * @author bingbaihanji
  * @date 2025-12-23
@@ -24,8 +24,8 @@ import java.util.List;
 public class PolygonGeo extends AbstractWorldObject {
 
     /**
-     * 多边形顶点列表（直接引用PointGeo对象）
-     * 多边形不再自己管理顶点坐标，而是从引用的PointGeo获取
+     * 多边形顶点列表(直接引用PointGeo对象)
+     * 多边形不再自己管理顶点坐标,而是从引用的PointGeo获取
      */
     private final List<PointGeo> vertexPoints;
 
@@ -46,7 +46,7 @@ public class PolygonGeo extends AbstractWorldObject {
         this.vertexPoints = new ArrayList<>();
         this.color = StyleManager.GEOMETRY_LINE;
 
-        // 为每个坐标创建内部顶点点对象（不显示名称，作为多边形内部顶点）
+        // 为每个坐标创建内部顶点点对象(不显示名称,作为多边形内部顶点)
         for (int i = 0; i < vertices.length; i += 2) {
             PointGeo point = new PointGeo(vertices[i], vertices[i + 1]);
             point.setPolygonVertex(true); // 标记为多边形内部顶点
@@ -55,7 +55,7 @@ public class PolygonGeo extends AbstractWorldObject {
     }
 
     /**
-     * 构造函数（从PointGeo引用列表）
+     * 构造函数(从PointGeo引用列表)
      * 直接复用已有的点对象
      *
      * @param pointRefs 点对象引用列表
@@ -98,14 +98,14 @@ public class PolygonGeo extends AbstractWorldObject {
         // 重置线型
         LineStyleUtil.resetLineStyle(gc);
 
-        // 只绘制多边形自己创建的内部顶点（isPolygonVertex=true的点）
+        // 只绘制多边形自己创建的内部顶点(isPolygonVertex=true的点)
         // 复用的外部点由它们自己负责绘制
         gc.setFill(getEffectiveColor());
         double pointRadius = 3;
         for (int i = 0; i < vertexPoints.size(); i++) {
             PointGeo point = vertexPoints.get(i);
             if (point.isPolygonVertex()) {
-                // 这是多边形内部创建的点，需要绘制
+                // 这是多边形内部创建的点,需要绘制
                 gc.fillOval(xPoints[i] - pointRadius, yPoints[i] - pointRadius,
                         pointRadius * 2, pointRadius * 2);
                 // 绘制名称
@@ -114,7 +114,7 @@ public class PolygonGeo extends AbstractWorldObject {
                     LabelRenderer.renderLabel(gc, name, xPoints[i], yPoints[i]);
                 }
             }
-            // 复用的外部点不在这里绘制，它们作为独立对象会自己绘制
+            // 复用的外部点不在这里绘制,它们作为独立对象会自己绘制
         }
     }
 
@@ -189,7 +189,7 @@ public class PolygonGeo extends AbstractWorldObject {
     }
 
     /**
-     * 获取多边形的所有边（作为线段）
+     * 获取多边形的所有边(作为线段)
      *
      * @return 线段列表
      */
@@ -213,7 +213,7 @@ public class PolygonGeo extends AbstractWorldObject {
 
             points.add(new DraggablePoint(vertexPoint.getX(), vertexPoint.getY(), (newX, newY) -> {
                 // 直接更新点对象的位置
-                // 如果点有约束，updatePosition会自动处理约束逻辑
+                // 如果点有约束,updatePosition会自动处理约束逻辑
                 vertexPoint.updatePosition(newX, newY);
             }));
         }
@@ -225,7 +225,7 @@ public class PolygonGeo extends AbstractWorldObject {
         double cos = Math.cos(angle);
         double sin = Math.sin(angle);
 
-        // 旋转所有顶点（只旋转多边形自己创建的内部顶点）
+        // 旋转所有顶点(只旋转多边形自己创建的内部顶点)
         for (PointGeo point : vertexPoints) {
             if (point.isPolygonVertex() && !point.isConstrained()) {
                 double dx = point.getX() - centerX;

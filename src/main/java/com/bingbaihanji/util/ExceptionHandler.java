@@ -4,7 +4,7 @@ package com.bingbaihanji.util;
  * 异常处理工具类
  * <p>
  * 提供统一的异常处理和用户友好的错误提示
- * 委托到 FxTools 工具类实现对话框显示功能，实现代码复用
+ * 委托到 FxTools 工具类实现对话框显示功能,实现代码复用
  *
  * @author bingbaihanji
  * @date 2026-01-04
@@ -24,7 +24,7 @@ public class ExceptionHandler {
     }
 
     /**
-     * 显示错误对话框（带异常堆栈）
+     * 显示错误对话框(带异常堆栈)
      *
      * @param title   标题
      * @param message 消息
@@ -56,7 +56,7 @@ public class ExceptionHandler {
     }
 
     /**
-     * 处理异常（记录日志但不显示对话框）
+     * 处理异常(记录日志但不显示对话框)
      *
      * @param message 消息
      * @param e       异常
@@ -66,7 +66,7 @@ public class ExceptionHandler {
     }
 
     /**
-     * 处理异常（记录日志并显示对话框）
+     * 处理异常(记录日志并显示对话框)
      *
      * @param title   对话框标题
      * @param message 消息

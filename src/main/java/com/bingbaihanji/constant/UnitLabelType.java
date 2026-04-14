@@ -21,7 +21,7 @@ public enum UnitLabelType {
     NUMERIC,
 
     /**
-     * π单位（圆周率）
+     * π单位(圆周率)
      */
     PI;
 

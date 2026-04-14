@@ -14,36 +14,36 @@ import java.util.List;
 /**
  * 正多边形几何图形
  * <p>
- * 支持3-10边的正多边形，通过中心点、半径和边数定义
- * 支持中心点复用：如果中心位置已有PointGeo，直接引用而不是创建新点
+ * 支持3-10边的正多边形,通过中心点、半径和边数定义
+ * 支持中心点复用：如果中心位置已有PointGeo,直接引用而不是创建新点
  */
 public class RegularPolygonGeo extends AbstractWorldObject {
 
     private double radius;     // 外接圆半径
-    private int sideCount;     // 边数（3-10）
-    private double startAngle; // 起始角度（第一个顶点的角度）
+    private int sideCount;     // 边数(3-10)
+    private double startAngle; // 起始角度(第一个顶点的角度)
 
-    // 中心引用（如果复用已有点）
+    // 中心引用(如果复用已有点)
     private PointGeo centerPointRef;
 
-    // 内部坐标（当没有引用时使用）
+    // 内部坐标(当没有引用时使用)
     private double cx;
     private double cy;
 
     private String centerName; // 中心名称
 
-    // 标记中心是否是内部创建的（需要由正多边形绘制）
+    // 标记中心是否是内部创建的(需要由正多边形绘制)
     private boolean centerIsInternal = true;
 
-    // 顶点点对象列表（内部创建，标记为多边形顶点）
+    // 顶点点对象列表(内部创建,标记为多边形顶点)
     private List<PointGeo> vertexPoints;
 
-    // 顶点缓存（从中心+半径+边数计算）
+    // 顶点缓存(从中心+半径+边数计算)
     private List<Point2D> cachedVertices;
     private boolean verticesCacheValid = false;
 
     /**
-     * 基础构造函数（坐标方式）
+     * 基础构造函数(坐标方式)
      */
     public RegularPolygonGeo(double cx, double cy, double radius, int sideCount) {
         super(ObjectType.REGULAR_POLYGON);
@@ -62,7 +62,7 @@ public class RegularPolygonGeo extends AbstractWorldObject {
     }
 
     /**
-     * 构造函数（坐标方式，可选自动命名）
+     * 构造函数(坐标方式,可选自动命名)
      */
     public RegularPolygonGeo(double cx, double cy, double radius, int sideCount, boolean autoNameCenter) {
         super(ObjectType.REGULAR_POLYGON);
@@ -83,27 +83,27 @@ public class RegularPolygonGeo extends AbstractWorldObject {
     }
 
     /**
-     * 构造函数（点引用方式）- 复用已有点作为中心
+     * 构造函数(点引用方式)- 复用已有点作为中心
      *
-     * @param centerPoint 中心点引用（可为null，表示内部创建）
+     * @param centerPoint 中心点引用(可为null,表示内部创建)
      * @param cx          中心X坐标
      * @param cy          中心Y坐标
      * @param radius      外接圆半径
-     * @param sideCount   边数（3-10）
+     * @param sideCount   边数(3-10)
      */
     public RegularPolygonGeo(PointGeo centerPoint, double cx, double cy, double radius, int sideCount) {
         this(centerPoint, cx, cy, radius, sideCount, -Math.PI / 2); // 默认从正上方开始
     }
 
     /**
-     * 构造函数（点引用方式，带起始角度）- 复用已有点作为中心
+     * 构造函数(点引用方式,带起始角度)- 复用已有点作为中心
      *
-     * @param centerPoint 中心点引用（可为null，表示内部创建）
+     * @param centerPoint 中心点引用(可为null,表示内部创建)
      * @param cx          中心X坐标
      * @param cy          中心Y坐标
      * @param radius      外接圆半径
-     * @param sideCount   边数（3-10）
-     * @param startAngle  起始角度（第一个顶点的角度）
+     * @param sideCount   边数(3-10)
+     * @param startAngle  起始角度(第一个顶点的角度)
      */
     public RegularPolygonGeo(PointGeo centerPoint, double cx, double cy, double radius, int sideCount, double startAngle) {
         super(ObjectType.REGULAR_POLYGON);
@@ -117,7 +117,7 @@ public class RegularPolygonGeo extends AbstractWorldObject {
 
         if (centerPoint != null) {
             this.centerName = centerPoint.getName();
-            this.centerIsInternal = false; // 复用外部点，不由正多边形绘制
+            this.centerIsInternal = false; // 复用外部点,不由正多边形绘制
         } else {
             this.centerName = PointNameManager.getInstance().assignCenterName(cx, cy);
             this.centerIsInternal = true;
@@ -169,7 +169,7 @@ public class RegularPolygonGeo extends AbstractWorldObject {
     }
 
     /**
-     * 计算正多边形的顶点坐标（极坐标转直角坐标）
+     * 计算正多边形的顶点坐标(极坐标转直角坐标)
      * 第一个顶点的角度由startAngle决定
      */
     private void calculateVertices() {
@@ -197,7 +197,7 @@ public class RegularPolygonGeo extends AbstractWorldObject {
     }
 
     /**
-     * 创建顶点点对象，并按A, B, C...命名
+     * 创建顶点点对象,并按A, B, C...命名
      */
     private void createVertexPoints() {
         vertexPoints.clear();
@@ -231,7 +231,7 @@ public class RegularPolygonGeo extends AbstractWorldObject {
     }
 
     /**
-     * 获取所有边（作为LineGeo列表）
+     * 获取所有边(作为LineGeo列表)
      */
     public List<LineGeo> getEdges() {
         calculateVertices();
@@ -278,7 +278,7 @@ public class RegularPolygonGeo extends AbstractWorldObject {
         // 重置线型
         LineStyleUtil.resetLineStyle(gc);
 
-        // 只绘制内部创建的中心点，复用的外部点由它们自己绘制
+        // 只绘制内部创建的中心点,复用的外部点由它们自己绘制
         if (centerIsInternal) {
             double sx = transform.worldToScreenX(getCenterX());
             double sy = transform.worldToScreenY(getCenterY());
@@ -323,7 +323,7 @@ public class RegularPolygonGeo extends AbstractWorldObject {
             }
         }
 
-        // 方法2: 如果有填充，检查是否在内部
+        // 方法2: 如果有填充,检查是否在内部
         if (fillType != FillType.NONE) {
             return isPointInPolygon(x, y);
         }
@@ -353,7 +353,7 @@ public class RegularPolygonGeo extends AbstractWorldObject {
     }
 
     /**
-     * 判断点是否在多边形内部（射线法）
+     * 判断点是否在多边形内部(射线法)
      */
     private boolean isPointInPolygon(double x, double y) {
         int intersections = 0;
@@ -384,10 +384,10 @@ public class RegularPolygonGeo extends AbstractWorldObject {
         return List.of(
                 new DraggablePoint(getCenterX(), getCenterY(), (newX, newY) -> {
                     if (centerPointRef != null) {
-                        // 复用的外部点，更新其位置
+                        // 复用的外部点,更新其位置
                         centerPointRef.updatePosition(newX, newY);
                     } else {
-                        // 内部坐标，更新坐标
+                        // 内部坐标,更新坐标
                         double oldX = cx;
                         double oldY = cy;
                         cx = newX;

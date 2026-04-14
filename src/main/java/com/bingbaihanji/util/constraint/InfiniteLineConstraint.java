@@ -8,12 +8,12 @@ import javafx.geometry.Point2D;
 /**
  * 参数化无限直线约束
  * <p>
- * 使用参数t表示点在直线上的位置，t没有范围限制。
+ * 使用参数t表示点在直线上的位置,t没有范围限制。
  * - t=0: 第一个定义点
  * - t=1: 第二个定义点
- * - t可以是负数或大于1的值（直线是无限的）
+ * - t可以是负数或大于1的值(直线是无限的)
  * <p>
- * 当直线的定义点移动时，约束点根据参数t重新计算位置。
+ * 当直线的定义点移动时,约束点根据参数t重新计算位置。
  *
  * @author bingbaihanji
  * @date 2025-12-30
@@ -41,7 +41,7 @@ public class InfiniteLineConstraint implements PointConstraint {
         double y2 = line.getPoint2Y();
 
         // 根据参数t计算位置: P = P1 + t * (P2 - P1)
-        // 注意：t可以小于0或大于1（直线是无限的）
+        // 注意：t可以小于0或大于1(直线是无限的)
         double x = x1 + parameter * (x2 - x1);
         double y = y1 + parameter * (y2 - y1);
 
@@ -50,7 +50,7 @@ public class InfiniteLineConstraint implements PointConstraint {
 
     @Override
     public double calculateParameter(double x, double y) {
-        // 如果是顶点约束，参数不变化
+        // 如果是顶点约束,参数不变化
         if (isVertexConstraint) {
             return parameter;
         }
@@ -67,12 +67,12 @@ public class InfiniteLineConstraint implements PointConstraint {
         // 直线长度的平方
         double lengthSquared = dx * dx + dy * dy;
 
-        // 如果两点重合（退化为点）
+        // 如果两点重合(退化为点)
         if (lengthSquared < 1e-10) {
             return 0.0;
         }
 
-        // 计算投影参数 t（不限制范围）
+        // 计算投影参数 t(不限制范围)
         return ((x - x1) * dx + (y - y1) * dy) / lengthSquared;
     }
 
@@ -103,7 +103,7 @@ public class InfiniteLineConstraint implements PointConstraint {
         double x2 = line.getPoint2X();
         double y2 = line.getPoint2Y();
 
-        // 计算点到直线的距离（使用点到直线距离公式）
+        // 计算点到直线的距离(使用点到直线距离公式)
         double dx = x2 - x1;
         double dy = y2 - y1;
         double length = MathCalculationUtils.hypot(dx, dy);

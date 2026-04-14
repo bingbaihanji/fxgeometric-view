@@ -5,7 +5,7 @@ import com.bingbaihanji.view.layout.draw.geometry.impl.ParabolaConicFunctionGeo;
 import javafx.geometry.Point2D;
 
 /**
- * 抛物线（圆锥曲线）函数约束
+ * 抛物线(圆锥曲线)函数约束
  *
  * @author bingbaihanji
  * @date 2026-01-04

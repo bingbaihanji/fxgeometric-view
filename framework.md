@@ -1,6 +1,3 @@
-
-
-
 ## 几何图形绘制底层原理详解
 
 ### 一、整体架构概览
@@ -19,7 +16,6 @@ WorldPainter / WorldObject (绘制接口)
 具体实现：PointGeo, LineGeo, CircleGeo等
 ```
 
-
 ---
 
 ### 二、坐标变换系统（`WorldTransform`）
@@ -27,10 +23,12 @@ WorldPainter / WorldObject (绘制接口)
 这是整个系统的**核心基础**。它维护两个坐标系统间的双向转换：
 
 #### 关键参数：
+
 - **`scale`**：缩放因子（世界单位 → 像素），初始值为 50（表示 1 个世界单位 = 50 像素）
 - **`offsetX`、`offsetY`**：世界原点在屏幕上的像素位置
 
 #### 转换公式：
+
 ```
 // 世界坐标 → 屏幕坐标
 screenX = offsetX + worldX × scale
@@ -40,7 +38,6 @@ screenY = offsetY - worldY × scale  （注意Y轴反向）
 worldX = (screenX - offsetX) / scale
 worldY = (offsetY - screenY) / scale
 ```
-
 
 **Y轴反向**是重要细节：屏幕坐标系中Y向下为正，而数学坐标系中Y向上为正。因此转换时使用减法实现翻转。
 
@@ -54,22 +51,22 @@ worldY = (offsetY - screenY) / scale
 public void redraw() {
     // 1. 清空画布
     gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-    
+
     // 2. 绘制背景绘制器（网格、坐标轴）
     for (WorldPainter painter : painters) {
         painter.paint(gc, transform, w, h);  // GridPainter, AxesPainter
     }
-    
+
     // 3. 绘制几何图形对象
     for (WorldObject obj : objects) {
         obj.paint(gc, transform, w, h);      // PointGeo, LineGeo, CircleGeo等
     }
-    
+
     // 4. 绘制交互预览（正在绘制的图形）
     if (previewPainter != null) {
         previewPainter.accept(gc, transform);
     }
-    
+
     // 5. 绘制特殊点吸附提示（高亮圈）
     if (nearbySpecialPoint != null) {
         drawSpecialPointHint(gc);
@@ -77,8 +74,8 @@ public void redraw() {
 }
 ```
 
-
 每次调用都会：
+
 - 清空整个画布
 - 使用 `WorldTransform` 进行坐标转换
 - 调用每个图形的 `paint()` 方法
@@ -90,19 +87,18 @@ public void paint(GraphicsContext gc, WorldTransform t, double w, double h) {
     // 1. 世界坐标 → 屏幕坐标转换
     double sx = t.worldToScreenX(x);
     double sy = t.worldToScreenY(y);
-    
+
     // 2. 选择颜色（hover时高亮）
     gc.setFill(hover ? Color.ORANGE : color);
-    
+
     // 3. 在屏幕坐标上绘制
     double r = hover ? 6 : 4;
     gc.fillOval(sx - r, sy - r, r * 2, r * 2);
-    
+
     // 4. 绘制点的标签
     gc.fillText(name, sx + 8, sy - 8);
 }
 ```
-
 
 ---
 
@@ -115,34 +111,34 @@ public void paint(GraphicsContext gc, WorldTransform t, double w, double h) {
 ```java
 private void handleZoom(ScrollEvent e) {
     double newScale = transform.getScale();
-    
+
     // 1. 根据滚轮方向改变缩放因子
     if (e.getDeltaY() > 0) {
         newScale *= 1.1;  // 放大10%
     } else {
         newScale *= 0.9;  // 缩小10%
     }
-    
+
     // 2. 获取鼠标在世界中的位置
     double mouseX = e.getX();
     double mouseY = e.getY();
     double worldX = transform.screenToWorldX(mouseX);
     double worldY = transform.screenToWorldY(mouseY);
-    
+
     // 3. 设置新的缩放因子
     transform.setScale(newScale);
-    
+
     // 4. 调整偏移量，使鼠标位置的世界坐标保持不变
     double newOffsetX = mouseX - worldX * newScale;
     double newOffsetY = mouseY + worldY * newScale;
     transform.setOffset(newOffsetX, newOffsetY);
-    
+
     redraw();
 }
 ```
 
-
 **核心逻辑**：缩放前后，鼠标位置的世界坐标必须相同：
+
 - 旧：`worldX = (mouseX - offsetX) / oldScale`
 - 新：`mouseX = newOffsetX + worldX × newScale`
 - 因此：`newOffsetX = mouseX - worldX × newScale`
@@ -162,23 +158,23 @@ private void initMousePan() {
             lastMouseY = e.getY();
         }
     });
-    
+
     addEventHandler(MouseEvent.MOUSE_DRAGGED, e -> {
         if (!panning) return;
-        
+
         // 计算鼠标移动距离（屏幕坐标）
         double dx = e.getX() - lastMouseX;
         double dy = e.getY() - lastMouseY;
-        
+
         // 直接将屏幕移动量加到偏移量上
         transform.setOffset(
-            transform.getOffsetX() + dx,
-            transform.getOffsetY() + dy
+                transform.getOffsetX() + dx,
+                transform.getOffsetY() + dy
         );
-        
+
         lastMouseX = e.getX();
         lastMouseY = e.getY();
-        
+
         redraw();
     });
 }
@@ -202,7 +198,6 @@ private void initMousePan() {
 检查：两个参数都在[0,1]范围内时有交点
 ```
 
-
 #### 2. **线段与圆的交点**（二次方程法）
 
 ```
@@ -216,18 +211,17 @@ private void initMousePan() {
   - Δ > 0：相交（2个交点）
 ```
 
-
 关键代码：
+
 ```java
 double a = dx * dx + dy * dy;
 double b = 2 * (dx * (x1 - cx) + dy * (y1 - cy));
 double c = (x1 - cx) * (x1 - cx) + (y1 - cy) * (y1 - cy) - r * r;
 double discriminant = b * b - 4 * a * c;
 
-if (discriminant < 0) return intersections;  // 无解
+if(discriminant< 0)return intersections;  // 无解
 // 求解：t1 = (-b ± √Δ) / 2a
 ```
-
 
 #### 3. **圆与圆的交点**（几何法）
 
@@ -243,8 +237,8 @@ if (discriminant < 0) return intersections;  // 无解
   计算连接线上的投影点P2，再沿垂直方向计算两个交点
 ```
 
-
 关键代码：
+
 ```java
 double a = (r1 * r1 - r2 * r2 + d * d) / (2 * d);  // 投影距离
 double h = Math.sqrt(r1 * r1 - a * a);              // 垂直距离
@@ -258,7 +252,6 @@ double ix1 = x3 + h * (y2 - y1) / d;
 double iy1 = y3 - h * (x2 - x1) / d;
 ```
 
-
 ---
 
 ### 七、特殊点吸附机制
@@ -268,18 +261,26 @@ double iy1 = y3 - h * (x2 - x1) / d;
 ```java
 // 优先级1：吸附到特殊点（交点等，距离10像素以内）
 SpecialPoint nearestSpecialPoint = findNearestSpecialPoint(worldX, worldY);
-if (nearestSpecialPoint != null) {
-    worldX = nearestSpecialPoint.getX();
-    worldY = nearestSpecialPoint.getY();
-} else {
-    // 优先级2：吸附到整数点（5像素以内）
-    worldX = snapToInteger(worldX);
-    
-    // 优先级3：吸附到网格点（基于轴刻度，5像素以内）
-    worldX = snapToGrid(worldX, step);
+if(nearestSpecialPoint !=null){
+worldX =nearestSpecialPoint.
+
+getX();
+
+worldY =nearestSpecialPoint.
+
+getY();
+}else{
+// 优先级2：吸附到整数点（5像素以内）
+worldX =
+
+snapToInteger(worldX);
+
+// 优先级3：吸附到网格点（基于轴刻度，5像素以内）
+worldX =
+
+snapToGrid(worldX, step);
 }
 ```
-
 
 这给用户带来了**精确且流畅的交互体验**。
 
@@ -287,7 +288,8 @@ if (nearestSpecialPoint != null) {
 
 ### 八、命中测试（拾取）
 
-每个图形都实现了 [hitTest()](file://D:\javaProject\bingbaihanji\FXGeometricView\src\main\java\com\binbaihanji\view\layout\draw\geometry\WorldObject.java#L13-L13) 方法，用于检测点击是否在图形上：
+每个图形都实现了 [hitTest()](file://D:\javaProject\bingbaihanji\FXGeometricView\src\main\java\com\binbaihanji\view\layout\draw\geometry\WorldObject.java#L13-L13)
+方法，用于检测点击是否在图形上：
 
 ```java
 // PointGeo: 圆形判定
@@ -297,7 +299,7 @@ public boolean hitTest(double wx, double wy, double tol) {
 
 // LineGeo: 点到线段距离判定
 public boolean hitTest(double x, double y, double tolerance) {
-    double distance = Math.abs(dy * x - dx * y + ...) / length;
+    double distance = Math.abs(dy * x - dx * y + ...) /length;
     return distance <= tolerance;
 }
 
@@ -307,7 +309,6 @@ public boolean hitTest(double x, double y, double tolerance) {
     return Math.abs(d - r) <= tolerance;  // 到圆周的距离
 }
 ```
-
 
 ---
 
@@ -348,20 +349,20 @@ GridChartView.initMouseClickOutput()
   └─ 输出或处理结果
 ```
 
-
 ---
 
 ### 十、关键设计要点总结
 
-| 方面         | 实现方式                 | 优势               |
-| ------------ | ------------------------ | ------------------ |
+| 方面       | 实现方式                 | 优势        |
+|----------|----------------------|-----------|
 | **坐标变换** | 参数化的 WorldTransform  | 统一管理，易于调试 |
-| **绘制**     | 分层Painter + Object模式 | 易于扩展新图形类型 |
-| **缩放**     | 保持鼠标点不动           | 直观的放大体验     |
-| **拖动**     | 直接修改offset           | 实现简洁高效       |
-| **交点**     | 纯数学算法（无近似）     | 精度高，可靠性强   |
-| **吸附**     | 多级优先级机制           | 兼顾精度和易用性   |
+| **绘制**   | 分层Painter + Object模式 | 易于扩展新图形类型 |
+| **缩放**   | 保持鼠标点不动              | 直观的放大体验   |
+| **拖动**   | 直接修改offset           | 实现简洁高效    |
+| **交点**   | 纯数学算法（无近似）           | 精度高，可靠性强  |
+| **吸附**   | 多级优先级机制              | 兼顾精度和易用性  |
 
 ---
 
-这就是项目几何图形绘制的完整原理。核心就是：**通过 WorldTransform统一管理坐标变换，使所有绘制和交互操作都在统一的坐标系下进行，配合精确的数学算法计算交点**。
+这就是项目几何图形绘制的完整原理。核心就是：**通过 WorldTransform统一管理坐标变换，使所有绘制和交互操作都在统一的坐标系下进行，配合精确的数学算法计算交点
+**。

@@ -16,19 +16,19 @@ import java.util.List;
 /**
  * 无限直线几何图形
  * <p>
- * 通过两个点定义一条无限直线，直线会延伸至屏幕边界
- * 支持点复用：如果定义点位置已有PointGeo，直接引用而不是创建新点
+ * 通过两个点定义一条无限直线,直线会延伸至屏幕边界
+ * 支持点复用：如果定义点位置已有PointGeo,直接引用而不是创建新点
  *
  * @author bingbaihanji
  * @date 2025-12-23
  */
 public class InfiniteLineGeo extends AbstractWorldObject {
 
-    // 定义点引用（如果复用已有点）
+    // 定义点引用(如果复用已有点)
     private PointGeo point1Ref;
     private PointGeo point2Ref;
 
-    // 内部坐标（当没有引用时使用）
+    // 内部坐标(当没有引用时使用)
     private double point1X;
     private double point1Y;
     private double point2X;
@@ -42,7 +42,7 @@ public class InfiniteLineGeo extends AbstractWorldObject {
     private boolean point2IsInternal = true;
 
     /**
-     * 基础构造函数（坐标方式）
+     * 基础构造函数(坐标方式)
      */
     public InfiniteLineGeo(double point1X, double point1Y, double point2X, double point2Y) {
         super(ObjectType.LINE);
@@ -57,7 +57,7 @@ public class InfiniteLineGeo extends AbstractWorldObject {
     }
 
     /**
-     * 构造函数（点引用方式）- 复用已有点
+     * 构造函数(点引用方式)- 复用已有点
      */
     public InfiniteLineGeo(PointGeo point1, double point1X, double point1Y,
                            PointGeo point2, double point2X, double point2Y) {
@@ -163,18 +163,18 @@ public class InfiniteLineGeo extends AbstractWorldObject {
     }
 
     /**
-     * 计算直线与屏幕边界的交点，使直线延伸至屏幕边界
+     * 计算直线与屏幕边界的交点,使直线延伸至屏幕边界
      */
     private double[] calculateLineScreenIntersection(double sx1, double sy1, double sx2, double sy2, double w, double h) {
         double dx = sx2 - sx1;
         double dy = sy2 - sy1;
 
-        // 如果两点重合，返回原点
+        // 如果两点重合,返回原点
         if (Math.abs(dx) < 1e-10 && Math.abs(dy) < 1e-10) {
             return new double[]{sx1, sy1, sx1, sy1};
         }
 
-        // 扩展倍数（足够覆盖整个屏幕）
+        // 扩展倍数(足够覆盖整个屏幕)
         double scale = Math.max(w, h) * 2;
 
         // 计算扩展后的端点

@@ -28,10 +28,10 @@ public class ConstraintHandler {
     }
 
     /**
-     * 创建约束对象，并自动检测点是否为顶点
+     * 创建约束对象,并自动检测点是否为顶点
      *
      * @param shape 约束的几何图形
-     * @param point 要约束的点对象（用于检测是否为顶点）
+     * @param point 要约束的点对象(用于检测是否为顶点)
      * @return 约束对象
      * @throws IllegalArgumentException 如果图形类型不支持
      */
@@ -70,7 +70,7 @@ public class ConstraintHandler {
             throw new IllegalArgumentException("不支持的图形类型: " + shape.getClass().getName());
         }
 
-        // 如果提供了点对象，检测是否为顶点并设置顶点约束
+        // 如果提供了点对象,检测是否为顶点并设置顶点约束
         if (point != null) {
             constraint.setAsVertexConstraintIfApplicable(point);
         }
@@ -81,7 +81,7 @@ public class ConstraintHandler {
     /**
      * 更新所有约束点的位置
      * <p>
-     * 当图形的控制点被拖动后，约束点需要根据参数重新计算位置
+     * 当图形的控制点被拖动后,约束点需要根据参数重新计算位置
      *
      * @param context 绘制上下文
      */

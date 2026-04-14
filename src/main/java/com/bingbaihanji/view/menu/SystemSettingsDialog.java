@@ -182,7 +182,7 @@ public class SystemSettingsDialog extends Dialog<ButtonType> {
                 }
             }
         } catch (Exception e) {
-            // 外部文件加载失败，继续尝试 classpath
+            // 外部文件加载失败,继续尝试 classpath
         }
         return null;
     }
@@ -192,7 +192,7 @@ public class SystemSettingsDialog extends Dialog<ButtonType> {
      */
     private String loadLanguageNameFromClasspath(String resourceName) {
         try {
-            // 在模块化环境中，使用 Class.getResourceAsStream() 更可靠
+            // 在模块化环境中,使用 Class.getResourceAsStream() 更可靠
             // 路径需要以 / 开头表示从 classpath 根目录开始
             String path = "/" + resourceName;
             java.io.InputStream stream = getClass().getResourceAsStream(path);
@@ -220,14 +220,14 @@ public class SystemSettingsDialog extends Dialog<ButtonType> {
                     .toURI()
                     .getPath();
 
-            // 处理 Windows 路径问题（/C:/path/to/file）
+            // 处理 Windows 路径问题(/C:/path/to/file)
             if (path.startsWith("/") && path.contains(":")) {
                 path = path.substring(1);
             }
 
             File file = new File(path);
 
-            // 如果是目录（IDE 开发环境），返回 null 表示不使用外部文件
+            // 如果是目录(IDE 开发环境),返回 null 表示不使用外部文件
             if (file.isDirectory()) {
                 return null;
             }

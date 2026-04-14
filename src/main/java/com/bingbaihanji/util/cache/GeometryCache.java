@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  * 几何计算结果缓存
  * <p>
- * 使用 LRU 缓存策略，提高重复计算的性能
+ * 使用 LRU 缓存策略,提高重复计算的性能
  *
  * @author bingbaihanji
  * @date 2026-01-04
@@ -35,7 +35,7 @@ public class GeometryCache<K, V> {
      * 获取缓存值
      *
      * @param key 键
-     * @return 缓存值，不存在则返回 null
+     * @return 缓存值,不存在则返回 null
      */
     public synchronized V get(K key) {
         return cache.get(key);

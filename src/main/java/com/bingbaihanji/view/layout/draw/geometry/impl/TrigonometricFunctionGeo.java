@@ -48,7 +48,7 @@ public class TrigonometricFunctionGeo extends FunctionGeo {
     /**
      * 构造函数
      *
-     * @param functionType 函数类型（SINE、COSINE、TANGENT）
+     * @param functionType 函数类型(SINE、COSINE、TANGENT)
      * @param A            振幅
      * @param omega        角频率
      * @param phi          初相
@@ -90,7 +90,7 @@ public class TrigonometricFunctionGeo extends FunctionGeo {
         double x1 = domain[0];
         double x2 = domain[1];
 
-        // 对于tan函数，需要分段处理
+        // 对于tan函数,需要分段处理
         if (trigType == TrigType.TANGENT) {
             sampleTangentFunction(x1, x2, totalSamples, viewMinY, viewMaxY);
         } else {
@@ -99,7 +99,7 @@ public class TrigonometricFunctionGeo extends FunctionGeo {
     }
 
     /**
-     * 采样sin或cos函数（连续函数）
+     * 采样sin或cos函数(连续函数)
      */
     private void sampleSineOrCosine(double x1, double x2, int numSamples,
                                     double viewMinY, double viewMaxY) {
@@ -116,7 +116,7 @@ public class TrigonometricFunctionGeo extends FunctionGeo {
     }
 
     /**
-     * 采样tan函数（有断点）
+     * 采样tan函数(有断点)
      */
     private void sampleTangentFunction(double x1, double x2, int numSamples,
                                        double viewMinY, double viewMaxY) {

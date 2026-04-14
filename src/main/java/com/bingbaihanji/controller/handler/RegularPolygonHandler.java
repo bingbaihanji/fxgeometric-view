@@ -21,7 +21,7 @@ import java.util.Optional;
 /**
  * 正多边形绘制处理器
  * <p>
- * 处理正多边形的绘制：第一次点击确定中心，第二次点击确定半径
+ * 处理正多边形的绘制：第一次点击确定中心,第二次点击确定半径
  * 点击工具时先弹出边数选择对话框
  *
  * @author bingbaihanji
@@ -46,12 +46,12 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
     private PointGeo centerPointRef = null;
 
     /**
-     * 用户选择的边数（3-10）
+     * 用户选择的边数(3-10)
      */
     private int selectedSides = 6;
 
     /**
-     * 显示边数选择对话框（由外部调用，比如按钮点击时）
+     * 显示边数选择对话框(由外部调用,比如按钮点击时)
      */
     public void showSidesSelectionDialog() {
         RegularPolygonSidesDialog dialog = new RegularPolygonSidesDialog(selectedSides);
@@ -107,10 +107,10 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
         context.setCurrentMouseX(worldX);
         context.setCurrentMouseY(worldY);
 
-        // 如果在预览状态，更新预览
+        // 如果在预览状态,更新预览
         if (context.getState() == DrawingState.FIRST_CLICK && polygonPreview != null) {
             // 鼠标位置就是第一个顶点的位置
-            // 更新正多边形预览（鼠标位置作为顶点位置）
+            // 更新正多边形预览(鼠标位置作为顶点位置)
             polygonPreview.updatePreviewWithVertex(worldX, worldY);
         }
 
@@ -120,7 +120,7 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
     }
 
     /**
-     * 处理第一次点击（确定中心）
+     * 处理第一次点击(确定中心)
      */
     private void handleFirstClick(double worldX, double worldY, DrawingContext context) {
         // 记录中心点
@@ -128,7 +128,7 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
         centerY = worldY;
         context.setState(DrawingState.FIRST_CLICK);
 
-        // 检查中心点位置是否已有点对象（用于复用）
+        // 检查中心点位置是否已有点对象(用于复用)
         double scale = context.getTransform().getScale();
         centerPointRef = PointReuseManager.getExistingPointOrNull(worldX, worldY, context.getObjects(), scale);
 
@@ -140,10 +140,10 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
     }
 
     /**
-     * 处理第二次点击（确定半径）
+     * 处理第二次点击(确定半径)
      */
     private void handleSecondClick(double worldX, double worldY, DrawingContext context) {
-        // 鼠标位置是第一个顶点的位置，计算半径
+        // 鼠标位置是第一个顶点的位置,计算半径
         double radius = MathCalculationUtils.sqrt(
                 MathCalculationUtils.pow(worldX - centerX, 2) + MathCalculationUtils.pow(worldY - centerY, 2)
         );
@@ -151,7 +151,7 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
         // 计算第一个顶点的角度
         double startAngle = Math.atan2(worldY - centerY, worldX - centerX);
 
-        // 创建正多边形，复用已有的中心点，并指定起始角度
+        // 创建正多边形,复用已有的中心点,并指定起始角度
         RegularPolygonGeo newPolygon = new RegularPolygonGeo(centerPointRef, centerX, centerY, radius, selectedSides, startAngle);
 
         // 获取顶点点对象列表
@@ -214,7 +214,7 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
 
         double pointRadius = 4;
 
-        // 在 IDLE 状态下，显示吸附预览点
+        // 在 IDLE 状态下,显示吸附预览点
         if (context.getState() == DrawingState.IDLE) {
             double mouseScreenX = transform.worldToScreenX(context.getCurrentMouseX());
             double mouseScreenY = transform.worldToScreenY(context.getCurrentMouseY());
@@ -228,7 +228,7 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
             return;
         }
 
-        // 在 FIRST_CLICK 状态下，绘制中心点和鼠标位置点（顶点预览）
+        // 在 FIRST_CLICK 状态下,绘制中心点和鼠标位置点(顶点预览)
         if (context.getState() == DrawingState.FIRST_CLICK) {
             // 绘制中心点
             double centerScreenX = transform.worldToScreenX(centerX);
@@ -236,7 +236,7 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
             gc.setFill(javafx.scene.paint.Color.valueOf("#759eb2"));
             gc.fillOval(centerScreenX - pointRadius, centerScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
 
-            // 绘制鼠标位置点（第一个顶点位置）
+            // 绘制鼠标位置点(第一个顶点位置)
             double mouseScreenX = transform.worldToScreenX(context.getCurrentMouseX());
             double mouseScreenY = transform.worldToScreenY(context.getCurrentMouseY());
             gc.setFill(javafx.scene.paint.Color.valueOf("#759eb2"));

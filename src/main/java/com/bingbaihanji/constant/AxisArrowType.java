@@ -16,22 +16,22 @@ public enum AxisArrowType {
     NONE,
 
     /**
-     * 单箭头（空心）
+     * 单箭头(空心)
      */
     ARROW,
 
     /**
-     * 单箭头（实心）
+     * 单箭头(实心)
      */
     ARROW_FILLED,
 
     /**
-     * 双箭头（空心）
+     * 双箭头(空心)
      */
     TWO_ARROWS,
 
     /**
-     * 双箭头（实心）
+     * 双箭头(实心)
      */
     TWO_ARROWS_FILLED;
 

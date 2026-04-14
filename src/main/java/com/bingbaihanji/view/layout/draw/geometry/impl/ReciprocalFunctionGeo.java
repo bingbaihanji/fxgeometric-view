@@ -15,7 +15,7 @@ import javafx.geometry.Point2D;
 public class ReciprocalFunctionGeo extends FunctionGeo {
 
     /**
-     * 断点容差（x=0附近的排除范围）
+     * 断点容差(x=0附近的排除范围)
      */
     private static final double DISCONTINUITY_EPSILON = 1e-3;
     /**
@@ -26,7 +26,7 @@ public class ReciprocalFunctionGeo extends FunctionGeo {
     /**
      * 构造函数
      *
-     * @param k 系数（不能为0）
+     * @param k 系数(不能为0)
      */
     public ReciprocalFunctionGeo(double k) {
         super();

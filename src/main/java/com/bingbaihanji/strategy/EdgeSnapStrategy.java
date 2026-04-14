@@ -8,7 +8,7 @@ import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 /**
  * 边吸附策略
  * <p>
- * 中等优先级的吸附策略，吸附到几何图形的边缘
+ * 中等优先级的吸附策略,吸附到几何图形的边缘
  *
  * @author bingbaihanji
  * @date 2025-01-04

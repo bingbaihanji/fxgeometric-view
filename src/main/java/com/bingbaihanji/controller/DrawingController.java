@@ -26,13 +26,13 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * 图形绘制控制器（重构后的协调器版本）
+ * 图形绘制控制器(重构后的协调器版本)
  * <p>
- * 作为协调器，负责管理 Handler 并分发事件，不直接处理绘制逻辑
+ * 作为协调器,负责管理 Handler 并分发事件,不直接处理绘制逻辑
  *
  * @author bingbaihanji
- * @date 2025-12-21（原始版本）
- * @date 2025-12-31（重构版本）
+ * @date 2025-12-21(原始版本)
+ * @date 2025-12-31(重构版本)
  */
 public class DrawingController {
 
@@ -44,20 +44,20 @@ public class DrawingController {
     private final DrawingContext context;
 
     /**
-     * 交互型 Handler 列表（按优先级排序）
+     * 交互型 Handler 列表(按优先级排序)
      */
     private final List<DrawingHandler> handlers = new ArrayList<>();
     /**
-     * 从此控制器（主窗口或独立窗口）打开的所有子窗口
+     * 从此控制器(主窗口或独立窗口)打开的所有子窗口
      */
     private final List<DetachedCanvasWindow> childWindows = new ArrayList<>();
     /**
-     * 父窗口引用（如果在独立窗口中则不为null）
+     * 父窗口引用(如果在独立窗口中则不为null)
      */
     private DetachedCanvasWindow parentWindow;
 
     /**
-     * 当前显示的右键菜单（用于在显示新菜单前关闭旧菜单）
+     * 当前显示的右键菜单(用于在显示新菜单前关闭旧菜单)
      */
     private ContextMenu currentContextMenu = null;
 
@@ -69,7 +69,7 @@ public class DrawingController {
     }
 
     /**
-     * 构造函数（带父窗口引用）
+     * 构造函数(带父窗口引用)
      */
     public DrawingController(GridChartView gridChartPane, DetachedCanvasWindow parentWindow) {
         this.parentWindow = parentWindow;
@@ -97,10 +97,10 @@ public class DrawingController {
     }
 
     /**
-     * 注册所有 Handler（按优先级排序）
+     * 注册所有 Handler(按优先级排序)
      */
     private void registerHandlers() {
-        // 服务型 Handler（不处理鼠标事件）
+        // 服务型 Handler(不处理鼠标事件)
         IntersectionHandler intersectionHandler = new IntersectionHandler();
         ConstraintHandler constraintHandler = new ConstraintHandler();
         SnappingHandler snappingHandler = new SnappingHandler();
@@ -109,8 +109,8 @@ public class DrawingController {
         context.setConstraintHandler(constraintHandler);
         context.setSnappingHandler(snappingHandler);
 
-        // 交互型 Handler（处理鼠标事件，按优先级排序）
-        handlers.add(new SelectionHandler());         // 选择功能（在非绘制模式下生效，优先于拖动）
+        // 交互型 Handler(处理鼠标事件,按优先级排序)
+        handlers.add(new SelectionHandler());         // 选择功能(在非绘制模式下生效,优先于拖动)
         handlers.add(new DragHandler());              // 拖动在非绘制模式下优先
         handlers.add(new FreehandHandler());          // 手绘优先级高
         handlers.add(new BasicShapeHandler());        // 基础图形
@@ -133,7 +133,7 @@ public class DrawingController {
         context.getGridChartPane().setOnContextMenuRequested(this::handleContextMenu);
     }
 
-    // 事件分发方法（责任链模式）
+    // 事件分发方法(责任链模式)
 
     /**
      * 鼠标点击事件
@@ -143,7 +143,7 @@ public class DrawingController {
             for (DrawingHandler handler : handlers) {
                 if (handler.canHandle(context.getDrawMode())) {
                     if (handler.handleMouseClicked(e, context)) {
-                        break; // 已处理，停止传递
+                        break; // 已处理,停止传递
                     }
                 }
             }
@@ -153,13 +153,13 @@ public class DrawingController {
     }
 
     /**
-     * 鼠标移动事件（实时预览）
+     * 鼠标移动事件(实时预览)
      */
     public void handleMouseMoved(MouseEvent e) {
         for (DrawingHandler handler : handlers) {
             if (handler.canHandle(context.getDrawMode())) {
                 if (handler.handleMouseMoved(e, context)) {
-                    break; // 已处理，停止传递
+                    break; // 已处理,停止传递
                 }
             }
         }
@@ -172,7 +172,7 @@ public class DrawingController {
         for (DrawingHandler handler : handlers) {
             if (handler.canHandle(context.getDrawMode())) {
                 if (handler.handleMousePressed(e, context)) {
-                    break; // 已处理，停止传递
+                    break; // 已处理,停止传递
                 }
             }
         }
@@ -185,7 +185,7 @@ public class DrawingController {
         for (DrawingHandler handler : handlers) {
             if (handler.canHandle(context.getDrawMode())) {
                 if (handler.handleMouseDragged(e, context)) {
-                    break; // 已处理，停止传递
+                    break; // 已处理,停止传递
                 }
             }
         }
@@ -198,7 +198,7 @@ public class DrawingController {
         for (DrawingHandler handler : handlers) {
             if (handler.canHandle(context.getDrawMode())) {
                 if (handler.handleMouseReleased(e, context)) {
-                    break; // 已处理，停止传递
+                    break; // 已处理,停止传递
                 }
             }
         }
@@ -219,14 +219,14 @@ public class DrawingController {
         }
     }
 
-    // 对外接口（保持兼容性）
+    // 对外接口(保持兼容性)
 
     /**
      * 设置绘制模式
      */
     public void setDrawMode(DrawMode mode) {
         if (mode == null) {
-            logger.warn("尝试设置null绘制模式，已忽略");
+            logger.warn("尝试设置null绘制模式,已忽略");
             return;
         }
 
@@ -246,7 +246,7 @@ public class DrawingController {
         context.setDrawMode(mode);
         context.setState(DrawingState.IDLE);
 
-        // 如果是旋转模式，进入选择图形状态
+        // 如果是旋转模式,进入选择图形状态
         if (mode == DrawMode.ROTATE) {
             context.setState(DrawingState.ROTATE_SELECT_SHAPE);
         }
@@ -260,15 +260,15 @@ public class DrawingController {
      */
     public void clearAll() {
         try {
-            // 保存当前所有对象，用于撤销
+            // 保存当前所有对象,用于撤销
             List<WorldObject> objectsToClear = new ArrayList<>(context.getObjects());
 
             if (objectsToClear.isEmpty()) {
-                logger.debug("画布已为空，无需清空");
+                logger.debug("画布已为空,无需清空");
                 return;
             }
 
-            logger.info("清空画布，共删除{}个对象", objectsToClear.size());
+            logger.info("清空画布,共删除{}个对象", objectsToClear.size());
 
             context.executeCommand(new CommandHistory.Command() {
                 @Override
@@ -333,7 +333,7 @@ public class DrawingController {
                         function.setDomainRange(input.getDomainMin(), input.getDomainMax());
                     }
 
-                    // 通过命令历史添加到画布（支持撤销）
+                    // 通过命令历史添加到画布(支持撤销)
                     context.executeCommand(new CommandHistory.Command() {
                         @Override
                         public void execute() {
@@ -368,7 +368,7 @@ public class DrawingController {
     /**
      * 根据输入结果创建函数对象
      * <p>
-     * 委托给 FunctionFactory 工厂类创建，避免代码重复
+     * 委托给 FunctionFactory 工厂类创建,避免代码重复
      */
     private FunctionGeo createFunction(FunctionInputResult input) {
         try {
@@ -401,7 +401,7 @@ public class DrawingController {
     }
 
     /**
-     * 清除选择（ESC键和点击空白区域时调用）
+     * 清除选择(ESC键和点击空白区域时调用)
      */
     public void clearSelection() {
         context.getSelectionManager().clearSelection();
@@ -420,19 +420,19 @@ public class DrawingController {
     /**
      * 删除选中的对象
      * <p>
-     * Delete键按下时调用，支持撤销/恢复
+     * Delete键按下时调用,支持撤销/恢复
      */
     public void deleteSelection() {
         SelectionManager selectionManager = context.getSelectionManager();
-        
+
         if (!selectionManager.hasSelection()) {
-            logger.debug("没有选中的对象，删除操作已忽略");
+            logger.debug("没有选中的对象,删除操作已忽略");
             return;
         }
 
-        // 获取要删除的对象列表（需要复制一份，因为删除后选择会被清空）
+        // 获取要删除的对象列表(需要复制一份,因为删除后选择会被清空)
         List<WorldObject> objectsToDelete = new ArrayList<>(selectionManager.getSelectedObjects());
-        
+
         if (objectsToDelete.isEmpty()) {
             return;
         }
@@ -459,7 +459,7 @@ public class DrawingController {
                 for (WorldObject obj : objectsToDelete) {
                     context.addObject(obj);
                 }
-                // 恢复选择状态（最后一个对象通知监听器）
+                // 恢复选择状态(最后一个对象通知监听器)
                 for (int i = 0; i < objectsToDelete.size(); i++) {
                     boolean isLast = (i == objectsToDelete.size() - 1);
                     selectionManager.addSelectedObject(objectsToDelete.get(i), isLast);
@@ -476,9 +476,9 @@ public class DrawingController {
     /**
      * 判断是否正在进行绘制操作
      * <p>
-     * 用于ESC键判断：如果正在绘制则取消操作，否则清除选择
+     * 用于ESC键判断：如果正在绘制则取消操作,否则清除选择
      *
-     * @return 如果当前状态不是IDLE，说明正在绘制中
+     * @return 如果当前状态不是IDLE,说明正在绘制中
      */
     public boolean isDrawing() {
         return context.getState() != DrawingState.IDLE;
@@ -487,10 +487,10 @@ public class DrawingController {
     /**
      * 取消当前绘制操作
      * <p>
-     * ESC键按下时调用，重置所有Handler状态并清除预览
+     * ESC键按下时调用,重置所有Handler状态并清除预览
      */
     public void cancelCurrentOperation() {
-        logger.debug("取消当前操作，当前状态: {}", context.getState());
+        logger.debug("取消当前操作,当前状态: {}", context.getState());
 
         // 重置所有 Handler 状态
         for (DrawingHandler handler : handlers) {
@@ -577,7 +577,7 @@ public class DrawingController {
         context.redraw();
     }
 
-    // 窗口管理方法（保留）
+    // 窗口管理方法(保留)
 
     /**
      * 添加子窗口到列表中
@@ -596,13 +596,13 @@ public class DrawingController {
         childWindows.clear();
     }
 
-    // 右键菜单处理（保留）
+    // 右键菜单处理(保留)
 
     /**
      * 处理右键菜单事件
      */
     private void handleContextMenu(ContextMenuEvent event) {
-        // 如果当前有菜单显示，先关闭它并返回（不显示新菜单）
+        // 如果当前有菜单显示,先关闭它并返回(不显示新菜单)
         if (currentContextMenu != null && currentContextMenu.isShowing()) {
             hideCurrentContextMenu();
             event.consume();
@@ -619,7 +619,7 @@ public class DrawingController {
 
         //   已禁用：优先级0：检查是否点击了BoundingBox区域  
         /*
-        // 如果有选中对象，且右键点击在BoundingBox边界内，显示BoundingBox菜单
+        // 如果有选中对象,且右键点击在BoundingBox边界内,显示BoundingBox菜单
         if (context.getSelectionManager().hasBoundingBox()) {
             double[] bounds = context.getSelectionManager().getBoundingBox().getBounds();
             double minX = bounds[0];
@@ -627,9 +627,9 @@ public class DrawingController {
             double minY = bounds[2];
             double maxY = bounds[3];
             
-            // 检查点击是否在BoundingBox边界内部（除非点击的是独立点）
+            // 检查点击是否在BoundingBox边界内部(除非点击的是独立点)
             if (worldX >= minX && worldX <= maxX && worldY >= minY && worldY <= maxY) {
-                // 检查是否点击的是独立点对象（独立点优先级更高）
+                // 检查是否点击的是独立点对象(独立点优先级更高)
                 boolean clickedPoint = false;
                 for (int i = objects.size() - 1; i >= 0; i--) {
                     WorldObject obj = objects.get(i);
@@ -642,7 +642,7 @@ public class DrawingController {
                 }
                 
                 if (!clickedPoint) {
-                    // 没有点击独立点，显示BoundingBox菜单
+                    // 没有点击独立点,显示BoundingBox菜单
                     ContextMenu menu = GeometryContextMenu.createBoundingBoxMenu(context.getGridChartPane(), this);
                     showContextMenu(menu, event);
                     return;
@@ -651,14 +651,14 @@ public class DrawingController {
         }
         */
 
-        //   优先级1：检查是否点击了独立的点对象（PointGeo）  
+        //   优先级1：检查是否点击了独立的点对象(PointGeo)  
         // 独立点对象应该使用专用的点菜单
-        // 注意：即使该位置同时是其他图形的顶点，也优先显示点菜单
+        // 注意：即使该位置同时是其他图形的顶点,也优先显示点菜单
         for (int i = objects.size() - 1; i >= 0; i--) {
             WorldObject obj = objects.get(i);
             if (obj instanceof PointGeo point) {
                 if (point.hitTest(worldX, worldY, vertexTolerance)) {
-                    // 点击了独立的点对象，显示点菜单
+                    // 点击了独立的点对象,显示点菜单
                     ContextMenu menu = GeometryContextMenu.createPointMenu(point, context.getGridChartPane(), this);
                     showContextMenu(menu, event);
                     return;
@@ -666,15 +666,15 @@ public class DrawingController {
             }
         }
 
-        //   优先级2：检查是否点击了图形的顶点（排除PointGeo）  
+        //   优先级2：检查是否点击了图形的顶点(排除PointGeo)  
         for (WorldObject obj : objects) {
-            // 跳过独立的点对象，它们已经在上面处理了
+            // 跳过独立的点对象,它们已经在上面处理了
             if (obj instanceof PointGeo) {
                 continue;
             }
             for (WorldObject.DraggablePoint point : obj.getDraggablePoints()) {
                 if (point.hitTest(worldX, worldY, vertexTolerance)) {
-                    // 点击了图形的顶点，显示顶点菜单
+                    // 点击了图形的顶点,显示顶点菜单
                     ContextMenu menu = GeometryContextMenu.createVertexMenu(
                             point, obj, context.getGridChartPane(), this
                     );

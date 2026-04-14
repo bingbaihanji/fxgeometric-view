@@ -8,7 +8,7 @@ import javafx.scene.input.MouseEvent;
 /**
  * 绘制处理器抽象基类
  * <p>
- * 提供了 DrawingHandler 接口的默认实现，子类只需重写需要的方法
+ * 提供了 DrawingHandler 接口的默认实现,子类只需重写需要的方法
  *
  * @author bingbaihanji
  * @date 2025-12-31

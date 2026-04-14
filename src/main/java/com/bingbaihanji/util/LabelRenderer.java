@@ -12,7 +12,7 @@ import javafx.scene.text.TextAlignment;
  *
  * @author bingbaihanji
  * @date 2025-12-31
- * @description 提供统一的标签绘制功能，支持可配置的位置、字体和颜色
+ * @description 提供统一的标签绘制功能, 支持可配置的位置、字体和颜色
  */
 public class LabelRenderer {
 
@@ -21,8 +21,8 @@ public class LabelRenderer {
      *
      * @param gc      GraphicsContext对象
      * @param object  世界对象
-     * @param screenX 标签基准点X坐标（屏幕坐标）
-     * @param screenY 标签基准点Y坐标（屏幕坐标）
+     * @param screenX 标签基准点X坐标(屏幕坐标)
+     * @param screenY 标签基准点Y坐标(屏幕坐标)
      */
     public static void renderLabel(GraphicsContext gc, WorldObject object,
                                    double screenX, double screenY) {
@@ -52,12 +52,12 @@ public class LabelRenderer {
     }
 
     /**
-     * 绘制标签（使用默认位置AUTO）
+     * 绘制标签(使用默认位置AUTO)
      *
      * @param gc      GraphicsContext对象
      * @param label   标签文本
-     * @param screenX 基准点X坐标（屏幕坐标）
-     * @param screenY 基准点Y坐标（屏幕坐标）
+     * @param screenX 基准点X坐标(屏幕坐标)
+     * @param screenY 基准点Y坐标(屏幕坐标)
      */
     public static void renderLabel(GraphicsContext gc, String label,
                                    double screenX, double screenY) {
@@ -77,12 +77,12 @@ public class LabelRenderer {
     }
 
     /**
-     * 绘制标签（带自定义配置）
+     * 绘制标签(带自定义配置)
      *
      * @param gc       GraphicsContext对象
      * @param label    标签文本
-     * @param screenX  基准点X坐标（屏幕坐标）
-     * @param screenY  基准点Y坐标（屏幕坐标）
+     * @param screenX  基准点X坐标(屏幕坐标)
+     * @param screenY  基准点Y坐标(屏幕坐标)
      * @param position 标签位置
      * @param fontSize 字体大小
      * @param color    标签颜色

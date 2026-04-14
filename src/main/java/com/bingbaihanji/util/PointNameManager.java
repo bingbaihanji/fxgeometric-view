@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>
  * 按照出现顺序自动为点命名：A, B, C, ..., Z, A1, B1, ..., Z1, A2, B2, ...
  * <p>
- * 线程安全的单例实现，使用 ConcurrentHashMap 保证并发安全
+ * 线程安全的单例实现,使用 ConcurrentHashMap 保证并发安全
  *
  * @author bingbaihanji
  * @date 2025-12-24
@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PointNameManager {
 
     /**
-     * 坐标精度阈值（用于判断两个点是否相同）
+     * 坐标精度阈值(用于判断两个点是否相同)
      */
     private static final double EPSILON = GeometryConfig.Mathematics.ZERO_THRESHOLD;
     /**
@@ -27,11 +27,11 @@ public class PointNameManager {
      */
     private static PointNameManager instance;
     /**
-     * 点坐标到名称的映射（线程安全）
+     * 点坐标到名称的映射(线程安全)
      */
     private final Map<String, String> pointNameMap = new ConcurrentHashMap<>();
     /**
-     * 名称到索引的映射（用于跟踪已使用的索引，线程安全）
+     * 名称到索引的映射(用于跟踪已使用的索引,线程安全)
      */
     private final Map<String, Integer> nameToIndexMap = new ConcurrentHashMap<>();
     /**
@@ -40,7 +40,7 @@ public class PointNameManager {
     private int nextAvailableIndex = 0;
 
     /**
-     * 下一个可用的中心点命名索引（用于O系列）
+     * 下一个可用的中心点命名索引(用于O系列)
      */
     private int nextCenterIndex = 0;
 
@@ -58,7 +58,7 @@ public class PointNameManager {
     }
 
     /**
-     * 为点分配名称（如果已存在则返回现有名称）
+     * 为点分配名称(如果已存在则返回现有名称)
      * <p>
      * 线程安全的实现
      *
@@ -69,7 +69,7 @@ public class PointNameManager {
     public synchronized String assignName(double x, double y) {
         String key = getPointKey(x, y);
 
-        // 如果点已存在，返回已有名称
+        // 如果点已存在,返回已有名称
         if (pointNameMap.containsKey(key)) {
             return pointNameMap.get(key);
         }
@@ -89,14 +89,14 @@ public class PointNameManager {
     }
 
     /**
-     * 为点分配名称（Point2D版本）
+     * 为点分配名称(Point2D版本)
      */
     public String assignName(Point2D point) {
         return assignName(point.getX(), point.getY());
     }
 
     /**
-     * 为中心点分配名称（圆心或正多边形中心）
+     * 为中心点分配名称(圆心或正多边形中心)
      * <p>
      * 命名规则：O, O1, O2, O3, ...
      * <p>
@@ -109,7 +109,7 @@ public class PointNameManager {
     public synchronized String assignCenterName(double x, double y) {
         String key = getPointKey(x, y);
 
-        // 如果点已存在，返回已有名称
+        // 如果点已存在,返回已有名称
         if (pointNameMap.containsKey(key)) {
             return pointNameMap.get(key);
         }
@@ -119,7 +119,7 @@ public class PointNameManager {
             nextCenterIndex++;
         }
 
-        // 生成新名称（O系列）
+        // 生成新名称(O系列)
         String name = generateCenterName(nextCenterIndex);
         pointNameMap.put(key, name);
         nameToIndexMap.put(name, nextCenterIndex);
@@ -129,18 +129,18 @@ public class PointNameManager {
     }
 
     /**
-     * 为中心点分配名称（Point2D版本）
+     * 为中心点分配名称(Point2D版本)
      */
     public String assignCenterName(Point2D point) {
         return assignCenterName(point.getX(), point.getY());
     }
 
     /**
-     * 获取点的名称（如果不存在则返回null）
+     * 获取点的名称(如果不存在则返回null)
      *
      * @param x 点的X坐标
      * @param y 点的Y坐标
-     * @return 点的名称，如果不存在则返回null
+     * @return 点的名称,如果不存在则返回null
      */
     public String getName(double x, double y) {
         String key = getPointKey(x, y);
@@ -148,7 +148,7 @@ public class PointNameManager {
     }
 
     /**
-     * 获取点的名称（Point2D版本）
+     * 获取点的名称(Point2D版本)
      */
     public String getName(Point2D point) {
         return getName(point.getX(), point.getY());
@@ -176,9 +176,9 @@ public class PointNameManager {
     }
 
     /**
-     * 更新点的位置（用于点移动时更新映射关系）
+     * 更新点的位置(用于点移动时更新映射关系)
      * <p>
-     * 将点的名称从旧位置映射移除，并在新位置建立映射
+     * 将点的名称从旧位置映射移除,并在新位置建立映射
      * <p>
      * 线程安全的实现
      *
@@ -191,7 +191,7 @@ public class PointNameManager {
         String oldKey = getPointKey(oldX, oldY);
         String newKey = getPointKey(newX, newY);
 
-        // 如果新旧位置相同（精度范围内），不需要更新
+        // 如果新旧位置相同(精度范围内),不需要更新
         if (oldKey.equals(newKey)) {
             return;
         }
@@ -202,11 +202,11 @@ public class PointNameManager {
             // 检查新位置是否已有其他点
             String existingName = pointNameMap.get(newKey);
             if (existingName == null) {
-                // 新位置没有点，移动映射
+                // 新位置没有点,移动映射
                 pointNameMap.remove(oldKey);
                 pointNameMap.put(newKey, name);
             } else {
-                // 新位置已有点，只移除旧位置映射（保留现有映射）
+                // 新位置已有点,只移除旧位置映射(保留现有映射)
                 pointNameMap.remove(oldKey);
             }
         }
@@ -228,7 +228,7 @@ public class PointNameManager {
      * 根据索引生成名称
      * 规则：A-Z, A1-Z1, A2-Z2, ...
      *
-     * @param index 索引（从0开始）
+     * @param index 索引(从0开始)
      * @return 点名称
      */
     private String generateName(int index) {
@@ -245,7 +245,7 @@ public class PointNameManager {
     }
 
     /**
-     * 生成点的唯一键（基于坐标）
+     * 生成点的唯一键(基于坐标)
      * 使用四舍五入来处理浮点数精度问题
      */
     private String getPointKey(double x, double y) {
@@ -271,10 +271,10 @@ public class PointNameManager {
     }
 
     /**
-     * 生成中心点名称（O系列）
+     * 生成中心点名称(O系列)
      * 规则：O, O1, O2, O3, ...
      *
-     * @param index 索引（从0开始）
+     * @param index 索引(从0开始)
      * @return 中心点名称
      */
     private String generateCenterName(int index) {

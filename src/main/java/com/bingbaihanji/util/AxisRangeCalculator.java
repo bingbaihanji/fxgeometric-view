@@ -28,7 +28,7 @@ public class AxisRangeCalculator {
                                          double viewWidth,
                                          double viewHeight) {
         if (objects.isEmpty()) {
-            // 没有对象时，返回标准范围
+            // 没有对象时,返回标准范围
             return getStandardRange();
         }
 
@@ -38,7 +38,7 @@ public class AxisRangeCalculator {
         double minY = Double.POSITIVE_INFINITY;
         double maxY = Double.NEGATIVE_INFINITY;
 
-        // 遍历所有对象，计算边界框
+        // 遍历所有对象,计算边界框
         for (WorldObject obj : objects) {
             double[] bounds = obj.getBoundingBox();
             if (bounds != null && bounds.length == 4) {
@@ -66,7 +66,7 @@ public class AxisRangeCalculator {
         minY -= yMargin;
         maxY += yMargin;
 
-        // 确保最小范围（避免过小的范围）
+        // 确保最小范围(避免过小的范围)
         if (xRange < 2.0) {
             double center = (minX + maxX) / 2;
             minX = center - 1.0;
@@ -82,7 +82,7 @@ public class AxisRangeCalculator {
     }
 
     /**
-     * 获取标准视图范围（原点居中，-10到10）
+     * 获取标准视图范围(原点居中,-10到10)
      *
      * @return 包含xMin, xMax, yMin, yMax的数组
      */
@@ -114,7 +114,7 @@ public class AxisRangeCalculator {
      * 根据缩放百分比计算新的缩放比例
      *
      * @param currentScale 当前缩放比例
-     * @param percent      目标百分比（如100表示100%）
+     * @param percent      目标百分比(如100表示100%)
      * @return 新的缩放比例
      */
     public static double getScaleFromPercent(double currentScale, double percent) {

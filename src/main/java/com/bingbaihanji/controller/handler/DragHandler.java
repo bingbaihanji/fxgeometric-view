@@ -25,7 +25,7 @@ import java.util.Map;
 /**
  * 拖动处理器
  * <p>
- * 处理控制点的拖动操作（在非绘制模式下）
+ * 处理控制点的拖动操作(在非绘制模式下)
  * 支持多选对象的同时拖动
  *
  * @author bingbaihanji
@@ -36,137 +36,13 @@ public class DragHandler extends AbstractDrawingHandler {
     /**
      * 拖动状态管理对象
      * <p>
-     * 封装所有拖动相关的状态变量，简化状态管理
+     * 封装所有拖动相关的状态变量,简化状态管理
      */
     private final DragState state = new DragState();
 
-    /**
-     * 拖动状态类型枚举
-     */
-    public enum DragType {
-        NONE,                   // 无拖动
-        SINGLE_POINT,           // 单个控制点拖动
-        MULTIPLE_OBJECTS,       // 多选对象拖动
-        BOUNDING_BOX_HANDLE     // BoundingBox句柄拖动（已禁用）
-    }
-
-    /**
-     * 拖动状态封装类
-     * <p>
-     * 将所有拖动相关的状态变量封装在一起，便于管理和重置
-     */
-    private static class DragState {
-        // 拖动类型
-        DragType type = DragType.NONE;
-
-        // 单点拖动相关
-        WorldObject.DraggablePoint point = null;
-        WorldObject owner = null;
-
-        // 圆心拖动相关
-        boolean isDraggingCircleCenter = false;
-        CircleGeo draggingCircle = null;
-
-        // 句柄拖动相关（已禁用但保留结构）
-        ResizeHandle handle = null;
-        Map<WorldObject.DraggablePoint, double[]> boundingBoxInitialPositions = new HashMap<>();
-        Map<CircleGeo, Double> circleInitialRadii = new HashMap<>();
-
-        // 多选拖动相关
-        List<WorldObject> objects = new ArrayList<>();
-        List<WorldObject.DraggablePoint> allPoints = new ArrayList<>();
-        Map<WorldObject.DraggablePoint, double[]> initialPositions = new HashMap<>();
-
-        // 通用拖动信息
-        double offsetX = 0;
-        double offsetY = 0;
-        double startX = 0;
-        double startY = 0;
-        double endX = 0;
-        double endY = 0;
-
-        /**
-         * 重置所有状态
-         */
-        void reset() {
-            type = DragType.NONE;
-            point = null;
-            owner = null;
-            isDraggingCircleCenter = false;
-            draggingCircle = null;
-            handle = null;
-            boundingBoxInitialPositions.clear();
-            circleInitialRadii.clear();
-            objects.clear();
-            allPoints.clear();
-            initialPositions.clear();
-            offsetX = 0;
-            offsetY = 0;
-            startX = 0;
-            startY = 0;
-            endX = 0;
-            endY = 0;
-        }
-
-        /**
-         * 是否正在拖动
-         */
-        boolean isDragging() {
-            return type != DragType.NONE;
-        }
-
-        /**
-         * 开始单点拖动
-         */
-        void startSinglePointDrag(WorldObject.DraggablePoint point, WorldObject owner,
-                                  double offsetX, double offsetY, double startX, double startY) {
-            this.type = DragType.SINGLE_POINT;
-            this.point = point;
-            this.owner = owner;
-            this.offsetX = offsetX;
-            this.offsetY = offsetY;
-            this.startX = startX;
-            this.startY = startY;
-            this.endX = startX;
-            this.endY = startY;
-        }
-
-        /**
-         * 开始多选对象拖动
-         */
-        void startMultipleObjectsDrag(List<WorldObject> selectedObjects,
-                                      double startX, double startY) {
-            this.type = DragType.MULTIPLE_OBJECTS;
-            this.objects = new ArrayList<>(selectedObjects);
-            this.allPoints.clear();
-            this.initialPositions.clear();
-
-            // 收集所有控制点并保存初始位置
-            for (WorldObject obj : this.objects) {
-                for (WorldObject.DraggablePoint p : obj.getDraggablePoints()) {
-                    this.allPoints.add(p);
-                    this.initialPositions.put(p, new double[]{p.getX(), p.getY()});
-                }
-            }
-
-            this.startX = startX;
-            this.startY = startY;
-            this.endX = startX;
-            this.endY = startY;
-        }
-
-        /**
-         * 设置圆心拖动信息
-         */
-        void setCircleCenterDrag(CircleGeo circle) {
-            this.isDraggingCircleCenter = true;
-            this.draggingCircle = circle;
-        }
-    }
-
     @Override
     public boolean canHandle(DrawMode mode) {
-        // 拖动只在非绘制模式（NONE）下生效
+        // 拖动只在非绘制模式(NONE)下生效
         return mode == DrawMode.NONE;
     }
 
@@ -176,7 +52,7 @@ public class DragHandler extends AbstractDrawingHandler {
             return false;
         }
 
-        // 非绘制模式下，尝试选中控制点进行拖动
+        // 非绘制模式下,尝试选中控制点进行拖动
         double worldX = context.getGridChartPane().screenToWorldX(e.getX());
         double worldY = context.getGridChartPane().screenToWorldY(e.getY());
 
@@ -184,10 +60,10 @@ public class DragHandler extends AbstractDrawingHandler {
         double scale = context.getTransform().getScale();
         double tolerance = 10.0 / scale; // 10像素的点击范围
 
-        // 优先级1：检查所有控制点（最高优先级）
+        // 优先级1：检查所有控制点(最高优先级)
         Hits.HitPoint hitPoint = Hits.performPointHitTest(context.getObjects(), worldX, worldY, tolerance);
         if (hitPoint != null) {
-            // 命中控制点，进入单控制点拖动模式
+            // 命中控制点,进入单控制点拖动模式
             WorldObject.DraggablePoint point = hitPoint.getPoint();
             WorldObject owner = hitPoint.getOwner();
 
@@ -218,12 +94,12 @@ public class DragHandler extends AbstractDrawingHandler {
             return true;
         }
 
-        // 优先级2：检查已选中对象（用于多选拖动整体）
+        // 优先级2：检查已选中对象(用于多选拖动整体)
         List<WorldObject> selectedObjects = context.getSelectionManager().getSelectedObjects();
         if (!selectedObjects.isEmpty()) {
             Hits hits = Hits.performHitTest(selectedObjects, worldX, worldY, tolerance);
             if (!hits.isEmpty()) {
-                // 点击了选中对象的边缘/内部，开始多选拖动
+                // 点击了选中对象的边缘/内部,开始多选拖动
                 context.getSnapController().reset();
 
                 // 初始化多选拖动状态
@@ -257,7 +133,7 @@ public class DragHandler extends AbstractDrawingHandler {
         double scale = context.getTransform().getScale();
         double tolerance = 10.0 / scale;
 
-        // 检查鼠标是否靠近顶点，如果是则显示十字光标
+        // 检查鼠标是否靠近顶点,如果是则显示十字光标
         boolean nearVertex = false;
         for (WorldObject obj : context.getObjects()) {
             for (WorldObject.DraggablePoint point : obj.getDraggablePoints()) {
@@ -348,7 +224,7 @@ public class DragHandler extends AbstractDrawingHandler {
             }
         }
 
-        // 如果没有应用圆的特殊吸附，则尝试一般吸附
+        // 如果没有应用圆的特殊吸附,则尝试一般吸附
         if (!circleSnapApplied) {
             double snapCheckX = rawX;
             double snapCheckY = rawY;
@@ -369,7 +245,7 @@ public class DragHandler extends AbstractDrawingHandler {
                     worldY = nearestPoint.getY();
                 }
             } else {
-                // 边吸附（仅在非圆心拖动时）
+                // 边吸附(仅在非圆心拖动时)
                 if (!state.isDraggingCircleCenter) {
                     EdgeSnapManager.EdgeSnapResult edgeSnap = context.getSnappingHandler()
                             .findNearestEdge(rawX, rawY, context, state.owner);
@@ -527,7 +403,7 @@ public class DragHandler extends AbstractDrawingHandler {
     }
 
     /**
-     * 获取当前拖动状态（用于预览显示位移信息）
+     * 获取当前拖动状态(用于预览显示位移信息)
      */
     public DragState getDragState() {
         return state;
@@ -536,7 +412,7 @@ public class DragHandler extends AbstractDrawingHandler {
     /**
      * 同步移动所有在同一位置的几何图形关键点
      * <p>
-     * 当拖动一个点时，查找所有与该点位置重合的几何图形的关键点（圆心、顶点等），
+     * 当拖动一个点时,查找所有与该点位置重合的几何图形的关键点(圆心、顶点等),
      * 并同步移动它们。这实现了点复用的核心逻辑。
      *
      * @param context      绘图上下文
@@ -544,14 +420,14 @@ public class DragHandler extends AbstractDrawingHandler {
      * @param oldY         原始位置Y
      * @param newX         新位置X
      * @param newY         新位置Y
-     * @param excludeOwner 排除的对象（正在拖动的对象）
+     * @param excludeOwner 排除的对象(正在拖动的对象)
      */
     private void syncReusePointsPosition(DrawingContext context, double oldX, double oldY,
                                          double newX, double newY, WorldObject excludeOwner) {
         double scale = context.getTransform().getScale();
         double threshold = 10.0 / scale; // 位置重合判定阈值
 
-        // 遍历所有对象，查找关键点与 oldX, oldY 重合的几何图形
+        // 遍历所有对象,查找关键点与 oldX, oldY 重合的几何图形
         for (WorldObject obj : context.getObjects()) {
             if (obj == excludeOwner) {
                 continue; // 跳过正在拖动的对象
@@ -567,10 +443,10 @@ public class DragHandler extends AbstractDrawingHandler {
                     // 移动圆心到新位置
                     PointGeo centerRef = circle.getCenterPointRef();
                     if (centerRef != null) {
-                        // 如果圆心是引用点，更新引用点位置
+                        // 如果圆心是引用点,更新引用点位置
                         centerRef.setPositionDirectly(newX, newY);
                     } else {
-                        // 如果是内部坐标，直接更新（通过反射或者直接访问内部字段）
+                        // 如果是内部坐标,直接更新(通过反射或者直接访问内部字段)
                         // 这里需要获取圆的 DraggablePoint 并更新
                         for (WorldObject.DraggablePoint point : circle.getDraggablePoints()) {
                             if (MathCalculationUtils.hypot(point.getX() - oldX, point.getY() - oldY) < threshold) {
@@ -604,7 +480,7 @@ public class DragHandler extends AbstractDrawingHandler {
                     }
                 }
 
-                // 如果没有引用点，更新 DraggablePoint
+                // 如果没有引用点,更新 DraggablePoint
                 for (WorldObject.DraggablePoint point : line.getDraggablePoints()) {
                     if (MathCalculationUtils.hypot(point.getX() - oldX, point.getY() - oldY) < threshold) {
                         point.updatePosition(newX, newY);
@@ -642,7 +518,7 @@ public class DragHandler extends AbstractDrawingHandler {
                     }
                 }
 
-                // 如果没有引用点，更新 DraggablePoint
+                // 如果没有引用点,更新 DraggablePoint
                 for (WorldObject.DraggablePoint point : infLine.getDraggablePoints()) {
                     if (MathCalculationUtils.hypot(point.getX() - oldX, point.getY() - oldY) < threshold) {
                         point.updatePosition(newX, newY);
@@ -676,7 +552,7 @@ public class DragHandler extends AbstractDrawingHandler {
                     double screenX = transform.worldToScreenX(point.getX());
                     double screenY = transform.worldToScreenY(point.getY());
 
-                    // 绘制外圈（高亮效果）
+                    // 绘制外圈(高亮效果)
                     gc.setFill(Color.rgb(117, 158, 178, 0.3));
                     double outerRadius = 8;
                     gc.fillOval(screenX - outerRadius, screenY - outerRadius, outerRadius * 2, outerRadius * 2);
@@ -695,7 +571,7 @@ public class DragHandler extends AbstractDrawingHandler {
     /**
      * 绘制拖动位移提示
      * <p>
-     * 在拖动过程中显示位移量（Δx, Δy）
+     * 在拖动过程中显示位移量(Δx, Δy)
      */
     private void paintDragDisplacementHint(GraphicsContext gc, WorldTransform transform, DrawingContext context) {
         double dx, dy;
@@ -743,5 +619,129 @@ public class DragHandler extends AbstractDrawingHandler {
         gc.fillText(info, bgX, bgY - 3);
 
         gc.restore();
+    }
+
+    /**
+     * 拖动状态类型枚举
+     */
+    public enum DragType {
+        NONE,                   // 无拖动
+        SINGLE_POINT,           // 单个控制点拖动
+        MULTIPLE_OBJECTS,       // 多选对象拖动
+        BOUNDING_BOX_HANDLE     // BoundingBox句柄拖动(已禁用)
+    }
+
+    /**
+     * 拖动状态封装类
+     * <p>
+     * 将所有拖动相关的状态变量封装在一起,便于管理和重置
+     */
+    private static class DragState {
+        // 拖动类型
+        DragType type = DragType.NONE;
+
+        // 单点拖动相关
+        WorldObject.DraggablePoint point = null;
+        WorldObject owner = null;
+
+        // 圆心拖动相关
+        boolean isDraggingCircleCenter = false;
+        CircleGeo draggingCircle = null;
+
+        // 句柄拖动相关(已禁用但保留结构)
+        ResizeHandle handle = null;
+        Map<WorldObject.DraggablePoint, double[]> boundingBoxInitialPositions = new HashMap<>();
+        Map<CircleGeo, Double> circleInitialRadii = new HashMap<>();
+
+        // 多选拖动相关
+        List<WorldObject> objects = new ArrayList<>();
+        List<WorldObject.DraggablePoint> allPoints = new ArrayList<>();
+        Map<WorldObject.DraggablePoint, double[]> initialPositions = new HashMap<>();
+
+        // 通用拖动信息
+        double offsetX = 0;
+        double offsetY = 0;
+        double startX = 0;
+        double startY = 0;
+        double endX = 0;
+        double endY = 0;
+
+        /**
+         * 重置所有状态
+         */
+        void reset() {
+            type = DragType.NONE;
+            point = null;
+            owner = null;
+            isDraggingCircleCenter = false;
+            draggingCircle = null;
+            handle = null;
+            boundingBoxInitialPositions.clear();
+            circleInitialRadii.clear();
+            objects.clear();
+            allPoints.clear();
+            initialPositions.clear();
+            offsetX = 0;
+            offsetY = 0;
+            startX = 0;
+            startY = 0;
+            endX = 0;
+            endY = 0;
+        }
+
+        /**
+         * 是否正在拖动
+         */
+        boolean isDragging() {
+            return type != DragType.NONE;
+        }
+
+        /**
+         * 开始单点拖动
+         */
+        void startSinglePointDrag(WorldObject.DraggablePoint point, WorldObject owner,
+                                  double offsetX, double offsetY, double startX, double startY) {
+            this.type = DragType.SINGLE_POINT;
+            this.point = point;
+            this.owner = owner;
+            this.offsetX = offsetX;
+            this.offsetY = offsetY;
+            this.startX = startX;
+            this.startY = startY;
+            this.endX = startX;
+            this.endY = startY;
+        }
+
+        /**
+         * 开始多选对象拖动
+         */
+        void startMultipleObjectsDrag(List<WorldObject> selectedObjects,
+                                      double startX, double startY) {
+            this.type = DragType.MULTIPLE_OBJECTS;
+            this.objects = new ArrayList<>(selectedObjects);
+            this.allPoints.clear();
+            this.initialPositions.clear();
+
+            // 收集所有控制点并保存初始位置
+            for (WorldObject obj : this.objects) {
+                for (WorldObject.DraggablePoint p : obj.getDraggablePoints()) {
+                    this.allPoints.add(p);
+                    this.initialPositions.put(p, new double[]{p.getX(), p.getY()});
+                }
+            }
+
+            this.startX = startX;
+            this.startY = startY;
+            this.endX = startX;
+            this.endY = startY;
+        }
+
+        /**
+         * 设置圆心拖动信息
+         */
+        void setCircleCenterDrag(CircleGeo circle) {
+            this.isDraggingCircleCenter = true;
+            this.draggingCircle = circle;
+        }
     }
 }

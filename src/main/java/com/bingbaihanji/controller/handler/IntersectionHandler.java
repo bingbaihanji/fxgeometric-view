@@ -257,12 +257,12 @@ public class IntersectionHandler {
     /**
      * 重新计算所有图形之间的交点
      * <p>
-     * 用于拖动时更新交点位置，支持实时更新
+     * 用于拖动时更新交点位置,支持实时更新
      *
      * @param context 绘制上下文
      */
     public void recalculateAllIntersections(DrawingContext context) {
-        // 1. 删除所有旧的交点（紫色的PointGeo）
+        // 1. 删除所有旧的交点(紫色的PointGeo)
         List<WorldObject> allObjects = new ArrayList<>(context.getObjects());
         for (WorldObject obj : allObjects) {
             if (obj instanceof PointGeo point) {
@@ -302,8 +302,8 @@ public class IntersectionHandler {
             context.addObject(point);
         }
 
-        // 注意：不在这里调用 redraw()，由调用者统一负责重绘
-        // 这样可以避免拖动过程中的重复绘制，提高性能
+        // 注意：不在这里调用 redraw(),由调用者统一负责重绘
+        // 这样可以避免拖动过程中的重复绘制,提高性能
     }
 
     /**
@@ -425,10 +425,10 @@ public class IntersectionHandler {
     }
 
     /**
-     * 判断点是否为交点（通过颜色判断）
+     * 判断点是否为交点(通过颜色判断)
      *
      * @param point 点对象
-     * @return true 表示是交点，false 表示不是
+     * @return true 表示是交点,false 表示不是
      */
     public boolean isIntersectionPoint(PointGeo point) {
         // 使用新增的getColor方法

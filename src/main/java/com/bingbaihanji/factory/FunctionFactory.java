@@ -24,7 +24,7 @@ public class FunctionFactory {
      * 根据输入结果创建函数对象
      *
      * @param input 函数输入结果
-     * @return 创建的函数对象，如果失败则返回null
+     * @return 创建的函数对象,如果失败则返回null
      */
     public static FunctionGeo createFunction(FunctionInputResult input) {
         if (input == null) {
@@ -36,7 +36,7 @@ public class FunctionFactory {
             Map<String, Double> params = input.getParameters();
             FunctionType type = input.getType();
 
-            FunctionGeo function = createByType(type, params);
+            FunctionGeo function = createByType(input, type, params);
 
             // 设置定义域
             if (function != null && !input.isAutoRange()) {
@@ -53,7 +53,7 @@ public class FunctionFactory {
     /**
      * 根据类型和参数创建函数对象
      */
-    private static FunctionGeo createByType(FunctionType type, Map<String, Double> params) {
+    private static FunctionGeo createByType(FunctionInputResult input, FunctionType type, Map<String, Double> params) {
         return switch (type) {
             case LINEAR -> createLinearFunction(params);
             case QUADRATIC -> createQuadraticFunction(params);
@@ -64,6 +64,7 @@ public class FunctionFactory {
             case ELLIPSE -> createEllipseFunction(params);
             case HYPERBOLA -> createHyperbolaFunction(params);
             case PARABOLA_CONIC -> createParabolaConicFunction(params);
+            case CUSTOM -> createCustomFunction(input);
             default -> {
                 logger.error("不支持的函数类型: " + type);
                 yield null;
@@ -157,7 +158,7 @@ public class FunctionFactory {
     }
 
     /**
-     * 创建抛物线（圆锥曲线）函数 y² = 2px
+     * 创建抛物线(圆锥曲线)函数 y² = 2px
      */
     private static ParabolaConicFunctionGeo createParabolaConicFunction(Map<String, Double> params) {
         return new ParabolaConicFunctionGeo(
@@ -166,7 +167,19 @@ public class FunctionFactory {
     }
 
     /**
-     * 从参数Map中获取参数值，如果不存在则使用默认值
+     * 创建自定义表达式函数 y = f(x)
+     */
+    private static CustomFunctionGeo createCustomFunction(FunctionInputResult input) {
+        String expr = input.getCustomExpression();
+        if (expr == null || expr.isBlank()) {
+            logger.error("自定义函数表达式为空");
+            return null;
+        }
+        return new CustomFunctionGeo(expr);
+    }
+
+    /**
+     * 从参数Map中获取参数值,如果不存在则使用默认值
      */
     private static double getParam(Map<String, Double> params, String key, double defaultValue) {
         Double value = params.get(key);

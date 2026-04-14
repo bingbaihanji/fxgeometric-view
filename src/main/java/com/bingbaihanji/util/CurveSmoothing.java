@@ -7,7 +7,7 @@ import java.util.List;
 
 /**
  * 曲线平滑工具类
- *
+ * <p>
  * 提供多种曲线平滑算法：
  * 1. Douglas-Peucker 算法：简化路径点
  * 2. Catmull-Rom 样条曲线：生成平滑曲线
@@ -20,10 +20,10 @@ import java.util.List;
 public class CurveSmoothing {
 
     /**
-     * Douglas-Peucker 算法简化点集（修复版：使用点到线段距离，正确处理回笔）
+     * Douglas-Peucker 算法简化点集(修复版：使用点到线段距离,正确处理回笔)
      *
-     * @param points 原始点集
-     * @param epsilon 容差值，值越大简化程度越高（建议 0.5-3.0，基于世界坐标）
+     * @param points  原始点集
+     * @param epsilon 容差值,值越大简化程度越高(建议 0.5-3.0,基于世界坐标)
      * @return 简化后的点集
      */
     public static List<Point2D> simplifyDouglasPeucker(List<Point2D> points, double epsilon) {
@@ -33,21 +33,21 @@ public class CurveSmoothing {
 
         List<Point2D> result = new ArrayList<>();
         boolean[] keep = new boolean[points.size()];
-        
+
         // 标记起点和终点为保留
         keep[0] = true;
         keep[points.size() - 1] = true;
-        
+
         // 递归处理
         douglasPeuckerHelper(points, 0, points.size() - 1, epsilon, keep);
-        
+
         // 收集保留的点
         for (int i = 0; i < points.size(); i++) {
             if (keep[i]) {
                 result.add(points.get(i));
             }
         }
-        
+
         return result;
     }
 
@@ -63,7 +63,7 @@ public class CurveSmoothing {
         Point2D startPoint = points.get(start);
         Point2D endPoint = points.get(end);
 
-        // 找到距离起点-终点线段最远的点（使用点到线段距离，不是投影距离）
+        // 找到距离起点-终点线段最远的点(使用点到线段距离,不是投影距离)
         double maxDistance = 0;
         int maxIndex = start;
 
@@ -76,7 +76,7 @@ public class CurveSmoothing {
             }
         }
 
-        // 如果最大距离大于容差，保留该点并递归分割
+        // 如果最大距离大于容差,保留该点并递归分割
         if (maxDistance > epsilon) {
             keep[maxIndex] = true;
             douglasPeuckerHelper(points, start, maxIndex, epsilon, keep);
@@ -85,7 +85,7 @@ public class CurveSmoothing {
     }
 
     /**
-     * 计算点到线段的距离（修复版：正确处理线段外的点）
+     * 计算点到线段的距离(修复版：正确处理线段外的点)
      */
     private static double pointToSegmentDistance(Point2D point, Point2D lineStart, Point2D lineEnd) {
         double dx = lineEnd.getX() - lineStart.getX();
@@ -96,9 +96,9 @@ public class CurveSmoothing {
             return point.distance(lineStart);
         }
 
-        // 计算投影参数 t，并限制在 [0, 1] 范围内
-        double t = Math.max(0, Math.min(1, 
-            ((point.getX() - lineStart.getX()) * dx + (point.getY() - lineStart.getY()) * dy) / lengthSquared));
+        // 计算投影参数 t,并限制在 [0, 1] 范围内
+        double t = Math.max(0, Math.min(1,
+                ((point.getX() - lineStart.getX()) * dx + (point.getY() - lineStart.getY()) * dy) / lengthSquared));
 
         double projX = lineStart.getX() + t * dx;
         double projY = lineStart.getY() + t * dy;
@@ -109,8 +109,8 @@ public class CurveSmoothing {
     /**
      * 去除尖刺点：基于角度检测和移除异常点
      *
-     * @param points 原始点集
-     * @param angleThreshold 角度阈值（弧度，建议 Math.PI * 0.7，即约126度）
+     * @param points         原始点集
+     * @param angleThreshold 角度阈值(弧度,建议 Math.PI * 0.7,即约126度)
      * @return 去除尖刺后的点集
      */
     public static List<Point2D> removeSpikes(List<Point2D> points, double angleThreshold) {
@@ -137,11 +137,11 @@ public class CurveSmoothing {
             double angle2 = Math.atan2(dy2, dx2);
             double angleDiff = Math.abs(normalizeAngle(angle2 - angle1));
 
-            // 如果角度变化小于阈值，保留该点
+            // 如果角度变化小于阈值,保留该点
             if (angleDiff < angleThreshold) {
                 result.add(curr);
             }
-            // 否则跳过该点（认为是尖刺）
+            // 否则跳过该点(认为是尖刺)
         }
 
         result.add(points.get(points.size() - 1));
@@ -158,11 +158,11 @@ public class CurveSmoothing {
     }
 
     /**
-     * 使用 Catmull-Rom 样条生成平滑曲线点（带张力控制）
+     * 使用 Catmull-Rom 样条生成平滑曲线点(带张力控制)
      *
-     * @param points 控制点
-     * @param segmentsPerCurve 每段曲线的细分数（值越大越平滑，建议 10-20）
-     * @param tension 张力系数（0.0 = 直线，0.5 = 默认平滑，1.0 = 最紧，建议 0.4-0.6）
+     * @param points           控制点
+     * @param segmentsPerCurve 每段曲线的细分数(值越大越平滑,建议 10-20)
+     * @param tension          张力系数(0.0 = 直线,0.5 = 默认平滑,1.0 = 最紧,建议 0.4-0.6)
      * @return 平滑后的曲线点
      */
     public static List<Point2D> smoothCatmullRom(List<Point2D> points, int segmentsPerCurve, double tension) {
@@ -209,13 +209,13 @@ public class CurveSmoothing {
     }
 
     /**
-     * Catmull-Rom 样条插值（带张力控制）
+     * Catmull-Rom 样条插值(带张力控制)
      *
-     * @param p0 前一个控制点
-     * @param p1 当前段起点
-     * @param p2 当前段终点
-     * @param p3 后一个控制点
-     * @param t 参数 [0, 1]
+     * @param p0      前一个控制点
+     * @param p1      当前段起点
+     * @param p2      当前段终点
+     * @param p3      后一个控制点
+     * @param t       参数 [0, 1]
      * @param tension 张力系数 [0, 1]
      * @return 插值点
      */
@@ -223,7 +223,7 @@ public class CurveSmoothing {
         double t2 = t * t;
         double t3 = t2 * t;
 
-        // 计算切线向量（带张力控制）
+        // 计算切线向量(带张力控制)
         double tAdjusted = tension * 0.5;
         double m0x = (p2.getX() - p0.getX()) * tAdjusted;
         double m0y = (p2.getY() - p0.getY()) * tAdjusted;
@@ -244,10 +244,10 @@ public class CurveSmoothing {
 
     /**
      * 移动平均平滑
-     * 简单的平滑方法，对相邻点进行平均
+     * 简单的平滑方法,对相邻点进行平均
      *
-     * @param points 原始点集
-     * @param windowSize 平均窗口大小（建议 3-5）
+     * @param points     原始点集
+     * @param windowSize 平均窗口大小(建议 3-5)
      * @return 平滑后的点集
      */
     public static List<Point2D> smoothMovingAverage(List<Point2D> points, int windowSize) {
@@ -277,11 +277,11 @@ public class CurveSmoothing {
     }
 
     /**
-     * 综合平滑方法：先简化再平滑（基础版）
+     * 综合平滑方法：先简化再平滑(基础版)
      *
-     * @param points 原始点集
-     * @param simplifyEpsilon 简化容差（0.5-3.0，基于世界坐标）
-     * @param smoothSegments 平滑细分数（10-20）
+     * @param points          原始点集
+     * @param simplifyEpsilon 简化容差(0.5-3.0,基于世界坐标)
+     * @param smoothSegments  平滑细分数(10-20)
      * @return 平滑后的点集
      */
     public static List<Point2D> smoothCurve(List<Point2D> points, double simplifyEpsilon, int smoothSegments) {
@@ -289,12 +289,12 @@ public class CurveSmoothing {
     }
 
     /**
-     * 综合平滑方法：先简化再平滑（带张力控制）
+     * 综合平滑方法：先简化再平滑(带张力控制)
      *
-     * @param points 原始点集
-     * @param simplifyEpsilon 简化容差（0.5-3.0，基于世界坐标）
-     * @param smoothSegments 平滑细分数（10-20）
-     * @param tension 张力系数（0.4-0.6）
+     * @param points          原始点集
+     * @param simplifyEpsilon 简化容差(0.5-3.0,基于世界坐标)
+     * @param smoothSegments  平滑细分数(10-20)
+     * @param tension         张力系数(0.4-0.6)
      * @return 平滑后的点集
      */
     public static List<Point2D> smoothCurve(List<Point2D> points, double simplifyEpsilon, int smoothSegments, double tension) {
@@ -302,37 +302,37 @@ public class CurveSmoothing {
             return new ArrayList<>(points);
         }
 
-        // 1. 先简化点集（减少冗余点，使用点到线段距离算法）
+        // 1. 先简化点集(减少冗余点,使用点到线段距离算法)
         List<Point2D> simplified = simplifyDouglasPeucker(points, simplifyEpsilon);
 
-        // 2. 再进行 Catmull-Rom 平滑（带张力控制）
+        // 2. 再进行 Catmull-Rom 平滑(带张力控制)
         return smoothCatmullRom(simplified, smoothSegments, tension);
     }
 
     /**
      * 手绘专用平滑：针对手绘输入优化的完整处理流程
      *
-     * @param points 原始手绘点集
-     * @param simplifyEpsilon 简化容差（建议 0.3-2.0）
-     * @param smoothSegments 平滑细分数（建议 12-20）
-     * @param tension 张力系数（建议 0.4-0.6，越低越平滑）
+     * @param points          原始手绘点集
+     * @param simplifyEpsilon 简化容差(建议 0.3-2.0)
+     * @param smoothSegments  平滑细分数(建议 12-20)
+     * @param tension         张力系数(建议 0.4-0.6,越低越平滑)
      * @return 优化后的曲线点
      */
-    public static List<Point2D> smoothHandDrawnCurve(List<Point2D> points, 
-                                                      double simplifyEpsilon, 
-                                                      int smoothSegments, 
-                                                      double tension) {
+    public static List<Point2D> smoothHandDrawnCurve(List<Point2D> points,
+                                                     double simplifyEpsilon,
+                                                     int smoothSegments,
+                                                     double tension) {
         if (points == null || points.size() < 2) {
             return new ArrayList<>(points);
         }
 
-        // 1. 高斯平滑去噪（轻量级）
+        // 1. 高斯平滑去噪(轻量级)
         List<Point2D> denoised = smoothGaussian(points, 1.5);
 
         // 2. 去除尖刺点
         List<Point2D> despiked = removeSpikes(denoised, Math.PI * 0.75);
 
-        // 3. 简化路径（使用修复后的点到线段距离算法）
+        // 3. 简化路径(使用修复后的点到线段距离算法)
         List<Point2D> simplified = simplifyDouglasPeucker(despiked, simplifyEpsilon);
 
         // 4. 确保至少有一些点
@@ -340,7 +340,7 @@ public class CurveSmoothing {
             simplified = new ArrayList<>(points.subList(0, Math.min(3, points.size())));
         }
 
-        // 5. Catmull-Rom 平滑（带张力控制）
+        // 5. Catmull-Rom 平滑(带张力控制)
         return smoothCatmullRom(simplified, smoothSegments, tension);
     }
 
@@ -348,7 +348,7 @@ public class CurveSmoothing {
      * 高斯平滑：去除高频噪声
      *
      * @param points 原始点集
-     * @param sigma 高斯核标准差（建议 1.0-2.0）
+     * @param sigma  高斯核标准差(建议 1.0-2.0)
      * @return 平滑后的点集
      */
     public static List<Point2D> smoothGaussian(List<Point2D> points, double sigma) {
@@ -358,7 +358,7 @@ public class CurveSmoothing {
 
         int kernelSize = Math.max(3, (int) (sigma * 3) * 2 + 1);
         kernelSize = Math.min(kernelSize, points.size());
-        // 确保 kernelSize 是奇数，否则调整
+        // 确保 kernelSize 是奇数,否则调整
         if (kernelSize % 2 == 0) {
             kernelSize = Math.max(3, kernelSize - 1);
         }
@@ -378,7 +378,7 @@ public class CurveSmoothing {
         }
 
         List<Point2D> smoothed = new ArrayList<>();
-        
+
         for (int i = 0; i < points.size(); i++) {
             double sumX = 0;
             double sumY = 0;
@@ -401,7 +401,7 @@ public class CurveSmoothing {
     /**
      * 重采样：按固定距离间隔重新采样点
      *
-     * @param points 原始点集
+     * @param points   原始点集
      * @param interval 采样间隔距离
      * @return 重采样后的点集
      */

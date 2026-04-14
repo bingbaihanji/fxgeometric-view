@@ -5,14 +5,14 @@ package com.bingbaihanji.constant;
  *
  * @author bingbaihanji
  * @date 2025-12-31
- * @description 定义封闭图形的填充模式，参考 GeoGebra 的填充系统
+ * @description 定义封闭图形的填充模式, 参考 GeoGebra 的填充系统
  */
 public enum FillType {
 
     /**
-     * 无填充（仅描边）
+     * 无填充(仅描边)
      */
-    NONE("无填充", "仅显示轮廓，不填充内部"),
+    NONE("无填充", "仅显示轮廓,不填充内部"),
 
     /**
      * 纯色填充
@@ -30,14 +30,14 @@ public enum FillType {
     HATCH_VERTICAL("垂直线条", "垂直平行线填充"),
 
     /**
-     * 斜线填充（左上到右下）
+     * 斜线填充(左上到右下)
      */
-    HATCH_DIAGONAL("斜线填充", "对角线填充（\\）"),
+    HATCH_DIAGONAL("斜线填充", "对角线填充(\\)"),
 
     /**
-     * 反斜线填充（左下到右上）
+     * 反斜线填充(左下到右上)
      */
-    HATCH_CROSS_DIAGONAL("反斜线填充", "反对角线填充（/）"),
+    HATCH_CROSS_DIAGONAL("反斜线填充", "反对角线填充(/)"),
 
     /**
      * 交叉网格填充
@@ -72,7 +72,7 @@ public enum FillType {
     //   属性  
 
     /**
-     * 填充类型名称（中文）
+     * 填充类型名称(中文)
      */
     private final String displayName;
 
@@ -101,7 +101,7 @@ public enum FillType {
     //   工具方法  
 
     /**
-     * 判断是否为线条类填充（需要设置间距和角度）
+     * 判断是否为线条类填充(需要设置间距和角度)
      */
     public boolean isHatchFill() {
         return this == HATCH_HORIZONTAL
@@ -112,16 +112,16 @@ public enum FillType {
     }
 
     /**
-     * 判断是否需要填充颜色（非 NONE）
+     * 判断是否需要填充颜色(非 NONE)
      */
     public boolean hasColor() {
         return this != NONE;
     }
 
     /**
-     * 获取默认填充角度（度）
+     * 获取默认填充角度(度)
      *
-     * @return 填充角度，如果不适用则返回 0
+     * @return 填充角度,如果不适用则返回 0
      */
     public int getDefaultAngle() {
         return switch (this) {
@@ -134,7 +134,7 @@ public enum FillType {
     }
 
     /**
-     * 获取默认填充间距（像素）
+     * 获取默认填充间距(像素)
      *
      * @return 填充间距
      */

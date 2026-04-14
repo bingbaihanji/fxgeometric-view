@@ -11,26 +11,26 @@ import java.util.List;
 /**
  * 圆几何图形
  * <p>
- * 支持圆心点复用：如果圆心位置已有PointGeo，直接引用而不是创建新点
+ * 支持圆心点复用：如果圆心位置已有PointGeo,直接引用而不是创建新点
  */
 public class CircleGeo extends AbstractWorldObject {
 
     private double r;
 
-    // 圆心引用（如果复用已有点）
+    // 圆心引用(如果复用已有点)
     private PointGeo centerPointRef;
 
-    // 内部坐标（当没有引用时使用）
+    // 内部坐标(当没有引用时使用)
     private double cx;
     private double cy;
 
     private String centerName; // 圆心名称
 
-    // 标记圆心是否是内部创建的（需要由圆绘制）
+    // 标记圆心是否是内部创建的(需要由圆绘制)
     private boolean centerIsInternal = true;
 
     /**
-     * 基础构造函数（坐标方式）
+     * 基础构造函数(坐标方式)
      */
     public CircleGeo(double cx, double cy, double r) {
         super(ObjectType.CIRCLE);
@@ -42,7 +42,7 @@ public class CircleGeo extends AbstractWorldObject {
     }
 
     /**
-     * 构造函数（坐标方式，可选自动命名）
+     * 构造函数(坐标方式,可选自动命名)
      */
     public CircleGeo(double cx, double cy, double r, boolean autoNameCenter) {
         super(ObjectType.CIRCLE);
@@ -56,9 +56,9 @@ public class CircleGeo extends AbstractWorldObject {
     }
 
     /**
-     * 构造函数（点引用方式）- 复用已有点作为圆心
+     * 构造函数(点引用方式)- 复用已有点作为圆心
      *
-     * @param centerPoint 圆心点引用（可为null，表示内部创建）
+     * @param centerPoint 圆心点引用(可为null,表示内部创建)
      * @param cx          圆心X坐标
      * @param cy          圆心Y坐标
      * @param r           半径
@@ -73,7 +73,7 @@ public class CircleGeo extends AbstractWorldObject {
 
         if (centerPoint != null) {
             this.centerName = centerPoint.getName();
-            this.centerIsInternal = false; // 复用外部点，不由圆绘制
+            this.centerIsInternal = false; // 复用外部点,不由圆绘制
         } else {
             this.centerName = PointNameManager.getInstance().assignCenterName(cx, cy);
             this.centerIsInternal = true;
@@ -138,7 +138,7 @@ public class CircleGeo extends AbstractWorldObject {
         // 重置线型
         LineStyleUtil.resetLineStyle(gc);
 
-        // 只绘制内部创建的圆心，复用的外部点由它们自己绘制
+        // 只绘制内部创建的圆心,复用的外部点由它们自己绘制
         if (centerIsInternal) {
             gc.setFill(getEffectiveColor());
             double pointRadius = hover ? 4 : 3;
@@ -168,10 +168,10 @@ public class CircleGeo extends AbstractWorldObject {
         return List.of(
                 new DraggablePoint(getCx(), getCy(), (newX, newY) -> {
                     if (centerPointRef != null) {
-                        // 复用的外部点，更新其位置
+                        // 复用的外部点,更新其位置
                         centerPointRef.updatePosition(newX, newY);
                     } else {
-                        // 内部坐标，更新坐标并同步复用组
+                        // 内部坐标,更新坐标并同步复用组
                         double oldX = cx;
                         double oldY = cy;
                         cx = newX;

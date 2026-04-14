@@ -21,7 +21,7 @@ import javafx.util.Duration;
 /**
  * 正多边形边数选择对话框
  * <p>
- * 允许用户选择正多边形的边数（3-10）
+ * 允许用户选择正多边形的边数(3-10)
  *
  * @author bingbaihanji
  * @date 2026-01-10
@@ -36,7 +36,7 @@ public class RegularPolygonSidesDialog extends Dialog<Integer> {
     /**
      * 构造函数
      *
-     * @param defaultSides 默认边数（3-10）
+     * @param defaultSides 默认边数(3-10)
      */
     public RegularPolygonSidesDialog(int defaultSides) {
         this.currentSides = Math.max(MIN_SIDES, Math.min(MAX_SIDES, defaultSides));
@@ -78,7 +78,7 @@ public class RegularPolygonSidesDialog extends Dialog<Integer> {
     }
 
     /**
-     * 创建边数选择器（- 按钮 + 数字标签 + + 按钮）
+     * 创建边数选择器(- 按钮 + 数字标签 + + 按钮)
      */
     private HBox createSidesSelector() {
         HBox selector = new HBox(30);
@@ -178,7 +178,7 @@ public class RegularPolygonSidesDialog extends Dialog<Integer> {
                 )
         );
 
-        // 呼吸动画（Hover 停留）
+        // 呼吸动画(Hover 停留)
         Timeline breathing = new Timeline(
                 new KeyFrame(Duration.ZERO,
                         new KeyValue(glow.radiusProperty(), 12)

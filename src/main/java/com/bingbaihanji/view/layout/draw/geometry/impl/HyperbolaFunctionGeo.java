@@ -26,7 +26,7 @@ public class HyperbolaFunctionGeo extends FunctionGeo {
     private double b; // 虚半轴
 
     /**
-     * 左分支采样点（用于分段绘制，避免两个分支连线）
+     * 左分支采样点(用于分段绘制,避免两个分支连线)
      */
     private List<Point2D> leftBranchPoints = new ArrayList<>();
 
@@ -40,8 +40,8 @@ public class HyperbolaFunctionGeo extends FunctionGeo {
      *
      * @param cx 中心x坐标
      * @param cy 中心y坐标
-     * @param a  实半轴（必须 > 0）
-     * @param b  虚半轴（必须 > 0）
+     * @param a  实半轴(必须 > 0)
+     * @param b  虚半轴(必须 > 0)
      */
     public HyperbolaFunctionGeo(double cx, double cy, double a, double b) {
         super();
@@ -69,7 +69,7 @@ public class HyperbolaFunctionGeo extends FunctionGeo {
         int numSamples = Math.max(MIN_SAMPLES / 2, (int) (scale * Math.max(a, b) * 5));
         numSamples = Math.min(numSamples, MAX_SAMPLES / 2);
 
-        // 确定参数范围（避免无穷远）
+        // 确定参数范围(避免无穷远)
         double tMax = 3.0; // 这会给出较大但有限的值
 
         // 右分支：x = cx + a·cosh(t)
@@ -96,14 +96,14 @@ public class HyperbolaFunctionGeo extends FunctionGeo {
             }
         }
 
-        // 合并两个分支（保持顺序，先右分支再左分支）
+        // 合并两个分支(保持顺序,先右分支再左分支)
         sampledPoints.addAll(rightBranchPoints);
         sampledPoints.addAll(leftBranchPoints);
     }
 
     @Override
     protected void drawCurve(GraphicsContext gc, WorldTransform transform) {
-        // 分别绘制两个分支，避免连接两个分支
+        // 分别绘制两个分支,避免连接两个分支
         drawBranch(gc, transform, rightBranchPoints);
         drawBranch(gc, transform, leftBranchPoints);
     }

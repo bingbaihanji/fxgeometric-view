@@ -9,11 +9,11 @@ import javafx.scene.paint.Color;
 import java.util.List;
 
 /**
- * 世界对象接口（扩展版）
+ * 世界对象接口(扩展版)
  *
  * @author bingbaihanji
  * @date 2025-12-31
- * @description 几何对象的统一接口，定义了对象的基本属性和行为
+ * @description 几何对象的统一接口, 定义了对象的基本属性和行为
  */
 public interface WorldObject extends WorldPainter {
 
@@ -97,7 +97,7 @@ public interface WorldObject extends WorldPainter {
     //   交互状态  
 
     /**
-     * 命中测试（世界坐标）
+     * 命中测试(世界坐标)
      *
      * @param worldX    世界 X
      * @param worldY    世界 Y
@@ -246,27 +246,27 @@ public interface WorldObject extends WorldPainter {
     }
 
     /**
-     * 获取填充角度（度，用于线条填充）
+     * 获取填充角度(度,用于线条填充)
      */
     default int getHatchAngle() {
         return 45;
     }
 
     /**
-     * 设置填充角度（度）
+     * 设置填充角度(度)
      */
     default void setHatchAngle(int angle) {
     }
 
     /**
-     * 获取填充间距（像素，用于线条填充）
+     * 获取填充间距(像素,用于线条填充)
      */
     default int getHatchDistance() {
         return 10;
     }
 
     /**
-     * 设置填充间距（像素）
+     * 设置填充间距(像素)
      */
     default void setHatchDistance(int distance) {
     }
@@ -287,7 +287,7 @@ public interface WorldObject extends WorldPainter {
     }
 
     /**
-     * 是否锁定（锁定后不可编辑属性，但可选中）
+     * 是否锁定(锁定后不可编辑属性,但可选中)
      */
     default boolean isLocked() {
         return false;
@@ -300,7 +300,7 @@ public interface WorldObject extends WorldPainter {
     }
 
     /**
-     * 是否固定（固定后不可移动）
+     * 是否固定(固定后不可移动)
      */
     default boolean isFixed() {
         return false;
@@ -330,7 +330,7 @@ public interface WorldObject extends WorldPainter {
     /**
      * 获取可拖动的控制点列表
      *
-     * @return 控制点列表，如果不支持拖动则返回空列表
+     * @return 控制点列表,如果不支持拖动则返回空列表
      */
     default List<DraggablePoint> getDraggablePoints() {
         return List.of();
@@ -339,28 +339,28 @@ public interface WorldObject extends WorldPainter {
     /**
      * 绕指定点旋转图形
      *
-     * @param centerX 旋转中心X坐标（世界坐标）
-     * @param centerY 旋转中心Y坐标（世界坐标）
-     * @param angle   旋转角度（弧度）
+     * @param centerX 旋转中心X坐标(世界坐标)
+     * @param centerY 旋转中心Y坐标(世界坐标)
+     * @param angle   旋转角度(弧度)
      */
     default void rotateAroundPoint(double centerX, double centerY, double angle) {
-        // 默认实现为空，子类可以覆写
+        // 默认实现为空,子类可以覆写
     }
 
     /**
      * 获取对象的边界框
      *
-     * @return 包含 [minX, maxX, minY, maxY] 的数组，如果无法计算则返回null
+     * @return 包含 [minX, maxX, minY, maxY] 的数组,如果无法计算则返回null
      */
     default double[] getBoundingBox() {
-        // 默认实现返回null，子类应覆写此方法
+        // 默认实现返回null,子类应覆写此方法
         return null;
     }
 
     /**
-     * 接受访问者（访问者模式）
+     * 接受访问者(访问者模式)
      * <p>
-     * 允许在不修改几何对象类的情况下，为它们添加新的操作
+     * 允许在不修改几何对象类的情况下,为它们添加新的操作
      *
      * @param visitor 访问者对象
      * @param <T>     返回值类型

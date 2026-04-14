@@ -32,7 +32,7 @@ public class QuadraticFunctionGeo extends FunctionGeo {
     /**
      * 构造函数
      *
-     * @param a 二次项系数（不能为0）
+     * @param a 二次项系数(不能为0)
      * @param b 一次项系数
      * @param c 常数项
      */

@@ -35,7 +35,7 @@ public enum FunctionType {
      */
     RECIPROCAL("反比例函数",
             new FunctionParameter[]{
-                    new FunctionParameter("k", "系数 k", "1.0", "反比例系数，k≠0")
+                    new FunctionParameter("k", "系数 k", "1.0", "反比例系数,k≠0")
             }),
 
     /**
@@ -45,7 +45,7 @@ public enum FunctionType {
             new FunctionParameter[]{
                     new FunctionParameter("A", "振幅 A", "1.0", "振幅"),
                     new FunctionParameter("omega", "角频率 ω", "1.0", "角频率"),
-                    new FunctionParameter("phi", "初相 φ", "0.0", "初相位（弧度）"),
+                    new FunctionParameter("phi", "初相 φ", "0.0", "初相位(弧度)"),
                     new FunctionParameter("k", "垂直偏移 k", "0.0", "垂直偏移")
             }),
 
@@ -56,7 +56,7 @@ public enum FunctionType {
             new FunctionParameter[]{
                     new FunctionParameter("A", "振幅 A", "1.0", "振幅"),
                     new FunctionParameter("omega", "角频率 ω", "1.0", "角频率"),
-                    new FunctionParameter("phi", "初相 φ", "0.0", "初相位（弧度）"),
+                    new FunctionParameter("phi", "初相 φ", "0.0", "初相位(弧度)"),
                     new FunctionParameter("k", "垂直偏移 k", "0.0", "垂直偏移")
             }),
 
@@ -67,7 +67,7 @@ public enum FunctionType {
             new FunctionParameter[]{
                     new FunctionParameter("A", "系数 A", "1.0", "系数"),
                     new FunctionParameter("omega", "角频率 ω", "1.0", "角频率"),
-                    new FunctionParameter("phi", "初相 φ", "0.0", "初相位（弧度）"),
+                    new FunctionParameter("phi", "初相 φ", "0.0", "初相位(弧度)"),
                     new FunctionParameter("k", "垂直偏移 k", "0.0", "垂直偏移")
             }),
 
@@ -76,7 +76,7 @@ public enum FunctionType {
      */
     EXPONENTIAL("指数函数",
             new FunctionParameter[]{
-                    new FunctionParameter("a", "底数 a", "2.0", "底数，a>0且a≠1")
+                    new FunctionParameter("a", "底数 a", "2.0", "底数,a>0且a≠1")
             }),
 
     /**
@@ -84,7 +84,7 @@ public enum FunctionType {
      */
     LOGARITHMIC("对数函数",
             new FunctionParameter[]{
-                    new FunctionParameter("a", "底数 a", "2.0", "底数，a>0且a≠1")
+                    new FunctionParameter("a", "底数 a", "2.0", "底数,a>0且a≠1")
             }),
 
     /**
@@ -110,12 +110,19 @@ public enum FunctionType {
             }),
 
     /**
-     * 抛物线（圆锥曲线）：y² = 2px
+     * 抛物线(圆锥曲线)：y² = 2px
      */
     PARABOLA_CONIC("抛物线",
             new FunctionParameter[]{
                     new FunctionParameter("p", "焦参数 p", "1.0", "焦点到准线距离的一半")
-            });
+            }),
+
+    /**
+     * 自定义表达式函数：y = f(x)
+     * <p>
+     * 用户直接输入数学表达式,例如 sin(x) + x^2
+     */
+    CUSTOM("自定义函数", new FunctionParameter[0]);
 
     private final String displayName;
     private final FunctionParameter[] parameters;

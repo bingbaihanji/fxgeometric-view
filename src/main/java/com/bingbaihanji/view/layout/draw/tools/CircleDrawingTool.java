@@ -42,7 +42,7 @@ public class CircleDrawingTool {
         pane.redraw();
     }
 
-    // 添加公共方法，允许外部设置预览参数
+    // 添加公共方法,允许外部设置预览参数
     public void setPreviewParams(double centerX, double centerY, double radius) {
         this.cx = centerX;
         this.cy = centerY;
@@ -51,7 +51,7 @@ public class CircleDrawingTool {
         this.hasCenter = true;
     }
 
-    // 添加公共方法，重置工具状态
+    // 添加公共方法,重置工具状态
     public void reset() {
         this.hasCenter = false;
         this.previewRadius = 0;
@@ -70,6 +70,6 @@ public class CircleDrawingTool {
         gc.strokeOval(sx - sr, sy - sr, sr * 2, sr * 2);
         gc.setLineDashes(null);
 
-        // 圆心点由 BasicShapeHandler 统一绘制，这里不重复绘制
+        // 圆心点由 BasicShapeHandler 统一绘制,这里不重复绘制
     }
 }

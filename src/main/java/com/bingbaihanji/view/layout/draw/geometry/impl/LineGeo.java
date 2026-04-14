@@ -16,15 +16,15 @@ import java.util.List;
 /**
  * 线段几何图形
  * <p>
- * 支持点复用：如果端点位置已有PointGeo，直接引用而不是创建新点
+ * 支持点复用：如果端点位置已有PointGeo,直接引用而不是创建新点
  */
 public class LineGeo extends AbstractWorldObject {
 
-    // 端点引用（如果复用已有点）
+    // 端点引用(如果复用已有点)
     private PointGeo startPointRef;
     private PointGeo endPointRef;
 
-    // 内部坐标（当没有引用时使用）
+    // 内部坐标(当没有引用时使用)
     private double startX;
     private double startY;
     private double endX;
@@ -33,19 +33,19 @@ public class LineGeo extends AbstractWorldObject {
     private String startPointName; // 起点名称
     private String endPointName;   // 终点名称
 
-    // 标记端点是否是内部创建的（需要由线段绘制）
+    // 标记端点是否是内部创建的(需要由线段绘制)
     private boolean startIsInternal = true;
     private boolean endIsInternal = true;
 
     /**
-     * 基础构造函数（坐标方式）
+     * 基础构造函数(坐标方式)
      */
     public LineGeo(double startX, double startY, double endX, double endY) {
         this(startX, startY, endX, endY, true);
     }
 
     /**
-     * 构造函数（坐标方式，可选自动命名）
+     * 构造函数(坐标方式,可选自动命名)
      */
     public LineGeo(double startX, double startY, double endX, double endY, boolean autoName) {
         super(ObjectType.SEGMENT);
@@ -62,12 +62,12 @@ public class LineGeo extends AbstractWorldObject {
     }
 
     /**
-     * 构造函数（点引用方式）- 复用已有点
+     * 构造函数(点引用方式)- 复用已有点
      *
-     * @param startPoint 起点引用（可为null，表示内部创建）
+     * @param startPoint 起点引用(可为null,表示内部创建)
      * @param startX     起点X坐标
      * @param startY     起点Y坐标
-     * @param endPoint   终点引用（可为null，表示内部创建）
+     * @param endPoint   终点引用(可为null,表示内部创建)
      * @param endX       终点X坐标
      * @param endY       终点Y坐标
      */
@@ -82,11 +82,11 @@ public class LineGeo extends AbstractWorldObject {
         this.endY = endY;
         this.color = StyleManager.GEOMETRY_LINE;
 
-        // 如果有引用，使用引用点的名称；否则分配新名称
+        // 如果有引用,使用引用点的名称；否则分配新名称
         PointNameManager manager = PointNameManager.getInstance();
         if (startPoint != null) {
             this.startPointName = startPoint.getName();
-            this.startIsInternal = false; // 复用外部点，不由线段绘制
+            this.startIsInternal = false; // 复用外部点,不由线段绘制
         } else {
             this.startPointName = manager.assignName(startX, startY);
             this.startIsInternal = true;
@@ -150,7 +150,7 @@ public class LineGeo extends AbstractWorldObject {
         // 重置线型
         LineStyleUtil.resetLineStyle(gc);
 
-        // 只绘制内部创建的端点，复用的外部点由它们自己绘制
+        // 只绘制内部创建的端点,复用的外部点由它们自己绘制
         gc.setFill(getEffectiveColor());
         double pointRadius = hover ? 5 : 4;
 
@@ -209,7 +209,7 @@ public class LineGeo extends AbstractWorldObject {
         return List.of(
                 new DraggablePoint(getStartX(), getStartY(), (newX, newY) -> {
                     if (startPointRef != null) {
-                        // 复用的外部点，更新其位置
+                        // 复用的外部点,更新其位置
                         startPointRef.updatePosition(newX, newY);
                     } else {
                         startX = newX;
@@ -232,7 +232,7 @@ public class LineGeo extends AbstractWorldObject {
         double cos = Math.cos(angle);
         double sin = Math.sin(angle);
 
-        // 旋转起点（只旋转内部点）
+        // 旋转起点(只旋转内部点)
         if (startPointRef != null && !startPointRef.isConstrained()) {
             double dx1 = startPointRef.getX() - centerX;
             double dy1 = startPointRef.getY() - centerY;

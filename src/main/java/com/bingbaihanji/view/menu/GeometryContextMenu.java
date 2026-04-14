@@ -68,7 +68,7 @@ public class GeometryContextMenu {
             usageInfoItem.setDisable(true);
             menu.getItems().add(usageInfoItem);
 
-            // 显示使用该点的图形列表（最多显示5个）
+            // 显示使用该点的图形列表(最多显示5个)
             int displayCount = Math.min(usingShapes.size(), 5);
             for (int i = 0; i < displayCount; i++) {
                 WorldObject shape = usingShapes.get(i);
@@ -87,7 +87,7 @@ public class GeometryContextMenu {
         // ==================== 约束属性菜单 ====================
         menu.getItems().add(new SeparatorMenuItem());
 
-        // 移除约束（仅约束点显示）
+        // 移除约束(仅约束点显示)
         if (point.isConstrained()) {
             MenuItem removeConstraintItem = new MenuItem(I18nUtil.getString("geo.menu.removeConstraint"));
             removeConstraintItem.setOnAction(e -> {
@@ -96,7 +96,7 @@ public class GeometryContextMenu {
             });
             menu.getItems().add(removeConstraintItem);
         } else {
-            // 添加约束菜单（选择附近的几何图形作为约束对象）
+            // 添加约束菜单(选择附近的几何图形作为约束对象)
             Menu addConstraintMenu = new Menu(I18nUtil.getString("geo.menu.addConstraint"));
             List<WorldObject> nearbyShapes = findNearbyConstrainableShapes(point, canvas, controller);
 
@@ -121,7 +121,7 @@ public class GeometryContextMenu {
         menu.getItems().add(new SeparatorMenuItem());
 
         if (point.isInReuseGroup()) {
-            // 已在复用组中，显示禁用复用选项
+            // 已在复用组中,显示禁用复用选项
             PointReuseGroup group = point.getReuseGroup();
 
             // 复用组信息 - 显示更详细的信息
@@ -142,7 +142,7 @@ public class GeometryContextMenu {
             });
             menu.getItems().add(toggleReuseItem);
 
-            // 从复用组移除（不解散组）
+            // 从复用组移除(不解散组)
             MenuItem removeFromGroupItem = new MenuItem(I18nUtil.getString("geo.menu.removeFromReuseGroup"));
             removeFromGroupItem.setOnAction(e -> {
                 PointReuseManager.disableReuse(point);
@@ -160,7 +160,7 @@ public class GeometryContextMenu {
                 menu.getItems().add(dissolveGroupItem);
             }
         } else {
-            // 未在复用组中，检查是否有重合的点
+            // 未在复用组中,检查是否有重合的点
             double scale = canvas.getTransform().getScale();
             double threshold = 10.0 / scale;
             List<PointGeo> overlappingPoints = PointReuseManager.findOverlappingPoints(
@@ -489,7 +489,7 @@ public class GeometryContextMenu {
             // 创建约束并自动检测是否为顶点
             PointConstraint constraint = context.getConstraintHandler().createConstraint(shape, point);
 
-            // 如果不是顶点约束，计算参数
+            // 如果不是顶点约束,计算参数
             if (!constraint.isVertexConstraint()) {
                 double parameter = constraint.calculateParameter(point.getX(), point.getY());
                 constraint.setParameter(parameter);
@@ -531,8 +531,8 @@ public class GeometryContextMenu {
         double threshold = 5.0 / scale;
         PointGeo existingPoint = PointReuseManager.findExistingPoint(vx, vy, canvas.getObjects(), threshold);
 
-        // 检查是否有其他重合的点（包括多边形顶点、线段端点、圆心等）
-        // 注意：这里要检查所有图形的关键点，不只是独立的 PointGeo
+        // 检查是否有其他重合的点(包括多边形顶点、线段端点、圆心等)
+        // 注意：这里要检查所有图形的关键点,不只是独立的 PointGeo
         boolean hasOverlappingPoints = false;
         if (existingPoint == null) {
             // 创建一个临时点来检测重合
@@ -541,7 +541,7 @@ public class GeometryContextMenu {
             List<PointGeo> overlapping = PointReuseManager.findOverlappingPoints(
                     tempPoint, canvas.getObjects(), 10.0 / scale);
 
-            // 额外检查：是否有多个圆心在此位置（同心圆情况）
+            // 额外检查：是否有多个圆心在此位置(同心圆情况)
             int circleCount = 0;
             for (WorldObject obj : canvas.getObjects()) {
                 if (obj instanceof CircleGeo circle) {
@@ -556,7 +556,7 @@ public class GeometryContextMenu {
         }
 
         if (existingPoint != null) {
-            // 已有独立点，创建完整的复用/约束菜单项
+            // 已有独立点,创建完整的复用/约束菜单项
             MenuItem convertInfo = new MenuItem("✓ 已有独立点");
             convertInfo.setDisable(true);
             menu.getItems().add(convertInfo);
@@ -570,7 +570,7 @@ public class GeometryContextMenu {
             addConstraintMenuItems(menu, existingPoint, canvas, controller);
 
         } else if (hasOverlappingPoints) {
-            // 没有独立点，但有重合的点（如多边形顶点、同心圆等），提供创建选项
+            // 没有独立点,但有重合的点(如多边形顶点、同心圆等),提供创建选项
             MenuItem convertItem = new MenuItem(I18nUtil.getString("geo.menu.createPointHere"));
             convertItem.setOnAction(e -> {
                 // 在此位置创建独立的 PointGeo
@@ -613,7 +613,7 @@ public class GeometryContextMenu {
     }
 
     /**
-     * 为选中对象创建右键菜单（BoundingBox菜单）
+     * 为选中对象创建右键菜单(BoundingBox菜单)
      *
      * @param canvas     画布视图
      * @param controller 绘制控制器
@@ -645,11 +645,11 @@ public class GeometryContextMenu {
     }
 
     /**
-     * 为画布创建右键菜单（带父窗口引用）
+     * 为画布创建右键菜单(带父窗口引用)
      *
      * @param canvas       画布视图
      * @param controller   绘制控制器
-     * @param parentWindow 父窗口（如果在独立窗口中则传入，否则为null）
+     * @param parentWindow 父窗口(如果在独立窗口中则传入,否则为null)
      */
     public static ContextMenu createCanvasMenu(
             GridChartView canvas,
@@ -911,7 +911,7 @@ public class GeometryContextMenu {
     }
 
     /**
-     * 显示顶点位置设置对话框（用于线段、多边形、圆等图形的顶点）
+     * 显示顶点位置设置对话框(用于线段、多边形、圆等图形的顶点)
      */
     private static void showVertexPositionDialog(
             WorldObject.DraggablePoint vertex,
@@ -1089,7 +1089,7 @@ public class GeometryContextMenu {
      * 删除对象
      */
     private static void deleteObject(WorldObject obj, GridChartView canvas, DrawingController controller) {
-        // 查找所有约束到此图形的点，自动移除约束
+        // 查找所有约束到此图形的点,自动移除约束
         for (WorldObject o : canvas.getObjects()) {
             if (o instanceof PointGeo point && point.isConstrained()) {
                 if (point.getConstraint().getConstrainedShape() == obj) {
@@ -1131,13 +1131,13 @@ public class GeometryContextMenu {
                     result.add(obj);
                 }
             }
-            // 检查圆（既检查引用，也检查坐标）
+            // 检查圆(既检查引用,也检查坐标)
             else if (obj instanceof CircleGeo circle) {
                 // 检查是否直接引用该点
                 if (circle.getCenterPointRef() == point) {
                     result.add(obj);
                 }
-                // 检查圆心坐标是否与点重合（处理内部坐标的情况）
+                // 检查圆心坐标是否与点重合(处理内部坐标的情况)
                 else if (Math.abs(circle.getCx() - px) < threshold &&
                         Math.abs(circle.getCy() - py) < threshold) {
                     result.add(obj);
@@ -1160,7 +1160,7 @@ public class GeometryContextMenu {
     /**
      * 为对话框添加 Escape 键关闭功能
      * <p>
-     * 监听 Escape 键，自动关闭对话框（等同于点击 Cancel 按钮）
+     * 监听 Escape 键,自动关闭对话框(等同于点击 Cancel 按钮)
      *
      * @param dialog 任意 JavaFX Dialog 对象
      */

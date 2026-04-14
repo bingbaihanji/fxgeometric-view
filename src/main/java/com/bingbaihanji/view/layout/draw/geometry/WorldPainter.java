@@ -10,8 +10,8 @@ public interface WorldPainter {
      *
      * @param gc        画布上下文
      * @param transform 世界坐标变换
-     * @param width     视图宽度（像素）
-     * @param height    视图高度（像素）
+     * @param width     视图宽度(像素)
+     * @param height    视图高度(像素)
      */
     void paint(
             GraphicsContext gc,

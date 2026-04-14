@@ -19,7 +19,7 @@ public class FunctionInputResult {
     private final FunctionType type;
 
     /**
-     * 参数映射（参数名 -> 参数值）
+     * 参数映射(参数名 -> 参数值)
      */
     private final Map<String, Double> parameters;
 
@@ -38,13 +38,25 @@ public class FunctionInputResult {
      */
     private final boolean autoRange;
 
+    /**
+     * 自定义函数表达式(仅 CUSTOM 类型有效)
+     */
+    private final String customExpression;
+
     public FunctionInputResult(FunctionType type, Map<String, Double> parameters,
                                double domainMin, double domainMax, boolean autoRange) {
+        this(type, parameters, domainMin, domainMax, autoRange, null);
+    }
+
+    public FunctionInputResult(FunctionType type, Map<String, Double> parameters,
+                               double domainMin, double domainMax, boolean autoRange,
+                               String customExpression) {
         this.type = type;
         this.parameters = parameters;
         this.domainMin = domainMin;
         this.domainMax = domainMax;
         this.autoRange = autoRange;
+        this.customExpression = customExpression;
     }
 
     public FunctionType getType() {
@@ -69,5 +81,9 @@ public class FunctionInputResult {
 
     public Double getParameter(String name) {
         return parameters.get(name);
+    }
+
+    public String getCustomExpression() {
+        return customExpression;
     }
 }

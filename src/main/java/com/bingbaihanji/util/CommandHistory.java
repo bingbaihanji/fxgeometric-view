@@ -30,18 +30,18 @@ public class CommandHistory {
     public void execute(Command command) {
         command.execute();
         undoStack.add(command);
-        // 执行新命令时，清空恢复栈
+        // 执行新命令时,清空恢复栈
         redoStack.clear();
     }
 
     /**
-     * 只记录命令到撤销栈（不执行，用于已经完成的操作如拖动）
+     * 只记录命令到撤销栈(不执行,用于已经完成的操作如拖动)
      *
      * @param command 要记录的命令
      */
     public void addCommand(Command command) {
         undoStack.add(command);
-        // 记录新命令时，清空恢复栈
+        // 记录新命令时,清空恢复栈
         redoStack.clear();
     }
 

@@ -88,14 +88,14 @@ public class RotationHandler extends AbstractDrawingHandler {
         }
 
         if (context.getState() == DrawingState.ROTATE_SELECT_SHAPE) {
-            // 在选择图形状态，高亮显示鼠标悬停的可旋转图形
+            // 在选择图形状态,高亮显示鼠标悬停的可旋转图形
             double scale = context.getTransform().getScale();
             double tolerance = 10.0 / scale;
             double worldX = context.getCurrentMouseX();
             double worldY = context.getCurrentMouseY();
 
             for (WorldObject obj : context.getObjects()) {
-                // 排除点对象（点旋转没有意义）
+                // 排除点对象(点旋转没有意义)
                 if (obj instanceof PointGeo) continue;
 
                 if (obj.hitTest(worldX, worldY, tolerance)) {
@@ -107,7 +107,7 @@ public class RotationHandler extends AbstractDrawingHandler {
                 }
             }
         } else if (context.getState() == DrawingState.ROTATE_SELECT_CENTER && selectedRotateShape != null) {
-            // 如果已选中旋转图形，高亮显示
+            // 如果已选中旋转图形,高亮显示
             selectedRotateShape.setHover(true);
             selectedRotateShape.paint(gc, transform, context.getGridChartPane().getWidth(), context.getGridChartPane().getHeight());
             selectedRotateShape.setHover(false);
@@ -119,7 +119,7 @@ public class RotationHandler extends AbstractDrawingHandler {
             double pointRadius = 5;
             gc.fillOval(centerScreenX - pointRadius, centerScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
 
-            // 绘制中心点标记（十字线）
+            // 绘制中心点标记(十字线)
             gc.setStroke(javafx.scene.paint.Color.ORANGE);
             gc.setLineWidth(1);
             double crossSize = 10;
@@ -143,7 +143,7 @@ public class RotationHandler extends AbstractDrawingHandler {
             double tolerance = 10.0 / scale;
 
             for (WorldObject obj : context.getObjects()) {
-                // 排除点对象（点旋转没有意义）
+                // 排除点对象(点旋转没有意义)
                 if (obj instanceof PointGeo) continue;
 
                 if (obj.hitTest(worldX, worldY, tolerance)) {
@@ -154,7 +154,7 @@ public class RotationHandler extends AbstractDrawingHandler {
                 }
             }
         } else if (context.getState() == DrawingState.ROTATE_SELECT_CENTER && selectedRotateShape != null) {
-            // 第二次点击：选择旋转中心点，弹出对话框
+            // 第二次点击：选择旋转中心点,弹出对话框
             final double rotateCenterX = worldX;
             final double rotateCenterY = worldY;
 
@@ -165,7 +165,7 @@ public class RotationHandler extends AbstractDrawingHandler {
                 double angleDegrees = result.get().getKey();
                 boolean clockwise = result.get().getValue();
 
-                // 将角度转换为弧度，并根据方向调整
+                // 将角度转换为弧度,并根据方向调整
                 double angleRadians = Math.toRadians(angleDegrees);
                 if (clockwise) {
                     angleRadians = -angleRadians; // 顺时针方向为负角度
@@ -174,7 +174,7 @@ public class RotationHandler extends AbstractDrawingHandler {
                 final double finalAngle = angleRadians;
                 final WorldObject shapeToRotate = selectedRotateShape;
 
-                // 使用命令历史执行旋转，支持撤销/恢复
+                // 使用命令历史执行旋转,支持撤销/恢复
                 context.executeCommand(new CommandHistory.Command() {
                     @Override
                     public void execute() {
@@ -202,7 +202,7 @@ public class RotationHandler extends AbstractDrawingHandler {
     /**
      * 显示旋转参数对话框
      *
-     * @return 旋转角度和方向（true为顺时针，false为逆时针）
+     * @return 旋转角度和方向(true为顺时针,false为逆时针)
      */
     private Optional<Pair<Double, Boolean>> showRotateDialog() {
         Dialog<Pair<Double, Boolean>> dialog = new Dialog<>();

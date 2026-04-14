@@ -18,9 +18,9 @@ import java.util.List;
 /**
  * 手绘路径几何图形
  * <p>
- * 保留完整的曲线形状，但只显示起点和终点。
- * 注意：传入的 points 应该已经经过 CurveSmoothing 平滑处理，
- * 包含足够密集的插值点，因此直接用直线段连接即可呈现平滑效果。
+ * 保留完整的曲线形状,但只显示起点和终点。
+ * 注意：传入的 points 应该已经经过 CurveSmoothing 平滑处理,
+ * 包含足够密集的插值点,因此直接用直线段连接即可呈现平滑效果。
  *
  * @author bingbaihanji
  * @date 2025-12-23
@@ -28,7 +28,7 @@ import java.util.List;
 public class PathGeo extends AbstractWorldObject {
 
     /**
-     * 路径上的所有点（世界坐标）
+     * 路径上的所有点(世界坐标)
      */
     private final List<Point> pathPoints;
 
@@ -65,7 +65,7 @@ public class PathGeo extends AbstractWorldObject {
     public void paint(GraphicsContext gc, WorldTransform transform, double w, double h) {
         if (pathPoints.size() < 2) return;
 
-        // 绘制曲线路径（使用 Path API 一次性绘制，性能更好）
+        // 绘制曲线路径(使用 Path API 一次性绘制,性能更好)
         LineStyleUtil.applyLineStyle(gc, lineType);
         gc.setStroke(getEffectiveColor());
         gc.setLineWidth(getEffectiveLineWidth());
@@ -189,7 +189,7 @@ public class PathGeo extends AbstractWorldObject {
     }
 
     /**
-     * 获取路径的所有边（作为线段，用于交点计算）
+     * 获取路径的所有边(作为线段,用于交点计算)
      */
     public List<LineGeo> getEdges() {
         List<LineGeo> edges = new ArrayList<>();

@@ -46,7 +46,7 @@ public class GridChartView extends Pane {
     //  坐标系统
     private final WorldTransform transform = new WorldTransform();
     private final List<WorldPainter> painters = new ArrayList<>();
-    private final List<WorldObject> objects;  // 改为非final，支持共享列表
+    private final List<WorldObject> objects;  // 改为非final,支持共享列表
     private final CircleDrawingTool circleTool;
     //  视图配置
     private final EuclidianViewSettings settings = new EuclidianViewSettings();
@@ -54,7 +54,7 @@ public class GridChartView extends Pane {
     private final Tooltip hoverTooltip = new Tooltip();
     private final PauseTransition hoverTimer =
             new PauseTransition(Duration.seconds(0.5));
-    // 对象变化监听器列表（观察者模式）
+    // 对象变化监听器列表(观察者模式)
     private final List<Runnable> objectChangeListeners = new ArrayList<>();
     private WorldObject hoverObject = null;
     // 预览绘制器
@@ -71,14 +71,14 @@ public class GridChartView extends Pane {
     private boolean initialized = false;
     private double lastHoverX;
     private double lastHoverY;
-    // 当前鼠标附近的特殊点（用于视觉反馈）
+    // 当前鼠标附近的特殊点(用于视觉反馈)
     private SpecialPoint nearbySpecialPoint = null;
     private Runnable onTransformChanged;
-    // 轴向吸附状态（用于视觉反馈）
+    // 轴向吸附状态(用于视觉反馈)
     private AxisSnapInfo axisSnapInfo = null;
 
     /**
-     * 是否显示吸附辅助线（默认false，只在绘制模式下显示）
+     * 是否显示吸附辅助线(默认false,只在绘制模式下显示)
      */
     private boolean showSnapGuideLines = false;
     // 画布背景颜色
@@ -96,9 +96,9 @@ public class GridChartView extends Pane {
     }
 
     /**
-     * 构造函数（支持共享对象列表）
+     * 构造函数(支持共享对象列表)
      *
-     * @param sharedObjects 共享的对象列表，用于多窗口同步
+     * @param sharedObjects 共享的对象列表,用于多窗口同步
      */
     public GridChartView(List<WorldObject> sharedObjects) {
         this.objects = sharedObjects;
@@ -130,7 +130,7 @@ public class GridChartView extends Pane {
     /**
      * 初始化鼠标悬停坐标气泡
      * <p>
-     * 鼠标在同一位置停留超过 2 秒时，显示该点的世界坐标
+     * 鼠标在同一位置停留超过 2 秒时,显示该点的世界坐标
      */
     private void initMouseHoverTooltip() {
 
@@ -153,7 +153,7 @@ public class GridChartView extends Pane {
             double dy = y - lastHoverY; // Y方向移动距离
 
 
-            // 如果鼠标移动距离超过阈值，则重新启动悬停计时器
+            // 如果鼠标移动距离超过阈值,则重新启动悬停计时器
             if (Math.hypot(dx, dy) > HOVER_MOVE_THRESHOLD) {
 
                 hoverTimer.stop();      // 停止之前的计时器
@@ -176,6 +176,7 @@ public class GridChartView extends Pane {
             hoverTooltip.hide();
         });
     }
+
     /**
      * 显示悬停点的坐标气泡
      */
@@ -353,7 +354,7 @@ public class GridChartView extends Pane {
     }
 
     /**
-     * 保证窗口尺寸变化时，视图中心的世界点不发生跳变
+     * 保证窗口尺寸变化时,视图中心的世界点不发生跳变
      */
     private void updateOffsetFromCenterWorld() {
         double centerWorldX = transform.screenToWorldX(getWidth() / 2);
@@ -373,7 +374,7 @@ public class GridChartView extends Pane {
     /**
      * 重绘整个画布
      * <p>
-     * 清空画布后，依次调用所有已注册的 WorldPainter 进行绘制
+     * 清空画布后,依次调用所有已注册的 WorldPainter 进行绘制
      */
     public void redraw() {
         GraphicsContext gc = canvas.getGraphicsContext2D();
@@ -394,7 +395,7 @@ public class GridChartView extends Pane {
             obj.paint(gc, transform, w, h);
         }
 
-        // 绘制 BoundingBox（通过回调函数绘制）
+        // 绘制 BoundingBox(通过回调函数绘制)
         if (boundingBoxPainter != null) {
             boundingBoxPainter.accept(gc, transform);
         }
@@ -407,7 +408,7 @@ public class GridChartView extends Pane {
         // 交互预览
         if (circleTool != null) {
             // 现在CircleDrawingTool可以正确地与DrawingController协同工作
-            // 预览绘制逻辑已经修复，可以正常显示圆形预览
+            // 预览绘制逻辑已经修复,可以正常显示圆形预览
             circleTool.paintPreview(gc, transform);
         }
 
@@ -423,7 +424,7 @@ public class GridChartView extends Pane {
     }
 
     /**
-     * 绘制特殊点吸附提示（高亮圈）
+     * 绘制特殊点吸附提示(高亮圈)
      */
     private void drawSpecialPointHint(GraphicsContext gc) {
         double sx = transform.worldToScreenX(nearbySpecialPoint.getX());
@@ -450,7 +451,7 @@ public class GridChartView extends Pane {
      * 初始化鼠标点击输出与世界对象交互
      * <p>
      * 点击优先命中 WorldObject；
-     * 若未命中任何对象，则输出点击点的世界坐标
+     * 若未命中任何对象,则输出点击点的世界坐标
      */
     private void initMouseClickOutput() {
 
@@ -492,7 +493,7 @@ public class GridChartView extends Pane {
             double worldX = screenToWorldX(e.getX());
             double worldY = screenToWorldY(e.getY());
 
-            // 应用统一的吸附系统（更新吸附状态用于视觉反馈）
+            // 应用统一的吸附系统(更新吸附状态用于视觉反馈)
             double[] snapped = applySnapping(worldX, worldY);
             worldX = snapped[0];
             worldY = snapped[1];
@@ -525,7 +526,7 @@ public class GridChartView extends Pane {
 
                 redraw();
             } else if (nearbySpecialPoint != null || axisSnapInfo != null) {
-                // 即使hover对象没变，如果有吸附提示，也需要重绘
+                // 即使hover对象没变,如果有吸附提示,也需要重绘
                 redraw();
             }
         });
@@ -548,17 +549,17 @@ public class GridChartView extends Pane {
     }
 
     /**
-     * 查找最近的特殊点（用于磁性吸附）
+     * 查找最近的特殊点(用于磁性吸附)
      *
-     * @param x 当前鼠标x坐标（世界坐标）
-     * @param y 当前鼠标y坐标（世界坐标）
-     * @return 最近的特殊点，如果没有找到则返回null
+     * @param x 当前鼠标x坐标(世界坐标)
+     * @param y 当前鼠标y坐标(世界坐标)
+     * @return 最近的特殊点,如果没有找到则返回null
      */
     private SpecialPoint findNearestSpecialPoint(double x, double y) {
         // 获取所有特殊点
         List<SpecialPoint> specialPoints = SpecialPointManager.extractSpecialPoints(objects);
 
-        // 计算吸附阈值（像素距离转换为世界坐标距离）
+        // 计算吸附阈值(像素距离转换为世界坐标距离)
         double scale = transform.getScale();
         double threshold = 10.0 / scale; // 10像素的吸附范围
 
@@ -569,7 +570,7 @@ public class GridChartView extends Pane {
     /**
      * 消除浮点抖动
      * <p>
-     * 将接近整数的浮点数修正为整数，避免浮点运算误差
+     * 将接近整数的浮点数修正为整数,避免浮点运算误差
      *
      * @param v 待稳定化的数值
      * @return 稳定化后的数值
@@ -585,9 +586,9 @@ public class GridChartView extends Pane {
     //  对外接口
 
     /**
-     * 吸附到最近整数点（优先级最高）
+     * 吸附到最近整数点(优先级最高)
      * <p>
-     * 当世界坐标值接近整数时，自动吸附到该整数点
+     * 当世界坐标值接近整数时,自动吸附到该整数点
      *
      * @param worldValue 世界坐标值
      * @return 吸附后的坐标值
@@ -605,9 +606,9 @@ public class GridChartView extends Pane {
     }
 
     /**
-     * 吸附到最近网格点（基于当前轴刻度）
+     * 吸附到最近网格点(基于当前轴刻度)
      * <p>
-     * 当世界坐标值接近网格点时，自动吸附到该网格点
+     * 当世界坐标值接近网格点时,自动吸附到该网格点
      *
      * @param worldValue 世界坐标值
      * @param step       网格步长
@@ -636,7 +637,7 @@ public class GridChartView extends Pane {
     /**
      * 获取当前缩放比例
      *
-     * @return 当前缩放比例（世界单位到像素的比例）
+     * @return 当前缩放比例(世界单位到像素的比例)
      */
     public double getScale() {
         return transform.getScale();
@@ -683,7 +684,7 @@ public class GridChartView extends Pane {
     /**
      * 设置是否显示吸附辅助线
      * <p>
-     * 在绘制几何图形时可以显示辅助线，在选择/拖动模式下应隐藏
+     * 在绘制几何图形时可以显示辅助线,在选择/拖动模式下应隐藏
      *
      * @param show 是否显示辅助线
      */
@@ -692,7 +693,7 @@ public class GridChartView extends Pane {
     }
 
     /**
-     * 添加对象变化监听器（观察者模式）
+     * 添加对象变化监听器(观察者模式)
      *
      * @param listener 监听器回调
      */
@@ -734,7 +735,7 @@ public class GridChartView extends Pane {
 
     /**
      * 根据当前对象列表中是否有三角函数来自动调整坐标轴单位类型
-     * 如果有三角函数：自动设置为π单位（X轴显示π，Y轴显示数值）
+     * 如果有三角函数：自动设置为π单位(X轴显示π,Y轴显示数值)
      * 如果没有三角函数：恢复为普通数值单位
      */
     private void updateAxisUnitTypeBasedOnFunctions() {
@@ -786,7 +787,7 @@ public class GridChartView extends Pane {
     private void setCustomCursorForPane(Pane pane, String imagePath) {
         URL url = getClass().getResource(imagePath);
         if (url == null) {
-            // 资源不存在，降级处理
+            // 资源不存在,降级处理
             pane.setCursor(Cursor.HAND);
             customDefaultCursor = Cursor.HAND;
             return;
@@ -794,7 +795,7 @@ public class GridChartView extends Pane {
 
         Image cursorImage = new Image(url.toExternalForm());
 
-        // 左上角作为点击点（hotspot）
+        // 左上角作为点击点(hotspot)
         Cursor customCursor = new ImageCursor(cursorImage, 0, 0);
         customDefaultCursor = customCursor;
 
@@ -820,7 +821,7 @@ public class GridChartView extends Pane {
     }
 
     /**
-     * 应用配置（刷新视图）
+     * 应用配置(刷新视图)
      */
     public void applySettings() {
         applySettingsToTransform();
@@ -838,7 +839,7 @@ public class GridChartView extends Pane {
     /**
      * 缩放到指定百分比
      *
-     * @param percent 百分比（如100表示100%）
+     * @param percent 百分比(如100表示100%)
      */
     public void zoomToPercent(double percent) {
         double newScale = com.bingbaihanji.util.AxisRangeCalculator.getScaleFromPercent(transform.getScale(), percent);
@@ -875,7 +876,7 @@ public class GridChartView extends Pane {
     }
 
     /**
-     * 显示所有对象（自动调整范围）
+     * 显示所有对象(自动调整范围)
      */
     public void fitAllObjects() {
         if (objects.isEmpty()) {
@@ -893,7 +894,7 @@ public class GridChartView extends Pane {
         double newScaleX = getWidth() / xRange;
         double newScaleY = getHeight() / yRange;
 
-        // 使用较小的缩放比例，确保所有对象都可见
+        // 使用较小的缩放比例,确保所有对象都可见
         double newScale = Math.min(newScaleX, newScaleY) * 0.9; // 留10%边距
 
         transform.setScale(newScale);
@@ -909,10 +910,10 @@ public class GridChartView extends Pane {
     }
 
     /**
-     * 重置到标准视图（原点居中，比例1:1，缩放100%）
+     * 重置到标准视图(原点居中,比例1:1,缩放100%)
      */
     public void resetToStandardView() {
-        double standardScale = 50.0; // 标准缩放（100%）
+        double standardScale = 50.0; // 标准缩放(100%)
 
         transform.setScale(standardScale);
         settings.setXScale(standardScale);
@@ -925,7 +926,7 @@ public class GridChartView extends Pane {
     //   轴向吸附系统  
 
     /**
-     * 应用坐标吸附（包括点吸附、网格吸附、轴向吸附）
+     * 应用坐标吸附(包括点吸附、网格吸附、轴向吸附)
      *
      * @param rawX 原始世界坐标X
      * @param rawY 原始世界坐标Y
@@ -941,7 +942,7 @@ public class GridChartView extends Pane {
 
         Set<SnapMode> snapModes = settings.getSnapModes();
 
-        // 1. 特殊点吸附（最高优先级）
+        // 1. 特殊点吸附(最高优先级)
         if (snapModes.contains(SnapMode.POINT)) {
             SpecialPoint specialPoint = findNearestSpecialPoint(rawX, rawY);
             if (specialPoint != null) {
@@ -950,7 +951,7 @@ public class GridChartView extends Pane {
             }
         }
 
-        // 2. 轴向吸附（垂直/水平）
+        // 2. 轴向吸附(垂直/水平)
         AxisSnapResult axisSnap = findNearestAxisSnap(rawX, rawY);
         if (axisSnap != null) {
             axisSnapInfo = axisSnap.snapInfo;
@@ -962,10 +963,10 @@ public class GridChartView extends Pane {
             return new double[]{x, y};
         }
 
-        // 3. 网格吸附（最低优先级）
+        // 3. 网格吸附(最低优先级)
         // 检查是否启用网格吸附开关且模式包含 GRID
         if (settings.isGridSnapEnabled() && snapModes.contains(SnapMode.GRID)) {
-            // 使用统一的刻度计算器（确保与网格和坐标轴一致）
+            // 使用统一的刻度计算器(确保与网格和坐标轴一致)
             // 网格吸附精度随坐标轴刻度动态变化
             double step = AxisTickCalculator.calculateAxisTickDistance(
                     transform.getScale(),
@@ -985,11 +986,11 @@ public class GridChartView extends Pane {
     }
 
     /**
-     * 查找最近的轴向吸附（垂直线或水平线）
+     * 查找最近的轴向吸附(垂直线或水平线)
      *
      * @param worldX 当前世界坐标X
      * @param worldY 当前世界坐标Y
-     * @return 轴向吸附结果，如果没有找到返回null
+     * @return 轴向吸附结果,如果没有找到返回null
      */
     private AxisSnapResult findNearestAxisSnap(double worldX, double worldY) {
         Set<SnapMode> snapModes = settings.getSnapModes();
@@ -1000,13 +1001,13 @@ public class GridChartView extends Pane {
             return null;
         }
 
-        // 计算吸附阈值（像素转世界坐标）
+        // 计算吸附阈值(像素转世界坐标)
         double threshold = settings.getSnapThreshold() / transform.getScale();
 
         AxisSnapResult bestSnap = null;
         double minDistance = threshold;
 
-        // 遍历所有点对象，检测是否接近其垂直线或水平线
+        // 遍历所有点对象,检测是否接近其垂直线或水平线
         List<SpecialPoint> specialPoints = SpecialPointManager.extractSpecialPoints(objects);
 
         for (SpecialPoint point : specialPoints) {
@@ -1088,10 +1089,10 @@ public class GridChartView extends Pane {
     private static class AxisSnapInfo {
         boolean isVertical;   // true=垂直线吸附, false=水平线吸附
         double snapValue;     // 吸附的x或y坐标值
-        double lineStartX;    // 辅助线起点X（屏幕坐标）
-        double lineStartY;    // 辅助线起点Y（屏幕坐标）
-        double lineEndX;      // 辅助线终点X（屏幕坐标）
-        double lineEndY;      // 辅助线终点Y（屏幕坐标）
+        double lineStartX;    // 辅助线起点X(屏幕坐标)
+        double lineStartY;    // 辅助线起点Y(屏幕坐标)
+        double lineEndX;      // 辅助线终点X(屏幕坐标)
+        double lineEndY;      // 辅助线终点Y(屏幕坐标)
 
         public AxisSnapInfo(boolean isVertical, double snapValue,
                             double lineStartX, double lineStartY,

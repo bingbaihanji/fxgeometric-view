@@ -24,7 +24,7 @@ public class GridPainter implements WorldPainter {
     private EuclidianViewSettings settings; // 新版配置
 
     /**
-     * 旧版构造函数（向后兼容）
+     * 旧版构造函数(向后兼容)
      */
     public GridPainter(GridMode gridMode) {
         this.gridMode = gridMode;
@@ -34,7 +34,7 @@ public class GridPainter implements WorldPainter {
     }
 
     /**
-     * 新构造函数（支持配置注入）
+     * 新构造函数(支持配置注入)
      */
     public GridPainter(EuclidianViewSettings settings) {
         this.settings = settings;
@@ -101,7 +101,7 @@ public class GridPainter implements WorldPainter {
 
         gc.setFill(settings.getGridColor());
 
-        // 使用模运算对齐原点（GeoGebra方式）
+        // 使用模运算对齐原点(GeoGebra方式)
         double tickStepX = transform.getScaleX() * step;
         double tickStepY = transform.getScaleY() * step;
 
@@ -120,7 +120,7 @@ public class GridPainter implements WorldPainter {
     }
 
     /**
-     * 绘制笛卡尔网格（可选次网格）
+     * 绘制笛卡尔网格(可选次网格)
      * 参考 GeoGebra 的 DrawGrid.drawCartesianGrid() 实现
      */
     private void paintCartesianGrid(GraphicsContext gc, WorldTransform transform,
@@ -132,7 +132,7 @@ public class GridPainter implements WorldPainter {
 
         double step = getGridStep(transform.getScale());
 
-        // 绘制次网格（如果启用）
+        // 绘制次网格(如果启用)
         if (withSubGrid) {
             paintSubGrid(gc, transform, width, height, worldLeft, worldRight,
                     worldTop, worldBottom, step);
@@ -143,15 +143,15 @@ public class GridPainter implements WorldPainter {
         gc.setLineWidth(1);
         LineStyleUtil.applyLineStyle(gc, settings.getGridLineType());
 
-        // 计算像素步长（GeoGebra方式）
+        // 计算像素步长(GeoGebra方式)
         double tickStepX = transform.getScaleX() * step;
         double tickStepY = transform.getScaleY() * step;
 
-        // 原点在屏幕上的位置（关键！）
+        // 原点在屏幕上的位置(关键！)
         double xZero = transform.worldToScreenX(0);
         double yZero = transform.worldToScreenY(0);
 
-        // 垂直线 - 使用模运算相对原点对齐（GeoGebra DrawGrid.java:58-59）
+        // 垂直线 - 使用模运算相对原点对齐(GeoGebra DrawGrid.java:58-59)
         double startScreenX = xZero % tickStepX;
         for (double sx = startScreenX; sx <= width; sx += tickStepX) {
             gc.strokeLine(sx, 0, sx, height);
@@ -167,8 +167,8 @@ public class GridPainter implements WorldPainter {
     }
 
     /**
-     * 绘制次网格（浅色，细分主网格）
-     * 参考 GeoGebra 的次网格实现（5等分）
+     * 绘制次网格(浅色,细分主网格)
+     * 参考 GeoGebra 的次网格实现(5等分)
      */
     private void paintSubGrid(GraphicsContext gc, WorldTransform transform,
                               double width, double height,
@@ -194,7 +194,7 @@ public class GridPainter implements WorldPainter {
         // 垂直次网格线 - 使用模运算对齐
         double startScreenX = xZero % subTickStepX;
         for (double sx = startScreenX; sx <= width; sx += subTickStepX) {
-            // 跳过主网格线（像素级别判断）
+            // 跳过主网格线(像素级别判断)
             if (Math.abs((sx - xZero) % mainTickStepX) < 0.5) {
                 continue;
             }
@@ -204,7 +204,7 @@ public class GridPainter implements WorldPainter {
         // 水平次网格线 - 使用模运算对齐
         double startScreenY = yZero % subTickStepY;
         for (double sy = startScreenY; sy <= height; sy += subTickStepY) {
-            // 跳过主网格线（像素级别判断）
+            // 跳过主网格线(像素级别判断)
             if (Math.abs((sy - yZero) % mainTickStepY) < 0.5) {
                 continue;
             }
@@ -215,7 +215,7 @@ public class GridPainter implements WorldPainter {
     }
 
     /**
-     * 绘制极坐标网格（同心圆 + 放射线）
+     * 绘制极坐标网格(同心圆 + 放射线)
      * 参考 Desktop 的 EuclidianView.java 实现
      */
     private void paintPolarGrid(GraphicsContext gc, WorldTransform transform,
@@ -233,7 +233,7 @@ public class GridPainter implements WorldPainter {
         gc.setLineWidth(1);
         LineStyleUtil.applyLineStyle(gc, settings.getGridLineType());
 
-        // 径向步长（世界单位）
+        // 径向步长(世界单位)
         double radialStep = getGridStep(transform.getScale());
 
         // 绘制同心圆
@@ -243,14 +243,14 @@ public class GridPainter implements WorldPainter {
             gc.strokeOval(x0 - screenR, y0 - screenR, 2 * screenR, 2 * screenR);
         }
 
-        // 绘制放射线（角度步长从配置读取，默认30度）
+        // 绘制放射线(角度步长从配置读取,默认30度)
         double angleStep = settings.getPolarAngleStep(); // 弧度
 
         int numRays = (int) Math.ceil(2 * Math.PI / angleStep);
         for (int i = 0; i < numRays; i++) {
             double angle = i * angleStep;
 
-            // 计算射线终点（足够远）
+            // 计算射线终点(足够远)
             double dx = Math.cos(angle) * maxRadius;
             double dy = Math.sin(angle) * maxRadius;
 
@@ -264,8 +264,8 @@ public class GridPainter implements WorldPainter {
     }
 
     /**
-     * 绘制等距网格（三角形格子）
-     * 参考 Desktop 的 EuclidianView.java 实现（使用√3比例）
+     * 绘制等距网格(三角形格子)
+     * 参考 Desktop 的 EuclidianView.java 实现(使用√3比例)
      */
     private void paintIsometricGrid(GraphicsContext gc, WorldTransform transform,
                                     double width, double height) {
@@ -295,11 +295,11 @@ public class GridPainter implements WorldPainter {
             gc.strokeLine(sx, 0, sx, height);
         }
 
-        // 绘制斜线（60度和120度）
+        // 绘制斜线(60度和120度)
         // 计算足够的偏移范围以覆盖整个屏幕
         int offsetRange = (int) Math.ceil((width + height) / tickStepX) + xCount;
 
-        // 60度斜线（向右上）
+        // 60度斜线(向右上)
         for (int i = -offsetRange; i <= offsetRange; i++) {
             double sx1 = x0 + i * tickStepX;
             double sy1 = 0;  // 从屏幕顶部开始
@@ -308,7 +308,7 @@ public class GridPainter implements WorldPainter {
             gc.strokeLine(sx1, sy1, sx2, sy2);
         }
 
-        // 120度斜线（向左上）
+        // 120度斜线(向左上)
         for (int i = -offsetRange; i <= offsetRange; i++) {
             double sx1 = x0 + i * tickStepX;
             double sy1 = 0;  // 从屏幕顶部开始
@@ -321,19 +321,19 @@ public class GridPainter implements WorldPainter {
     }
 
     /**
-     * 获取网格步长（根据配置或自动计算）
+     * 获取网格步长(根据配置或自动计算)
      * 参考 GeoGebra 的 DrawGrid 实现和网格同步机制
      */
     private double getGridStep(double scale) {
-        // 如果启用网格与坐标轴同步（推荐模式）
+        // 如果启用网格与坐标轴同步(推荐模式)
         if (settings.isSyncGridWithAxes() && settings.isAutoGridDistance()) {
-            // 计算坐标轴刻度距离（使用统一的算法）
+            // 计算坐标轴刻度距离(使用统一的算法)
             double axisTickDistance = AxisTickCalculator.calculateAxisTickDistance(
                     scale,
                     false  // 网格通常不使用π单位
             );
 
-            // 网格距离 = 坐标轴刻度 * 因子（参考GeoGebra的gridDistances计算）
+            // 网格距离 = 坐标轴刻度 * 因子(参考GeoGebra的gridDistances计算)
             return AxisTickCalculator.calculateGridDistance(
                     axisTickDistance,
                     settings.getGridDistanceFactor()
@@ -345,7 +345,7 @@ public class GridPainter implements WorldPainter {
             return settings.getGridDistance();
         }
 
-        // 独立自动计算模式（降级，保持向后兼容）
+        // 独立自动计算模式(降级,保持向后兼容)
         return AxisTickCalculator.calculateAxisTickDistance(scale, false);
     }
 }

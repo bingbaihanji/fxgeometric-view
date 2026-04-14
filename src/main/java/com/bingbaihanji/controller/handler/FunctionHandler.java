@@ -60,7 +60,7 @@ public class FunctionHandler extends AbstractDrawingHandler {
                         function.setDomainRange(input.getDomainMin(), input.getDomainMax());
                     }
 
-                    // 通过命令历史添加到画布（支持撤销）
+                    // 通过命令历史添加到画布(支持撤销)
                     context.executeCommand(new CommandHistory.Command() {
                         @Override
                         public void execute() {
@@ -85,7 +85,7 @@ public class FunctionHandler extends AbstractDrawingHandler {
     /**
      * 根据输入结果创建函数对象
      * <p>
-     * 委托给 FunctionFactory 工厂类创建，避免代码重复
+     * 委托给 FunctionFactory 工厂类创建,避免代码重复
      */
     private FunctionGeo createFunction(FunctionInputResult input) {
         try {

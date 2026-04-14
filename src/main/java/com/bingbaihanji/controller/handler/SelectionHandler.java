@@ -14,7 +14,7 @@ import javafx.scene.paint.Color;
 /**
  * 选择处理器
  * <p>
- * 处理对象的选择操作，支持单选、多选（Ctrl+点击）和框选
+ * 处理对象的选择操作,支持单选、多选(Ctrl+点击)和框选
  *
  * @author bingbaihanji
  * @date 2025-12-31
@@ -22,9 +22,9 @@ import javafx.scene.paint.Color;
 public class SelectionHandler extends AbstractDrawingHandler {
 
     /**
-     * 框选阈值（像素）- 防止误触
+     * 框选阈值(像素)- 防止误触
      * <p>
-     * 只有当鼠标移动超过此阈值时，才开始显示框选矩形
+     * 只有当鼠标移动超过此阈值时,才开始显示框选矩形
      */
     private static final double SELECTION_RECT_THRESHOLD = 5.0; // 5像素
 
@@ -34,13 +34,13 @@ public class SelectionHandler extends AbstractDrawingHandler {
     private boolean boxSelecting = false;
 
     /**
-     * 框选起始点（屏幕坐标）
+     * 框选起始点(屏幕坐标)
      */
     private double boxStartX = 0;
     private double boxStartY = 0;
 
     /**
-     * 框选当前点（屏幕坐标）
+     * 框选当前点(屏幕坐标)
      */
     private double boxCurrentX = 0;
     private double boxCurrentY = 0;
@@ -57,7 +57,7 @@ public class SelectionHandler extends AbstractDrawingHandler {
             return false;
         }
 
-        // 检查是否按下Ctrl键（多选模式）
+        // 检查是否按下Ctrl键(多选模式)
         boolean ctrlPressed = e.isControlDown();
 
         double worldX = context.getGridChartPane().screenToWorldX(e.getX());
@@ -66,17 +66,17 @@ public class SelectionHandler extends AbstractDrawingHandler {
         // 计算容差
         double scale = context.getTransform().getScale();
         double tolerance = 5.0 / scale; // 5像素的点击范围
-        double vertexTolerance = 10.0 / scale; // 控制点使用更大的容差（10像素）
+        double vertexTolerance = 10.0 / scale; // 控制点使用更大的容差(10像素)
 
         // 优先级1：检查是否点击了控制点  
-        // 控制点具有最高优先级，如果点击了控制点，不选中对象，让 DragHandler 处理
+        // 控制点具有最高优先级,如果点击了控制点,不选中对象,让 DragHandler 处理
         Hits.HitPoint hitPoint = Hits.performPointHitTest(context.getObjects(), worldX, worldY, vertexTolerance);
         if (hitPoint != null) {
-            // 点击了控制点，不处理选择逻辑，让 DragHandler 处理拖动
+            // 点击了控制点,不处理选择逻辑,让 DragHandler 处理拖动
             return false;
         }
 
-        // 优先级2：使用 Hits 检查是否点击了对象（非控制点部分） 
+        // 优先级2：使用 Hits 检查是否点击了对象(非控制点部分) 
         // 尝试点击选中对象
         Hits hits = Hits.performHitTest(context.getObjects(), worldX, worldY, tolerance);
         hits.sortByZOrder(); // 按优先级排序
@@ -84,29 +84,29 @@ public class SelectionHandler extends AbstractDrawingHandler {
         WorldObject clickedObject = hits.getTopHit(); // 获取最高优先级的对象
 
         if (clickedObject != null) {
-            // 命中对象（非控制点部分）
+            // 命中对象(非控制点部分)
             SelectionManager selectionManager = context.getSelectionManager();
 
             if (ctrlPressed) {
                 // Ctrl+点击：切换选中状态
                 selectionManager.toggleSelection(clickedObject);
                 context.getGridChartPane().redraw();
-                return true; // 已处理，阻止拖动
+                return true; // 已处理,阻止拖动
             } else {
                 // 普通点击：单选
                 if (!clickedObject.isSelected()) {
-                    // 对象未选中，执行选中操作
+                    // 对象未选中,执行选中操作
                     selectionManager.selectOnly(clickedObject);
                     context.getGridChartPane().redraw();
-                    return true; // 已处理，阻止拖动
+                    return true; // 已处理,阻止拖动
                 } else {
-                    // 对象已选中，不处理，让 DragHandler 处理拖动
-                    return false; // 未处理，允许拖动
+                    // 对象已选中,不处理,让 DragHandler 处理拖动
+                    return false; // 未处理,允许拖动
                 }
             }
         } else {
             // 未命中对象
-            // 已禁用：检查是否点击了BoundingBox区域内或旋转句柄（不清除选择）
+            // 已禁用：检查是否点击了BoundingBox区域内或旋转句柄(不清除选择)
             /*
             if (context.getSelectionManager().hasBoundingBox()) {
                 BoundingBox bbox = context.getSelectionManager().getBoundingBox();
@@ -116,34 +116,34 @@ public class SelectionHandler extends AbstractDrawingHandler {
                 double minY = bounds[2];
                 double maxY = bounds[3];
                 
-                // 检查是否点击了旋转句柄区域（旋转句柄在边界之外）
+                // 检查是否点击了旋转句柄区域(旋转句柄在边界之外)
                 double handleTolerance = 15.0 / scale; // 句柄区域容差
                 ResizeHandle handle = bbox.hitTestHandles(worldX, worldY, handleTolerance);
                 if (handle != null) {
-                    // 点击了句柄，交由DragHandler处理
+                    // 点击了句柄,交由DragHandler处理
                     return false;
                 }
                 
-                // 如果点击在BoundingBox边界内，不清除选择，交由DragHandler处理
+                // 如果点击在BoundingBox边界内,不清除选择,交由DragHandler处理
                 if (worldX >= minX && worldX <= maxX && worldY >= minY && worldY <= maxY) {
-                    return false; // 不处理，让DragHandler处理
+                    return false; // 不处理,让DragHandler处理
                 }
             }
             */
 
-            // 确实点击了空白区域，清除选择并启动框选
-            // 在启动框选之前，再次检查是否接近控制点（使用更大的容差）
+            // 确实点击了空白区域,清除选择并启动框选
+            // 在启动框选之前,再次检查是否接近控制点(使用更大的容差)
             // 这样可以避免用户点击控制点时稍微偏离而触发框选
-            double largerTolerance = 15.0 / scale; // 使用更大的容差（15像素）
+            double largerTolerance = 15.0 / scale; // 使用更大的容差(15像素)
             Hits.HitPoint nearPoint = Hits.performPointHitTest(context.getObjects(), worldX, worldY, largerTolerance);
             if (nearPoint != null) {
-                // 接近控制点，不启动框选，让 DragHandler 处理
+                // 接近控制点,不启动框选,让 DragHandler 处理
                 return false;
             }
 
-            // 确实没有接近任何控制点或对象，启动框选
+            // 确实没有接近任何控制点或对象,启动框选
             if (!ctrlPressed) {
-                // 如果没有按Ctrl，清除之前的选择
+                // 如果没有按Ctrl,清除之前的选择
                 SelectionManager selectionManager = context.getSelectionManager();
                 selectionManager.clearSelection();
                 context.getGridChartPane().redraw();
@@ -199,7 +199,7 @@ public class SelectionHandler extends AbstractDrawingHandler {
         double worldEndX = context.getGridChartPane().screenToWorldX(boxCurrentX);
         double worldEndY = context.getGridChartPane().screenToWorldY(boxCurrentY);
 
-        // 计算框选矩形（确保 x1 < x2, y1 < y2）
+        // 计算框选矩形(确保 x1 < x2, y1 < y2)
         double worldX1 = Math.min(worldStartX, worldEndX);
         double worldY1 = Math.min(worldStartY, worldEndY);
         double worldX2 = Math.max(worldStartX, worldEndX);
@@ -232,13 +232,13 @@ public class SelectionHandler extends AbstractDrawingHandler {
     @Override
     public void paintPreview(GraphicsContext gc, WorldTransform transform, DrawingContext context) {
         if (boxSelecting) {
-            // 计算距离，只有超过阈值才绘制框选矩形
+            // 计算距离,只有超过阈值才绘制框选矩形
             double dx = boxCurrentX - boxStartX;
             double dy = boxCurrentY - boxStartY;
             double distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance < SELECTION_RECT_THRESHOLD) {
-                // 未超过阈值，不绘制
+                // 未超过阈值,不绘制
                 return;
             }
 
@@ -270,17 +270,17 @@ public class SelectionHandler extends AbstractDrawingHandler {
      * 判断对象是否在框选矩形内
      *
      * @param obj 对象
-     * @param x1  矩形左下角X（世界坐标）
-     * @param y1  矩形左下角Y（世界坐标）
-     * @param x2  矩形右上角X（世界坐标）
-     * @param y2  矩形右上角Y（世界坐标）
+     * @param x1  矩形左下角X(世界坐标)
+     * @param y1  矩形左下角Y(世界坐标)
+     * @param x2  矩形右上角X(世界坐标)
+     * @param y2  矩形右上角Y(世界坐标)
      * @return 是否在矩形内
      */
     private boolean isObjectInBox(WorldObject obj, double x1, double y1, double x2, double y2) {
         // 获取对象的边界框
         double[] bbox = obj.getBoundingBox();
         if (bbox == null) {
-            // 如果对象没有实现getBoundingBox，使用简单的点判断
+            // 如果对象没有实现getBoundingBox,使用简单的点判断
             // 尝试获取对象的可拖动点
             for (WorldObject.DraggablePoint point : obj.getDraggablePoints()) {
                 double px = point.getX();

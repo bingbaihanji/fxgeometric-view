@@ -6,14 +6,14 @@ package com.bingbaihanji.view.layout.core;
  *
  * @author bingbaihanji
  * @date 2025-12-31
- * @description 用于格点坐标视图的坐标转换，支持独立的XY轴比例
+ * @description 用于格点坐标视图的坐标转换, 支持独立的XY轴比例
  */
 public final class WorldTransform {
 
-    // X轴缩放比例（世界单位 → 像素）
+    // X轴缩放比例(世界单位 → 像素)
     private double scaleX = 50;
 
-    // Y轴缩放比例（世界单位 → 像素）
+    // Y轴缩放比例(世界单位 → 像素)
     private double scaleY = 50;
 
     // 世界原点在屏幕中的像素位置
@@ -37,7 +37,7 @@ public final class WorldTransform {
     }
 
     /**
-     * 获取缩放比例（平均值，用于向后兼容）
+     * 获取缩放比例(平均值,用于向后兼容)
      *
      * @return XY轴比例的平均值
      */
@@ -46,7 +46,7 @@ public final class WorldTransform {
     }
 
     /**
-     * 设置统一缩放比例（XY轴使用相同比例）
+     * 设置统一缩放比例(XY轴使用相同比例)
      *
      * @param scale 缩放比例
      */
@@ -92,7 +92,7 @@ public final class WorldTransform {
     }
 
     /**
-     * 设置轴比例（保持平均缩放不变）
+     * 设置轴比例(保持平均缩放不变)
      *
      * @param xRatio X轴比例系数
      * @param yRatio Y轴比例系数
@@ -118,7 +118,7 @@ public final class WorldTransform {
     }
 
     /**
-     * 保证屏幕中心对应某个世界点（使用平均缩放）
+     * 保证屏幕中心对应某个世界点(使用平均缩放)
      */
     public void centerWorldAt(
             double worldX,

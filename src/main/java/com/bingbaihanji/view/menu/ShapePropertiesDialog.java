@@ -9,7 +9,7 @@ import javafx.scene.paint.Color;
 /**
  * 几何图形属性对话框
  * <p>
- * 支持修改几何图形的颜色，对于圆形还可以修改半径
+ * 支持修改几何图形的颜色,对于圆形还可以修改半径
  *
  * @author bingbaihanji
  * @date 2025-12-30
@@ -22,14 +22,14 @@ public class ShapePropertiesDialog extends Dialog<ShapePropertiesResult> {
     private final boolean isCircle;
 
     /**
-     * 为普通图形创建属性对话框（仅支持颜色修改）
+     * 为普通图形创建属性对话框(仅支持颜色修改)
      */
     public ShapePropertiesDialog(Color currentColor) {
         this(currentColor, 0, null, false);
     }
 
     /**
-     * 为圆形创建属性对话框（支持颜色、半径和圆心名称修改）
+     * 为圆形创建属性对话框(支持颜色、半径和圆心名称修改)
      */
     public ShapePropertiesDialog(Color currentColor, double currentRadius, String currentCenterName) {
         this(currentColor, currentRadius, currentCenterName, true);
@@ -57,7 +57,7 @@ public class ShapePropertiesDialog extends Dialog<ShapePropertiesResult> {
         grid.add(colorLabel, 0, 0);
         grid.add(colorPicker, 1, 0);
 
-        // 如果是圆形，添加半径和圆心名称输入框
+        // 如果是圆形,添加半径和圆心名称输入框
         radiusField = new TextField();
         centerNameField = new TextField();
         if (isCircle) {

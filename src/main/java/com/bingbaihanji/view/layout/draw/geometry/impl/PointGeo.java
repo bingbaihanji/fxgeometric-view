@@ -19,24 +19,24 @@ public class PointGeo extends AbstractWorldObject {
     private double x;
     private double y;
 
-    private PointConstraint constraint = null; // 点的约束（可选）
+    private PointConstraint constraint = null; // 点的约束(可选)
 
     /**
      * 标记此点是否是多边形内部创建的顶点
-     * 如果是内部顶点，多边形负责绘制它；
-     * 如果是外部复用的点，点自己绘制自己
+     * 如果是内部顶点,多边形负责绘制它；
+     * 如果是外部复用的点,点自己绘制自己
      */
     private boolean polygonVertex = false;
 
     /**
      * 点所属的复用组
-     * 当多个点重合并启用复用时，它们会被添加到同一个复用组
-     * 移动任意一个点，组内其他点会同步移动
+     * 当多个点重合并启用复用时,它们会被添加到同一个复用组
+     * 移动任意一个点,组内其他点会同步移动
      */
     private PointReuseGroup reuseGroup = null;
 
     /**
-     * 标记是否正在同步更新位置（防止递归调用）
+     * 标记是否正在同步更新位置(防止递归调用)
      */
     private transient boolean isSyncingPosition = false;
 
@@ -69,12 +69,12 @@ public class PointGeo extends AbstractWorldObject {
         return y;
     }
 
-    // 获取点的名称（兼容旧代码）
+    // 获取点的名称(兼容旧代码)
     public String getName() {
         return label;
     }
 
-    // 设置点的名称（兼容旧代码）
+    // 设置点的名称(兼容旧代码)
     public void setName(String name) {
         this.label = name;
     }
@@ -108,38 +108,38 @@ public class PointGeo extends AbstractWorldObject {
         this.polygonVertex = polygonVertex;
     }
 
-    // 更新点的位置（支持约束处理和复用组同步）
+    // 更新点的位置(支持约束处理和复用组同步)
     public void updatePosition(double newX, double newY) {
         // 保存旧位置
         double oldX = this.x;
         double oldY = this.y;
 
         if (constraint != null) {
-            // 如果有约束，计算新参数并根据参数更新位置
+            // 如果有约束,计算新参数并根据参数更新位置
             double newParameter = constraint.calculateParameter(newX, newY);
             constraint.setParameter(newParameter);
             Point2D newPos = constraint.getPointFromParameter();
             this.x = newPos.getX();
             this.y = newPos.getY();
         } else {
-            // 无约束，直接更新坐标
+            // 无约束,直接更新坐标
             this.x = newX;
             this.y = newY;
         }
 
-        // 如果该点有名称，更新PointNameManager中的映射
+        // 如果该点有名称,更新PointNameManager中的映射
         if (this.label != null && !this.label.isEmpty()) {
             PointNameManager.getInstance().updatePosition(oldX, oldY, this.x, this.y);
         }
 
-        // 同步复用组内的其他点（防止递归）
+        // 同步复用组内的其他点(防止递归)
         if (!isSyncingPosition && reuseGroup != null && reuseGroup.isEnabled()) {
             reuseGroup.syncMove(this.x, this.y, this);
         }
     }
 
     /**
-     * 直接设置位置（不触发复用组同步，用于复用组内部调用）
+     * 直接设置位置(不触发复用组同步,用于复用组内部调用)
      *
      * @param newX 新X坐标
      * @param newY 新Y坐标
@@ -152,7 +152,7 @@ public class PointGeo extends AbstractWorldObject {
             double oldY = this.y;
 
             if (constraint != null) {
-                // 如果有约束，计算新参数并根据参数更新位置
+                // 如果有约束,计算新参数并根据参数更新位置
                 double newParameter = constraint.calculateParameter(newX, newY);
                 constraint.setParameter(newParameter);
                 Point2D newPos = constraint.getPointFromParameter();
@@ -204,7 +204,7 @@ public class PointGeo extends AbstractWorldObject {
 
     @Override
     public void paint(GraphicsContext gc, WorldTransform t, double w, double h) {
-        // 多边形内部顶点由多边形负责绘制，这里不绘制
+        // 多边形内部顶点由多边形负责绘制,这里不绘制
         if (polygonVertex) {
             return;
         }
@@ -212,7 +212,7 @@ public class PointGeo extends AbstractWorldObject {
         double sx = t.worldToScreenX(x);
         double sy = t.worldToScreenY(y);
 
-        // 使用有效颜色（考虑选中/悬停状态）
+        // 使用有效颜色(考虑选中/悬停状态)
         Color displayColor = getEffectiveColor();
 
         // 约束点使用深蓝色

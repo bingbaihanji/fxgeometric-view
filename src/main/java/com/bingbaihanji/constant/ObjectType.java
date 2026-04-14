@@ -5,51 +5,51 @@ package com.bingbaihanji.constant;
  *
  * @author bingbaihanji
  * @date 2025-12-31
- * @description 定义所有几何对象的类型，参考 GeoGebra 的对象分类
+ * @description 定义所有几何对象的类型, 参考 GeoGebra 的对象分类
  */
 public enum ObjectType {
 
     //   点类型  
 
     /**
-     * 自由点（可自由移动）
+     * 自由点(可自由移动)
      */
     POINT_FREE("点", "自由点"),
 
     /**
-     * 依赖点（由其他对象定义）
+     * 依赖点(由其他对象定义)
      */
     POINT_DEPENDENT("点", "依赖点"),
 
     /**
-     * 约束点（在线或曲线上）
+     * 约束点(在线或曲线上)
      */
     POINT_ON_PATH("点", "路径上的点"),
 
     /**
-     * 交点（两个对象的交点）
+     * 交点(两个对象的交点)
      */
     POINT_INTERSECTION("点", "交点"),
 
     //   线类型  
 
     /**
-     * 线段（有限线）
+     * 线段(有限线)
      */
     SEGMENT("线段", "线段"),
 
     /**
-     * 直线（无限延伸）
+     * 直线(无限延伸)
      */
     LINE("直线", "直线"),
 
     /**
-     * 射线（半无限线）
+     * 射线(半无限线)
      */
     RAY("射线", "射线"),
 
     /**
-     * 向量（带方向的线段）
+     * 向量(带方向的线段)
      */
     VECTOR("向量", "向量"),
 
@@ -142,12 +142,12 @@ public enum ObjectType {
     //   属性  
 
     /**
-     * 对象类别（中文）
+     * 对象类别(中文)
      */
     private final String category;
 
     /**
-     * 对象类型名称（中文）
+     * 对象类型名称(中文)
      */
     private final String displayName;
 
@@ -213,14 +213,14 @@ public enum ObjectType {
     }
 
     /**
-     * 判断是否为封闭图形（需要填充）
+     * 判断是否为封闭图形(需要填充)
      */
     public boolean isClosed() {
         return isConic() || isPolygon() || this == SECTOR;
     }
 
     /**
-     * 判断对象是否可拖拽（默认行为）
+     * 判断对象是否可拖拽(默认行为)
      */
     public boolean isDraggableByDefault() {
         return this == POINT_FREE || this == POINT_ON_PATH;

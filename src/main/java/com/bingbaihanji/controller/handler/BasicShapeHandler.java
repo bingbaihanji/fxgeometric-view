@@ -41,7 +41,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
     private PreviewManager.LinePreview linePreview = null;
 
     /**
-     * 第一个点的世界坐标（用于绘制圆、线段等）
+     * 第一个点的世界坐标(用于绘制圆、线段等)
      */
     private double firstPointX;
     private double firstPointY;
@@ -99,12 +99,12 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
         double rawX = context.getGridChartPane().screenToWorldX(e.getX());
         double rawY = context.getGridChartPane().screenToWorldY(e.getY());
 
-        // 应用网格吸附（所有模式都应用）
+        // 应用网格吸附(所有模式都应用)
         double[] snapped = context.getSnappingHandler().applySnapping(rawX, rawY, context);
         double worldX = snapped[0];
         double worldY = snapped[1];
 
-        // Shift 键约束：在绘制线段/直线/圆时，强制吸附到特定角度（0°, 45°, 90°等）
+        // Shift 键约束：在绘制线段/直线/圆时,强制吸附到特定角度(0°, 45°, 90°等)
         if (e.isShiftDown() && context.getState() == DrawingState.FIRST_CLICK) {
             double[] constrained = applyShiftConstraint(worldX, worldY);
             worldX = constrained[0];
@@ -115,7 +115,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
         context.setCurrentMouseX(worldX);
         context.setCurrentMouseY(worldY);
 
-        // 点模式：检测是否靠近可约束的图形，改变光标
+        // 点模式：检测是否靠近可约束的图形,改变光标
         if (context.getDrawMode() == DrawMode.POINT) {
             double scale = context.getTransform().getScale();
             double snapDistance = 15.0 / scale; // 吸附距离阈值
@@ -150,7 +150,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
 
         // 其他模式：预览逻辑
         if (context.getState() != DrawingState.FIRST_CLICK) {
-            // 即使在 IDLE 状态，也重绘以显示吸附预览点
+            // 即使在 IDLE 状态,也重绘以显示吸附预览点
             context.redraw();
             return true;
         }
@@ -167,7 +167,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                     EdgeSnapManager.findCircleTangentSnap(firstPointX, firstPointY, previewRadius,
                             context.getObjects(), tangentThreshold);
 
-            // 如果找到相切吸附，使用调整后的半径
+            // 如果找到相切吸附,使用调整后的半径
             if (tangentResult != null) {
                 previewRadius = tangentResult.getRadius();
             }
@@ -193,7 +193,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
      * 处理点模式的绘制
      */
     private void handlePointDrawing(double worldX, double worldY, DrawingContext context) {
-        // 点模式：检测是否靠近图形（吸附）
+        // 点模式：检测是否靠近图形(吸附)
         double scale = context.getTransform().getScale();
         double snapDistance = 15.0 / scale; // 吸附距离阈值
 
@@ -223,7 +223,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             // 创建约束并自动检测是否为顶点
             PointConstraint constraint = context.getConstraintHandler().createConstraint(nearestShape, newPoint);
 
-            // 如果不是顶点约束，计算参数
+            // 如果不是顶点约束,计算参数
             if (!constraint.isVertexConstraint()) {
                 double parameter = constraint.calculateParameter(worldX, worldY);
                 constraint.setParameter(parameter);
@@ -257,12 +257,12 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
      * 处理第一次点击
      */
     private void handleFirstClick(double rawX, double rawY, double worldX, double worldY, DrawingContext context) {
-        // 第一次点击：记录起点，进入预览状态
+        // 第一次点击：记录起点,进入预览状态
         firstPointX = worldX;
         firstPointY = worldY;
         context.setState(DrawingState.FIRST_CLICK);
 
-        // 检查第一次点击位置是否已有点对象（用于复用）
+        // 检查第一次点击位置是否已有点对象(用于复用)
         double scale = context.getTransform().getScale();
         firstPointRef = PointReuseManager.getExistingPointOrNull(worldX, worldY, context.getObjects(), scale);
 
@@ -288,7 +288,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
     private void handleSecondClick(double worldX, double worldY, DrawingContext context) {
         double scale = context.getTransform().getScale();
 
-        // 检查第二次点击位置是否已有点对象（用于复用）
+        // 检查第二次点击位置是否已有点对象(用于复用)
         PointGeo secondPointRef = PointReuseManager.getExistingPointOrNull(worldX, worldY, context.getObjects(), scale);
 
         switch (context.getDrawMode()) {
@@ -305,7 +305,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
 
                 double finalRadius = (tangentResult != null) ? tangentResult.getRadius() : radius;
 
-                // 创建圆，复用已有的圆心点
+                // 创建圆,复用已有的圆心点
                 CircleGeo newCircle = new CircleGeo(firstPointRef, firstPointX, firstPointY, finalRadius);
 
                 // 计算此圆产生的所有交点
@@ -338,7 +338,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                 firstPointRef = null;
             }
             case LINE -> {
-                // 创建线段，复用已有的端点
+                // 创建线段,复用已有的端点
                 LineGeo newLine = new LineGeo(firstPointRef, firstPointX, firstPointY,
                         secondPointRef, worldX, worldY);
 
@@ -371,7 +371,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                 firstPointRef = null;
             }
             case INFINITE_LINE -> {
-                // 创建无限直线，复用已有的端点
+                // 创建无限直线,复用已有的端点
                 InfiniteLineGeo newLine = new InfiniteLineGeo(firstPointRef, firstPointX, firstPointY,
                         secondPointRef, worldX, worldY);
 
@@ -412,7 +412,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
     /**
      * 应用 Shift 键角度约束
      * <p>
-     * 将当前点约束到从第一个点出发的特定角度上（0°, 45°, 90°, 135°, 180°, 225°, 270°, 315°）
+     * 将当前点约束到从第一个点出发的特定角度上(0°, 45°, 90°, 135°, 180°, 225°, 270°, 315°)
      *
      * @param worldX 当前鼠标的世界坐标 X
      * @param worldY 当前鼠标的世界坐标 Y
@@ -425,7 +425,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
         // 计算当前角度
         double angle = Math.atan2(dy, dx);
 
-        // 将角度吸附到最近的 45 度倍数（π/4 弧度）
+        // 将角度吸附到最近的 45 度倍数(π/4 弧度)
         double snappedAngle = Math.round(angle / (Math.PI / 4)) * (Math.PI / 4);
 
         // 计算到起点的距离
@@ -451,14 +451,14 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
 
     @Override
     public void paintPreview(GraphicsContext gc, WorldTransform transform, DrawingContext context) {
-        // PreviewManager 统一管理，此处只绘制补充效果(吸附预览点)
+        // PreviewManager 统一管理,此处只绘制补充效果(吸附预览点)
         if (!canHandle(context.getDrawMode())) {
             return;
         }
 
         double pointRadius = 4;
 
-        // 在 IDLE 状态下，显示吸附预览点
+        // 在 IDLE 状态下,显示吸附预览点
         if (context.getState() == DrawingState.IDLE) {
             double mouseScreenX = transform.worldToScreenX(context.getCurrentMouseX());
             double mouseScreenY = transform.worldToScreenY(context.getCurrentMouseY());
@@ -472,15 +472,15 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             return;
         }
 
-        // 在 FIRST_CLICK 状态下，绘制第一个点和第二个点的预览
+        // 在 FIRST_CLICK 状态下,绘制第一个点和第二个点的预览
         if (context.getState() == DrawingState.FIRST_CLICK) {
-            // 绘制第一个点（实心点）
+            // 绘制第一个点(实心点)
             double firstPointScreenX = transform.worldToScreenX(firstPointX);
             double firstPointScreenY = transform.worldToScreenY(firstPointY);
             gc.setFill(Color.valueOf("#759eb2"));
             gc.fillOval(firstPointScreenX - pointRadius, firstPointScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
 
-            // 绘制第二个点的预览（半透明点，跟随鼠标）
+            // 绘制第二个点的预览(半透明点,跟随鼠标)
             double mouseScreenX = transform.worldToScreenX(context.getCurrentMouseX());
             double mouseScreenY = transform.worldToScreenY(context.getCurrentMouseY());
 

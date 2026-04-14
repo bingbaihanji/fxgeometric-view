@@ -29,7 +29,7 @@ public class EdgeSnapVisitor implements GeometryVisitor<EdgeSnapVisitor.SnapResu
 
     @Override
     public SnapResult visitPoint(PointGeo point) {
-        // 点没有边，不参与边吸附
+        // 点没有边,不参与边吸附
         return null;
     }
 

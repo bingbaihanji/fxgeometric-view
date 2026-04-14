@@ -11,10 +11,10 @@ import javafx.geometry.Point2D;
 import java.util.List;
 
 /**
- * 边吸附管理器（重构版 - 使用访问者模式）
+ * 边吸附管理器(重构版 - 使用访问者模式)
  * <p>
  * 处理几何图形边的磁性吸附功能
- * 使用访问者模式消除instanceof判断，提高扩展性和类型安全
+ * 使用访问者模式消除instanceof判断,提高扩展性和类型安全
  *
  * @author bingbaihanji
  * @version 2.0 (2025-01-04 使用访问者模式重构)
@@ -23,13 +23,13 @@ import java.util.List;
 public class EdgeSnapManager {
 
     /**
-     * 查找最近的边吸附点（使用访问者模式）
+     * 查找最近的边吸附点(使用访问者模式)
      *
-     * @param x         当前鼠标x坐标（世界坐标）
-     * @param y         当前鼠标y坐标（世界坐标）
+     * @param x         当前鼠标x坐标(世界坐标)
+     * @param y         当前鼠标y坐标(世界坐标)
      * @param objects   所有几何对象
-     * @param threshold 吸附阈值（世界坐标距离）
-     * @return 最近的边吸附结果，如果没有找到则返回null
+     * @param threshold 吸附阈值(世界坐标距离)
+     * @return 最近的边吸附结果,如果没有找到则返回null
      */
     public static EdgeSnapResult findNearestEdge(double x, double y,
                                                  List<WorldObject> objects,
@@ -51,9 +51,9 @@ public class EdgeSnapManager {
     }
 
     /**
-     * 检测圆与圆相切吸附（拖动圆心时）
+     * 检测圆与圆相切吸附(拖动圆心时)
      * <p>
-     * 当拖动圆心时，检测圆的边缘是否靠近其他圆的边缘，
+     * 当拖动圆心时,检测圆的边缘是否靠近其他圆的边缘,
      * 如果靠近则调整圆心位置使得两圆恰好相切
      *
      * @param centerX        被拖动圆的圆心X
@@ -61,8 +61,8 @@ public class EdgeSnapManager {
      * @param radius         被拖动圆的半径
      * @param objects        所有几何对象
      * @param threshold      吸附阈值
-     * @param excludedObject 要排除的对象（被拖动的圆）
-     * @return 圆与圆相切吸附结果，包含调整后的圆心位置
+     * @param excludedObject 要排除的对象(被拖动的圆)
+     * @return 圆与圆相切吸附结果,包含调整后的圆心位置
      */
     public static CircleToCircleSnapResult findCircleToCircleTangentSnap(double centerX, double centerY,
                                                                          double radius,
@@ -85,7 +85,7 @@ public class EdgeSnapManager {
                 // 两圆心距离
                 double centerDist = Math.hypot(centerX - targetCx, centerY - targetCy);
                 if (centerDist < 1e-9) {
-                    continue; // 圆心重合，跳过
+                    continue; // 圆心重合,跳过
                 }
 
                 // 计算外切时的边缘距离：|centerDist - (radius + targetR)|
@@ -93,7 +93,7 @@ public class EdgeSnapManager {
                 // 计算内切时的边缘距离：|centerDist - |radius - targetR||
                 double internalEdgeDist = Math.abs(centerDist - Math.abs(radius - targetR));
 
-                // 方向单位向量（从目标圆心指向被拖动圆心）
+                // 方向单位向量(从目标圆心指向被拖动圆心)
                 double ux = (centerX - targetCx) / centerDist;
                 double uy = (centerY - targetCy) / centerDist;
 
@@ -122,8 +122,8 @@ public class EdgeSnapManager {
     }
 
     /**
-     * 检测圆边缘与所有边（线段、多边形边）的相切吸附
-     * 这是一个统一的方法，支持线段、无限直线和多边形的边
+     * 检测圆边缘与所有边(线段、多边形边)的相切吸附
+     * 这是一个统一的方法,支持线段、无限直线和多边形的边
      */
     public static LineTangentResult findCircleToAllEdgesTangentSnap(double centerX, double centerY,
                                                                     double radius,
@@ -209,7 +209,7 @@ public class EdgeSnapManager {
         double distanceToLine = Math.hypot(nearestPoint.getX() - centerX, nearestPoint.getY() - centerY);
         double edgeDistance = Math.abs(distanceToLine - radius);
 
-        // 要求圆心不能太靠近直线（避免与圆心吸附冲突）
+        // 要求圆心不能太靠近直线(避免与圆心吸附冲突)
         if (edgeDistance < threshold && edgeDistance < currentMinEdgeDist && distanceToLine > radius * 0.1) {
             double dx = centerX - nearestPoint.getX();
             double dy = centerY - nearestPoint.getY();
@@ -227,7 +227,7 @@ public class EdgeSnapManager {
     }
 
     /**
-     * 检测圆心到所有边（线段、多边形边）的吸附
+     * 检测圆心到所有边(线段、多边形边)的吸附
      * 支持圆心吸附到线段、无限直线和多边形的边上
      */
     public static CircleCenterToLineResult findCircleCenterToAllEdgesSnap(double centerX, double centerY,
@@ -286,7 +286,7 @@ public class EdgeSnapManager {
     /**
      * 检测圆相切吸附
      * <p>
-     * 当绘制一个新圆时，检测其边缘是否靠近已有圆的边缘，
+     * 当绘制一个新圆时,检测其边缘是否靠近已有圆的边缘,
      * 如果靠近则调整半径使得两圆恰好相切
      *
      * @param centerX       新圆的圆心X
@@ -294,7 +294,7 @@ public class EdgeSnapManager {
      * @param currentRadius 当前半径
      * @param objects       所有几何对象
      * @param threshold     吸附阈值
-     * @return 相切吸附结果，如果没有则返回null
+     * @return 相切吸附结果,如果没有则返回null
      */
     public static CircleTangentResult findCircleTangentSnap(double centerX, double centerY,
                                                             double currentRadius,
@@ -304,7 +304,7 @@ public class EdgeSnapManager {
         double minDiff = threshold;
 
         for (WorldObject obj : objects) {
-            // 这里仍需要instanceof判断，因为相切吸附是圆特有的逻辑
+            // 这里仍需要instanceof判断,因为相切吸附是圆特有的逻辑
             // 但我们可以创建一个专门的访问者来处理
             if (obj instanceof CircleGeo targetCircle) {
                 double targetCx = targetCircle.getCx();
@@ -333,7 +333,7 @@ public class EdgeSnapManager {
                     }
                 }
 
-                // 检查内切（新圆在目标圆内部）
+                // 检查内切(新圆在目标圆内部)
                 if (internalRadius1 > 0 && internalRadius1 < targetR) {
                     double diff = Math.abs(currentRadius - internalRadius1);
                     if (diff < minDiff) {
@@ -342,7 +342,7 @@ public class EdgeSnapManager {
                     }
                 }
 
-                // 检查内切（新圆包含目标圆）
+                // 检查内切(新圆包含目标圆)
                 if (centerDist < targetR) {
                     double diff = Math.abs(currentRadius - internalRadius2);
                     if (diff < minDiff) {
@@ -359,18 +359,18 @@ public class EdgeSnapManager {
     /**
      * 检测圆与直线相切吸附
      * <p>
-     * 当拖动圆心时，检测圆的边缘是否靠近直线，
-     * 如果圆的边缘在阈值范围内接近直线，则调整圆心位置使得圆与直线恰好相切
+     * 当拖动圆心时,检测圆的边缘是否靠近直线,
+     * 如果圆的边缘在阈值范围内接近直线,则调整圆心位置使得圆与直线恰好相切
      * <p>
-     * 关键：只有当圆的边缘（而不是圆心）靠近直线时才触发吸附，
+     * 关键：只有当圆的边缘(而不是圆心)靠近直线时才触发吸附,
      * 避免圆心靠近直线时产生"排斥"的感觉
      *
      * @param centerX   圆心X
      * @param centerY   圆心Y
      * @param radius    圆半径
      * @param objects   所有几何对象
-     * @param threshold 吸附阈值（圆边缘到直线的距离小于此值时触发）
-     * @return 切线吸附结果，如果没有则返回null
+     * @param threshold 吸附阈值(圆边缘到直线的距离小于此值时触发)
+     * @return 切线吸附结果,如果没有则返回null
      */
     public static LineTangentResult findLineTangentSnap(double centerX, double centerY,
                                                         double radius,
@@ -380,15 +380,15 @@ public class EdgeSnapManager {
     }
 
     /**
-     * 检测圆与直线相切吸附（带排除对象）
+     * 检测圆与直线相切吸附(带排除对象)
      *
      * @param centerX        圆心X
      * @param centerY        圆心Y
      * @param radius         圆半径
      * @param objects        所有几何对象
      * @param threshold      吸附阈值
-     * @param excludedObject 要排除的对象（通常是被拖动的圆）
-     * @return 切线吸附结果，如果没有则返回null
+     * @param excludedObject 要排除的对象(通常是被拖动的圆)
+     * @return 切线吸附结果,如果没有则返回null
      */
     public static LineTangentResult findLineTangentSnap(double centerX, double centerY,
                                                         double radius,
@@ -429,9 +429,9 @@ public class EdgeSnapManager {
                 double edgeDistance = Math.abs(distanceToLine - radius);
 
                 // 只有当圆的边缘靠近直线时才触发吸附
-                // 同时要求圆心不能太靠近直线（避免与圆心吸附冲突）
+                // 同时要求圆心不能太靠近直线(避免与圆心吸附冲突)
                 if (edgeDistance < threshold && edgeDistance < minEdgeDistance && distanceToLine > radius * 0.1) {
-                    // 计算调整后的圆心位置，使圆与直线相切
+                    // 计算调整后的圆心位置,使圆与直线相切
                     // 新圆心 = 垂足 + 方向单位向量 * 半径
                     double dx = centerX - nearestPoint.getX();
                     double dy = centerY - nearestPoint.getY();
@@ -495,15 +495,15 @@ public class EdgeSnapManager {
     /**
      * 检测圆心到直线的吸附
      * <p>
-     * 当拖动圆心时，如果圆心本身靠近直线（在阈值范围内），
-     * 则将圆心吸附到直线上最近的点（垂足）
+     * 当拖动圆心时,如果圆心本身靠近直线(在阈值范围内),
+     * 则将圆心吸附到直线上最近的点(垂足)
      *
      * @param centerX        圆心X
      * @param centerY        圆心Y
      * @param objects        所有几何对象
-     * @param threshold      吸附阈值（圆心到直线的距离小于此值时触发）
-     * @param excludedObject 要排除的对象（通常是被拖动的圆）
-     * @return 圆心吸附结果，如果没有则返回null
+     * @param threshold      吸附阈值(圆心到直线的距离小于此值时触发)
+     * @param excludedObject 要排除的对象(通常是被拖动的圆)
+     * @return 圆心吸附结果,如果没有则返回null
      */
     public static CircleCenterToLineResult findCircleCenterToLineSnap(double centerX, double centerY,
                                                                       List<WorldObject> objects,
@@ -537,7 +537,7 @@ public class EdgeSnapManager {
                         nearestPoint.getY() - centerY);
             }
 
-            // 如果圆心靠近直线（在阈值范围内），则记录吸附点
+            // 如果圆心靠近直线(在阈值范围内),则记录吸附点
             if (nearestPoint != null && distanceToLine < threshold && distanceToLine < minDistance) {
                 minDistance = distanceToLine;
                 bestResult = new CircleCenterToLineResult(nearestPoint.getX(), nearestPoint.getY(), obj, distanceToLine);
@@ -548,7 +548,7 @@ public class EdgeSnapManager {
     }
 
     /**
-     * 圆与圆相切吸附结果（拖动时）
+     * 圆与圆相切吸附结果(拖动时)
      */
     public static class CircleToCircleSnapResult {
         private final double centerX;

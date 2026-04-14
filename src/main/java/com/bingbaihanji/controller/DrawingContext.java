@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * 绘制上下文
  * <p>
- * 作为 Handler 之间的通信桥梁，提供共享的状态和服务
+ * 作为 Handler 之间的通信桥梁,提供共享的状态和服务
  *
  * @author bingbaihanji
  * @date 2025-12-31
@@ -25,7 +25,7 @@ import java.util.List;
 public class DrawingContext {
 
     /**
-     * 坐标系面板（画布）
+     * 坐标系面板(画布)
      */
     private final GridChartView gridChartPane;
 
@@ -42,7 +42,7 @@ public class DrawingContext {
      */
     private final CursorManager cursorManager;
     /**
-     * 吸附控制器（状态机）
+     * 吸附控制器(状态机)
      */
     private final SnapController snapController;
     /**
@@ -58,7 +58,7 @@ public class DrawingContext {
      */
     private MoveMode moveMode = MoveMode.MOVE_NONE;
     /**
-     * 当前鼠标位置（世界坐标）
+     * 当前鼠标位置(世界坐标)
      */
     private double currentMouseX;
     private double currentMouseY;
@@ -139,28 +139,28 @@ public class DrawingContext {
     }
 
     /**
-     * 获取当前鼠标 X 坐标（世界坐标）
+     * 获取当前鼠标 X 坐标(世界坐标)
      */
     public double getCurrentMouseX() {
         return currentMouseX;
     }
 
     /**
-     * 设置当前鼠标 X 坐标（世界坐标）
+     * 设置当前鼠标 X 坐标(世界坐标)
      */
     public void setCurrentMouseX(double currentMouseX) {
         this.currentMouseX = currentMouseX;
     }
 
     /**
-     * 获取当前鼠标 Y 坐标（世界坐标）
+     * 获取当前鼠标 Y 坐标(世界坐标)
      */
     public double getCurrentMouseY() {
         return currentMouseY;
     }
 
     /**
-     * 设置当前鼠标 Y 坐标（世界坐标）
+     * 设置当前鼠标 Y 坐标(世界坐标)
      */
     public void setCurrentMouseY(double currentMouseY) {
         this.currentMouseY = currentMouseY;
@@ -189,7 +189,7 @@ public class DrawingContext {
      */
     public void addObject(WorldObject obj) {
         gridChartPane.addObject(obj);
-        // 使吸附缓存失效，因为新对象可能产生新的特殊点
+        // 使吸附缓存失效,因为新对象可能产生新的特殊点
         if (snappingHandler != null) {
             snappingHandler.invalidateCache();
         }
@@ -202,7 +202,7 @@ public class DrawingContext {
      */
     public void removeObject(WorldObject obj) {
         gridChartPane.removeObject(obj);
-        // 使吸附缓存失效，因为移除对象会减少特殊点
+        // 使吸附缓存失效,因为移除对象会减少特殊点
         if (snappingHandler != null) {
             snappingHandler.invalidateCache();
         }
@@ -218,8 +218,8 @@ public class DrawingContext {
     /**
      * 重绘画布
      * <p>
-     * 注意：重绘不会使吸附缓存失效，只有在对象实际变化时（添加/删除/移动）才会失效
-     * 这样可以避免频繁重建缓存，提高拖动性能
+     * 注意：重绘不会使吸附缓存失效,只有在对象实际变化时(添加/删除/移动)才会失效
+     * 这样可以避免频繁重建缓存,提高拖动性能
      */
     public void redraw() {
         gridChartPane.redraw();
@@ -228,7 +228,7 @@ public class DrawingContext {
     /**
      * 使吸附缓存失效
      * <p>
-     * 当几何对象发生实际变化时调用（添加、删除、移动完成后）
+     * 当几何对象发生实际变化时调用(添加、删除、移动完成后)
      */
     public void invalidateSnapCache() {
         if (snappingHandler != null) {
@@ -255,7 +255,7 @@ public class DrawingContext {
     }
 
     /**
-     * 添加命令到历史（不执行，用于已完成的操作）
+     * 添加命令到历史(不执行,用于已完成的操作)
      *
      * @param command 要记录的命令
      */

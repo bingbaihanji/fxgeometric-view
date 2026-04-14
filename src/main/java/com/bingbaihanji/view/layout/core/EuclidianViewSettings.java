@@ -11,19 +11,19 @@ import java.util.Set;
  *
  * @author bingbaihanji
  * @date 2025-12-31
- * @description 集中管理GridChartView的所有可配置项，包括坐标轴、网格、吸附等
+ * @description 集中管理GridChartView的所有可配置项, 包括坐标轴、网格、吸附等
  */
 public class EuclidianViewSettings {
 
     //   坐标轴配置  
 
     /**
-     * X轴缩放比例（像素/单位）
+     * X轴缩放比例(像素/单位)
      */
     private double xScale = 50.0;
 
     /**
-     * Y轴缩放比例（像素/单位）
+     * Y轴缩放比例(像素/单位)
      */
     private double yScale = 50.0;
 
@@ -53,7 +53,7 @@ public class EuclidianViewSettings {
     private boolean autoXTickDistance = true;
 
     /**
-     * X轴刻度间距（手动模式）
+     * X轴刻度间距(手动模式)
      */
     private double xTickDistance = 1.0;
 
@@ -63,7 +63,7 @@ public class EuclidianViewSettings {
     private boolean autoYTickDistance = true;
 
     /**
-     * Y轴刻度间距（手动模式）
+     * Y轴刻度间距(手动模式)
      */
     private double yTickDistance = 1.0;
 
@@ -93,7 +93,7 @@ public class EuclidianViewSettings {
     private UnitLabelType unitLabelType = UnitLabelType.NUMERIC;
 
     /**
-     * 自定义单位标签（如 "cm", "m" 等）
+     * 自定义单位标签(如 "cm", "m" 等)
      */
     private String customUnitLabel = "";
 
@@ -140,7 +140,7 @@ public class EuclidianViewSettings {
     private Color gridColor = Color.rgb(126, 126, 126);
 
     /**
-     * 次网格颜色（用于主网格+次网格模式）
+     * 次网格颜色(用于主网格+次网格模式)
      */
     private Color subGridColor = Color.rgb(200, 200, 200);
 
@@ -155,12 +155,12 @@ public class EuclidianViewSettings {
     private boolean autoGridDistance = true;
 
     /**
-     * 网格间距（手动模式）
+     * 网格间距(手动模式)
      */
     private double gridDistance = 1.0;
 
     /**
-     * 极坐标网格的角度步长（弧度）
+     * 极坐标网格的角度步长(弧度)
      */
     private double polarAngleStep = Math.PI / 6; // 30度
 
@@ -172,38 +172,38 @@ public class EuclidianViewSettings {
     private boolean gridSnapEnabled = true;
 
     /**
-     * 网格距离因子（用于计算网格间距相对于坐标轴刻度的倍数）
-     * 默认为1.0，表示网格间距 = 坐标轴刻度间距 * 1.0
+     * 网格距离因子(用于计算网格间距相对于坐标轴刻度的倍数)
+     * 默认为1.0,表示网格间距 = 坐标轴刻度间距 * 1.0
      * 参考 GeoGebra 的 DEFAULT_GRID_DIST_FACTOR
      */
     private double gridDistanceFactor = 1.0;
 
     /**
      * 是否启用网格与坐标轴刻度同步
-     * true: 网格间距自动跟随坐标轴刻度变化（推荐）
+     * true: 网格间距自动跟随坐标轴刻度变化(推荐)
      * false: 网格间距独立计算
      */
     private boolean syncGridWithAxes = true;
 
     /**
-     * X轴是否使用π单位（影响刻度计算）
+     * X轴是否使用π单位(影响刻度计算)
      */
     private boolean xAxisPiUnit = false;
 
     /**
-     * Y轴是否使用π单位（影响刻度计算）
+     * Y轴是否使用π单位(影响刻度计算)
      */
     private boolean yAxisPiUnit = false;
 
     //   吸附配置  
 
     /**
-     * 吸附模式集合（可同时启用多种）
+     * 吸附模式集合(可同时启用多种)
      */
     private Set<SnapMode> snapModes = new HashSet<>();
 
     /**
-     * 吸附阈值（像素）
+     * 吸附阈值(像素)
      */
     private double snapThreshold = 10.0;
 

@@ -1,23 +1,27 @@
 package com.bingbaihanji.util.constraint;
 
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
-import com.bingbaihanji.view.layout.draw.geometry.impl.QuadraticFunctionGeo;
+import com.bingbaihanji.view.layout.draw.geometry.impl.CustomFunctionGeo;
+import com.bingbaihanji.view.layout.draw.geometry.impl.PointGeo;
 import javafx.geometry.Point2D;
 
 /**
- * 二次函数约束
+ * 自定义函数约束
  * <p>
- * 约束点在二次函数曲线上移动
+ * 约束点在自定义表达式函数曲线上移动
  *
  * @author bingbaihanji
- * @date 2026-01-04
+ * @date 2026-04-13
  */
-public class QuadraticFunctionConstraint implements PointConstraint {
+public class CustomFunctionConstraint implements PointConstraint {
 
-    private final QuadraticFunctionGeo function;
-    private double parameter; // 参数x
+    private final CustomFunctionGeo function;
+    /**
+     * 参数即 x 坐标
+     */
+    private double parameter;
 
-    public QuadraticFunctionConstraint(QuadraticFunctionGeo function) {
+    public CustomFunctionConstraint(CustomFunctionGeo function) {
         this.function = function;
         this.parameter = 0.0;
     }
@@ -25,23 +29,19 @@ public class QuadraticFunctionConstraint implements PointConstraint {
     @Override
     public Point2D getPointFromParameter() {
         double y = function.evaluate(parameter);
+        if (!Double.isFinite(y)) {
+            return new Point2D(parameter, 0.0);
+        }
         return new Point2D(parameter, y);
     }
 
     @Override
     public double calculateParameter(double x, double y) {
-        // 对于显函数,参数就是x坐标
-        // 限制在定义域内
         double domainMin = function.getDomainMin();
         double domainMax = function.getDomainMax();
 
-        if (Double.isFinite(domainMin) && x < domainMin) {
-            return domainMin;
-        }
-        if (Double.isFinite(domainMax) && x > domainMax) {
-            return domainMax;
-        }
-
+        if (Double.isFinite(domainMin) && x < domainMin) return domainMin;
+        if (Double.isFinite(domainMax) && x > domainMax) return domainMax;
         return x;
     }
 
@@ -62,15 +62,16 @@ public class QuadraticFunctionConstraint implements PointConstraint {
 
     @Override
     public String getConstraintType() {
-        return "QuadraticFunctionConstraint";
+        return "CustomFunctionConstraint";
     }
 
     @Override
     public double distanceToShape(double x, double y) {
-        // 计算点到抛物线的距离(近似方法)
-        // 使用该x坐标上的函数值与给定y的差距
-        double yOnCurve = function.evaluate(x);
-        return Math.abs(y - yOnCurve);
+        double fy = function.evaluate(x);
+        if (!Double.isFinite(fy)) {
+            return Double.MAX_VALUE;
+        }
+        return Math.abs(y - fy);
     }
 
     @Override
@@ -79,7 +80,7 @@ public class QuadraticFunctionConstraint implements PointConstraint {
     }
 
     @Override
-    public void setAsVertexConstraintIfApplicable(com.bingbaihanji.view.layout.draw.geometry.impl.PointGeo point) {
+    public void setAsVertexConstraintIfApplicable(PointGeo point) {
         // 函数约束不支持顶点
     }
 }

@@ -106,15 +106,15 @@ public class MenuEvent {
             Platform.runLater(() -> {
                 // 获取当前的 FreehandDrawingTool 配置
                 var freehandTool = com.bingbaihanji.controller.handler.FreehandHandler.getFreehandTool();
-                
+
                 DrawingSettingsDialog dialog = new DrawingSettingsDialog(
-                    freehandTool.getSimplifyEpsilon(),
-                    freehandTool.getSmoothSegments(),
-                    freehandTool.getTension(),
-                    freehandTool.getMinPointDistance(),
-                    freehandTool.isEnableSmoothing()
+                        freehandTool.getSimplifyEpsilon(),
+                        freehandTool.getSmoothSegments(),
+                        freehandTool.getTension(),
+                        freehandTool.getMinPointDistance(),
+                        freehandTool.isEnableSmoothing()
                 );
-                
+
                 var result = dialog.showAndWait();
                 result.ifPresent(settings -> {
                     // 应用新的设置

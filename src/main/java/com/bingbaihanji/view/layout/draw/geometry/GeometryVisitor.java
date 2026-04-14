@@ -5,7 +5,7 @@ import com.bingbaihanji.view.layout.draw.geometry.impl.*;
 /**
  * 几何对象访问者接口
  * <p>
- * 使用访问者模式消除类型判断，提高扩展性和类型安全
+ * 使用访问者模式消除类型判断,提高扩展性和类型安全
  * <p>
  * 使用场景：
  * - 边吸附计算
@@ -60,7 +60,7 @@ public interface GeometryVisitor<T> {
     T visitFunction(FunctionGeo function);
 
     /**
-     * 访问其他未知类型（默认处理）
+     * 访问其他未知类型(默认处理)
      */
     default T visitOther(WorldObject object) {
         return null;

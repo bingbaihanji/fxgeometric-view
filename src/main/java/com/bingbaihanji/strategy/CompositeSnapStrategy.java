@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * 复合吸附策略
  * <p>
- * 组合多个吸附策略，按优先级依次尝试吸附
+ * 组合多个吸附策略,按优先级依次尝试吸附
  * 第一个成功的策略将被使用
  *
  * @author bingbaihanji
@@ -36,7 +36,7 @@ public class CompositeSnapStrategy implements SnapStrategy {
      */
     public void addStrategy(SnapStrategy strategy) {
         strategies.add(strategy);
-        // 按优先级排序（高优先级在前）
+        // 按优先级排序(高优先级在前)
         strategies.sort(Comparator.comparingInt(SnapStrategy::getPriority).reversed());
     }
 
@@ -60,7 +60,7 @@ public class CompositeSnapStrategy implements SnapStrategy {
         for (SnapStrategy strategy : strategies) {
             double[] result = strategy.snap(x, y, context);
             if (result != null) {
-                return result; // 找到第一个成功的策略，立即返回
+                return result; // 找到第一个成功的策略,立即返回
             }
         }
 

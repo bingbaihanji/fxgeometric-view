@@ -13,7 +13,7 @@ import javafx.geometry.Point2D;
  * - t=0.5: 中点
  * - t=1: 终点
  * <p>
- * 当线段的端点移动时，约束点根据参数t重新计算位置，
+ * 当线段的端点移动时,约束点根据参数t重新计算位置,
  * 保持在线段上的相对位置不变。
  *
  * @author bingbaihanji
@@ -50,7 +50,7 @@ public class LineConstraint implements PointConstraint {
 
     @Override
     public double calculateParameter(double x, double y) {
-        // 如果是顶点约束，参数不变化
+        // 如果是顶点约束,参数不变化
         if (isVertexConstraint) {
             return parameter;
         }

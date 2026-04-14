@@ -9,19 +9,19 @@ import javafx.geometry.Point2D;
  * 参数化手绘路径约束
  * <p>
  * 使用连续参数表示点在手绘路径上的位置：
- * - 参数范围：[0, n)，其中n是路径的线段数量
+ * - 参数范围：[0, n),其中n是路径的线段数量
  * - 整数部分表示线段的索引
- * - 小数部分表示在该线段上的位置（0到1）
+ * - 小数部分表示在该线段上的位置(0到1)
  * <p>
- * 例如，对于一个由3条线段组成的路径：
- * - 0.0: 第0个顶点（起点）
+ * 例如,对于一个由3条线段组成的路径：
+ * - 0.0: 第0个顶点(起点)
  * - 0.5: 第0条线段的中点
  * - 1.0: 第1个顶点
  * - 1.5: 第1条线段的中点
  * - 2.0: 第2个顶点
  * - 2.5: 第2条线段的中点
  * <p>
- * 当路径的端点移动时，约束点根据参数重新计算位置，
+ * 当路径的端点移动时,约束点根据参数重新计算位置,
  * 保持在路径上的相对位置不变。
  *
  * @author bingbaihanji
@@ -30,7 +30,7 @@ import javafx.geometry.Point2D;
 public class PathConstraint implements PointConstraint {
 
     private final PathGeo path;
-    private double parameter; // 参数，范围[0, edgeCount)
+    private double parameter; // 参数,范围[0, edgeCount)
 
     public PathConstraint(PathGeo path, double parameter) {
         this.path = path;
@@ -88,7 +88,7 @@ public class PathConstraint implements PointConstraint {
         double minDistance = Double.MAX_VALUE;
         double bestParameter = 0.0;
 
-        // 遍历每条边，找到最近的边和位置
+        // 遍历每条边,找到最近的边和位置
         for (int i = 0; i < edges.size(); i++) {
             var edge = edges.get(i);
             double x1 = edge.getStartX();
@@ -196,6 +196,6 @@ public class PathConstraint implements PointConstraint {
 
     @Override
     public void setAsVertexConstraintIfApplicable(com.bingbaihanji.view.layout.draw.geometry.impl.PointGeo point) {
-        // 手绘路径不支持顶点约束，不需要实现
+        // 手绘路径不支持顶点约束,不需要实现
     }
 }

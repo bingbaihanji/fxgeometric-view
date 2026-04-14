@@ -39,7 +39,7 @@ import java.util.function.Predicate;
 /**
  * JavaFX 工具类
  * <p>
- * 提供 JavaFX 常用的通用工具方法，包括:
+ * 提供 JavaFX 常用的通用工具方法,包括:
  * <ul>
  *     <li>文件选择器 - 单选/多选文件、目录选择、文件类型过滤</li>
  *     <li>系统剪贴板 - 文本、图像、富文本操作</li>
@@ -66,7 +66,7 @@ public interface FxTools {
      *
      * @param owner 父窗口
      * @param title 对话框标题
-     * @return 选中的文件，如果取消则返回 null
+     * @return 选中的文件,如果取消则返回 null
      */
     static File openFile(Window owner, String title) {
         FileChooser fileChooser = new FileChooser();
@@ -75,13 +75,13 @@ public interface FxTools {
     }
 
     /**
-     * 打开单个文件（带文件类型过滤）
+     * 打开单个文件(带文件类型过滤)
      *
      * @param owner       父窗口
      * @param title       对话框标题
      * @param description 文件类型描述
-     * @param extensions  文件扩展名（例如："*.txt", "*.pdf"）
-     * @return 选中的文件，如果取消则返回 null
+     * @param extensions  文件扩展名(例如："*.txt", "*.pdf")
+     * @return 选中的文件,如果取消则返回 null
      */
     static File openFile(Window owner, String title, String description, String... extensions) {
         FileChooser fileChooser = createFileChooser(title, null, description, extensions);
@@ -93,7 +93,7 @@ public interface FxTools {
      *
      * @param owner 父窗口
      * @param title 对话框标题
-     * @return 选中的文件列表，如果取消则返回 null
+     * @return 选中的文件列表,如果取消则返回 null
      */
     static List<File> openMultipleFiles(Window owner, String title) {
         FileChooser fileChooser = new FileChooser();
@@ -102,13 +102,13 @@ public interface FxTools {
     }
 
     /**
-     * 打开多个文件（带文件类型过滤）
+     * 打开多个文件(带文件类型过滤)
      *
      * @param owner       父窗口
      * @param title       对话框标题
      * @param description 文件类型描述
-     * @param extensions  文件扩展名（例如："*.txt", "*.pdf"）
-     * @return 选中的文件列表，如果取消则返回 null
+     * @param extensions  文件扩展名(例如："*.txt", "*.pdf")
+     * @return 选中的文件列表,如果取消则返回 null
      */
     static List<File> openMultipleFiles(Window owner, String title, String description, String... extensions) {
         FileChooser fileChooser = createFileChooser(title, null, description, extensions);
@@ -121,7 +121,7 @@ public interface FxTools {
      * @param owner           父窗口
      * @param title           对话框标题
      * @param initialFileName 默认文件名
-     * @return 选中的文件路径，如果取消则返回 null
+     * @return 选中的文件路径,如果取消则返回 null
      */
     static File saveFile(Window owner, String title, String initialFileName) {
         FileChooser fileChooser = new FileChooser();
@@ -133,14 +133,14 @@ public interface FxTools {
     }
 
     /**
-     * 保存文件（带文件类型过滤）
+     * 保存文件(带文件类型过滤)
      *
      * @param owner           父窗口
      * @param title           对话框标题
      * @param initialFileName 默认文件名
      * @param description     文件类型描述
-     * @param extensions      文件扩展名（例如："*.txt", "*.pdf"）
-     * @return 选中的文件路径，如果取消则返回 null
+     * @param extensions      文件扩展名(例如："*.txt", "*.pdf")
+     * @return 选中的文件路径,如果取消则返回 null
      */
     static File saveFile(Window owner, String title, String initialFileName, String description, String... extensions) {
         FileChooser fileChooser = createFileChooser(title, initialFileName, description, extensions);
@@ -152,7 +152,7 @@ public interface FxTools {
      *
      * @param owner 父窗口
      * @param title 对话框标题
-     * @return 选中的目录，如果取消则返回 null
+     * @return 选中的目录,如果取消则返回 null
      */
     static File chooseDirectory(Window owner, String title) {
         DirectoryChooser directoryChooser = new DirectoryChooser();
@@ -161,12 +161,12 @@ public interface FxTools {
     }
 
     /**
-     * 选择目录（带初始目录）
+     * 选择目录(带初始目录)
      *
      * @param owner            父窗口
      * @param title            对话框标题
      * @param initialDirectory 初始目录
-     * @return 选中的目录，如果取消则返回 null
+     * @return 选中的目录,如果取消则返回 null
      */
     static File chooseDirectory(Window owner, String title, File initialDirectory) {
         DirectoryChooser directoryChooser = new DirectoryChooser();
@@ -183,7 +183,7 @@ public interface FxTools {
      * @param title           标题
      * @param initialFileName 默认文件名
      * @param description     文件类型描述
-     * @param extensions      文件扩展名（例如："*.png", ".png"）
+     * @param extensions      文件扩展名(例如："*.png", ".png")
      * @return 配置好的 FileChooser
      */
     static FileChooser createFileChooser(String title, String initialFileName, String description, String... extensions) {
@@ -221,7 +221,7 @@ public interface FxTools {
     /**
      * 从剪贴板获取文本
      *
-     * @return 剪贴板中的文本，如果没有则返回 null
+     * @return 剪贴板中的文本,如果没有则返回 null
      */
     static String getTextFromClipboard() {
         Clipboard clipboard = Clipboard.getSystemClipboard();
@@ -245,7 +245,7 @@ public interface FxTools {
     /**
      * 从剪贴板获取 HTML
      *
-     * @return 剪贴板中的 HTML，如果没有则返回 null
+     * @return 剪贴板中的 HTML,如果没有则返回 null
      */
     static String getHtmlFromClipboard() {
         Clipboard clipboard = Clipboard.getSystemClipboard();
@@ -253,7 +253,7 @@ public interface FxTools {
     }
 
     /**
-     * 复制富文本（RTF）到剪贴板
+     * 复制富文本(RTF)到剪贴板
      *
      * @param rtf RTF 内容
      */
@@ -287,7 +287,7 @@ public interface FxTools {
     /**
      * 从剪贴板获取图像
      *
-     * @return 剪贴板中的图像，如果没有则返回 null
+     * @return 剪贴板中的图像,如果没有则返回 null
      */
     static Image getImageFromClipboard() {
         Clipboard clipboard = Clipboard.getSystemClipboard();
@@ -319,7 +319,7 @@ public interface FxTools {
     }
 
     /**
-     * 显示错误对话框（带异常堆栈）
+     * 显示错误对话框(带异常堆栈)
      *
      * @param title   标题
      * @param message 消息
@@ -385,7 +385,7 @@ public interface FxTools {
     }
 
     /**
-     * 显示确认对话框（是/否/取消三个按钮）
+     * 显示确认对话框(是/否/取消三个按钮)
      *
      * @param title   标题
      * @param message 消息
@@ -425,7 +425,7 @@ public interface FxTools {
      * @param headerText   头部文本
      * @param contentText  提示文本
      * @param defaultValue 默认值
-     * @return 用户输入的文本，如果取消则返回 null
+     * @return 用户输入的文本,如果取消则返回 null
      */
     static String showInputDialog(String title, String headerText, String contentText, String defaultValue) {
         TextInputDialog dialog = new TextInputDialog(defaultValue);
@@ -437,11 +437,11 @@ public interface FxTools {
     }
 
     /**
-     * 显示输入对话框（简化版本）
+     * 显示输入对话框(简化版本)
      *
      * @param title       标题
      * @param contentText 提示文本
-     * @return 用户输入的文本，如果取消则返回 null
+     * @return 用户输入的文本,如果取消则返回 null
      */
     static String showInputDialog(String title, String contentText) {
         return showInputDialog(title, null, contentText, "");
@@ -456,7 +456,7 @@ public interface FxTools {
      * @param choices       选项列表
      * @param defaultChoice 默认选项
      * @param <T>           选项类型
-     * @return 用户选择的选项，如果取消则返回 null
+     * @return 用户选择的选项,如果取消则返回 null
      */
     static <T> T showChoiceDialog(String title, String headerText, String contentText,
                                   List<T> choices, T defaultChoice) {
@@ -471,84 +471,11 @@ public interface FxTools {
     //  进度提示 
 
     /**
-     * 进度对话框包装类
-     */
-    class ProgressDialogWrapper {
-        private final Dialog<Void> dialog;
-        private final ProgressBar progressBar;
-        private final ProgressIndicator progressIndicator;
-        private final Label messageLabel;
-        private final BooleanProperty cancelled = new SimpleBooleanProperty(false);
-
-        public ProgressDialogWrapper(Dialog<Void> dialog, ProgressBar progressBar,
-                                     ProgressIndicator progressIndicator, Label messageLabel) {
-            this.dialog = dialog;
-            this.progressBar = progressBar;
-            this.progressIndicator = progressIndicator;
-            this.messageLabel = messageLabel;
-        }
-
-        /**
-         * 更新进度
-         *
-         * @param progress 进度值（0.0 到 1.0）
-         */
-        public void updateProgress(double progress) {
-            Platform.runLater(() -> {
-                if (progressBar != null) {
-                    progressBar.setProgress(progress);
-                }
-                if (progressIndicator != null) {
-                    progressIndicator.setProgress(progress);
-                }
-            });
-        }
-
-        /**
-         * 更新消息
-         *
-         * @param message 消息文本
-         */
-        public void updateMessage(String message) {
-            Platform.runLater(() -> {
-                if (messageLabel != null) {
-                    messageLabel.setText(message);
-                }
-            });
-        }
-
-        /**
-         * 关闭对话框
-         */
-        public void close() {
-            Platform.runLater(() -> dialog.close());
-        }
-
-        /**
-         * 检查是否已取消
-         *
-         * @return true 如果用户点击了取消
-         */
-        public boolean isCancelled() {
-            return cancelled.get();
-        }
-
-        /**
-         * 获取取消属性
-         *
-         * @return 取消属性
-         */
-        public BooleanProperty cancelledProperty() {
-            return cancelled;
-        }
-    }
-
-    /**
      * 显示进度条对话框
      *
      * @param title   标题
      * @param message 初始消息
-     * @return ProgressDialogWrapper 对象，用于更新进度
+     * @return ProgressDialogWrapper 对象,用于更新进度
      */
     static ProgressDialogWrapper showProgressDialog(String title, String message) {
         Dialog<Void> dialog = new Dialog<>();
@@ -622,8 +549,6 @@ public interface FxTools {
         return wrapper;
     }
 
-    //  表格操作 
-
     /**
      * 自动调整表格列宽
      *
@@ -650,8 +575,10 @@ public interface FxTools {
         });
     }
 
+    //  表格操作 
+
     /**
-     * 复制表格选中行的数据到剪贴板（制表符分隔）
+     * 复制表格选中行的数据到剪贴板(制表符分隔)
      *
      * @param tableView 表格视图
      * @param <T>       数据类型
@@ -720,8 +647,6 @@ public interface FxTools {
         tableView.getSortOrder().add(column);
     }
 
-    //  树形控件 
-
     /**
      * 展开树形控件的所有节点
      *
@@ -736,6 +661,8 @@ public interface FxTools {
             }
         }
     }
+
+    //  树形控件 
 
     /**
      * 折叠树形控件的所有节点
@@ -758,7 +685,7 @@ public interface FxTools {
      * @param root      根节点
      * @param predicate 搜索条件
      * @param <T>       数据类型
-     * @return 找到的第一个匹配节点，如果没有则返回 null
+     * @return 找到的第一个匹配节点,如果没有则返回 null
      */
     static <T> TreeItem<T> findTreeItem(TreeItem<T> root, Predicate<T> predicate) {
         if (root != null) {
@@ -788,7 +715,7 @@ public interface FxTools {
     }
 
     /**
-     * 递归过滤树节点（内部方法）
+     * 递归过滤树节点(内部方法)
      */
     static <T> List<TreeItem<T>> filterTreeItemsRecursive(TreeItem<T> item, Predicate<T> predicate) {
         List<TreeItem<T>> result = new java.util.ArrayList<>();
@@ -803,20 +730,20 @@ public interface FxTools {
         return result;
     }
 
-    //  文本控件 
-
     /**
      * 在文本控件中查找文本
      *
      * @param textArea   文本区域
      * @param searchText 要搜索的文本
      * @param fromIndex  起始索引
-     * @return 找到的文本索引，如果没有找到则返回 -1
+     * @return 找到的文本索引,如果没有找到则返回 -1
      */
     static int findTextInTextArea(TextArea textArea, String searchText, int fromIndex) {
         String content = textArea.getText();
         return content.indexOf(searchText, fromIndex);
     }
+
+    //  文本控件 
 
     /**
      * 在文本控件中替换所有文本
@@ -854,7 +781,7 @@ public interface FxTools {
     }
 
     /**
-     * 为文本控件添加撤销/重做功能（快捷键支持）
+     * 为文本控件添加撤销/重做功能(快捷键支持)
      *
      * @param textArea 文本区域
      */
@@ -877,8 +804,6 @@ public interface FxTools {
         });
     }
 
-    //  窗口管理 
-
     /**
      * 将窗口居中显示
      *
@@ -889,6 +814,8 @@ public interface FxTools {
         stage.setX((screenBounds.getWidth() - stage.getWidth()) / 2);
         stage.setY((screenBounds.getHeight() - stage.getHeight()) / 2);
     }
+
+    //  窗口管理 
 
     /**
      * 将窗口在指定屏幕上居中显示
@@ -935,7 +862,7 @@ public interface FxTools {
      *
      * @param owner    父窗口
      * @param title    标题
-     * @param content  内容节点（必须是 Parent 类型）
+     * @param content  内容节点(必须是 Parent 类型)
      * @param modality 模态类型
      * @return 新创建的舞台
      */
@@ -963,8 +890,6 @@ public interface FxTools {
         return createModalStage(owner, title, content, Modality.APPLICATION_MODAL);
     }
 
-    //  布局助手 
-
     /**
      * 设置节点的边距
      *
@@ -985,6 +910,8 @@ public interface FxTools {
             GridPane.setMargin(node, new Insets(top, right, bottom, left));
         }
     }
+
+    //  布局助手 
 
     /**
      * 设置节点的填充
@@ -1031,7 +958,7 @@ public interface FxTools {
     }
 
     /**
-     * 动态调整 GridPane 列宽（平均分配）
+     * 动态调整 GridPane 列宽(平均分配)
      *
      * @param gridPane    网格面板
      * @param columnCount 列数
@@ -1045,7 +972,7 @@ public interface FxTools {
     }
 
     /**
-     * 动态调整 GridPane 行高（平均分配）
+     * 动态调整 GridPane 行高(平均分配)
      *
      * @param gridPane 网格面板
      * @param rowCount 行数
@@ -1057,8 +984,6 @@ public interface FxTools {
             gridPane.getRowConstraints().add(row);
         }
     }
-
-    //  图像处理 
 
     /**
      * 缩放图像
@@ -1080,6 +1005,8 @@ public interface FxTools {
         return imageView.snapshot(params, null);
     }
 
+    //  图像处理 
+
     /**
      * 裁剪图像
      *
@@ -1099,7 +1026,7 @@ public interface FxTools {
      *
      * @param image      图像
      * @param file       文件
-     * @param formatName 格式名称（例如："png", "jpg"）
+     * @param formatName 格式名称(例如："png", "jpg")
      * @throws IOException 如果保存失败
      */
     static void saveImage(Image image, File file, String formatName) throws IOException {
@@ -1118,7 +1045,7 @@ public interface FxTools {
     }
 
     /**
-     * 创建图像预览（缩略图）
+     * 创建图像预览(缩略图)
      *
      * @param source        原始图像
      * @param thumbnailSize 缩略图大小
@@ -1143,19 +1070,19 @@ public interface FxTools {
         return node.snapshot(params, null);
     }
 
-    //  系统信息 
-
     /**
      * 获取主屏幕分辨率
      *
-     * @return 屏幕分辨率（宽x高）
+     * @return 屏幕分辨率(宽x高)
      */
     static Rectangle2D getPrimaryScreenBounds() {
         return Screen.getPrimary().getBounds();
     }
 
+    //  系统信息 
+
     /**
-     * 获取主屏幕可视区域（排除任务栏等）
+     * 获取主屏幕可视区域(排除任务栏等)
      *
      * @return 屏幕可视区域
      */
@@ -1199,13 +1126,11 @@ public interface FxTools {
         return getScreenDpi() > 96;
     }
 
-    //  动画效果 
-
     /**
      * 淡入动画
      *
      * @param node     节点
-     * @param duration 持续时间（毫秒）
+     * @param duration 持续时间(毫秒)
      */
     static void fadeIn(Node node, double duration) {
         FadeTransition fade = new FadeTransition(Duration.millis(duration), node);
@@ -1214,11 +1139,13 @@ public interface FxTools {
         fade.play();
     }
 
+    //  动画效果 
+
     /**
      * 淡出动画
      *
      * @param node     节点
-     * @param duration 持续时间（毫秒）
+     * @param duration 持续时间(毫秒)
      */
     static void fadeOut(Node node, double duration) {
         FadeTransition fade = new FadeTransition(Duration.millis(duration), node);
@@ -1228,10 +1155,10 @@ public interface FxTools {
     }
 
     /**
-     * 淡出动画（带回调）
+     * 淡出动画(带回调)
      *
      * @param node       节点
-     * @param duration   持续时间（毫秒）
+     * @param duration   持续时间(毫秒)
      * @param onFinished 完成后的回调
      */
     static void fadeOut(Node node, double duration, Runnable onFinished) {
@@ -1250,7 +1177,7 @@ public interface FxTools {
      * 淡入淡出切换
      *
      * @param node     节点
-     * @param duration 持续时间（毫秒）
+     * @param duration 持续时间(毫秒)
      */
     static void toggleFade(Node node, double duration) {
         if (node.getOpacity() == 0.0) {
@@ -1261,10 +1188,10 @@ public interface FxTools {
     }
 
     /**
-     * 滑动进入动画（从左侧）
+     * 滑动进入动画(从左侧)
      *
      * @param node     节点
-     * @param duration 持续时间（毫秒）
+     * @param duration 持续时间(毫秒)
      * @param distance 滑动距离
      */
     static void slideInFromLeft(Node node, double duration, double distance) {
@@ -1275,10 +1202,10 @@ public interface FxTools {
     }
 
     /**
-     * 滑动进入动画（从右侧）
+     * 滑动进入动画(从右侧)
      *
      * @param node     节点
-     * @param duration 持续时间（毫秒）
+     * @param duration 持续时间(毫秒)
      * @param distance 滑动距离
      */
     static void slideInFromRight(Node node, double duration, double distance) {
@@ -1289,10 +1216,10 @@ public interface FxTools {
     }
 
     /**
-     * 滑动进入动画（从上方）
+     * 滑动进入动画(从上方)
      *
      * @param node     节点
-     * @param duration 持续时间（毫秒）
+     * @param duration 持续时间(毫秒)
      * @param distance 滑动距离
      */
     static void slideInFromTop(Node node, double duration, double distance) {
@@ -1303,10 +1230,10 @@ public interface FxTools {
     }
 
     /**
-     * 滑动进入动画（从下方）
+     * 滑动进入动画(从下方)
      *
      * @param node     节点
-     * @param duration 持续时间（毫秒）
+     * @param duration 持续时间(毫秒)
      * @param distance 滑动距离
      */
     static void slideInFromBottom(Node node, double duration, double distance) {
@@ -1320,7 +1247,7 @@ public interface FxTools {
      * 缩放动画
      *
      * @param node      节点
-     * @param duration  持续时间（毫秒）
+     * @param duration  持续时间(毫秒)
      * @param fromScale 起始缩放比例
      * @param toScale   结束缩放比例
      */
@@ -1337,7 +1264,7 @@ public interface FxTools {
      * 弹跳缩放动画
      *
      * @param node     节点
-     * @param duration 持续时间（毫秒）
+     * @param duration 持续时间(毫秒)
      */
     static void bounceScale(Node node, double duration) {
         ScaleTransition scale = new ScaleTransition(Duration.millis(duration), node);
@@ -1354,7 +1281,7 @@ public interface FxTools {
      * 旋转动画
      *
      * @param node      节点
-     * @param duration  持续时间（毫秒）
+     * @param duration  持续时间(毫秒)
      * @param fromAngle 起始角度
      * @param toAngle   结束角度
      */
@@ -1366,7 +1293,7 @@ public interface FxTools {
     }
 
     /**
-     * 组合动画（顺序播放）
+     * 组合动画(顺序播放)
      *
      * @param transitions 动画列表
      * @return SequentialTransition 对象
@@ -1376,7 +1303,7 @@ public interface FxTools {
     }
 
     /**
-     * 组合动画（并行播放）
+     * 组合动画(并行播放)
      *
      * @param transitions 动画列表
      * @return ParallelTransition 对象
@@ -1400,7 +1327,7 @@ public interface FxTools {
     }
 
     /**
-     * 脉冲动画（缩放循环）
+     * 脉冲动画(缩放循环)
      *
      * @param node 节点
      */
@@ -1415,10 +1342,8 @@ public interface FxTools {
         scale.play();
     }
 
-    //  截图与导出 
-
     /**
-     * 截图功能：截取节点内容，保存到剪切板并允许保存为文件
+     * 截图功能：截取节点内容,保存到剪切板并允许保存为文件
      *
      * @param primaryStage 主舞台
      * @param node         要截图的节点
@@ -1453,7 +1378,7 @@ public interface FxTools {
         }
     }
 
-    //  线程安全 
+    //  截图与导出 
 
     /**
      * 线程安全地在 JavaFX UI 线程中执行
@@ -1465,6 +1390,81 @@ public interface FxTools {
             action.run();
         } else {
             Platform.runLater(action);
+        }
+    }
+
+    //  线程安全 
+
+    /**
+     * 进度对话框包装类
+     */
+    class ProgressDialogWrapper {
+        private final Dialog<Void> dialog;
+        private final ProgressBar progressBar;
+        private final ProgressIndicator progressIndicator;
+        private final Label messageLabel;
+        private final BooleanProperty cancelled = new SimpleBooleanProperty(false);
+
+        public ProgressDialogWrapper(Dialog<Void> dialog, ProgressBar progressBar,
+                                     ProgressIndicator progressIndicator, Label messageLabel) {
+            this.dialog = dialog;
+            this.progressBar = progressBar;
+            this.progressIndicator = progressIndicator;
+            this.messageLabel = messageLabel;
+        }
+
+        /**
+         * 更新进度
+         *
+         * @param progress 进度值(0.0 到 1.0)
+         */
+        public void updateProgress(double progress) {
+            Platform.runLater(() -> {
+                if (progressBar != null) {
+                    progressBar.setProgress(progress);
+                }
+                if (progressIndicator != null) {
+                    progressIndicator.setProgress(progress);
+                }
+            });
+        }
+
+        /**
+         * 更新消息
+         *
+         * @param message 消息文本
+         */
+        public void updateMessage(String message) {
+            Platform.runLater(() -> {
+                if (messageLabel != null) {
+                    messageLabel.setText(message);
+                }
+            });
+        }
+
+        /**
+         * 关闭对话框
+         */
+        public void close() {
+            Platform.runLater(() -> dialog.close());
+        }
+
+        /**
+         * 检查是否已取消
+         *
+         * @return true 如果用户点击了取消
+         */
+        public boolean isCancelled() {
+            return cancelled.get();
+        }
+
+        /**
+         * 获取取消属性
+         *
+         * @return 取消属性
+         */
+        public BooleanProperty cancelledProperty() {
+            return cancelled;
         }
     }
 

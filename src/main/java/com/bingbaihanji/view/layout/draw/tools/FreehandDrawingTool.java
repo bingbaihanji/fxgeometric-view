@@ -13,38 +13,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FreehandDrawingTool {
-    private boolean isDrawing = false;
-    private final List<Point2D> points = new ArrayList<>();
+    // 默认值
+    //    小 (0.1-0.3)   保留更多点,曲线更贴近原始形状,但可能有尖刺
+    //    中 (0.5-1.0)   平衡,适合大多数手绘
+    //    大 (2.0-3.0)   大幅简化,曲线更平滑,但可能丢失细节
+    public static final double DEFAULT_SIMPLIFY_EPSILON = 0.25;      // 简化容差: 算法会找出曲线上"最弯曲"的点保留下来,平坦部分会被简化成直线
+    // 小 (5-8)     点数少,曲线可能有棱角
+    // 中 (12-20)   平滑且性能好
+    // 大 (25-30)   非常平滑,但点太多可能影响性能
+    public static final int DEFAULT_SMOOTH_SEGMENTS = 20;           // 平滑细分数: 每两个控制点之间,生成多少个中间点,越多点 = 曲线越平滑细腻
 
     // ========== 可配置的平滑参数 ==========
-
-    // 默认值
-    //    小 (0.1-0.3)   保留更多点，曲线更贴近原始形状，但可能有尖刺
-    //    中 (0.5-1.0)   平衡，适合大多数手绘
-    //    大 (2.0-3.0)   大幅简化，曲线更平滑，但可能丢失细节
-    public static final double DEFAULT_SIMPLIFY_EPSILON = 0.25;      // 简化容差: 算法会找出曲线上"最弯曲"的点保留下来,平坦部分会被简化成直线
-
-    // 小 (5-8)     点数少，曲线可能有棱角
-    // 中 (12-20)   平滑且性能好
-    // 大 (25-30)   非常平滑，但点太多可能影响性能
-    public static final int DEFAULT_SMOOTH_SEGMENTS = 20;           // 平滑细分数: 每两个控制点之间，生成多少个中间点,越多点 = 曲线越平滑细腻
-
     // 0.0 = 直线连接
-    // 0.5 = 默认平滑（推荐）
-    // 1.0 = 最紧，最贴近原始折线
+    // 0.5 = 默认平滑(推荐)
+    // 1.0 = 最紧,最贴近原始折线
     public static final double DEFAULT_TENSION = 0.2;               // 张力: 控制曲线的"紧绷"程度
-
-    //   新点与前一个点距离小于此值时跳过
-    //   减少数据量，降低抖动影响
-    //    小 (0.01-0.02)   几乎不过滤，保留所有鼠标移动
-    //    中 (0.05)        适当过滤，去除手抖
-    //    大 (0.1-0.2)     大幅过滤，可能丢失快速绘制细节
-
     public static final double DEFAULT_MIN_POINT_DISTANCE = 0.04;   // 最小点间距: 过滤鼠标移动时产生的过密点
-
     public static final boolean DEFAULT_ENABLE_SMOOTHING = true;    // 是否启用平滑
 
-    // 当前值（可动态修改）
+    //   新点与前一个点距离小于此值时跳过
+    //   减少数据量,降低抖动影响
+    //    小 (0.01-0.02)   几乎不过滤,保留所有鼠标移动
+    //    中 (0.05)        适当过滤,去除手抖
+    //    大 (0.1-0.2)     大幅过滤,可能丢失快速绘制细节
+    private final List<Point2D> points = new ArrayList<>();
+    private boolean isDrawing = false;
+    // 当前值(可动态修改)
     private double simplifyEpsilon = DEFAULT_SIMPLIFY_EPSILON;
     private int smoothSegments = DEFAULT_SMOOTH_SEGMENTS;
     private double tension = DEFAULT_TENSION;
@@ -68,7 +62,7 @@ public class FreehandDrawingTool {
         if (isDrawing) {
             addPoint(pane, e);
             isDrawing = false;
-            // 不在这里调用redraw，由DrawingController统一处理
+            // 不在这里调用redraw,由DrawingController统一处理
         }
     }
 
@@ -77,7 +71,7 @@ public class FreehandDrawingTool {
         double wy = pane.screenToWorldY(e.getY());
         Point2D newPoint = new Point2D(wx, wy);
 
-        // 过滤过于密集的点（最小采样距离）
+        // 过滤过于密集的点(最小采样距离)
         if (!points.isEmpty()) {
             Point2D lastPoint = points.get(points.size() - 1);
             double distance = newPoint.distance(lastPoint);
@@ -90,7 +84,7 @@ public class FreehandDrawingTool {
     }
 
     private void createLines(GridChartView pane) {
-        // 创建一个手绘路径对象（保留完整曲线形状，但只显示起点和终点）
+        // 创建一个手绘路径对象(保留完整曲线形状,但只显示起点和终点)
         if (points.size() >= 2) {
             PathGeo path = new PathGeo(new ArrayList<>(points));
             pane.addObject(path);
@@ -98,7 +92,7 @@ public class FreehandDrawingTool {
     }
 
     /**
-     * 获取当前绘制的路径点（应用优化后的平滑处理）
+     * 获取当前绘制的路径点(应用优化后的平滑处理)
      */
     public List<Point2D> getPoints() {
         if (!enableSmoothing || points.size() < 3) {
@@ -127,17 +121,17 @@ public class FreehandDrawingTool {
         // 检查是否正在绘制并且有足够的点
         if (!isDrawing || points.size() < 2) return;
 
-        // 获取平滑后的点（使用手绘专用平滑）
+        // 获取平滑后的点(使用手绘专用平滑)
         List<Point2D> previewPoints = enableSmoothing && points.size() >= 3
                 ? CurveSmoothing.smoothHandDrawnCurve(points, simplifyEpsilon, smoothSegments, tension)
                 : points;
 
-        // 绘制预览曲线（使用 Path 一次性绘制，更平滑）
+        // 绘制预览曲线(使用 Path 一次性绘制,更平滑)
         gc.setStroke(Color.GRAY);
         gc.setLineWidth(1.5);
         gc.setLineDashes(3);
 
-        // 使用 Path API 绘制，避免线段间的断开
+        // 使用 Path API 绘制,避免线段间的断开
         gc.beginPath();
         Point2D first = previewPoints.get(0);
         gc.moveTo(transform.worldToScreenX(first.getX()), transform.worldToScreenY(first.getY()));

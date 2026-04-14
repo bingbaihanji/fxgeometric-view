@@ -18,7 +18,7 @@ import javafx.scene.shape.ArcType;
 public class ResizeHandle {
 
     /**
-     * 句柄大小（屏幕像素）
+     * 句柄大小(屏幕像素)
      */
     private static final double HANDLE_SIZE = 8;
     /**
@@ -95,7 +95,7 @@ public class ResizeHandle {
             gc.setLineWidth(1.5);
             gc.strokeOval(screenX - halfSize, screenY - halfSize, HANDLE_SIZE, HANDLE_SIZE);
 
-            // 绘制旋转图标（小箭头）
+            // 绘制旋转图标(小箭头)
             gc.setStroke(Color.rgb(255, 150, 0));
             gc.setLineWidth(1);
             gc.strokeArc(screenX - 3, screenY - 3, 6, 6, 45, 270, ArcType.OPEN);
@@ -115,7 +115,7 @@ public class ResizeHandle {
      *
      * @param worldX    测试点的世界X坐标
      * @param worldY    测试点的世界Y坐标
-     * @param tolerance 容差（世界坐标）
+     * @param tolerance 容差(世界坐标)
      * @return 是否命中
      */
     public boolean hitTest(double worldX, double worldY, double tolerance) {

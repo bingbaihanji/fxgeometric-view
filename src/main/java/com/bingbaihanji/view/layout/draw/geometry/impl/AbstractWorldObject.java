@@ -13,7 +13,7 @@ import javafx.scene.paint.Color;
  *
  * @author bingbaihanji
  * @date 2025-12-31
- * @description 实现 WorldObject 接口的所有通用属性，简化子类实现
+ * @description 实现 WorldObject 接口的所有通用属性,简化子类实现
  */
 public abstract class AbstractWorldObject implements WorldObject {
 
@@ -69,7 +69,7 @@ public abstract class AbstractWorldObject implements WorldObject {
     //   视觉属性  
 
     /**
-     * 对象颜色（描边颜色）
+     * 对象颜色(描边颜色)
      */
     protected Color color = Color.BLACK;
 
@@ -111,12 +111,12 @@ public abstract class AbstractWorldObject implements WorldObject {
     protected double fillOpacity = 0.3;
 
     /**
-     * 填充角度（度，用于线条填充）
+     * 填充角度(度,用于线条填充)
      */
     protected int hatchAngle = 45;
 
     /**
-     * 填充间距（像素，用于线条填充）
+     * 填充间距(像素,用于线条填充)
      */
     protected int hatchDistance = 10;
 
@@ -128,12 +128,12 @@ public abstract class AbstractWorldObject implements WorldObject {
     protected boolean visible = true;
 
     /**
-     * 是否锁定（不可编辑属性）
+     * 是否锁定(不可编辑属性)
      */
     protected boolean locked = false;
 
     /**
-     * 是否固定（不可移动）
+     * 是否固定(不可移动)
      */
     protected boolean fixed = false;
 
@@ -387,7 +387,7 @@ public abstract class AbstractWorldObject implements WorldObject {
     //   工具方法  
 
     /**
-     * 获取有效的描边颜色（考虑透明度和选中/悬停状态）
+     * 获取有效的描边颜色(考虑透明度和选中/悬停状态)
      */
     protected Color getEffectiveColor() {
         if (selected) {
@@ -405,7 +405,7 @@ public abstract class AbstractWorldObject implements WorldObject {
     }
 
     /**
-     * 获取有效的填充颜色（考虑填充透明度）
+     * 获取有效的填充颜色(考虑填充透明度)
      */
     protected Color getEffectiveFillColor() {
         return new Color(
@@ -417,7 +417,7 @@ public abstract class AbstractWorldObject implements WorldObject {
     }
 
     /**
-     * 获取有效的线宽（考虑选中/悬停状态）
+     * 获取有效的线宽(考虑选中/悬停状态)
      */
     protected double getEffectiveLineWidth() {
         if (selected || hover) {

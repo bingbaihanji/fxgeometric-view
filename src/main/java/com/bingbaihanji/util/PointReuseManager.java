@@ -10,10 +10,10 @@ import java.util.List;
 /**
  * 点复用管理器
  * <p>
- * 用于查找位置附近是否已存在点对象，实现点的复用逻辑
+ * 用于查找位置附近是否已存在点对象,实现点的复用逻辑
  * 避免在同一位置创建多个点
  * <p>
- * 还支持复用组功能：当多个点重合时，可以启用复用使它们同步移动
+ * 还支持复用组功能：当多个点重合时,可以启用复用使它们同步移动
  *
  * @author bingbaihanji
  * @date 2025-01-01
@@ -26,8 +26,8 @@ public class PointReuseManager {
      * @param x         世界坐标X
      * @param y         世界坐标Y
      * @param objects   所有对象列表
-     * @param threshold 检测阈值（世界坐标距离）
-     * @return 找到的点对象，如果没有则返回null
+     * @param threshold 检测阈值(世界坐标距离)
+     * @return 找到的点对象,如果没有则返回null
      */
     public static PointGeo findExistingPoint(double x, double y, List<WorldObject> objects, double threshold) {
         PointGeo nearest = null;
@@ -47,7 +47,7 @@ public class PointReuseManager {
     }
 
     /**
-     * 检测位置是否已有点存在（包括图形的顶点/端点/圆心等）
+     * 检测位置是否已有点存在(包括图形的顶点/端点/圆心等)
      *
      * @param x         世界坐标X
      * @param y         世界坐标Y
@@ -62,13 +62,13 @@ public class PointReuseManager {
     /**
      * 获取或创建点
      * <p>
-     * 如果位置附近已有点，返回该点；否则返回null表示需要创建新点
+     * 如果位置附近已有点,返回该点；否则返回null表示需要创建新点
      *
      * @param x       世界坐标X
      * @param y       世界坐标Y
      * @param objects 所有对象列表
      * @param scale   当前缩放比例
-     * @return 已存在的点，或null
+     * @return 已存在的点,或null
      */
     public static PointGeo getExistingPointOrNull(double x, double y, List<WorldObject> objects, double scale) {
         double threshold = 10.0 / scale; // 10像素的检测范围
@@ -76,13 +76,13 @@ public class PointReuseManager {
     }
 
     /**
-     * 查找位置附近的特殊位置（点、端点、顶点、圆心等）
+     * 查找位置附近的特殊位置(点、端点、顶点、圆心等)
      *
      * @param x         世界坐标X
      * @param y         世界坐标Y
      * @param objects   所有对象列表
      * @param threshold 检测阈值
-     * @return 最近的特殊位置坐标，如果没有则返回null
+     * @return 最近的特殊位置坐标,如果没有则返回null
      */
     public static Point2D findNearestSpecialPosition(double x, double y, List<WorldObject> objects, double threshold) {
         Point2D nearest = null;
@@ -155,7 +155,7 @@ public class PointReuseManager {
      * @param point     目标点
      * @param objects   所有对象列表
      * @param threshold 检测阈值
-     * @return 重合的点列表（不包含目标点本身）
+     * @return 重合的点列表(不包含目标点本身)
      */
     public static List<PointGeo> findOverlappingPoints(PointGeo point, List<WorldObject> objects, double threshold) {
         List<PointGeo> overlapping = new ArrayList<>();
@@ -191,7 +191,7 @@ public class PointReuseManager {
                     }
                 }
             }
-            // 检查线段的端点（如果它们是独立的 PointGeo）
+            // 检查线段的端点(如果它们是独立的 PointGeo)
             else if (obj instanceof LineGeo line) {
                 PointGeo startRef = line.getStartPointRef();
                 PointGeo endRef = line.getEndPointRef();
@@ -214,7 +214,7 @@ public class PointReuseManager {
                     }
                 }
             }
-            // 检查圆的圆心（如果它是独立的 PointGeo）
+            // 检查圆的圆心(如果它是独立的 PointGeo)
             else if (obj instanceof CircleGeo circle) {
                 PointGeo centerRef = circle.getCenterPointRef();
 
@@ -227,7 +227,7 @@ public class PointReuseManager {
                     }
                 }
             }
-            // 检查无限直线的定义点（如果它们是独立的 PointGeo）
+            // 检查无限直线的定义点(如果它们是独立的 PointGeo)
             else if (obj instanceof InfiniteLineGeo infLine) {
                 PointGeo point1Ref = infLine.getPoint1Ref();
                 PointGeo point2Ref = infLine.getPoint2Ref();
@@ -263,7 +263,7 @@ public class PointReuseManager {
      * @return 创建或获取的复用组
      */
     public static PointReuseGroup enableReuse(PointGeo point1, PointGeo point2) {
-        // 如果两个点已经在同一复用组，直接返回
+        // 如果两个点已经在同一复用组,直接返回
         if (point1.getReuseGroup() == point2.getReuseGroup() && point1.getReuseGroup() != null) {
             return point1.getReuseGroup();
         }
@@ -284,7 +284,7 @@ public class PointReuseManager {
     }
 
     /**
-     * 检查点是否可以启用复用（附近是否有其他点）
+     * 检查点是否可以启用复用(附近是否有其他点)
      *
      * @param point     目标点
      * @param objects   所有对象列表

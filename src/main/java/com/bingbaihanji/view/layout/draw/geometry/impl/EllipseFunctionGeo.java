@@ -40,8 +40,8 @@ public class EllipseFunctionGeo extends FunctionGeo {
      *
      * @param cx 中心x坐标
      * @param cy 中心y坐标
-     * @param a  长半轴（必须 > 0）
-     * @param b  短半轴（必须 > 0）
+     * @param a  长半轴(必须 > 0)
+     * @param b  短半轴(必须 > 0)
      */
     public EllipseFunctionGeo(double cx, double cy, double a, double b) {
         super();
@@ -99,7 +99,7 @@ public class EllipseFunctionGeo extends FunctionGeo {
     /**
      * 根据参数t计算点坐标
      *
-     * @param t 参数（0到2π）
+     * @param t 参数(0到2π)
      * @return 点坐标
      */
     public Point2D evaluateParametric(double t) {

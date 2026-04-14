@@ -10,6 +10,7 @@ module FXGeometricView {
     requires ch.qos.logback.core;
     requires ch.qos.logback.classic;
     requires commons.math3;
+    requires exp4j;
 
     // Lombok
 //    requires static lombok;

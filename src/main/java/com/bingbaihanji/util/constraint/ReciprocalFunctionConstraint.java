@@ -37,7 +37,7 @@ public class ReciprocalFunctionConstraint implements PointConstraint {
 
     @Override
     public double calculateParameter(double x, double y) {
-        // 对于显函数，参数就是x坐标
+        // 对于显函数,参数就是x坐标
         // 但需要避开x=0附近
         if (MathCalculationUtils.isZero(x, GeometryConfig.Mathematics.TINY_VALUE)) {
             x = x > 0 ? GeometryConfig.Mathematics.TINY_VALUE : -GeometryConfig.Mathematics.TINY_VALUE;

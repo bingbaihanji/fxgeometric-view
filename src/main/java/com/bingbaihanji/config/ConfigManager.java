@@ -15,7 +15,7 @@ import java.util.Properties;
  * <p>
  * 管理应用程序配置的保存和加载
  * <p>
- * 线程安全的单例模式实现（双重检查锁定）
+ * 线程安全的单例模式实现(双重检查锁定)
  *
  * @author bingbaihanji
  * @date 2026-01-04
@@ -65,7 +65,7 @@ public class ConfigManager {
                     logger.info("配置文件加载成功: {}", configPath);
                 }
             } else {
-                logger.info("配置文件不存在，使用默认配置");
+                logger.info("配置文件不存在,使用默认配置");
                 setDefaultConfig();
                 // 初始化时保存默认配置
                 saveConfig();
@@ -121,7 +121,7 @@ public class ConfigManager {
             try {
                 return Integer.parseInt(value);
             } catch (NumberFormatException e) {
-                logger.warn("配置项 {} 的值 {} 不是有效的整数，使用默认值 {}", key, value, defaultValue);
+                logger.warn("配置项 {} 的值 {} 不是有效的整数,使用默认值 {}", key, value, defaultValue);
             }
         }
         return defaultValue;
@@ -136,7 +136,7 @@ public class ConfigManager {
             try {
                 return Double.parseDouble(value);
             } catch (NumberFormatException e) {
-                logger.warn("配置项 {} 的值 {} 不是有效的浮点数，使用默认值 {}", key, value, defaultValue);
+                logger.warn("配置项 {} 的值 {} 不是有效的浮点数,使用默认值 {}", key, value, defaultValue);
             }
         }
         return defaultValue;

@@ -134,7 +134,7 @@ public class StyleManager {
     }
 
     /**
-     * 获取备用文本标签样式（用于无图标情况）
+     * 获取备用文本标签样式(用于无图标情况)
      */
     public static String getFallbackLabelStyle() {
         return "-fx-font-size: 20px; -fx-text-fill: " + TEXT_SECONDARY + ";";

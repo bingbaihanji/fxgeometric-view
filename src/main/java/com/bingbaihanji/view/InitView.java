@@ -108,46 +108,46 @@ public class InitView {
     /**
      * 创建中央分割面板
      * <p>
-     * 优化版：通过设置子节点的最小/最大尺寸来约束分割线位置，避免频闪
+     * 优化版：通过设置子节点的最小/最大尺寸来约束分割线位置,避免频闪
      */
     private SplitPane createCentralSplitPane(ShapeToolPane toolPane, GridChartView gridChartPane) {
         SplitPane central = new SplitPane(toolPane, gridChartPane);
         central.setOrientation(Orientation.HORIZONTAL);
-        
-        // 方案1：设置工具面板的最小和最大宽度（更自然的约束方式）
+
+        // 方案1：设置工具面板的最小和最大宽度(更自然的约束方式)
         toolPane.setMinWidth(230);   // 最小宽度
         toolPane.setMaxWidth(330);   // 最大宽度
-        
+
         // 设置初始分割位置
         central.setDividerPositions(0.23);
-        
-        // 可选：使用监听器微调（避免频闪的优化版本）
-        // 仅在必要时使用，通常设置 min/max 宽度就足够了
+
+        // 可选：使用监听器微调(避免频闪的优化版本)
+        // 仅在必要时使用,通常设置 min/max 宽度就足够了
         Platform.runLater(() -> {
             if (!central.getDividers().isEmpty()) {
                 SplitPane.Divider divider = central.getDividers().get(0);
-                
+
                 // 使用标志位防止递归触发
                 final boolean[] isAdjusting = {false};
-                
+
                 divider.positionProperty().addListener((obs, oldPos, newPos) -> {
                     if (isAdjusting[0]) {
                         return; // 防止递归
                     }
-                    
+
                     double position = newPos.doubleValue();
                     double adjustedPosition = position;
-                    
-                    // 约束边界（作为备份保护）
+
+                    // 约束边界(作为备份保护)
                     final double MIN_POSITION = 0.23;
                     final double MAX_POSITION = 0.33;
-                    
+
                     if (position < MIN_POSITION) {
                         adjustedPosition = MIN_POSITION;
                     } else if (position > MAX_POSITION) {
                         adjustedPosition = MAX_POSITION;
                     }
-                    
+
                     // 只有在需要调整且差异足够大时才设置
                     if (Math.abs(adjustedPosition - position) > 0.001) {
                         isAdjusting[0] = true;
@@ -212,13 +212,13 @@ public class InitView {
             return;
         }
 
-        // ESC键：优先取消当前绘制操作，如果没有绘制中则清除选择
+        // ESC键：优先取消当前绘制操作,如果没有绘制中则清除选择
         if (event.getCode() == KeyCode.ESCAPE) {
             if (drawingController.isDrawing()) {
-                // 正在绘制中，取消当前操作
+                // 正在绘制中,取消当前操作
                 drawingController.cancelCurrentOperation();
             } else {
-                // 没有绘制操作，清除选择
+                // 没有绘制操作,清除选择
                 drawingController.clearSelection();
             }
             event.consume();
@@ -254,7 +254,7 @@ public class InitView {
                     }
                     break;
                 case D:
-                    // Ctrl+D: 删除选中对象（备用快捷键）
+                    // Ctrl+D: 删除选中对象(备用快捷键)
                     if (drawingController.hasSelection()) {
                         drawingController.deleteSelection();
                         event.consume();

@@ -423,7 +423,7 @@ public class PreviewManager {
         }
 
         /**
-         * 更新预览（带半径参数）
+         * 更新预览(带半径参数)
          */
         public void updatePreview(double mouseX, double mouseY, double radius) {
             this.mouseX = mouseX;
@@ -432,7 +432,7 @@ public class PreviewManager {
         }
 
         /**
-         * 更新预览（鼠标位置作为顶点位置）
+         * 更新预览(鼠标位置作为顶点位置)
          */
         public void updatePreviewWithVertex(double vertexX, double vertexY) {
             this.mouseX = vertexX;
@@ -460,7 +460,7 @@ public class PreviewManager {
             // 计算第一个顶点指向鼠标的角度
             double angleToMouse = Math.atan2(mouseY - cy, mouseX - cx);
 
-            // 计算顶点坐标（第一个顶点在鼠标位置方向）
+            // 计算顶点坐标(第一个顶点在鼠标位置方向)
             double[] xPoints = new double[sideCount];
             double[] yPoints = new double[sideCount];
 
@@ -478,7 +478,7 @@ public class PreviewManager {
             // 绘制正多边形
             gc.strokePolygon(xPoints, yPoints, sideCount);
 
-            // 绘制半径线：从中心指向第一个顶点（鼠标位置）
+            // 绘制半径线：从中心指向第一个顶点(鼠标位置)
             gc.setLineDashes(2);
             double screenCx = transform.worldToScreenX(cx);
             double screenCy = transform.worldToScreenY(cy);

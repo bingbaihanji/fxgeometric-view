@@ -13,12 +13,12 @@ public enum DrawingState {
     IDLE,
 
     /**
-     * 已点击第一个点，等待第二次点击
+     * 已点击第一个点,等待第二次点击
      */
     FIRST_CLICK,
 
     /**
-     * 多边形绘制中（依次选择顶点）
+     * 多边形绘制中(依次选择顶点)
      */
     POLYGON_DRAWING,
 

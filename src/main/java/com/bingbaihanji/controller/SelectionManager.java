@@ -14,17 +14,17 @@ import java.util.stream.Collectors;
  *
  * @author bingbaihanji
  * @date 2025-12-31
- * @description 管理几何对象的选择状态，参考 GeoGebra 的 SelectionManager 设计
+ * @description 管理几何对象的选择状态, 参考 GeoGebra 的 SelectionManager 设计
  * 支持单选、多选、框选、批量操作等功能
  */
 public class SelectionManager {
 
     /**
-     * 主选择列表（所有选中的对象）
+     * 主选择列表(所有选中的对象)
      */
     private final List<WorldObject> selectedObjects = new ArrayList<>();
 
-    // 已禁用：边界框（用于显示选中对象的边界和句柄）
+    // 已禁用：边界框(用于显示选中对象的边界和句柄)
     // private final BoundingBox boundingBox = new BoundingBox();
 
     /**
@@ -34,7 +34,7 @@ public class SelectionManager {
 
     //   选中对象列表  
     /**
-     * 框选区域（用于框选模式）
+     * 框选区域(用于框选模式)
      */
     private SelectionRectangle selectionRectangle = null;
 
@@ -72,7 +72,7 @@ public class SelectionManager {
     }
 
     /**
-     * 添加对象到选择集（默认通知）
+     * 添加对象到选择集(默认通知)
      */
     public boolean addSelectedObject(WorldObject object) {
         return addSelectedObject(object, true);
@@ -104,7 +104,7 @@ public class SelectionManager {
     }
 
     /**
-     * 从选择集移除对象（默认通知）
+     * 从选择集移除对象(默认通知)
      */
     public boolean removeSelectedObject(WorldObject object) {
         return removeSelectedObject(object, true);
@@ -156,14 +156,14 @@ public class SelectionManager {
     }
 
     /**
-     * 清空所有选择（默认通知）
+     * 清空所有选择(默认通知)
      */
     public void clearSelection() {
         clearSelection(true);
     }
 
     /**
-     * 设置唯一选中对象（清空其他选择）
+     * 设置唯一选中对象(清空其他选择)
      *
      * @param object 要选中的对象
      */
@@ -176,7 +176,7 @@ public class SelectionManager {
      * 选择多个对象
      *
      * @param objects 要选中的对象列表
-     * @param append  是否追加到现有选择（true）或替换（false）
+     * @param append  是否追加到现有选择(true)或替换(false)
      */
     public void selectMultiple(List<WorldObject> objects, boolean append) {
         if (!append) {
@@ -193,7 +193,7 @@ public class SelectionManager {
     //   查询方法  
 
     /**
-     * 获取所有选中对象（不可修改）
+     * 获取所有选中对象(不可修改)
      */
     public List<WorldObject> getSelectedObjects() {
         return Collections.unmodifiableList(selectedObjects);
@@ -221,14 +221,14 @@ public class SelectionManager {
     }
 
     /**
-     * 获取第一个选中的对象（如果有）
+     * 获取第一个选中的对象(如果有)
      */
     public WorldObject getFirstSelected() {
         return selectedObjects.isEmpty() ? null : selectedObjects.get(0);
     }
 
     /**
-     * 获取最后一个选中的对象（如果有）
+     * 获取最后一个选中的对象(如果有)
      */
     public WorldObject getLastSelected() {
         return selectedObjects.isEmpty() ? null : selectedObjects.get(selectedObjects.size() - 1);
@@ -276,10 +276,10 @@ public class SelectionManager {
     //   框选功能  
 
     /**
-     * 开始框选（记录起始点）
+     * 开始框选(记录起始点)
      *
-     * @param worldX 起始点X坐标（世界坐标）
-     * @param worldY 起始点Y坐标（世界坐标）
+     * @param worldX 起始点X坐标(世界坐标)
+     * @param worldY 起始点Y坐标(世界坐标)
      */
     public void startRectangleSelection(double worldX, double worldY) {
         if (!rectangleSelectionEnabled) {
@@ -289,10 +289,10 @@ public class SelectionManager {
     }
 
     /**
-     * 更新框选区域（更新结束点）
+     * 更新框选区域(更新结束点)
      *
-     * @param worldX 当前点X坐标（世界坐标）
-     * @param worldY 当前点Y坐标（世界坐标）
+     * @param worldX 当前点X坐标(世界坐标)
+     * @param worldY 当前点Y坐标(世界坐标)
      */
     public void updateRectangleSelection(double worldX, double worldY) {
         if (selectionRectangle != null) {
@@ -301,10 +301,10 @@ public class SelectionManager {
     }
 
     /**
-     * 完成框选（根据区域选中对象）
+     * 完成框选(根据区域选中对象)
      *
      * @param allObjects 所有对象列表
-     * @param append     是否追加到现有选择（true）或替换（false）
+     * @param append     是否追加到现有选择(true)或替换(false)
      */
     public void finishRectangleSelection(List<WorldObject> allObjects, boolean append) {
         if (selectionRectangle == null) {
@@ -333,7 +333,7 @@ public class SelectionManager {
     }
 
     /**
-     * 获取当前框选区域（用于绘制）
+     * 获取当前框选区域(用于绘制)
      */
     public SelectionRectangle getSelectionRectangle() {
         return selectionRectangle;
@@ -361,7 +361,7 @@ public class SelectionManager {
     /**
      * 删除所有选中的对象
      *
-     * @param removeAction 删除动作（接收对象列表）
+     * @param removeAction 删除动作(接收对象列表)
      */
     public void deleteSelectedObjects(java.util.function.Consumer<List<WorldObject>> removeAction) {
         if (selectedObjects.isEmpty()) {
@@ -407,10 +407,10 @@ public class SelectionManager {
         }
     }
 
-    // ========== BoundingBox 相关方法（已禁用） ==========
+    // ========== BoundingBox 相关方法(已禁用) ==========
 
     /**
-     * 更新边界框（已禁用）
+     * 更新边界框(已禁用)
      */
     /*
     private void updateBoundingBox() {
@@ -423,7 +423,7 @@ public class SelectionManager {
     */
 
     /**
-     * 获取边界框（已禁用）
+     * 获取边界框(已禁用)
      */
     /*
     public BoundingBox getBoundingBox() {
@@ -432,7 +432,7 @@ public class SelectionManager {
     */
 
     /**
-     * 是否有边界框（已禁用）
+     * 是否有边界框(已禁用)
      */
     /*
     public boolean hasBoundingBox() {

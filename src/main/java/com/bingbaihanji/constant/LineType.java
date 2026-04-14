@@ -68,7 +68,7 @@ public enum LineType {
     /**
      * 获取虚线模式数组
      *
-     * @return 虚线模式数组，实线返回null
+     * @return 虚线模式数组,实线返回null
      */
     public double[] getDashPattern() {
         return dashPattern;

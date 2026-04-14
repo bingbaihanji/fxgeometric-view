@@ -5,9 +5,9 @@ import com.bingbaihanji.util.constraint.PointConstraint;
 import javafx.geometry.Point2D;
 
 /**
- * 抛物线（圆锥曲线）几何对象
+ * 抛物线(圆锥曲线)几何对象
  * <p>
- * 表示抛物线 y² = 2px（标准形式）
+ * 表示抛物线 y² = 2px(标准形式)
  * 使用参数方程：x = pt²/2, y = pt
  *
  * @author bingbaihanji
@@ -16,14 +16,14 @@ import javafx.geometry.Point2D;
 public class ParabolaConicFunctionGeo extends FunctionGeo {
 
     /**
-     * 焦参数（焦点到准线的距离的一半）
+     * 焦参数(焦点到准线的距离的一半)
      */
     private double p;
 
     /**
      * 构造函数
      *
-     * @param p 焦参数（必须 > 0）
+     * @param p 焦参数(必须 > 0)
      */
     public ParabolaConicFunctionGeo(double p) {
         super();

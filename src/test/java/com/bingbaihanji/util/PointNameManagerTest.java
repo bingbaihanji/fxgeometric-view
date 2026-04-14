@@ -101,7 +101,7 @@ class PointNameManagerTest {
         // 测试浮点数精度处理
         String name1 = manager.assignName(1.0000001, 2.0000001);
         String name2 = manager.assignName(1.0000002, 2.0000002);
-        // 由于使用了精度阈值，这两个点应该被视为同一个点
+        // 由于使用了精度阈值,这两个点应该被视为同一个点
         assertEquals(name1, name2);
     }
 
@@ -116,10 +116,10 @@ class PointNameManagerTest {
         assertEquals("C", manager.assignName(2, 2));
         assertEquals("D", manager.assignName(3, 3));
 
-        // 圆E（圆心）
+        // 圆E(圆心)
         assertEquals("E", manager.assignName(4, 4));
 
-        // 手绘线FG（起点和终点）
+        // 手绘线FG(起点和终点)
         assertEquals("F", manager.assignName(5, 5));
         assertEquals("G", manager.assignName(6, 6));
 
@@ -140,13 +140,13 @@ class PointNameManagerTest {
         assertEquals("C", manager.assignName(2, 2));
         assertEquals("D", manager.assignName(3, 3));
 
-        // 圆E（圆心）
+        // 圆E(圆心)
         assertEquals("E", manager.assignName(4, 4));
 
-        // 手绘线FG（起点、多个中间点和终点）
-        // 只为起点和终点命名，中间点不应该影响索引
+        // 手绘线FG(起点、多个中间点和终点)
+        // 只为起点和终点命名,中间点不应该影响索引
         assertEquals("F", manager.assignName(5, 5));  // 起点
-        // 模拟 getEdges() 不会为中间点命名，所以跳过中间点
+        // 模拟 getEdges() 不会为中间点命名,所以跳过中间点
         assertEquals("G", manager.assignName(6, 6));  // 终点
 
         // 多边形HIJ应该紧接着F和G之后
@@ -173,11 +173,11 @@ class PointNameManagerTest {
         // 更新点A的位置从(0, 0)到(1, 1)
         manager.updatePosition(0, 0, 1, 1);
 
-        // 验证更新后，(0, 0)不再有名称，而(1, 1)现在有名称A
+        // 验证更新后,(0, 0)不再有名称,而(1, 1)现在有名称A
         assertNull(manager.getName(0, 0));
         assertEquals("A", manager.getName(1, 1));
 
-        // 现在在新位置(1, 1)创建几何图形，assignName应该返回A而不是创建新名称
+        // 现在在新位置(1, 1)创建几何图形,assignName应该返回A而不是创建新名称
         assertEquals("A", manager.assignName(1, 1));
 
         // 确认总点数仍然是2

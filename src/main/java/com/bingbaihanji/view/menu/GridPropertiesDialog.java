@@ -72,7 +72,7 @@ public class GridPropertiesDialog extends Dialog<ButtonType> {
         // 加载当前配置
         loadSettings();
 
-        // 监听网格类型变化，显示/隐藏相关选项
+        // 监听网格类型变化,显示/隐藏相关选项
         cmbGridType.valueProperty().addListener((obs, old, val) -> {
             updateUIForGridType(val);
         });
@@ -157,7 +157,7 @@ public class GridPropertiesDialog extends Dialog<ButtonType> {
 
         int row = 0;
 
-        // 网格与坐标轴同步（新增）
+        // 网格与坐标轴同步(新增)
         Label lblSync = new Label(I18nUtil.getString("grid.syncWithAxes") + ":");
         cbSyncGridWithAxes = new CheckBox(I18nUtil.getString("grid.enableSync"));
         cbSyncGridWithAxes.setTooltip(new Tooltip(I18nUtil.getString("grid.syncWithAxes.hint")));
@@ -166,7 +166,7 @@ public class GridPropertiesDialog extends Dialog<ButtonType> {
         grid.add(cbSyncGridWithAxes, 1, row);
         row++;
 
-        // 网格密度因子（新增，仅在同步模式下启用）
+        // 网格密度因子(新增,仅在同步模式下启用)
         Label lblFactor = new Label(I18nUtil.getString("grid.distanceFactor") + ":");
         sliderGridDistFactor = new Slider(0.1, 5.0, 1.0);
         sliderGridDistFactor.setShowTickLabels(false);
@@ -192,7 +192,7 @@ public class GridPropertiesDialog extends Dialog<ButtonType> {
             lblGridDistFactorValue.setText(String.format("%.1f", newV.doubleValue()));
         });
 
-        // 网格间距（手动模式）
+        // 网格间距(手动模式)
         Label lblDistance = new Label(I18nUtil.getString("grid.gridDistance") + ":");
         cbAutoGridDistance = new CheckBox(I18nUtil.getString("grid.auto"));
         tfGridDistance = new TextField();
@@ -204,7 +204,7 @@ public class GridPropertiesDialog extends Dialog<ButtonType> {
         grid.add(distanceBox, 1, row);
         row++;
 
-        // 极坐标角度步长（仅极坐标网格显示）
+        // 极坐标角度步长(仅极坐标网格显示)
         Label lblAngle = new Label(I18nUtil.getString("grid.polarAngle") + ":");
         tfPolarAngleStep = new TextField();
         tfPolarAngleStep.setPrefWidth(80);
@@ -217,7 +217,7 @@ public class GridPropertiesDialog extends Dialog<ButtonType> {
         grid.add(angleBox, 1, row);
         row++;
 
-        // 动态UI逻辑：同步模式下禁用手动间距，启用密度因子
+        // 动态UI逻辑：同步模式下禁用手动间距,启用密度因子
         cbSyncGridWithAxes.selectedProperty().addListener((obs, old, val) -> {
             updateDistanceControlsState();
         });
@@ -236,7 +236,7 @@ public class GridPropertiesDialog extends Dialog<ButtonType> {
     private void updateDistanceControlsState() {
         boolean isSyncEnabled = cbSyncGridWithAxes.isSelected();
 
-        // 同步模式下：启用密度因子，禁用手动间距
+        // 同步模式下：启用密度因子,禁用手动间距
         sliderGridDistFactor.setDisable(!isSyncEnabled);
         lblGridDistFactorValue.setDisable(!isSyncEnabled);
 
@@ -282,7 +282,7 @@ public class GridPropertiesDialog extends Dialog<ButtonType> {
         grid.add(lblColor, 0, 1);
         grid.add(gridColorPicker, 1, 1);
 
-        // 次网格颜色（仅带次网格模式显示）
+        // 次网格颜色(仅带次网格模式显示)
         Label lblSubColor = new Label(I18nUtil.getString("grid.subColor") + ":");
         subGridColorPicker = new ColorPicker();
         subGridColorPicker.setPrefWidth(150);
@@ -328,7 +328,7 @@ public class GridPropertiesDialog extends Dialog<ButtonType> {
         tfGridDistance.setText(String.valueOf(settings.getGridDistance()));
         tfGridDistance.setDisable(settings.isAutoGridDistance());
 
-        // 极坐标角度步长（转换为度数显示）
+        // 极坐标角度步长(转换为度数显示)
         double angleDegrees = Math.toDegrees(settings.getPolarAngleStep());
         tfPolarAngleStep.setText(String.valueOf((int) angleDegrees));
 
@@ -365,7 +365,7 @@ public class GridPropertiesDialog extends Dialog<ButtonType> {
             }
         }
 
-        // 保存极坐标角度步长（转换为弧度）
+        // 保存极坐标角度步长(转换为弧度)
         if (cmbGridType.getValue() == GridType.POLAR) {
             try {
                 double angleDegrees = Double.parseDouble(tfPolarAngleStep.getText());

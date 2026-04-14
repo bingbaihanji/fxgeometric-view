@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 /**
  * 日志工具类
  * <p>
- * 封装SLF4J日志框架，提供统一的日志接口
+ * 封装SLF4J日志框架,提供统一的日志接口
  *
  * @author bingbaihanji
  * @date 2025-01-01
@@ -36,7 +36,7 @@ public class Logger {
     }
 
     /**
-     * 记录调试信息（带参数）
+     * 记录调试信息(带参数)
      */
     public void debug(String format, Object... args) {
         logger.debug(format, args);
@@ -50,7 +50,7 @@ public class Logger {
     }
 
     /**
-     * 记录普通信息（带参数）
+     * 记录普通信息(带参数)
      */
     public void info(String format, Object... args) {
         logger.info(format, args);
@@ -64,14 +64,14 @@ public class Logger {
     }
 
     /**
-     * 记录警告信息（带参数）
+     * 记录警告信息(带参数)
      */
     public void warn(String format, Object... args) {
         logger.warn(format, args);
     }
 
     /**
-     * 记录警告信息（带异常）
+     * 记录警告信息(带异常)
      */
     public void warn(String message, Throwable t) {
         logger.warn(message, t);
@@ -85,14 +85,14 @@ public class Logger {
     }
 
     /**
-     * 记录错误信息（带参数）
+     * 记录错误信息(带参数)
      */
     public void error(String format, Object... args) {
         logger.error(format, args);
     }
 
     /**
-     * 记录错误信息（带异常）
+     * 记录错误信息(带异常)
      */
     public void error(String message, Throwable t) {
         logger.error(message, t);

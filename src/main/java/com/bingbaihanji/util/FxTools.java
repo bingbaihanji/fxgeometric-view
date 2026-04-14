@@ -26,7 +26,7 @@ import java.time.format.DateTimeFormatter;
 /**
  * JavaFX 工具类
  * <p>
- * 提供 JavaFX 常用的通用工具方法，包括：
+ * 提供 JavaFX 常用的通用工具方法,包括：
  *
  * @author bingbaihanji
  * @date 2026-01-05
@@ -36,7 +36,7 @@ public interface FxTools {
     //  截图与导出 
 
     /**
-     * 截图功能：截取节点内容，保存到剪切板并允许保存为文件
+     * 截图功能：截取节点内容,保存到剪切板并允许保存为文件
      *
      * @param primaryStage 主舞台
      * @param node         要截图的节点
@@ -107,7 +107,7 @@ public interface FxTools {
      * @param title           标题
      * @param initialFileName 默认文件名
      * @param description     文件类型描述
-     * @param extensions      文件扩展名（例如："*.png", ".png"）
+     * @param extensions      文件扩展名(例如："*.png", ".png")
      * @return 配置好的 FileChooser
      */
     static FileChooser createFileChooser(String title, String initialFileName, String description, String... extensions) {
@@ -130,25 +130,25 @@ public interface FxTools {
     //  对话框工具
 
     /**
-     * 为 Dialog 设置图标（通用方法）
+     * 为 Dialog 设置图标(通用方法)
      * <p>
      * 使用监听器在对话框显示后获取 Stage 并设置图标
      *
      * @param dialog   对话框
-     * @param iconPath 图标路径（相对于 resources 目录，例如："/icon/setting.png"）
+     * @param iconPath 图标路径(相对于 resources 目录,例如："/icon/setting.png")
      */
     static void setDialogIcon(Dialog<?> dialog, String iconPath) {
         setDialogIcon(dialog, iconPath, null);
     }
 
     /**
-     * 为 Dialog 设置图标（通用方法）
+     * 为 Dialog 设置图标(通用方法)
      * <p>
      * 使用监听器在对话框显示后获取 Stage 并设置图标
      *
      * @param dialog        对话框
-     * @param iconPath      图标路径（相对于 resources 目录，例如："/icon/setting.png"）
-     * @param resourceClass 用于加载资源的类（如果为 null，使用 FxTools.class）
+     * @param iconPath      图标路径(相对于 resources 目录,例如："/icon/setting.png")
+     * @param resourceClass 用于加载资源的类(如果为 null,使用 FxTools.class)
      */
     static void setDialogIcon(Dialog<?> dialog, String iconPath, Class<?> resourceClass) {
         dialog.showingProperty().addListener((observable, oldValue, newValue) -> {
@@ -169,7 +169,6 @@ public interface FxTools {
         });
     }
 
-    //  Alert 快捷创建 
 
     /**
      * 显示错误对话框
@@ -182,7 +181,7 @@ public interface FxTools {
     }
 
     /**
-     * 显示错误对话框（带异常堆栈）
+     * 显示错误对话框(带异常堆栈)
      *
      * @param title   标题
      * @param message 消息

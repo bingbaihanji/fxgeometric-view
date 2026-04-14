@@ -10,7 +10,7 @@ public class MenuView extends MenuBar {
 
     private final ObservableList<Menu> menus = FXCollections.observableArrayList();
 
-    // 菜单项声明，方便外部访问和添加事件监听
+    // 菜单项声明,方便外部访问和添加事件监听
     private MenuItem screenshotItem;
     private RadioMenuItem dotModeItem; // 创建"点模式"单选菜单项
     private RadioMenuItem gridModeItem; // 创建"格子模式"单选菜单项
@@ -44,7 +44,7 @@ public class MenuView extends MenuBar {
         // 创建"格点模式"子菜单
         Menu gridModeMenu = new Menu(getMenuName("menu.view.view.gridsDotsMode"));
 
-        // 创建单选按钮组，确保点模式和格子模式互斥
+        // 创建单选按钮组,确保点模式和格子模式互斥
         ToggleGroup gridModeGroup = new ToggleGroup();
 
         // 创建"点模式"单选菜单项
@@ -102,7 +102,7 @@ public class MenuView extends MenuBar {
     }
 
 
-    // Getter 方法，方便外部添加事件监听
+    // Getter 方法,方便外部添加事件监听
 
     public MenuItem getScreenshotItem() {
         return screenshotItem;

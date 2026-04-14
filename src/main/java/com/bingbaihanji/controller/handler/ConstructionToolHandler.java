@@ -31,7 +31,7 @@ import java.util.List;
 public class ConstructionToolHandler extends AbstractDrawingHandler {
 
     /**
-     * 已选中的线段或直线（用于垂线和平行线）
+     * 已选中的线段或直线(用于垂线和平行线)
      */
     private WorldObject selectedLine = null;
 
@@ -87,7 +87,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
         context.setCurrentMouseX(worldX);
         context.setCurrentMouseY(worldY);
 
-        // 重绘以显示预览（IDLE状态下的悬停预览 或 FIRST_CLICK状态下的构造预览）
+        // 重绘以显示预览(IDLE状态下的悬停预览 或 FIRST_CLICK状态下的构造预览)
         if ((context.getDrawMode() == DrawMode.PERPENDICULAR || context.getDrawMode() == DrawMode.PARALLEL) &&
                 (context.getState() == DrawingState.IDLE || context.getState() == DrawingState.FIRST_CLICK)) {
             context.redraw();
@@ -123,7 +123,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
         double worldX = context.getCurrentMouseX();
         double worldY = context.getCurrentMouseY();
 
-        // 在垂线和平行线模式下，IDLE状态显示悬停高亮
+        // 在垂线和平行线模式下,IDLE状态显示悬停高亮
         if ((context.getDrawMode() == DrawMode.PERPENDICULAR || context.getDrawMode() == DrawMode.PARALLEL) &&
                 context.getState() == DrawingState.IDLE) {
             // 高亮显示鼠标悬停的线段/直线
@@ -141,7 +141,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
             return;
         }
 
-        // 中点模式：高亮悬停的线段/直线，并显示中点预览
+        // 中点模式：高亮悬停的线段/直线,并显示中点预览
         if (context.getDrawMode() == DrawMode.MIDPOINT && context.getState() == DrawingState.IDLE) {
             for (WorldObject obj : context.getObjects()) {
                 if (obj instanceof LineGeo line) {
@@ -185,7 +185,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
             return;
         }
 
-        // 垂直平分线模式：高亮悬停的线段，并显示垂直平分线预览
+        // 垂直平分线模式：高亮悬停的线段,并显示垂直平分线预览
         if (context.getDrawMode() == DrawMode.PERPENDICULAR_BISECTOR && context.getState() == DrawingState.IDLE) {
             for (WorldObject obj : context.getObjects()) {
                 if (obj instanceof LineGeo line) {
@@ -205,7 +205,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
                                 midX, midY
                         );
 
-                        // 绘制垂直平分线预览（IntersectionUtils已经返回了扩展后的点，直接使用）
+                        // 绘制垂直平分线预览(IntersectionUtils已经返回了扩展后的点,直接使用)
                         double px1 = bisectorLine[0].getX();
                         double py1 = bisectorLine[0].getY();
                         double px2 = bisectorLine[1].getX();
@@ -235,7 +235,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
             return;
         }
 
-        // 切线模式：高亮悬停的圆，并显示切点和切线预览
+        // 切线模式：高亮悬停的圆,并显示切点和切线预览
         if (context.getDrawMode() == DrawMode.TANGENT && context.getState() == DrawingState.IDLE) {
             double tangentTolerance = 15.0 / scale;
             for (WorldObject obj : context.getObjects()) {
@@ -250,7 +250,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
                         circle.paint(gc, transform, context.getGridChartPane().getWidth(), context.getGridChartPane().getHeight());
                         circle.setHover(false);
 
-                        // 计算切点（投影到圆周上）
+                        // 计算切点(投影到圆周上)
                         double dx = worldX - circle.getCx();
                         double dy = worldY - circle.getCy();
                         double len = MathCalculationUtils.hypot(dx, dy);
@@ -276,7 +276,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
                             double tx2 = tangentLine[1].getX();
                             double ty2 = tangentLine[1].getY();
 
-                            // IntersectionUtils已经返回了扩展后的点，直接转换为屏幕坐标绘制
+                            // IntersectionUtils已经返回了扩展后的点,直接转换为屏幕坐标绘制
                             double tsx1 = transform.worldToScreenX(tx1);
                             double tsy1 = transform.worldToScreenY(ty1);
                             double tsx2 = transform.worldToScreenX(tx2);
@@ -334,7 +334,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
         }
 
         if (previewLine != null) {
-            // IntersectionUtils已经返回了扩展后的点，直接转换为屏幕坐标绘制
+            // IntersectionUtils已经返回了扩展后的点,直接转换为屏幕坐标绘制
             double px1 = previewLine[0].getX();
             double py1 = previewLine[0].getY();
             double px2 = previewLine[1].getX();
@@ -473,7 +473,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
             // 计算垂线：过 (worldX, worldY) 点
             Point2D[] perpLine = IntersectionUtils.getPerpendicularLine(x1, y1, x2, y2, worldX, worldY);
 
-            // 创建垂线（使用鼠标点和垂线上的另一点）
+            // 创建垂线(使用鼠标点和垂线上的另一点)
             InfiniteLineGeo newLine = new InfiniteLineGeo(
                     worldX, worldY,
                     perpLine[0].getX(), perpLine[0].getY()
@@ -552,7 +552,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
             // 计算平行线
             Point2D[] parallelLine = IntersectionUtils.getParallelLine(x1, y1, x2, y2, worldX, worldY);
 
-            // 创建平行线（使用鼠标点和平行线上的另一点）
+            // 创建平行线(使用鼠标点和平行线上的另一点)
             InfiniteLineGeo newLine = new InfiniteLineGeo(
                     worldX, worldY,
                     parallelLine[0].getX(), parallelLine[0].getY()
@@ -589,7 +589,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
      * 处理垂直平分线模式的点击事件
      */
     private void handlePerpendicularBisectorClick(double worldX, double worldY, DrawingContext context) {
-        // 查找点击位置附近的线段（注意：只有线段才有垂直平分线，直线没有）
+        // 查找点击位置附近的线段(注意：只有线段才有垂直平分线,直线没有)
         double scale = context.getTransform().getScale();
         double tolerance = 10.0 / scale;
 
@@ -600,14 +600,14 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
                     double midX = (line.getStartX() + line.getEndX()) / 2.0;
                     double midY = (line.getStartY() + line.getEndY()) / 2.0;
 
-                    // 计算垂直平分线（过中点，垂直于线段）
+                    // 计算垂直平分线(过中点,垂直于线段)
                     Point2D[] bisectorLine = IntersectionUtils.getPerpendicularLine(
                             line.getStartX(), line.getStartY(),
                             line.getEndX(), line.getEndY(),
                             midX, midY
                     );
 
-                    // 创建垂直平分线（使用中点和垂直方向点）
+                    // 创建垂直平分线(使用中点和垂直方向点)
                     InfiniteLineGeo newLine = new InfiniteLineGeo(
                             midX, midY,
                             bisectorLine[0].getX(), bisectorLine[0].getY()
@@ -635,7 +635,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
                     return;
                 }
             }
-            // 注意：不处理 InfiniteLineGeo，因为直线没有垂直平分线
+            // 注意：不处理 InfiniteLineGeo,因为直线没有垂直平分线
         }
     }
 
@@ -652,23 +652,23 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
                 // 计算点击位置到圆心的距离
                 double distance = MathCalculationUtils.hypot(worldX - circle.getCx(), worldY - circle.getCy());
 
-                // 检查是否靠近圆（允许一定容差）
+                // 检查是否靠近圆(允许一定容差)
                 if (MathCalculationUtils.abs(distance - circle.getR()) <= tolerance) {
-                    // 计算离点击位置最近的圆周上的点（将点击位置投影到圆周上）
+                    // 计算离点击位置最近的圆周上的点(将点击位置投影到圆周上)
                     double dx = worldX - circle.getCx();
                     double dy = worldY - circle.getCy();
                     double len = MathCalculationUtils.hypot(dx, dy);
 
-                    // 归一化方向向量并乘以半径，得到圆周上的点
+                    // 归一化方向向量并乘以半径,得到圆周上的点
                     double tangentPointX = circle.getCx() + (dx / len) * circle.getR();
                     double tangentPointY = circle.getCy() + (dy / len) * circle.getR();
 
-                    // 计算并绘制切线（过圆周上的切点）
+                    // 计算并绘制切线(过圆周上的切点)
                     Point2D[] tangentLine = IntersectionUtils.getTangentLine(
                             circle.getCx(), circle.getCy(), tangentPointX, tangentPointY
                     );
 
-                    // 创建切线（使用切点和切线上的另一点）
+                    // 创建切线(使用切点和切线上的另一点)
                     InfiniteLineGeo newLine = new InfiniteLineGeo(
                             tangentPointX, tangentPointY,
                             tangentLine[0].getX(), tangentLine[0].getY()

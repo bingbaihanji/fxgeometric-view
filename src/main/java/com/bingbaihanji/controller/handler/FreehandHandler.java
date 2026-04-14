@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * 手绘处理器
  * <p>
- * 处理手绘线的绘制，委托给 FreehandDrawingTool
+ * 处理手绘线的绘制,委托给 FreehandDrawingTool
  *
  * @author bingbaihanji
  * @date 2025-12-31
@@ -25,10 +25,10 @@ import java.util.List;
 public class FreehandHandler extends AbstractDrawingHandler {
 
     /**
-     * 手绘工具（单例模式，全局共享配置）
+     * 手绘工具(单例模式,全局共享配置)
      */
     private static final FreehandDrawingTool freehandTool = new FreehandDrawingTool();
-    
+
     /**
      * 获取手绘工具实例
      */
@@ -73,7 +73,7 @@ public class FreehandHandler extends AbstractDrawingHandler {
 
         // 获取手绘路径点并创建 PathGeo 对象
         List<Point2D> points = freehandTool.getPoints();
-        // 立即清空路径点，防止预览显示
+        // 立即清空路径点,防止预览显示
         freehandTool.clearPoints();
 
         if (points.size() >= 2) {

@@ -9,7 +9,7 @@ package com.bingbaihanji.constant;
  */
 public enum LabelPosition {
     /**
-     * 自动位置（默认）
+     * 自动位置(默认)
      */
     AUTO("自动"),
 
@@ -69,10 +69,10 @@ public enum LabelPosition {
     }
 
     /**
-     * 计算标签的偏移量（像素）
+     * 计算标签的偏移量(像素)
      *
-     * @param baseX 基准X坐标（屏幕坐标）
-     * @param baseY 基准Y坐标（屏幕坐标）
+     * @param baseX 基准X坐标(屏幕坐标)
+     * @param baseY 基准Y坐标(屏幕坐标)
      * @return [offsetX, offsetY]
      */
     public double[] getOffset(double baseX, double baseY) {

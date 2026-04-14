@@ -9,9 +9,9 @@ import javafx.geometry.Point2D;
  * 参数化圆约束
  * <p>
  * 使用角度参数θ (0到2π) 表示点在圆周上的位置。
- * 参数θ=0对应圆的右侧(3点钟方向)，逆时针增加。
+ * 参数θ=0对应圆的右侧(3点钟方向),逆时针增加。
  * <p>
- * 当圆心移动时，约束点根据参数θ重新计算位置，
+ * 当圆心移动时,约束点根据参数θ重新计算位置,
  * 保持在圆周上的相对角度位置不变。
  *
  * @author bingbaihanji
@@ -21,7 +21,7 @@ public class CircleConstraint implements PointConstraint {
 
     private final CircleGeo circle;
     private double parameter; // 参数θ, 角度(弧度), 范围[0, 2π]
-    private boolean isVertexConstraint = false; // 是否是顶点约束（圆心）
+    private boolean isVertexConstraint = false; // 是否是顶点约束(圆心)
     private boolean isCenterConstraint = false; // 是否是圆心约束
 
     public CircleConstraint(CircleGeo circle, double parameter) {
@@ -45,7 +45,7 @@ public class CircleConstraint implements PointConstraint {
         double cx = circle.getCx();
         double cy = circle.getCy();
 
-        // 如果是圆心约束，直接返回圆心位置
+        // 如果是圆心约束,直接返回圆心位置
         if (isCenterConstraint) {
             return new Point2D(cx, cy);
         }
@@ -62,7 +62,7 @@ public class CircleConstraint implements PointConstraint {
 
     @Override
     public double calculateParameter(double x, double y) {
-        // 如果是圆心约束，参数不变化
+        // 如果是圆心约束,参数不变化
         if (isCenterConstraint) {
             return parameter;
         }

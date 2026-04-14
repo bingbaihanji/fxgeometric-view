@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * 函数几何对象抽象基类
  * <p>
- * 所有函数类型的基类，提供统一的采样、绘制、交互逻辑
+ * 所有函数类型的基类,提供统一的采样、绘制、交互逻辑
  *
  * @author bingbaihanji
  * @date 2026-01-04
@@ -25,7 +25,7 @@ import java.util.List;
 public abstract class FunctionGeo extends AbstractWorldObject {
 
     /**
-     * 默认采样密度系数（每单位世界坐标的采样点数）
+     * 默认采样密度系数(每单位世界坐标的采样点数)
      */
     protected static final int DEFAULT_SAMPLES_PER_UNIT = 5;
 
@@ -35,7 +35,7 @@ public abstract class FunctionGeo extends AbstractWorldObject {
     protected static final int MIN_SAMPLES = 100;
 
     /**
-     * 最大采样点数（防止性能问题）
+     * 最大采样点数(防止性能问题)
      */
     protected static final int MAX_SAMPLES = 2000;
 
@@ -45,7 +45,7 @@ public abstract class FunctionGeo extends AbstractWorldObject {
     protected static final double VIEW_MARGIN_FACTOR = 0.5;
 
     /**
-     * 函数表达式（用于显示）
+     * 函数表达式(用于显示)
      */
     protected String expression = "";
 
@@ -60,7 +60,7 @@ public abstract class FunctionGeo extends AbstractWorldObject {
     protected double domainMax = Double.POSITIVE_INFINITY;
 
     /**
-     * 采样点缓存（世界坐标）
+     * 采样点缓存(世界坐标)
      */
     protected List<Point2D> sampledPoints = new ArrayList<>();
 
@@ -75,7 +75,7 @@ public abstract class FunctionGeo extends AbstractWorldObject {
     protected double lastSampleScale = -1;
 
     /**
-     * 上次采样时的视图范围（用于检测视图变化）
+     * 上次采样时的视图范围(用于检测视图变化)
      */
     protected double[] lastViewBounds = null;
 
@@ -119,19 +119,19 @@ public abstract class FunctionGeo extends AbstractWorldObject {
     public abstract PointConstraint createConstraint();
 
     /**
-     * 计算给定x的函数值（显函数）
+     * 计算给定x的函数值(显函数)
      * <p>
-     * 子类应该重写此方法，参数方程类（如椭圆）可以返回NaN
+     * 子类应该重写此方法,参数方程类(如椭圆)可以返回NaN
      *
      * @param x x坐标
-     * @return y坐标，如果不是显函数则返回NaN
+     * @return y坐标,如果不是显函数则返回NaN
      */
     public double evaluate(double x) {
         return Double.NaN;
     }
 
     /**
-     * 检测是否有断点（如反比例函数在x=0处）
+     * 检测是否有断点(如反比例函数在x=0处)
      * <p>
      * 子类可以重写此方法
      *
@@ -145,7 +145,7 @@ public abstract class FunctionGeo extends AbstractWorldObject {
     /**
      * 更新表达式字符串
      * <p>
-     * 子类应该实现此方法来生成表达式，并在参数变化时调用
+     * 子类应该实现此方法来生成表达式,并在参数变化时调用
      */
     protected abstract void updateExpression();
 
@@ -159,7 +159,7 @@ public abstract class FunctionGeo extends AbstractWorldObject {
         double[] viewBounds = calculateViewBounds(transform, width, height);
         double currentScale = transform.getScale();
 
-        // 检查是否需要重新采样（缩放变化或视图范围变化）
+        // 检查是否需要重新采样(缩放变化或视图范围变化)
         if (needsResamplingCheck(currentScale, viewBounds)) {
             samplePoints(viewBounds[0], viewBounds[1],
                     viewBounds[2], viewBounds[3],
@@ -176,7 +176,7 @@ public abstract class FunctionGeo extends AbstractWorldObject {
         gc.setLineWidth(hover ? getEffectiveLineWidth() + 1.5 : getEffectiveLineWidth());
         gc.setGlobalAlpha(opacity);
 
-        // 绘制曲线（处理断点）
+        // 绘制曲线(处理断点)
         drawCurve(gc, transform);
 
         // 重置状态
@@ -190,7 +190,7 @@ public abstract class FunctionGeo extends AbstractWorldObject {
     }
 
     /**
-     * 绘制曲线（处理断点）
+     * 绘制曲线(处理断点)
      */
     protected void drawCurve(GraphicsContext gc, WorldTransform transform) {
         if (sampledPoints.isEmpty()) {
@@ -214,13 +214,13 @@ public abstract class FunctionGeo extends AbstractWorldObject {
     /**
      * 检测两点之间是否有断点
      * <p>
-     * 如果y值跳变过大，可能是断点
+     * 如果y值跳变过大,可能是断点
      */
     protected boolean hasDiscontinuityBetween(Point2D p1, Point2D p2) {
         double dy = Math.abs(p2.getY() - p1.getY());
         double dx = Math.abs(p2.getX() - p1.getX());
 
-        // 如果斜率过大（可能是垂直渐近线）
+        // 如果斜率过大(可能是垂直渐近线)
         if (dx > 1e-10 && dy / dx > 1000) {
             return true;
         }
@@ -303,7 +303,7 @@ public abstract class FunctionGeo extends AbstractWorldObject {
             return true;
         }
 
-        // 视图范围变化（平移）
+        // 视图范围变化(平移)
         if (lastViewBounds == null) {
             return true;
         }
@@ -344,7 +344,7 @@ public abstract class FunctionGeo extends AbstractWorldObject {
     }
 
     /**
-     * 检查y值是否在视图范围内（带余量）
+     * 检查y值是否在视图范围内(带余量)
      *
      * @param y        y值
      * @param viewMinY 视图最小y
@@ -360,7 +360,7 @@ public abstract class FunctionGeo extends AbstractWorldObject {
     }
 
     /**
-     * 标记参数已更改，需要更新表达式和重新采样
+     * 标记参数已更改,需要更新表达式和重新采样
      */
     protected void onParameterChanged() {
         updateExpression();
@@ -390,7 +390,7 @@ public abstract class FunctionGeo extends AbstractWorldObject {
 
     @Override
     public List<DraggablePoint> getDraggablePoints() {
-        // 函数曲线本身不可拖动，返回空列表
+        // 函数曲线本身不可拖动,返回空列表
         return new ArrayList<>();
     }
 
@@ -419,7 +419,7 @@ public abstract class FunctionGeo extends AbstractWorldObject {
     }
 
     /**
-     * 获取有效颜色（重写父类方法，使用函数专用的悬停颜色）
+     * 获取有效颜色(重写父类方法,使用函数专用的悬停颜色)
      */
     @Override
     protected javafx.scene.paint.Color getEffectiveColor() {

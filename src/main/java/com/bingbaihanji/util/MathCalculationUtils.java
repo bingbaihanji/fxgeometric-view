@@ -9,7 +9,7 @@ import org.apache.commons.math3.util.Precision;
 /**
  * 数学工具类
  * <p>
- * 提供常用的数学计算和比较方法，使用 Apache Commons Math3 提供高性能数学计算
+ * 提供常用的数学计算和比较方法,使用 Apache Commons Math3 提供高性能数学计算
  *
  * @author bingbaihanji
  * @date 2026-01-04
@@ -17,7 +17,7 @@ import org.apache.commons.math3.util.Precision;
 public class MathCalculationUtils {
 
     /**
-     * 浮点数相等比较（使用默认精度）
+     * 浮点数相等比较(使用默认精度)
      * 使用 Apache Commons Math3 的 Precision 工具进行精确比较
      *
      * @param a 第一个数
@@ -29,7 +29,7 @@ public class MathCalculationUtils {
     }
 
     /**
-     * 浮点数相等比较（自定义精度）
+     * 浮点数相等比较(自定义精度)
      * 使用 Apache Commons Math3 的 Precision 工具进行精确比较
      *
      * @param a       第一个数
@@ -53,7 +53,7 @@ public class MathCalculationUtils {
     }
 
     /**
-     * 判断浮点数是否为零（自定义精度）
+     * 判断浮点数是否为零(自定义精度)
      * 使用 Apache Commons Math3 的 Precision 工具进行精确比较
      *
      * @param value   数值
@@ -88,8 +88,8 @@ public class MathCalculationUtils {
     }
 
     /**
-     * 计算斜边长度（勾股定理）
-     * 使用 Apache Commons Math3 的 FastMath 提供高性能计算，等同于 Math.hypot()
+     * 计算斜边长度(勾股定理)
+     * 使用 Apache Commons Math3 的 FastMath 提供高性能计算,等同于 Math.hypot()
      *
      * @param x x分量
      * @param y y分量
@@ -209,14 +209,14 @@ public class MathCalculationUtils {
 
 
     /**
-     * 计算两向量的叉积（2D，返回标量）
-     * 在2D平面中，叉积的结果是一个垂直于平面的向量的z分量
+     * 计算两向量的叉积(2D,返回标量)
+     * 在2D平面中,叉积的结果是一个垂直于平面的向量的z分量
      *
      * @param x1 第一个向量的x分量
      * @param y1 第一个向量的y分量
      * @param x2 第二个向量的x分量
      * @param y2 第二个向量的y分量
-     * @return 叉积的z分量（标量）
+     * @return 叉积的z分量(标量)
      */
     public static double crossProduct(double x1, double y1, double x2, double y2) {
         return x1 * y2 - y1 * x2;
@@ -228,7 +228,7 @@ public class MathCalculationUtils {
      *
      * @param x 向量x分量
      * @param y 向量y分量
-     * @return 归一化后的向量 [nx, ny]，如果向量长度为0则返回 [0, 0]
+     * @return 归一化后的向量 [nx, ny],如果向量长度为0则返回 [0, 0]
      */
     public static double[] normalize(double x, double y) {
         Vector2D vector = new Vector2D(x, y);
@@ -288,7 +288,7 @@ public class MathCalculationUtils {
     }
 
     /**
-     * 计算点到直线的距离（无限长直线）
+     * 计算点到直线的距离(无限长直线)
      *
      * @param px 点的x坐标
      * @param py 点的y坐标
@@ -318,7 +318,7 @@ public class MathCalculationUtils {
      * 归一化角度到 [0, 2π) 范围
      * 使用 Apache Commons Math3 的常量
      *
-     * @param angle 角度（弧度）
+     * @param angle 角度(弧度)
      * @return 归一化后的角度
      */
     public static double normalizeAngle(double angle) {
@@ -336,7 +336,7 @@ public class MathCalculationUtils {
      * 计算三角函数 cos
      * 使用 Apache Commons Math3 的 FastMath 提供高性能计算
      *
-     * @param angle 角度（弧度）
+     * @param angle 角度(弧度)
      * @return cos值
      */
     public static double cos(double angle) {
@@ -347,7 +347,7 @@ public class MathCalculationUtils {
      * 计算三角函数 sin
      * 使用 Apache Commons Math3 的 FastMath 提供高性能计算
      *
-     * @param angle 角度（弧度）
+     * @param angle 角度(弧度)
      * @return sin值
      */
     public static double sin(double angle) {
@@ -360,7 +360,7 @@ public class MathCalculationUtils {
      *
      * @param y y坐标
      * @param x x坐标
-     * @return 角度（弧度），范围 [-π, π]
+     * @return 角度(弧度),范围 [-π, π]
      */
     public static double atan2(double y, double x) {
         return FastMath.atan2(y, x);

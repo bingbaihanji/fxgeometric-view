@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * BoundingBox变换工具类
  * <p>
- * 处理BoundingBox的缩放和旋转操作，类似Word中的图片操作
+ * 处理BoundingBox的缩放和旋转操作,类似Word中的图片操作
  *
  * @author bingbaihanji
  * @date 2026-01-05
@@ -21,7 +21,7 @@ import java.util.Map;
 public class BoundingBoxTransform {
 
     /**
-     * 执行缩放变换（相对于初始位置）
+     * 执行缩放变换(相对于初始位置)
      *
      * @param boundingBox        边界框对象
      * @param handle             被拖动的句柄
@@ -29,7 +29,7 @@ public class BoundingBoxTransform {
      * @param worldY             当前鼠标世界坐标Y
      * @param initialPositions   初始位置映射
      * @param circleInitialRadii 圆的初始半径
-     * @param maintainAspect     是否保持宽高比（Shift键）
+     * @param maintainAspect     是否保持宽高比(Shift键)
      */
     public static void applyResize(BoundingBox boundingBox, ResizeHandle handle,
                                    double worldX, double worldY,
@@ -106,7 +106,7 @@ public class BoundingBoxTransform {
         if (Math.abs(scaleX) < 0.01) scaleX = Math.copySign(0.01, scaleX);
         if (Math.abs(scaleY) < 0.01) scaleY = Math.copySign(0.01, scaleY);
 
-        // 对所有对象应用缩放（基于初始位置）
+        // 对所有对象应用缩放(基于初始位置)
         for (WorldObject obj : objects) {
             for (WorldObject.DraggablePoint point : obj.getDraggablePoints()) {
                 double[] initialPos = initialPositions.get(point);
@@ -148,7 +148,7 @@ public class BoundingBoxTransform {
     }
 
     /**
-     * 执行旋转变换（相对于初始位置）
+     * 执行旋转变换(相对于初始位置)
      *
      * @param boundingBox      边界框对象
      * @param worldX           当前鼠标世界坐标X
@@ -184,7 +184,7 @@ public class BoundingBoxTransform {
         double cos = Math.cos(deltaAngle);
         double sin = Math.sin(deltaAngle);
 
-        // 对所有对象应用旋转（基于初始位置）
+        // 对所有对象应用旋转(基于初始位置)
         for (WorldObject obj : objects) {
             for (WorldObject.DraggablePoint point : obj.getDraggablePoints()) {
                 double[] initialPos = initialPositions.get(point);

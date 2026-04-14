@@ -33,7 +33,7 @@ public class BoundingBox {
      */
     private final List<ResizeHandle> handles = new ArrayList<>();
     /**
-     * 边界框的世界坐标（左下角和右上角）
+     * 边界框的世界坐标(左下角和右上角)
      */
     private double minX, minY, maxX, maxY;
     private ResizeHandle rotateHandle;
@@ -59,7 +59,7 @@ public class BoundingBox {
         handles.add(new ResizeHandle(ResizeHandle.HandlePosition.BOTTOM_LEFT));
         handles.add(new ResizeHandle(ResizeHandle.HandlePosition.LEFT));
 
-        // 1个旋转句柄（位于顶部中央上方）
+        // 1个旋转句柄(位于顶部中央上方)
         rotateHandle = new ResizeHandle(ResizeHandle.HandlePosition.ROTATE);
     }
 
@@ -135,8 +135,8 @@ public class BoundingBox {
             }
         }
 
-        // 更新旋转句柄位置（位于顶部中央上方，适中距离）
-        double rotateOffset = 1.5; // 1.5个世界坐标单位，约等于30像素在默认缩放下
+        // 更新旋转句柄位置(位于顶部中央上方,适中距离)
+        double rotateOffset = 1.5; // 1.5个世界坐标单位,约等于30像素在默认缩放下
         rotateHandle.setWorldPosition(centerX, maxY + rotateOffset);
     }
 
@@ -160,18 +160,18 @@ public class BoundingBox {
         double screenWidth = screenMaxX - screenMinX;
         double screenHeight = screenMaxY - screenMinY;
 
-        // 绘制填充（半透明）
+        // 绘制填充(半透明)
         gc.setFill(BBOX_FILL);
         gc.fillRect(screenMinX, screenMaxY, screenWidth, -screenHeight);
 
-        // 绘制边框（虚线）
+        // 绘制边框(虚线)
         gc.setStroke(BBOX_COLOR);
         gc.setLineWidth(1.5);
         gc.setLineDashes(5, 5);
         gc.strokeRect(screenMinX, screenMaxY, screenWidth, -screenHeight);
         gc.setLineDashes(); // 重置虚线
 
-        // 绘制句柄（8个缩放 + 1个旋转）
+        // 绘制句柄(8个缩放 + 1个旋转)
         for (ResizeHandle handle : handles) {
             handle.paint(gc, transform);
         }
@@ -180,7 +180,7 @@ public class BoundingBox {
         if (rotateHandle != null) {
             rotateHandle.paint(gc, transform);
 
-            // 绘制旋转句柄到边界框的连线（虚线）
+            // 绘制旋转句柄到边界框的连线(虚线)
             double centerX = (minX + maxX) / 2;
             double screenCenterX = transform.worldToScreenX(centerX);
             double screenMaxYRotate = transform.worldToScreenY(maxY);
@@ -195,12 +195,12 @@ public class BoundingBox {
     }
 
     /**
-     * 检测句柄命中（包括缩放句柄和旋转句柄）
+     * 检测句柄命中(包括缩放句柄和旋转句柄)
      *
      * @param worldX    世界坐标X
      * @param worldY    世界坐标Y
      * @param tolerance 容差
-     * @return 命中的句柄，如果没有则返回null
+     * @return 命中的句柄,如果没有则返回null
      */
     public ResizeHandle hitTestHandles(double worldX, double worldY, double tolerance) {
         // 优先检测旋转句柄

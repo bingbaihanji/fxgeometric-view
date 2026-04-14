@@ -19,14 +19,14 @@ import javafx.scene.text.Font;
  */
 public class AxesPainter implements WorldPainter {
 
-    private static final double EDGE_THRESHOLD = 30; // 边缘绘制阈值（像素）
-    private static final double MINOR_TICK_COUNT = 5; // 次刻度数量（主刻度间的分割数）
+    private static final double EDGE_THRESHOLD = 30; // 边缘绘制阈值(像素)
+    private static final double MINOR_TICK_COUNT = 5; // 次刻度数量(主刻度间的分割数)
 
     private EuclidianViewSettings settings;
     private Boolean showCartesianCoordinateAxis = true;
 
     /**
-     * 旧版构造函数（向后兼容）
+     * 旧版构造函数(向后兼容)
      */
     public AxesPainter(Boolean showCartesianCoordinateAxis) {
         this.showCartesianCoordinateAxis = showCartesianCoordinateAxis;
@@ -34,7 +34,7 @@ public class AxesPainter implements WorldPainter {
     }
 
     /**
-     * 新构造函数（支持配置注入）
+     * 新构造函数(支持配置注入)
      */
     public AxesPainter(Boolean showCartesianCoordinateAxis, EuclidianViewSettings settings) {
         this.showCartesianCoordinateAxis = showCartesianCoordinateAxis;
@@ -73,7 +73,7 @@ public class AxesPainter implements WorldPainter {
         // 绘制主要坐标轴
         drawMainAxes(gc, transform, width, height, x0, y0, xAxisVisible, yAxisVisible);
 
-        // 绘制边界坐标轴（如果主坐标轴不可见）
+        // 绘制边界坐标轴(如果主坐标轴不可见)
         drawBoundaryAxes(gc, transform, width, height, x0, y0, xAxisVisible, yAxisVisible);
 
         // 绘制坐标轴刻度标记
@@ -100,21 +100,21 @@ public class AxesPainter implements WorldPainter {
         // 应用线型
         LineStyleUtil.applyLineStyle(gc, settings.getAxesLineType());
 
-        // 绘制X轴（仅在可见范围内绘制）
+        // 绘制X轴(仅在可见范围内绘制)
         if (xAxisVisible) {
             // 绘制水平轴线
             gc.strokeLine(0, y0, width, y0);
-            // 绘制X轴箭头（根据配置）
+            // 绘制X轴箭头(根据配置)
             drawArrowByType(gc, settings.getXArrowType(), width - 10, y0, width, y0, true);
             // 绘制文字(X轴)
             drawAxisLabel(gc, getLabelName("axis.xAxis"), width - 25, y0, width, height, true);
         }
 
-        // 绘制Y轴（仅在可见范围内绘制）
+        // 绘制Y轴(仅在可见范围内绘制)
         if (yAxisVisible) {
             // 绘制垂直轴线
             gc.strokeLine(x0, 0, x0, height);
-            // 绘制Y轴箭头（根据配置）
+            // 绘制Y轴箭头(根据配置)
             drawArrowByType(gc, settings.getYArrowType(), x0, 10, x0, 0, false);
             // 绘制文字(Y轴)
             drawAxisLabel(gc, getLabelName("axis.yAxis"), x0, 20, width, height, false);
@@ -134,7 +134,7 @@ public class AxesPainter implements WorldPainter {
                                   double x0, double y0,
                                   boolean xAxisVisible, boolean yAxisVisible) {
 
-        // 设置边界坐标轴样式（蓝色）
+        // 设置边界坐标轴样式(蓝色)
         gc.setStroke(StyleManager.BOUNDARY_AXES_COLOR);
         gc.setFill(StyleManager.BOUNDARY_AXES_COLOR);
         gc.setLineWidth(1.5);
@@ -142,7 +142,7 @@ public class AxesPainter implements WorldPainter {
         // 绘制虚线样式
         gc.setLineDashes(5, 3);
 
-        // 检查X轴是否接近边界（但不可见）
+        // 检查X轴是否接近边界(但不可见)
         if (!xAxisVisible && settings.isShowXAxis() && isAxisNearBoundary(y0, height)) {
             // 确定在哪个边界绘制
             double boundaryY = getBoundaryPosition(y0, height);
@@ -151,12 +151,12 @@ public class AxesPainter implements WorldPainter {
             gc.strokeLine(0, boundaryY, width, boundaryY);
             // 绘制箭头
             drawArrow(gc, width - 10, boundaryY, width, boundaryY);
-            // 绘制文字（带边界指示）
+            // 绘制文字(带边界指示)
             drawBoundaryLabel(gc, getLabelName("axis.xAxis"), width - 25, boundaryY,
                     y0 < 0 ? getLabelName("axis.upperBorder") : getLabelName("axis.lowerBorder"), width, height, true);
         }
 
-        // 检查Y轴是否接近边界（但不可见）
+        // 检查Y轴是否接近边界(但不可见)
         if (!yAxisVisible && settings.isShowYAxis() && isAxisNearBoundary(x0, width)) {
             // 确定在哪个边界绘制
             double boundaryX = getBoundaryPosition(x0, width);
@@ -165,7 +165,7 @@ public class AxesPainter implements WorldPainter {
             gc.strokeLine(boundaryX, 0, boundaryX, height);
             // 绘制箭头
             drawArrow(gc, boundaryX, 10, boundaryX, 0);
-            // 绘制文字（带边界指示）
+            // 绘制文字(带边界指示)
             drawBoundaryLabel(gc, getLabelName("axis.yAxis"), boundaryX, 20,
                     x0 < 0 ? getLabelName("axis.leftBorder") : getLabelName("axis.rightBorder"), width, height, false);
         }
@@ -175,8 +175,8 @@ public class AxesPainter implements WorldPainter {
     }
 
     /**
-     * 绘制坐标轴刻度线及数值标签（支持主次刻度）
-     * 使用统一的AxisTickCalculator计算刻度，确保与网格同步
+     * 绘制坐标轴刻度线及数值标签(支持主次刻度)
+     * 使用统一的AxisTickCalculator计算刻度,确保与网格同步
      */
     private void drawAxisTicks(GraphicsContext gc,
                                WorldTransform transform,
@@ -198,7 +198,7 @@ public class AxesPainter implements WorldPainter {
                 ) :
                 settings.getYTickDistance();
 
-        // 更新settings中的实际刻度距离（供GridPainter使用）
+        // 更新settings中的实际刻度距离(供GridPainter使用)
         // 这确保了网格和坐标轴使用相同的刻度值
         if (settings.isAutoXTickDistance()) {
             settings.setXTickDistance(xStep);
@@ -213,7 +213,7 @@ public class AxesPainter implements WorldPainter {
         double worldTop = transform.screenToWorldY(0);
         double worldBottom = transform.screenToWorldY(height);
 
-        // 设置刻度线和文字的样式（使用主坐标轴颜色）
+        // 设置刻度线和文字的样式(使用主坐标轴颜色)
         gc.setStroke(settings.getAxesColor());
         gc.setFill(settings.getAxesColor());
         gc.setLineWidth(2);
@@ -235,7 +235,7 @@ public class AxesPainter implements WorldPainter {
     }
 
     /**
-     * 绘制X轴刻度（主刻度 + 次刻度）
+     * 绘制X轴刻度(主刻度 + 次刻度)
      */
     private void drawXAxisTicks(GraphicsContext gc, WorldTransform transform,
                                 double worldLeft, double worldRight,
@@ -247,11 +247,11 @@ public class AxesPainter implements WorldPainter {
 
             double sx = transform.worldToScreenX(x);
 
-            // 绘制主刻度线（长度8）
+            // 绘制主刻度线(长度8)
             gc.setLineWidth(2);
             gc.strokeLine(sx, tickY - 4, sx, tickY + 4);
 
-            // 绘制刻度数值标签（π单位模式下，X轴用π，Y轴用数值）
+            // 绘制刻度数值标签(π单位模式下,X轴用π,Y轴用数值)
             UnitLabelType xAxisUnitType = settings.getUnitLabelType();
             gc.fillText(formatNumber(x, xAxisUnitType), sx + 2, tickY - 6);
 
@@ -263,7 +263,7 @@ public class AxesPainter implements WorldPainter {
     }
 
     /**
-     * 绘制Y轴刻度（主刻度 + 次刻度）
+     * 绘制Y轴刻度(主刻度 + 次刻度)
      */
     private void drawYAxisTicks(GraphicsContext gc, WorldTransform transform,
                                 double worldBottom, double worldTop,
@@ -275,11 +275,11 @@ public class AxesPainter implements WorldPainter {
 
             double sy = transform.worldToScreenY(y);
 
-            // 绘制主刻度线（长度8）
+            // 绘制主刻度线(长度8)
             gc.setLineWidth(2);
             gc.strokeLine(tickX - 4, sy, tickX + 4, sy);
 
-            // 绘制刻度数值标签（π单位模式下，Y轴始终用数值）
+            // 绘制刻度数值标签(π单位模式下,Y轴始终用数值)
             UnitLabelType yAxisUnitType = settings.getUnitLabelType() == UnitLabelType.PI
                     ? UnitLabelType.NUMERIC
                     : settings.getUnitLabelType();
@@ -305,11 +305,11 @@ public class AxesPainter implements WorldPainter {
 
             if (isXAxis) {
                 double sx = transform.worldToScreenX(value);
-                // 次刻度线（长度4，较短）
+                // 次刻度线(长度4,较短)
                 gc.strokeLine(sx, axisPos - 2, sx, axisPos + 2);
             } else {
                 double sy = transform.worldToScreenY(value);
-                // 次刻度线（长度4，较短）
+                // 次刻度线(长度4,较短)
                 gc.strokeLine(axisPos - 2, sy, axisPos + 2, sy);
             }
         }
@@ -326,7 +326,7 @@ public class AxesPainter implements WorldPainter {
 
         boolean filled = (type == AxisArrowType.ARROW_FILLED || type == AxisArrowType.TWO_ARROWS_FILLED);
 
-        // 绘制主箭头（正向）
+        // 绘制主箭头(正向)
         if (filled) {
             drawFilledArrow(gc, x1, y1, x2, y2);
         } else {
@@ -425,7 +425,7 @@ public class AxesPainter implements WorldPainter {
     }
 
     /**
-     * 绘制边界坐标轴标签（带边界指示）
+     * 绘制边界坐标轴标签(带边界指示)
      */
     private void drawBoundaryLabel(GraphicsContext gc, String axisText,
                                    double x, double y,
@@ -466,18 +466,18 @@ public class AxesPainter implements WorldPainter {
      * 获取边界位置
      */
     private double getBoundaryPosition(double position, double dimension) {
-        // 如果坐标轴在左侧/上方边界外，固定在顶部/左侧边缘
+        // 如果坐标轴在左侧/上方边界外,固定在顶部/左侧边缘
         if (position < 0) {
             return EDGE_THRESHOLD;
         }
-        // 如果坐标轴在右侧/下方边界外，固定在底部/右侧边缘
+        // 如果坐标轴在右侧/下方边界外,固定在底部/右侧边缘
         else {
             return dimension - EDGE_THRESHOLD;
         }
     }
 
     /**
-     * 格式化数字显示（支持π单位）
+     * 格式化数字显示(支持π单位)
      */
     private String formatNumber(double v, UnitLabelType unitType) {
         if (unitType == UnitLabelType.PI) {
@@ -498,7 +498,7 @@ public class AxesPainter implements WorldPainter {
     }
 
     /**
-     * 格式化π单位（基本倍数：π/2, π, 2π等）
+     * 格式化π单位(基本倍数：π/2, π, 2π等)
      */
     private String formatPiUnit(double v) {
         // 将值除以π得到倍数
@@ -542,7 +542,7 @@ public class AxesPainter implements WorldPainter {
             return "-3π/2";
         }
 
-        // 其他情况，显示小数形式
+        // 其他情况,显示小数形式
         return String.format("%.2fπ", piMultiple);
     }
 

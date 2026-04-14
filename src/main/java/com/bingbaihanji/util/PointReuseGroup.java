@@ -8,12 +8,12 @@ import java.util.concurrent.CopyOnWriteArraySet;
 /**
  * 点复用组
  * <p>
- * 管理重合点的复用关系。当多个点启用复用后，它们会形成一个复用组，
- * 移动组内任意一个点时，其他点会同步移动。
+ * 管理重合点的复用关系。当多个点启用复用后,它们会形成一个复用组,
+ * 移动组内任意一个点时,其他点会同步移动。
  * <p>
  * 使用场景：
- * - 两个圆的圆心重合后，开启复用，移动时两个圆同步移动
- * - 线段端点与另一个点重合后，开启复用，形成联动关系
+ * - 两个圆的圆心重合后,开启复用,移动时两个圆同步移动
+ * - 线段端点与另一个点重合后,开启复用,形成联动关系
  *
  * @author bingbaihanji
  * @date 2026-01-05
@@ -21,7 +21,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class PointReuseGroup {
 
     /**
-     * 全局复用组管理器（单例）
+     * 全局复用组管理器(单例)
      */
     private static final PointReuseGroupManager MANAGER = new PointReuseGroupManager();
 
@@ -31,7 +31,7 @@ public class PointReuseGroup {
     private final String groupId;
 
     /**
-     * 组内的点集合（使用线程安全的集合）
+     * 组内的点集合(使用线程安全的集合)
      */
     private final Set<PointGeo> members = new CopyOnWriteArraySet<>();
 
@@ -41,12 +41,12 @@ public class PointReuseGroup {
     private boolean enabled = true;
 
     /**
-     * 主点（组内的"代表"点，通常是最先加入的点）
+     * 主点(组内的"代表"点,通常是最先加入的点)
      */
     private PointGeo masterPoint;
 
     /**
-     * 私有构造函数，通过静态方法创建
+     * 私有构造函数,通过静态方法创建
      */
     private PointReuseGroup(String groupId) {
         this.groupId = groupId;
@@ -88,12 +88,12 @@ public class PointReuseGroup {
         members.remove(point);
         point.setReuseGroup(null);
 
-        // 如果移除的是主点，选择新的主点
+        // 如果移除的是主点,选择新的主点
         if (point == masterPoint && !members.isEmpty()) {
             masterPoint = members.iterator().next();
         }
 
-        // 如果组内只剩一个点，解散复用组
+        // 如果组内只剩一个点,解散复用组
         if (members.size() <= 1) {
             dissolve();
         }
@@ -148,15 +148,15 @@ public class PointReuseGroup {
      *
      * @param targetX     目标X坐标
      * @param targetY     目标Y坐标
-     * @param sourcePoint 触发移动的点（不重复更新此点）
+     * @param sourcePoint 触发移动的点(不重复更新此点)
      */
     public void syncMove(double targetX, double targetY, PointGeo sourcePoint) {
         if (!enabled) return;
 
-        // 优化：批量更新，减少重复计算
+        // 优化：批量更新,减少重复计算
         for (PointGeo member : members) {
             if (member != sourcePoint && !member.isSyncingPosition()) {
-                // 直接设置坐标，避免递归调用
+                // 直接设置坐标,避免递归调用
                 member.setPositionDirectly(targetX, targetY);
             }
         }
@@ -177,7 +177,7 @@ public class PointReuseGroup {
     }
 
     /**
-     * 获取组内所有成员的名称列表（用于显示）
+     * 获取组内所有成员的名称列表(用于显示)
      */
     public String getMembersInfo() {
         if (members.isEmpty()) {
@@ -257,12 +257,12 @@ public class PointReuseGroup {
          * 创建复用组并添加两个点
          */
         public PointReuseGroup createGroup(PointGeo point1, PointGeo point2) {
-            // 如果两个点已经在同一个组，直接返回该组
+            // 如果两个点已经在同一个组,直接返回该组
             if (point1.getReuseGroup() != null && point1.getReuseGroup() == point2.getReuseGroup()) {
                 return point1.getReuseGroup();
             }
 
-            // 如果其中一个点已有复用组，将另一个点加入该组
+            // 如果其中一个点已有复用组,将另一个点加入该组
             if (point1.getReuseGroup() != null) {
                 point1.getReuseGroup().addMember(point2);
                 return point1.getReuseGroup();

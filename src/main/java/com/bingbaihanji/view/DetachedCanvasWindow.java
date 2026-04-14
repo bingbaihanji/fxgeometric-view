@@ -27,8 +27,8 @@ import java.util.List;
 /**
  * 独立画布窗口
  * <p>
- * 将绘图视图弹出到独立窗口，支持多显示器工作流
- * 与主窗口共享对象列表，实现双向同步
+ * 将绘图视图弹出到独立窗口,支持多显示器工作流
+ * 与主窗口共享对象列表,实现双向同步
  * 包含完整的工具栏和绘制功能
  *
  * @author bingbaihanji
@@ -41,40 +41,40 @@ public class DetachedCanvasWindow {
     private final DrawingController drawingController;
     // 存储从此窗口打开的所有子窗口
     private final List<DetachedCanvasWindow> childWindows = new ArrayList<>();
-    // 父窗口引用（如果有）
+    // 父窗口引用(如果有)
     private DetachedCanvasWindow parentWindow;
 
     /**
      * 构造独立窗口
      *
-     * @param sourceView 源视图（主窗口的GridChartView）
+     * @param sourceView 源视图(主窗口的GridChartView)
      */
     public DetachedCanvasWindow(GridChartView sourceView) {
         this(sourceView, null);
     }
 
     /**
-     * 构造独立窗口（带父窗口引用）
+     * 构造独立窗口(带父窗口引用)
      *
-     * @param sourceView 源视图（主窗口的GridChartView）
-     * @param parent     父窗口（如果从其他独立窗口打开）
+     * @param sourceView 源视图(主窗口的GridChartView)
+     * @param parent     父窗口(如果从其他独立窗口打开)
      */
     public DetachedCanvasWindow(GridChartView sourceView, DetachedCanvasWindow parent) {
         this.stage = new Stage();
         this.parentWindow = parent;
 
-        // 如果有父窗口，将自己添加到父窗口的子窗口列表中
+        // 如果有父窗口,将自己添加到父窗口的子窗口列表中
         if (parent != null) {
             parent.addChildWindow(this);
         }
 
-        // 使用共享的对象列表创建新视图（关键：两个窗口共享同一个对象列表）
+        // 使用共享的对象列表创建新视图(关键：两个窗口共享同一个对象列表)
         this.detachedView = new GridChartView(sourceView.getObjects());
 
         // 创建工具栏
         ShapeToolPane toolPane = new ShapeToolPane();
 
-        // 创建绘制控制器（传递自身引用以支持子窗口层级管理）
+        // 创建绘制控制器(传递自身引用以支持子窗口层级管理)
         this.drawingController = new DrawingController(detachedView, this);
 
         // 绑定工具栏事件
@@ -101,12 +101,12 @@ public class DetachedCanvasWindow {
     private void initWindow(ShapeToolPane toolPane) {
         BorderPane root = new BorderPane();
 
-        // 创建分割面板（工具栏 + 画布）
+        // 创建分割面板(工具栏 + 画布)
         SplitPane central = new SplitPane(toolPane, detachedView);
         central.setOrientation(Orientation.HORIZONTAL);
         central.setDividerPositions(0.23);
 
-        // 监听分隔条位置变化，限制范围
+        // 监听分隔条位置变化,限制范围
         central.getDividers().forEach(div -> {
             div.positionProperty().addListener((obs, oldPos, newPos) -> {
                 if (central.getDividers().indexOf(div) == 0) {
@@ -229,7 +229,7 @@ public class DetachedCanvasWindow {
      * 关闭所有子窗口
      */
     private void closeAllChildWindows() {
-        // 创建子窗口列表的副本，避免在迭代时修改集合
+        // 创建子窗口列表的副本,避免在迭代时修改集合
         List<DetachedCanvasWindow> childrenCopy = new ArrayList<>(childWindows);
         for (DetachedCanvasWindow child : childrenCopy) {
             child.close(); // 递归关闭子窗口及其子窗口
@@ -245,7 +245,7 @@ public class DetachedCanvasWindow {
     }
 
     /**
-     * 获取GridChartView，供子窗口创建时使用
+     * 获取GridChartView,供子窗口创建时使用
      */
     public GridChartView getGridChartView() {
         return detachedView;

@@ -91,12 +91,12 @@ public class IntersectionUtils {
         double discriminant = b * b - 4 * a * c;
 
         if (discriminant < 0) {
-            // 没有实数解，线段与圆不相交
+            // 没有实数解,线段与圆不相交
             return intersections;
         }
 
         if (MathCalculationUtils.isZero(discriminant, GeometryConfig.Performance.MIN_VALID_DISTANCE)) {
-            // 一个解，线段与圆相切
+            // 一个解,线段与圆相切
             double t = -b / (2 * a);
             if (t >= 0 && t <= 1) {
                 double ix = x1 + t * dx;
@@ -104,7 +104,7 @@ public class IntersectionUtils {
                 intersections.add(new Point2D(ix, iy));
             }
         } else {
-            // 两个解，线段与圆相交于两点
+            // 两个解,线段与圆相交于两点
             double sqrtDiscriminant = MathCalculationUtils.sqrt(discriminant);
             double t1 = (-b + sqrtDiscriminant) / (2 * a);
             double t2 = (-b - sqrtDiscriminant) / (2 * a);
@@ -177,7 +177,7 @@ public class IntersectionUtils {
 
         intersections.add(new Point2D(ix1, iy1));
 
-        // 如果两交点不重合，则添加第二个交点
+        // 如果两交点不重合,则添加第二个交点
         if (!MathCalculationUtils.equals(ix1, ix2) || !MathCalculationUtils.equals(iy1, iy2)) {
             intersections.add(new Point2D(ix2, iy2));
         }
@@ -216,7 +216,7 @@ public class IntersectionUtils {
 
         double u = uNum / denom;
 
-        // 无限直线不需要检查t，只检查交点是否在线段上
+        // 无限直线不需要检查t,只检查交点是否在线段上
         if (u >= 0 && u <= 1) {
             double t = tNum / denom;
             double ix = x1 + t * (x2 - x1);
@@ -260,18 +260,18 @@ public class IntersectionUtils {
         double discriminant = b * b - 4 * a * c;
 
         if (discriminant < 0) {
-            // 没有实数解，直线与圆不相交
+            // 没有实数解,直线与圆不相交
             return intersections;
         }
 
         if (MathCalculationUtils.isZero(discriminant, GeometryConfig.Performance.MIN_VALID_DISTANCE)) {
-            // 一个解，直线与圆相切
+            // 一个解,直线与圆相切
             double t = -b / (2 * a);
             double ix = x1 + t * dx;
             double iy = y1 + t * dy;
             intersections.add(new Point2D(ix, iy));
         } else {
-            // 两个解，直线与圆相交于两点
+            // 两个解,直线与圆相交于两点
             double sqrtDiscriminant = MathCalculationUtils.sqrt(discriminant);
             double t1 = (-b + sqrtDiscriminant) / (2 * a);
             double t2 = (-b - sqrtDiscriminant) / (2 * a);
@@ -317,7 +317,7 @@ public class IntersectionUtils {
         double tNum = (x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4);
         double t = tNum / denom;
 
-        // 无限直线不需要检查t和u的范围，直接计算交点
+        // 无限直线不需要检查t和u的范围,直接计算交点
         double ix = x1 + t * (x2 - x1);
         double iy = y1 + t * (y2 - y1);
         intersections.add(new Point2D(ix, iy));
@@ -339,8 +339,8 @@ public class IntersectionUtils {
     }
 
     /**
-     * 计算过指定点垂直于给定直线的垂线的两个点（用于绘制无限直线）
-     * 返回的两个点在垂线上，距离给定点足够远以绘制无限直线
+     * 计算过指定点垂直于给定直线的垂线的两个点(用于绘制无限直线)
+     * 返回的两个点在垂线上,距离给定点足够远以绘制无限直线
      *
      * @param lineX1 原直线的第一个点x坐标
      * @param lineY1 原直线的第一个点y坐标
@@ -365,7 +365,7 @@ public class IntersectionUtils {
         perpDx = normalized[0];
         perpDy = normalized[1];
 
-        // 生成垂线上的两个点（距离给定点足够远）
+        // 生成垂线上的两个点(距离给定点足够远)
         double scale = 10000; // 扩展距离
         Point2D point1 = new Point2D(pointX + perpDx * scale, pointY + perpDy * scale);
         Point2D point2 = new Point2D(pointX - perpDx * scale, pointY - perpDy * scale);
@@ -374,14 +374,14 @@ public class IntersectionUtils {
     }
 
     /**
-     * 计算垂直平分线的两个点（用于绘制无限直线）
+     * 计算垂直平分线的两个点(用于绘制无限直线)
      * 垂直平分线过线段中点且垂直于线段
      *
      * @param lineX1 线段起点x坐标
      * @param lineY1 线段起点y坐标
      * @param lineX2 线段终点x坐标
      * @param lineY2 线段终点y坐标
-     * @param pointX 给定点x坐标（垂直平分线将过此点）
+     * @param pointX 给定点x坐标(垂直平分线将过此点)
      * @param pointY 给定点y坐标
      * @return 垂直平分线上的两个点 [point1, point2]
      */
@@ -400,7 +400,7 @@ public class IntersectionUtils {
         perpDx = normalized[0];
         perpDy = normalized[1];
 
-        // 生成垂直平分线上的两个点（从给定点出发）
+        // 生成垂直平分线上的两个点(从给定点出发)
         double scale = 10000; // 扩展距离
         Point2D point1 = new Point2D(pointX + perpDx * scale, pointY + perpDy * scale);
         Point2D point2 = new Point2D(pointX - perpDx * scale, pointY - perpDy * scale);
@@ -409,7 +409,7 @@ public class IntersectionUtils {
     }
 
     /**
-     * 计算过指定点平行于给定直线的平行线的两个点（用于绘制无限直线）
+     * 计算过指定点平行于给定直线的平行线的两个点(用于绘制无限直线)
      *
      * @param lineX1 原直线的第一个点x坐标
      * @param lineY1 原直线的第一个点y坐标
@@ -430,7 +430,7 @@ public class IntersectionUtils {
         dx = normalized[0];
         dy = normalized[1];
 
-        // 生成平行线上的两个点（距离给定点足够远）
+        // 生成平行线上的两个点(距离给定点足够远)
         double scale = 10000; // 扩展距离
         Point2D point1 = new Point2D(pointX + dx * scale, pointY + dy * scale);
         Point2D point2 = new Point2D(pointX - dx * scale, pointY - dy * scale);
@@ -439,7 +439,7 @@ public class IntersectionUtils {
     }
 
     /**
-     * 计算过圆上一点的切线的两个点（用于绘制无限直线）
+     * 计算过圆上一点的切线的两个点(用于绘制无限直线)
      * 切线垂直于圆心到该点的半径
      *
      * @param cx     圆心x坐标
@@ -453,7 +453,7 @@ public class IntersectionUtils {
         double dx = pointX - cx;
         double dy = pointY - cy;
 
-        // 切线垂直于半径，方向向量为 (-dy, dx)
+        // 切线垂直于半径,方向向量为 (-dy, dx)
         double tangentDx = -dy;
         double tangentDy = dx;
 
@@ -462,7 +462,7 @@ public class IntersectionUtils {
         tangentDx = normalized[0];
         tangentDy = normalized[1];
 
-        // 生成切线上的两个点（距离切点足够远）
+        // 生成切线上的两个点(距离切点足够远)
         double scale = 10000; // 扩展距离
         Point2D point1 = new Point2D(pointX + tangentDx * scale, pointY + tangentDy * scale);
         Point2D point2 = new Point2D(pointX - tangentDx * scale, pointY - tangentDy * scale);
@@ -473,7 +473,7 @@ public class IntersectionUtils {
     /**
      * 计算两个函数图像的交点
      * <p>
-     * 通过遍历采样点，检测函数值符号变化来近似查找交点
+     * 通过遍历采样点,检测函数值符号变化来近似查找交点
      * 使用线性插值精确定位交点位置
      *
      * @param function1 第一个函数
@@ -514,7 +514,7 @@ public class IntersectionUtils {
                 double x2Min = Math.min(p2a.getX(), p2b.getX());
                 double x2Max = Math.max(p2a.getX(), p2b.getX());
 
-                // 如果x范围不重叠，跳过
+                // 如果x范围不重叠,跳过
                 if (x1Max < x2Min || x2Max < x1Min) {
                     continue;
                 }
@@ -534,7 +534,7 @@ public class IntersectionUtils {
     }
 
     /**
-     * 计算两条线段的交点（内部辅助方法）
+     * 计算两条线段的交点(内部辅助方法)
      */
     private static List<Point2D> getSegmentSegmentIntersections(
             double x1, double y1, double x2, double y2,
@@ -564,14 +564,14 @@ public class IntersectionUtils {
     }
 
     /**
-     * 检查点是否有效（非null且坐标有限）
+     * 检查点是否有效(非null且坐标有限)
      */
     private static boolean isValidPoint(Point2D p) {
         return p != null && Double.isFinite(p.getX()) && Double.isFinite(p.getY());
     }
 
     /**
-     * 去除重复的点（距离小于阈值的点视为重复）
+     * 去除重复的点(距离小于阈值的点视为重复)
      */
     private static List<Point2D> removeDuplicatePoints(List<Point2D> points, double threshold) {
         List<Point2D> result = new ArrayList<>();
@@ -613,7 +613,7 @@ public class IntersectionUtils {
         double x2 = line.getEndX();
         double y2 = line.getEndY();
 
-        // 遍历函数采样点，检测与线段的交点
+        // 遍历函数采样点,检测与线段的交点
         for (int i = 0; i < sampledPoints.size() - 1; i++) {
             Point2D p1 = sampledPoints.get(i);
             Point2D p2 = sampledPoints.get(i + 1);
@@ -658,7 +658,7 @@ public class IntersectionUtils {
         double dx = x2 - x1;
         double dy = y2 - y1;
 
-        // 遍历函数采样点，检测与无限直线的交点
+        // 遍历函数采样点,检测与无限直线的交点
         for (int i = 0; i < sampledPoints.size() - 1; i++) {
             Point2D p1 = sampledPoints.get(i);
             Point2D p2 = sampledPoints.get(i + 1);
@@ -713,7 +713,7 @@ public class IntersectionUtils {
         double cy = circle.getCy();
         double r = circle.getR();
 
-        // 遍历函数采样线段，检测与圆的交点
+        // 遍历函数采样线段,检测与圆的交点
         for (int i = 0; i < sampledPoints.size() - 1; i++) {
             Point2D p1 = sampledPoints.get(i);
             Point2D p2 = sampledPoints.get(i + 1);
@@ -726,9 +726,9 @@ public class IntersectionUtils {
             double d1 = Math.hypot(p1.getX() - cx, p1.getY() - cy);
             double d2 = Math.hypot(p2.getX() - cx, p2.getY() - cy);
 
-            // 检查是否跨越圆（一个点在圆内，一个点在圆外，或者恰好在圆上）
+            // 检查是否跨越圆(一个点在圆内,一个点在圆外,或者恰好在圆上)
             if ((d1 - r) * (d2 - r) <= 0 || Math.abs(d1 - r) < 1e-6 || Math.abs(d2 - r) < 1e-6) {
-                // 创建临时线段，使用线段-圆交点算法
+                // 创建临时线段,使用线段-圆交点算法
                 LineGeo tempLine = new LineGeo(p1.getX(), p1.getY(), p2.getX(), p2.getY(), false);
                 List<Point2D> segmentIntersections = getLineCircleIntersections(tempLine, circle);
                 intersections.addAll(segmentIntersections);

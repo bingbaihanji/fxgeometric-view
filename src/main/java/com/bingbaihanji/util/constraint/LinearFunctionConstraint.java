@@ -30,7 +30,7 @@ public class LinearFunctionConstraint implements PointConstraint {
 
     @Override
     public double calculateParameter(double x, double y) {
-        // 对于显函数，参数就是x坐标
+        // 对于显函数,参数就是x坐标
         // 限制在定义域内
         double domainMin = function.getDomainMin();
         double domainMax = function.getDomainMax();
@@ -84,6 +84,6 @@ public class LinearFunctionConstraint implements PointConstraint {
 
     @Override
     public void setAsVertexConstraintIfApplicable(com.bingbaihanji.view.layout.draw.geometry.impl.PointGeo point) {
-        // 函数约束不支持顶点，不需要实现
+        // 函数约束不支持顶点,不需要实现
     }
 }

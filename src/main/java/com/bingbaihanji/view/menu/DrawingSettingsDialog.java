@@ -40,15 +40,15 @@ public class DrawingSettingsDialog extends Dialog<DrawingSettingsDialog.Settings
     private double minPointDistance;
     private boolean enableSmoothing;
 
-    public DrawingSettingsDialog(double simplifyEpsilon, int smoothSegments, 
-                                  double tension, double minPointDistance, 
-                                  boolean enableSmoothing) {
+    public DrawingSettingsDialog(double simplifyEpsilon, int smoothSegments,
+                                 double tension, double minPointDistance,
+                                 boolean enableSmoothing) {
         this.simplifyEpsilon = simplifyEpsilon;
         this.smoothSegments = smoothSegments;
         this.tension = tension;
         this.minPointDistance = minPointDistance;
         this.enableSmoothing = enableSmoothing;
-        
+
         initDialog();
     }
 
@@ -86,11 +86,11 @@ public class DrawingSettingsDialog extends Dialog<DrawingSettingsDialog.Settings
         // 2. 简化容差滑块
         Label simplifyLabel = new Label(I18nUtil.getString("settings.drawing.simplifyEpsilon"));
         simplifyLabel.setTooltip(new Tooltip(I18nUtil.getString("settings.drawing.simplifyEpsilon.tooltip")));
-        
+
         simplifyEpsilonSlider = createSlider(0.1, 3.0, simplifyEpsilon, 0.1);
         simplifyEpsilonValueLabel = new Label(String.format("%.2f", simplifyEpsilon));
         simplifyEpsilonValueLabel.setPrefWidth(50);
-        
+
         gridPane.add(simplifyLabel, 0, row);
         gridPane.add(simplifyEpsilonSlider, 1, row);
         gridPane.add(simplifyEpsilonValueLabel, 2, row);
@@ -99,11 +99,11 @@ public class DrawingSettingsDialog extends Dialog<DrawingSettingsDialog.Settings
         // 3. 平滑细分数滑块
         Label segmentsLabel = new Label(I18nUtil.getString("settings.drawing.smoothSegments"));
         segmentsLabel.setTooltip(new Tooltip(I18nUtil.getString("settings.drawing.smoothSegments.tooltip")));
-        
+
         smoothSegmentsSlider = createSlider(5, 30, smoothSegments, 1);
         smoothSegmentsValueLabel = new Label(String.valueOf(smoothSegments));
         smoothSegmentsValueLabel.setPrefWidth(50);
-        
+
         gridPane.add(segmentsLabel, 0, row);
         gridPane.add(smoothSegmentsSlider, 1, row);
         gridPane.add(smoothSegmentsValueLabel, 2, row);
@@ -112,11 +112,11 @@ public class DrawingSettingsDialog extends Dialog<DrawingSettingsDialog.Settings
         // 4. 张力系数滑块
         Label tensionLabel = new Label(I18nUtil.getString("settings.drawing.tension"));
         tensionLabel.setTooltip(new Tooltip(I18nUtil.getString("settings.drawing.tension.tooltip")));
-        
+
         tensionSlider = createSlider(0.0, 1.0, tension, 0.05);
         tensionValueLabel = new Label(String.format("%.2f", tension));
         tensionValueLabel.setPrefWidth(50);
-        
+
         gridPane.add(tensionLabel, 0, row);
         gridPane.add(tensionSlider, 1, row);
         gridPane.add(tensionValueLabel, 2, row);
@@ -125,11 +125,11 @@ public class DrawingSettingsDialog extends Dialog<DrawingSettingsDialog.Settings
         // 5. 最小采样距离滑块
         Label minDistanceLabel = new Label(I18nUtil.getString("settings.drawing.minPointDistance"));
         minDistanceLabel.setTooltip(new Tooltip(I18nUtil.getString("settings.drawing.minPointDistance.tooltip")));
-        
+
         minPointDistanceSlider = createSlider(0.01, 0.2, minPointDistance, 0.01);
         minPointDistanceValueLabel = new Label(String.format("%.2f", minPointDistance));
         minPointDistanceValueLabel.setPrefWidth(50);
-        
+
         gridPane.add(minDistanceLabel, 0, row);
         gridPane.add(minPointDistanceSlider, 1, row);
         gridPane.add(minPointDistanceValueLabel, 2, row);
@@ -140,10 +140,10 @@ public class DrawingSettingsDialog extends Dialog<DrawingSettingsDialog.Settings
         // 创建按钮面板
         HBox buttonBox = new HBox(10);
         buttonBox.setAlignment(Pos.CENTER_RIGHT);
-        
+
         Button resetButton = new Button(I18nUtil.getString("settings.drawing.reset"));
         resetButton.setOnAction(e -> resetToDefaults());
-        
+
         buttonBox.getChildren().add(resetButton);
 
         // 组装主面板
@@ -163,11 +163,11 @@ public class DrawingSettingsDialog extends Dialog<DrawingSettingsDialog.Settings
         setResultConverter(dialogButton -> {
             if (dialogButton == applyButtonType) {
                 return new SettingsResult(
-                    simplifyEpsilonSlider.getValue(),
-                    (int) smoothSegmentsSlider.getValue(),
-                    tensionSlider.getValue(),
-                    minPointDistanceSlider.getValue(),
-                    enableSmoothingCheckBox.isSelected()
+                        simplifyEpsilonSlider.getValue(),
+                        (int) smoothSegmentsSlider.getValue(),
+                        tensionSlider.getValue(),
+                        minPointDistanceSlider.getValue(),
+                        enableSmoothingCheckBox.isSelected()
                 );
             }
             return null;
@@ -229,9 +229,9 @@ public class DrawingSettingsDialog extends Dialog<DrawingSettingsDialog.Settings
         private final double minPointDistance;
         private final boolean enableSmoothing;
 
-        public SettingsResult(double simplifyEpsilon, int smoothSegments, 
-                             double tension, double minPointDistance, 
-                             boolean enableSmoothing) {
+        public SettingsResult(double simplifyEpsilon, int smoothSegments,
+                              double tension, double minPointDistance,
+                              boolean enableSmoothing) {
             this.simplifyEpsilon = simplifyEpsilon;
             this.smoothSegments = smoothSegments;
             this.tension = tension;

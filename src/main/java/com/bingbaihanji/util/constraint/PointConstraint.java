@@ -6,7 +6,7 @@ import javafx.geometry.Point2D;
 /**
  * 参数化点约束接口
  * <p>
- * 约束点记录在图形上的参数位置，当图形变化时，约束点根据参数重新计算位置。
+ * 约束点记录在图形上的参数位置,当图形变化时,约束点根据参数重新计算位置。
  * 这种方式确保约束点始终保持在图形上的相对位置。
  *
  * @author bingbaihanji
@@ -26,7 +26,7 @@ public interface PointConstraint {
     /**
      * 根据给定坐标计算最近的参数值
      * <p>
-     * 用于创建约束点时，根据鼠标点击位置确定参数
+     * 用于创建约束点时,根据鼠标点击位置确定参数
      *
      * @param x 目标x坐标
      * @param y 目标y坐标
@@ -60,7 +60,7 @@ public interface PointConstraint {
     /**
      * 获取约束类型标识
      *
-     * @return 约束类型字符串（如 "LineConstraint", "CircleConstraint"）
+     * @return 约束类型字符串(如 "LineConstraint", "CircleConstraint")
      */
     String getConstraintType();
 
@@ -78,8 +78,8 @@ public interface PointConstraint {
     /**
      * 判断是否是顶点约束
      * <p>
-     * 顶点约束意味着点本身就是几何图形的顶点/端点，
-     * 拖动时参数应固定不变，带动整个顶点移动
+     * 顶点约束意味着点本身就是几何图形的顶点/端点,
+     * 拖动时参数应固定不变,带动整个顶点移动
      *
      * @return true表示是顶点约束
      */
@@ -88,8 +88,8 @@ public interface PointConstraint {
     /**
      * 设置为顶点约束
      * <p>
-     * 检查给定点是否是约束图形的顶点/端点，
-     * 如果是，则锁定参数为对应的顶点参数
+     * 检查给定点是否是约束图形的顶点/端点,
+     * 如果是,则锁定参数为对应的顶点参数
      *
      * @param point 要检查的点对象
      */

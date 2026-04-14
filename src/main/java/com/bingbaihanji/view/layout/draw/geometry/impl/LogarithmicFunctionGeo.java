@@ -22,7 +22,7 @@ public class LogarithmicFunctionGeo extends FunctionGeo {
     /**
      * 构造函数
      *
-     * @param a 底数（必须 > 0 且 ≠ 1）
+     * @param a 底数(必须 > 0 且 ≠ 1)
      */
     public LogarithmicFunctionGeo(double a) {
         super();

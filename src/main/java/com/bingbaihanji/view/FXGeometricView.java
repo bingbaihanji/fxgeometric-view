@@ -54,7 +54,7 @@ public class FXGeometricView extends Application {
         } catch (Exception e) {
             ExceptionHandler.handleExceptionWithDialog(
                     "应用启动失败",
-                    "启动应用程序时发生错误，请查看详细信息。",
+                    "启动应用程序时发生错误,请查看详细信息。",
                     e
             );
             throw e;

@@ -8,15 +8,15 @@ import java.util.*;
 /**
  * 国际化工具类
  * <p>
- * 支持动态加载语言文件，优先级：
- * 1. JAR 包同目录下的 language 文件夹（外部文件）
- * 2. JAR 包内部的 resources/language 文件夹（内部资源）
+ * 支持动态加载语言文件,优先级：
+ * 1. JAR 包同目录下的 language 文件夹(外部文件)
+ * 2. JAR 包内部的 resources/language 文件夹(内部资源)
  * <p>
- * 注意：为了兼容 Java 模块化系统，不使用 ResourceBundle.Control
+ * 注意：为了兼容 Java 模块化系统,不使用 ResourceBundle.Control
  *
  * @author bingbaihanji
  * @date 2025-12-20
- * @updated 2025-12-31 添加外部语言文件支持，兼容模块化系统
+ * @updated 2025-12-31 添加外部语言文件支持,兼容模块化系统
  */
 public class I18nUtil {
     private static final String BASE_NAME = "language/language";
@@ -36,8 +36,8 @@ public class I18nUtil {
             try {
                 resourceBundle = loadResourceBundle(currentLocale);
             } catch (Exception e2) {
-                // 如果简体中文也加载失败，尝试使用默认 Locale
-                System.err.println("无法加载语言资源文件，使用默认配置");
+                // 如果简体中文也加载失败,尝试使用默认 Locale
+                System.err.println("无法加载语言资源文件,使用默认配置");
                 e2.printStackTrace();
             }
         }
@@ -58,11 +58,11 @@ public class I18nUtil {
     }
 
     /**
-     * 获取国际化文本（带参数格式化）
+     * 获取国际化文本(带参数格式化)
      * <p>
-     * 支持 MessageFormat 模式，例如：
+     * 支持 MessageFormat 模式,例如：
      * - "Hello, {0}!" + ["World"] -> "Hello, World!"
-     * - "复用组（{0}个点）" + [3] -> "复用组（3个点）"
+     * - "复用组({0}个点)" + [3] -> "复用组(3个点)"
      *
      * @param key    配置文件中的key
      * @param params 格式化参数
@@ -113,7 +113,7 @@ public class I18nUtil {
         // 1. 尝试从外部文件加载
         ResourceBundle bundle = loadFromExternalFile(resourceName);
 
-        // 2. 如果外部文件不存在，从 classpath 加载
+        // 2. 如果外部文件不存在,从 classpath 加载
         if (bundle == null) {
             bundle = loadFromClasspath(resourceName);
         }
@@ -143,7 +143,7 @@ public class I18nUtil {
                 }
             }
         } catch (Exception e) {
-            // 外部文件加载失败，继续使用内部资源
+            // 外部文件加载失败,继续使用内部资源
         }
         return null;
     }
@@ -153,7 +153,7 @@ public class I18nUtil {
      */
     private static ResourceBundle loadFromClasspath(String resourceName) {
         try {
-            // 在模块化环境中，使用 Class.getResourceAsStream() 更可靠
+            // 在模块化环境中,使用 Class.getResourceAsStream() 更可靠
             // 路径需要以 / 开头表示从 classpath 根目录开始
             String path = "/" + resourceName;
             InputStream stream = I18nUtil.class.getResourceAsStream(path);
@@ -184,14 +184,14 @@ public class I18nUtil {
                     .toURI()
                     .getPath();
 
-            // 处理 Windows 路径问题（/C:/path/to/file）
+            // 处理 Windows 路径问题(/C:/path/to/file)
             if (path.startsWith("/") && path.contains(":")) {
                 path = path.substring(1);
             }
 
             File file = new File(path);
 
-            // 如果是目录（IDE 开发环境），返回 null 表示不使用外部文件
+            // 如果是目录(IDE 开发环境),返回 null 表示不使用外部文件
             if (file.isDirectory()) {
                 return null;
             }

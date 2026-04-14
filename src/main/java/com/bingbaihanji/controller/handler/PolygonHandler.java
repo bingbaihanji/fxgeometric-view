@@ -22,7 +22,7 @@ import java.util.List;
  * 多边形绘制处理器
  * <p>
  * 处理多边形的逐点选择和闭合绘制
- * 支持点复用：如果点击位置已有点，直接复用该点
+ * 支持点复用：如果点击位置已有点,直接复用该点
  *
  * @author bingbaihanji
  * @date 2025-12-31
@@ -31,12 +31,12 @@ public class PolygonHandler extends AbstractDrawingHandler {
 
     /**
      * 多边形顶点点对象列表
-     * 直接存储PointGeo引用，实现点复用
+     * 直接存储PointGeo引用,实现点复用
      */
     private final List<PointGeo> vertexPoints = new ArrayList<>();
 
     /**
-     * 多边形内部创建的新点列表（用于撤销时删除）
+     * 多边形内部创建的新点列表(用于撤销时删除)
      */
     private final List<PointGeo> newCreatedPoints = new ArrayList<>();
 
@@ -94,26 +94,26 @@ public class PolygonHandler extends AbstractDrawingHandler {
             polygonPreview.updatePreview(worldX, worldY);
         }
 
-        // 重绘以显示预览（IDLE 和 POLYGON_DRAWING 状态都需要重绘）
+        // 重绘以显示预览(IDLE 和 POLYGON_DRAWING 状态都需要重绘)
         context.redraw();
         return true;
     }
 
     @Override
     public void paintPreview(GraphicsContext gc, WorldTransform transform, DrawingContext context) {
-        // PreviewManager 统一管理，此处只绘制补充效果(吸附预览点、顶点高亮)
+        // PreviewManager 统一管理,此处只绘制补充效果(吸附预览点、顶点高亮)
         if (!canHandle(context.getDrawMode())) {
             return;
         }
 
         double pointRadius = 3;
 
-        // IDLE 状态：显示吸附预览点（第一次点击前）
+        // IDLE 状态：显示吸附预览点(第一次点击前)
         if (context.getState() == DrawingState.IDLE) {
             double mouseScreenX = transform.worldToScreenX(context.getCurrentMouseX());
             double mouseScreenY = transform.worldToScreenY(context.getCurrentMouseY());
 
-            // 绘制吸附预览点（浅色圆圈 + 中心点）
+            // 绘制吸附预览点(浅色圆圈 + 中心点)
             gc.setStroke(Color.valueOf("#759eb2"));
             gc.setLineWidth(1.5);
             gc.strokeOval(mouseScreenX - 6, mouseScreenY - 6, 12, 12);
@@ -132,7 +132,7 @@ public class PolygonHandler extends AbstractDrawingHandler {
             return;
         }
 
-        // 绘制顶点（小圆点）
+        // 绘制顶点(小圆点)
         gc.setFill(Color.valueOf("#759eb2"));
         for (PointGeo vertex : vertexPoints) {
             double vx = transform.worldToScreenX(vertex.getX());
@@ -140,7 +140,7 @@ public class PolygonHandler extends AbstractDrawingHandler {
             gc.fillOval(vx - pointRadius, vy - pointRadius, pointRadius * 2, pointRadius * 2);
         }
 
-        // 高亮第一个顶点（可以闭合多边形）
+        // 高亮第一个顶点(可以闭合多边形)
         boolean nearFirstVertex = false;
         if (vertexPoints.size() >= 3) {
             PointGeo firstVertex = vertexPoints.get(0);
@@ -156,11 +156,11 @@ public class PolygonHandler extends AbstractDrawingHandler {
 
             if (screenDistance < threshold) {
                 nearFirstVertex = true;
-                // 鼠标靠近第一个顶点，显示更明显的闭合提示
+                // 鼠标靠近第一个顶点,显示更明显的闭合提示
                 gc.setFill(Color.LIGHTGREEN);
                 gc.fillOval(fx - pointRadius * 2, fy - pointRadius * 2, pointRadius * 4, pointRadius * 4);
 
-                // 绘制闭合线（从最后一个顶点到第一个顶点）
+                // 绘制闭合线(从最后一个顶点到第一个顶点)
                 PointGeo lastVertex = vertexPoints.get(vertexPoints.size() - 1);
                 double lastScreenX = transform.worldToScreenX(lastVertex.getX());
                 double lastScreenY = transform.worldToScreenY(lastVertex.getY());
@@ -177,7 +177,7 @@ public class PolygonHandler extends AbstractDrawingHandler {
             }
         }
 
-        // 绘制当前鼠标位置的吸附预览点（如果不是靠近第一个顶点）
+        // 绘制当前鼠标位置的吸附预览点(如果不是靠近第一个顶点)
         if (!nearFirstVertex) {
             double mouseScreenX = transform.worldToScreenX(context.getCurrentMouseX());
             double mouseScreenY = transform.worldToScreenY(context.getCurrentMouseY());
@@ -207,7 +207,7 @@ public class PolygonHandler extends AbstractDrawingHandler {
         double scale = context.getTransform().getScale();
         double threshold = 15.0 / scale; // 15像素的吸附范围
 
-        // 检查是否与起点重合（闭合多边形）
+        // 检查是否与起点重合(闭合多边形)
         if (!vertexPoints.isEmpty()) {
             PointGeo firstVertex = vertexPoints.get(0);
             double distance = MathCalculationUtils.hypot(worldX - firstVertex.getX(), worldY - firstVertex.getY());
@@ -219,18 +219,18 @@ public class PolygonHandler extends AbstractDrawingHandler {
             }
         }
 
-        // 检查点击位置是否已有点对象（复用已有点）
+        // 检查点击位置是否已有点对象(复用已有点)
         PointGeo existingPoint = PointReuseManager.getExistingPointOrNull(worldX, worldY, context.getObjects(), scale);
 
         if (existingPoint != null) {
             // 复用已有的点
             vertexPoints.add(existingPoint);
         } else {
-            // 创建新的点对象（多边形内部顶点）
+            // 创建新的点对象(多边形内部顶点)
             PointGeo newPoint = new PointGeo(worldX, worldY);
             newPoint.setPolygonVertex(true); // 标记为多边形内部顶点
             vertexPoints.add(newPoint);
-            newCreatedPoints.add(newPoint); // 记录新创建的点，用于撤销
+            newCreatedPoints.add(newPoint); // 记录新创建的点,用于撤销
         }
 
         // 创建或更新预览对象
@@ -257,10 +257,10 @@ public class PolygonHandler extends AbstractDrawingHandler {
             return;
         }
 
-        // 创建多边形对象，直接传入点引用列表
+        // 创建多边形对象,直接传入点引用列表
         PolygonGeo polygon = new PolygonGeo(new ArrayList<>(vertexPoints));
 
-        // 复制新创建的点列表（用于撤销时删除）
+        // 复制新创建的点列表(用于撤销时删除)
         List<PointGeo> createdPoints = new ArrayList<>(newCreatedPoints);
 
         // 计算此多边形产生的所有交点

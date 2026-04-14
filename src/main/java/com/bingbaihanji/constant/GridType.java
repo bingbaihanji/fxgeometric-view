@@ -7,11 +7,11 @@ import com.bingbaihanji.util.I18nUtil;
  *
  * @author bingbaihanji
  * @date 2025-12-31
- * @description 定义各种网格类型，扩展原有的GridMode功能
+ * @description 定义各种网格类型, 扩展原有的GridMode功能
  */
 public enum GridType {
     /**
-     * 笛卡尔网格（线状）
+     * 笛卡尔网格(线状)
      */
     CARTESIAN,
 
@@ -21,17 +21,17 @@ public enum GridType {
     DOT,
 
     /**
-     * 极坐标网格（同心圆 + 放射线）
+     * 极坐标网格(同心圆 + 放射线)
      */
     POLAR,
 
     /**
-     * 等距网格（三角形格子）
+     * 等距网格(三角形格子)
      */
     ISOMETRIC,
 
     /**
-     * 带次网格的笛卡尔网格（主网格 + 次网格）
+     * 带次网格的笛卡尔网格(主网格 + 次网格)
      */
     CARTESIAN_WITH_SUBGRID;
 
