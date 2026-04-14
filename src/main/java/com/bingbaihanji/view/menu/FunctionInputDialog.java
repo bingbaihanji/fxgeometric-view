@@ -34,7 +34,7 @@ public class FunctionInputDialog extends Dialog<FunctionInputResult> {
     private TextField domainMaxField;
 
     // 自定义表达式输入
-    private TextField customExpressionField;
+    private TextInputControl customExpressionField;
 
     /**
      * 构造函数
@@ -108,16 +108,24 @@ public class FunctionInputDialog extends Dialog<FunctionInputResult> {
         if (type == FunctionType.CUSTOM) {
             // 自定义表达式输入区
             Label exprLabel = new Label("表达式 f(x)：");
-            customExpressionField = new TextField();
+            customExpressionField = new TextArea();
+            customExpressionField.setPrefHeight(100);
             customExpressionField.setPrefWidth(300);
             customExpressionField.setPromptText("例如: sin(x) + x^2 或 2*x^3 - x");
 
             Label hintLabel = new Label(
                     """
-                            支持运算符: +  -  *  /  ^(幂)
-                            内置函数: sin cos tan asin acos atan
-                                     exp log log2 log10 sqrt abs ceil floor
-                            常量: pi  e"""
+                            +----------------+-------------------------------------------+
+                            | 运算符         | +  -  *  /  ^(幂)                          |
+                            +----------------+-------------------------------------------+
+                            | 内置函数       | sin(正弦)    cos(余弦)    tan(正切)          |
+                            |                | asin(反正弦) acos(反余弦) atan(反正切)       |
+                            |                | abs(绝对值)  exp(指数)   ceil(向上取整)      |
+                            |                | floor(向下取整) log(对数)  log2(以2为底的对数)|
+                            |                | log10(以10为底的对数) sqrt(平方根)           |
+                            +----------------+-------------------------------------------+
+                            | 常量           | pi(圆周率)   e(自然对数的底数)                |
+                            +----------------+-------------------------------------------+"""
             );
             hintLabel.setStyle("-fx-text-fill: #666666; -fx-font-size: 11px;");
 
