@@ -29,6 +29,7 @@ public class FunctionParameter {
      */
     private final String description;
 
+    // 构造函数
     public FunctionParameter(String name, String label, String defaultValue, String description) {
         this.name = name;
         this.label = label;

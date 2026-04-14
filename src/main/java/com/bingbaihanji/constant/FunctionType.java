@@ -11,6 +11,14 @@ import com.bingbaihanji.model.FunctionParameter;
  * @date 2026-01-04
  */
 public enum FunctionType {
+
+
+    /**
+     * 自定义表达式函数：y = f(x)
+     * <p>
+     * 用户直接输入数学表达式,例如 sin(x) + x^2
+     */
+    CUSTOM("自定义函数", new FunctionParameter[0]),
     /**
      * 一次函数：y = kx + b
      */
@@ -115,14 +123,7 @@ public enum FunctionType {
     PARABOLA_CONIC("抛物线",
             new FunctionParameter[]{
                     new FunctionParameter("p", "焦参数 p", "1.0", "焦点到准线距离的一半")
-            }),
-
-    /**
-     * 自定义表达式函数：y = f(x)
-     * <p>
-     * 用户直接输入数学表达式,例如 sin(x) + x^2
-     */
-    CUSTOM("自定义函数", new FunctionParameter[0]);
+            });
 
     private final String displayName;
     private final FunctionParameter[] parameters;

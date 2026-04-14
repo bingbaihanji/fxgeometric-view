@@ -58,9 +58,10 @@ public class FunctionInputDialog extends Dialog<FunctionInputResult> {
         Label typeLabel = new Label(I18nUtil.getString("function.type"));
         typeLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
 
+        // 函数类型选择下拉框
         functionTypeCombo = new ComboBox<>();
-        functionTypeCombo.getItems().addAll(FunctionType.values());
-        functionTypeCombo.setValue(FunctionType.LINEAR);
+        functionTypeCombo.getItems().addAll(FunctionType.values()); // 添加所有函数类型
+        functionTypeCombo.setValue(FunctionType.CUSTOM); // 默认选择自定义函数
         functionTypeCombo.setPrefWidth(300);
 
         VBox typeSection = new VBox(10, typeLabel, functionTypeCombo);
@@ -79,7 +80,7 @@ public class FunctionInputDialog extends Dialog<FunctionInputResult> {
         });
 
         // 初始化参数面板
-        updateParametersPane(FunctionType.LINEAR);
+        updateParametersPane(FunctionType.CUSTOM);
 
         ScrollPane scrollPane = new ScrollPane(mainContent);
         scrollPane.setFitToWidth(true);
@@ -112,10 +113,11 @@ public class FunctionInputDialog extends Dialog<FunctionInputResult> {
             customExpressionField.setPromptText("例如: sin(x) + x^2 或 2*x^3 - x");
 
             Label hintLabel = new Label(
-                    "支持运算符: +  -  *  /  ^(幂)\n" +
-                            "内置函数: sin cos tan asin acos atan\n" +
-                            "         exp log log2 log10 sqrt abs ceil floor\n" +
-                            "常量: pi  e"
+                    """
+                            支持运算符: +  -  *  /  ^(幂)
+                            内置函数: sin cos tan asin acos atan
+                                     exp log log2 log10 sqrt abs ceil floor
+                            常量: pi  e"""
             );
             hintLabel.setStyle("-fx-text-fill: #666666; -fx-font-size: 11px;");
 
