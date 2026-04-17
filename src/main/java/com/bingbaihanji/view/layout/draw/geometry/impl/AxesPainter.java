@@ -253,7 +253,7 @@ public class AxesPainter implements WorldPainter {
 
             // 绘制刻度数值标签(π单位模式下,X轴用π,Y轴用数值)
             UnitLabelType xAxisUnitType = settings.getUnitLabelType();
-            gc.fillText(formatNumber(x, xAxisUnitType), sx + 2, tickY - 6);
+            gc.fillText(formatNumber(x, xAxisUnitType, step), sx + 2, tickY - 6);
 
             // 绘制次刻度
             if (drawMinor) {
@@ -283,7 +283,7 @@ public class AxesPainter implements WorldPainter {
             UnitLabelType yAxisUnitType = settings.getUnitLabelType() == UnitLabelType.PI
                     ? UnitLabelType.NUMERIC
                     : settings.getUnitLabelType();
-            gc.fillText(formatNumber(y, yAxisUnitType), tickX + 6, sy + 4);
+            gc.fillText(formatNumber(y, yAxisUnitType, step), tickX + 6, sy + 4);
 
             // 绘制次刻度
             if (drawMinor) {
@@ -478,19 +478,35 @@ public class AxesPainter implements WorldPainter {
 
     /**
      * 格式化数字显示(支持π单位)
+     *
+     * @param step 当前刻度步长，用于判断整条轴是否需要科学计数法
      */
-    private String formatNumber(double v, UnitLabelType unitType) {
+    private String formatNumber(double v, UnitLabelType unitType, double step) {
         if (unitType == UnitLabelType.PI) {
             return formatPiUnit(v);
         } else {
-            return formatNumericUnit(v);
+            return formatNumericUnit(v, step);
         }
     }
 
     /**
      * 格式化数值单位
+     * <ul>
+     *   <li>步长 >= 10000：科学计数法（缩小，坐标值很大）</li>
+     *   <li>步长 < 0.01 且 |v| < 1：科学计数法，精度由步长决定</li>
+     *   <li>步长 < 0.01 且 |v| >= 1：固定小数位，避免大数科学计数法精度丢失</li>
+     *   <li>其他：整数或保留两位小数</li>
+     * </ul>
      */
-    private String formatNumericUnit(double v) {
+    private String formatNumericUnit(double v, double step) {
+        if (step >= 10000) {
+            return String.format("%.1E", v).replaceAll("E([+-])0+(\\d)", "E$1$2");
+        }
+        if (step < 0.01) {
+            // 统一用固定小数位，位数由步长决定，避免格式在边界跳变
+            int decimals = Math.min((int) Math.ceil(-Math.log10(step)), 6);
+            return String.format("%." + decimals + "f", v);
+        }
         if (Math.abs(v - Math.round(v)) < 1e-6) {
             return String.valueOf((int) Math.round(v));
         }

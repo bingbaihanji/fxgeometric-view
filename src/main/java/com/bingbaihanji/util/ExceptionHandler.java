@@ -1,5 +1,8 @@
 package com.bingbaihanji.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * 异常处理工具类
  * <p>
@@ -11,7 +14,7 @@ package com.bingbaihanji.util;
  */
 public class ExceptionHandler {
 
-    private static final Logger logger = Logger.getLogger(ExceptionHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(ExceptionHandler.class);
 
     /**
      * 显示错误对话框

@@ -42,14 +42,10 @@ public enum GridType {
      * @return 对应的GridType
      */
     public static GridType fromGridMode(GridMode gridMode) {
-        switch (gridMode) {
-            case LINE:
-                return CARTESIAN;
-            case DOT:
-                return DOT;
-            default:
-                return CARTESIAN;
-        }
+        return switch (gridMode) {
+            case DOT -> DOT;
+            default -> CARTESIAN;
+        };
     }
 
     /**

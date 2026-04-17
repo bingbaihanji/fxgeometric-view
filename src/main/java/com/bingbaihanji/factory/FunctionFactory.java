@@ -2,7 +2,8 @@ package com.bingbaihanji.factory;
 
 import com.bingbaihanji.constant.FunctionType;
 import com.bingbaihanji.model.FunctionInputResult;
-import com.bingbaihanji.util.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.bingbaihanji.view.layout.draw.geometry.impl.*;
 
 import java.util.Map;
@@ -18,7 +19,7 @@ import java.util.Map;
  */
 public class FunctionFactory {
 
-    private static final Logger logger = Logger.getLogger(FunctionFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(FunctionFactory.class);
 
     /**
      * 根据输入结果创建函数对象
@@ -28,25 +29,16 @@ public class FunctionFactory {
      */
     public static FunctionGeo createFunction(FunctionInputResult input) {
         if (input == null) {
-            logger.warn("函数输入结果为null");
-            return null;
+            throw new FunctionCreationException(null, "函数输入结果为null");
         }
 
         try {
             Map<String, Double> params = input.getParameters();
             FunctionType type = input.getType();
 
-            FunctionGeo function = createByType(input, type, params);
-
-            // 设置定义域
-            if (function != null && !input.isAutoRange()) {
-                function.setDomainRange(input.getDomainMin(), input.getDomainMax());
-            }
-
-            return function;
+            return createByType(input, type, params);
         } catch (Exception e) {
-            logger.error("创建函数对象时发生错误: " + input.getType(), e);
-            return null;
+            throw new FunctionCreationException(input.getType(), "函数创建失败", e);
         }
     }
 
@@ -65,10 +57,7 @@ public class FunctionFactory {
             case HYPERBOLA -> createHyperbolaFunction(params);
             case PARABOLA_CONIC -> createParabolaConicFunction(params);
             case CUSTOM -> createCustomFunction(input);
-            default -> {
-                logger.error("不支持的函数类型: " + type);
-                yield null;
-            }
+            default -> throw new FunctionCreationException(type, "不支持的函数类型: " + type);
         };
     }
 
@@ -172,8 +161,7 @@ public class FunctionFactory {
     private static CustomFunctionGeo createCustomFunction(FunctionInputResult input) {
         String expr = input.getCustomExpression();
         if (expr == null || expr.isBlank()) {
-            logger.error("自定义函数表达式为空");
-            return null;
+            throw new FunctionCreationException(FunctionType.CUSTOM, "自定义函数表达式不能为空");
         }
         return new CustomFunctionGeo(expr);
     }

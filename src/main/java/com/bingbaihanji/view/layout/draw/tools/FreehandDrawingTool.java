@@ -1,5 +1,6 @@
 package com.bingbaihanji.view.layout.draw.tools;
 
+import com.bingbaihanji.constant.HandDrawnParameters;
 import com.bingbaihanji.util.CurveSmoothing;
 import com.bingbaihanji.view.layout.core.GridChartView;
 import com.bingbaihanji.view.layout.core.WorldTransform;
@@ -13,36 +14,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FreehandDrawingTool {
-    // 默认值
-    //    小 (0.1-0.3)   保留更多点,曲线更贴近原始形状,但可能有尖刺
-    //    中 (0.5-1.0)   平衡,适合大多数手绘
-    //    大 (2.0-3.0)   大幅简化,曲线更平滑,但可能丢失细节
-    public static final double DEFAULT_SIMPLIFY_EPSILON = 0.25;      // 简化容差: 算法会找出曲线上"最弯曲"的点保留下来,平坦部分会被简化成直线
-    // 小 (5-8)     点数少,曲线可能有棱角
-    // 中 (12-20)   平滑且性能好
-    // 大 (25-30)   非常平滑,但点太多可能影响性能
-    public static final int DEFAULT_SMOOTH_SEGMENTS = 20;           // 平滑细分数: 每两个控制点之间,生成多少个中间点,越多点 = 曲线越平滑细腻
 
-    // ========== 可配置的平滑参数 ==========
-    // 0.0 = 直线连接
-    // 0.5 = 默认平滑(推荐)
-    // 1.0 = 最紧,最贴近原始折线
-    public static final double DEFAULT_TENSION = 0.2;               // 张力: 控制曲线的"紧绷"程度
-    public static final double DEFAULT_MIN_POINT_DISTANCE = 0.04;   // 最小点间距: 过滤鼠标移动时产生的过密点
     public static final boolean DEFAULT_ENABLE_SMOOTHING = true;    // 是否启用平滑
 
-    //   新点与前一个点距离小于此值时跳过
-    //   减少数据量,降低抖动影响
-    //    小 (0.01-0.02)   几乎不过滤,保留所有鼠标移动
-    //    中 (0.05)        适当过滤,去除手抖
-    //    大 (0.1-0.2)     大幅过滤,可能丢失快速绘制细节
+
     private final List<Point2D> points = new ArrayList<>();
     private boolean isDrawing = false;
     // 当前值(可动态修改)
-    private double simplifyEpsilon = DEFAULT_SIMPLIFY_EPSILON;
-    private int smoothSegments = DEFAULT_SMOOTH_SEGMENTS;
-    private double tension = DEFAULT_TENSION;
-    private double minPointDistance = DEFAULT_MIN_POINT_DISTANCE;
+    private double simplifyEpsilon = HandDrawnParameters.DEFAULT_SIMPLIFY_EPSILON.getValue().doubleValue();
+    private int smoothSegments = HandDrawnParameters.DEFAULT_SMOOTH_SEGMENTS.getValue().intValue();
+    private double tension = HandDrawnParameters.DEFAULT_TENSION.getValue().doubleValue();
+    private double minPointDistance = HandDrawnParameters.DEFAULT_MIN_POINT_DISTANCE.getValue().doubleValue();
     private boolean enableSmoothing = DEFAULT_ENABLE_SMOOTHING;
 
     public void onMousePressed(GridChartView pane, MouseEvent e) {
@@ -191,10 +173,10 @@ public class FreehandDrawingTool {
      * 重置为默认值
      */
     public void resetToDefaults() {
-        this.simplifyEpsilon = DEFAULT_SIMPLIFY_EPSILON;
-        this.smoothSegments = DEFAULT_SMOOTH_SEGMENTS;
-        this.tension = DEFAULT_TENSION;
-        this.minPointDistance = DEFAULT_MIN_POINT_DISTANCE;
+        this.simplifyEpsilon = HandDrawnParameters.DEFAULT_SIMPLIFY_EPSILON.getValue().doubleValue();
+        this.smoothSegments = HandDrawnParameters.DEFAULT_SMOOTH_SEGMENTS.getValue().intValue();
+        this.tension = HandDrawnParameters.DEFAULT_TENSION.getValue().doubleValue();
+        this.minPointDistance = HandDrawnParameters.DEFAULT_MIN_POINT_DISTANCE.getValue().doubleValue();
         this.enableSmoothing = DEFAULT_ENABLE_SMOOTHING;
     }
 }

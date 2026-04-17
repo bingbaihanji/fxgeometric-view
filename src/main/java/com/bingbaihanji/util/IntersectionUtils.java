@@ -17,28 +17,20 @@ import java.util.List;
 public class IntersectionUtils {
 
     /**
-     * 计算两个线段的交点
+     * 计算两条直线/线段的底层交点
      *
-     * @param line1 第一条线段
-     * @param line2 第二条线段
+     * @param clipFirst  true 时约束 t ∈ [0,1]（第一段为线段）
+     * @param clipSecond true 时约束 u ∈ [0,1]（第二段为线段）
      * @return 交点列表
      */
-    public static List<Point2D> getLineLineIntersections(LineGeo line1, LineGeo line2) {
+    private static List<Point2D> computeLineIntersection(
+            double x1, double y1, double x2, double y2,
+            double x3, double y3, double x4, double y4,
+            boolean clipFirst, boolean clipSecond) {
         List<Point2D> intersections = new ArrayList<>();
-
-        double x1 = line1.getStartX();
-        double y1 = line1.getStartY();
-        double x2 = line1.getEndX();
-        double y2 = line1.getEndY();
-
-        double x3 = line2.getStartX();
-        double y3 = line2.getStartY();
-        double x4 = line2.getEndX();
-        double y4 = line2.getEndY();
 
         double denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
         if (MathCalculationUtils.isZero(denom, GeometryConfig.Performance.MIN_VALID_DISTANCE)) {
-            // 线段平行或重合
             return intersections;
         }
 
@@ -48,14 +40,29 @@ public class IntersectionUtils {
         double t = tNum / denom;
         double u = uNum / denom;
 
-        // 检查交点是否在两条线段上
-        if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
-            double ix = x1 + t * (x2 - x1);
-            double iy = y1 + t * (y2 - y1);
-            intersections.add(new Point2D(ix, iy));
+        if ((clipFirst && (t < 0 || t > 1)) || (clipSecond && (u < 0 || u > 1))) {
+            return intersections;
         }
 
+        double ix = x1 + t * (x2 - x1);
+        double iy = y1 + t * (y2 - y1);
+        intersections.add(new Point2D(ix, iy));
+
         return intersections;
+    }
+
+    /**
+     * 计算两个线段的交点
+     *
+     * @param line1 第一条线段
+     * @param line2 第二条线段
+     * @return 交点列表
+     */
+    public static List<Point2D> getLineLineIntersections(LineGeo line1, LineGeo line2) {
+        return computeLineIntersection(
+                line1.getStartX(), line1.getStartY(), line1.getEndX(), line1.getEndY(),
+                line2.getStartX(), line2.getStartY(), line2.getEndX(), line2.getEndY(),
+                true, true);
     }
 
     /**
@@ -193,38 +200,10 @@ public class IntersectionUtils {
      * @return 交点列表
      */
     public static List<Point2D> getInfiniteLineLineIntersections(InfiniteLineGeo infiniteLine, LineGeo line) {
-        List<Point2D> intersections = new ArrayList<>();
-
-        double x1 = infiniteLine.getPoint1X();
-        double y1 = infiniteLine.getPoint1Y();
-        double x2 = infiniteLine.getPoint2X();
-        double y2 = infiniteLine.getPoint2Y();
-
-        double x3 = line.getStartX();
-        double y3 = line.getStartY();
-        double x4 = line.getEndX();
-        double y4 = line.getEndY();
-
-        double denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
-        if (MathCalculationUtils.isZero(denom, GeometryConfig.Performance.MIN_VALID_DISTANCE)) {
-            // 直线平行或重合
-            return intersections;
-        }
-
-        double tNum = (x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4);
-        double uNum = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3));
-
-        double u = uNum / denom;
-
-        // 无限直线不需要检查t,只检查交点是否在线段上
-        if (u >= 0 && u <= 1) {
-            double t = tNum / denom;
-            double ix = x1 + t * (x2 - x1);
-            double iy = y1 + t * (y2 - y1);
-            intersections.add(new Point2D(ix, iy));
-        }
-
-        return intersections;
+        return computeLineIntersection(
+                infiniteLine.getPoint1X(), infiniteLine.getPoint1Y(), infiniteLine.getPoint2X(), infiniteLine.getPoint2Y(),
+                line.getStartX(), line.getStartY(), line.getEndX(), line.getEndY(),
+                false, true);
     }
 
     /**
@@ -296,33 +275,10 @@ public class IntersectionUtils {
      * @return 交点列表
      */
     public static List<Point2D> getInfiniteLineInfiniteLineIntersections(InfiniteLineGeo line1, InfiniteLineGeo line2) {
-        List<Point2D> intersections = new ArrayList<>();
-
-        double x1 = line1.getPoint1X();
-        double y1 = line1.getPoint1Y();
-        double x2 = line1.getPoint2X();
-        double y2 = line1.getPoint2Y();
-
-        double x3 = line2.getPoint1X();
-        double y3 = line2.getPoint1Y();
-        double x4 = line2.getPoint2X();
-        double y4 = line2.getPoint2Y();
-
-        double denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
-        if (MathCalculationUtils.isZero(denom, GeometryConfig.Performance.MIN_VALID_DISTANCE)) {
-            // 直线平行或重合
-            return intersections;
-        }
-
-        double tNum = (x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4);
-        double t = tNum / denom;
-
-        // 无限直线不需要检查t和u的范围,直接计算交点
-        double ix = x1 + t * (x2 - x1);
-        double iy = y1 + t * (y2 - y1);
-        intersections.add(new Point2D(ix, iy));
-
-        return intersections;
+        return computeLineIntersection(
+                line1.getPoint1X(), line1.getPoint1Y(), line1.getPoint2X(), line1.getPoint2Y(),
+                line2.getPoint1X(), line2.getPoint1Y(), line2.getPoint2X(), line2.getPoint2Y(),
+                false, false);
     }
 
     /**
@@ -366,7 +322,7 @@ public class IntersectionUtils {
         perpDy = normalized[1];
 
         // 生成垂线上的两个点(距离给定点足够远)
-        double scale = 10000; // 扩展距离
+        double scale = GeometryConfig.LineStyle.INFINITE_LINE_EXTENSION_FACTOR; // 扩展距离
         Point2D point1 = new Point2D(pointX + perpDx * scale, pointY + perpDy * scale);
         Point2D point2 = new Point2D(pointX - perpDx * scale, pointY - perpDy * scale);
 
@@ -401,7 +357,7 @@ public class IntersectionUtils {
         perpDy = normalized[1];
 
         // 生成垂直平分线上的两个点(从给定点出发)
-        double scale = 10000; // 扩展距离
+        double scale = GeometryConfig.LineStyle.INFINITE_LINE_EXTENSION_FACTOR; // 扩展距离
         Point2D point1 = new Point2D(pointX + perpDx * scale, pointY + perpDy * scale);
         Point2D point2 = new Point2D(pointX - perpDx * scale, pointY - perpDy * scale);
 
@@ -431,7 +387,7 @@ public class IntersectionUtils {
         dy = normalized[1];
 
         // 生成平行线上的两个点(距离给定点足够远)
-        double scale = 10000; // 扩展距离
+        double scale = GeometryConfig.LineStyle.INFINITE_LINE_EXTENSION_FACTOR; // 扩展距离
         Point2D point1 = new Point2D(pointX + dx * scale, pointY + dy * scale);
         Point2D point2 = new Point2D(pointX - dx * scale, pointY - dy * scale);
 
@@ -463,7 +419,7 @@ public class IntersectionUtils {
         tangentDy = normalized[1];
 
         // 生成切线上的两个点(距离切点足够远)
-        double scale = 10000; // 扩展距离
+        double scale = GeometryConfig.LineStyle.INFINITE_LINE_EXTENSION_FACTOR; // 扩展距离
         Point2D point1 = new Point2D(pointX + tangentDx * scale, pointY + tangentDy * scale);
         Point2D point2 = new Point2D(pointX - tangentDx * scale, pointY - tangentDy * scale);
 
@@ -520,9 +476,10 @@ public class IntersectionUtils {
                 }
 
                 // 计算两条线段的交点
-                List<Point2D> segmentIntersections = getSegmentSegmentIntersections(
+                List<Point2D> segmentIntersections = computeLineIntersection(
                         p1a.getX(), p1a.getY(), p1b.getX(), p1b.getY(),
-                        p2a.getX(), p2a.getY(), p2b.getX(), p2b.getY()
+                        p2a.getX(), p2a.getY(), p2b.getX(), p2b.getY(),
+                        true, true
                 );
 
                 intersections.addAll(segmentIntersections);
@@ -533,35 +490,7 @@ public class IntersectionUtils {
         return removeDuplicatePoints(intersections, GeometryConfig.Performance.MIN_VALID_DISTANCE * 10);
     }
 
-    /**
-     * 计算两条线段的交点(内部辅助方法)
-     */
-    private static List<Point2D> getSegmentSegmentIntersections(
-            double x1, double y1, double x2, double y2,
-            double x3, double y3, double x4, double y4) {
-        List<Point2D> intersections = new ArrayList<>();
 
-        double denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
-        if (MathCalculationUtils.isZero(denom, GeometryConfig.Performance.MIN_VALID_DISTANCE)) {
-            // 线段平行或重合
-            return intersections;
-        }
-
-        double tNum = (x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4);
-        double uNum = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3));
-
-        double t = tNum / denom;
-        double u = uNum / denom;
-
-        // 检查交点是否在两条线段上
-        if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
-            double ix = x1 + t * (x2 - x1);
-            double iy = y1 + t * (y2 - y1);
-            intersections.add(new Point2D(ix, iy));
-        }
-
-        return intersections;
-    }
 
     /**
      * 检查点是否有效(非null且坐标有限)
@@ -623,9 +552,10 @@ public class IntersectionUtils {
             }
 
             // 计算两条线段的交点
-            List<Point2D> segmentIntersections = getSegmentSegmentIntersections(
+            List<Point2D> segmentIntersections = computeLineIntersection(
                     x1, y1, x2, y2,
-                    p1.getX(), p1.getY(), p2.getX(), p2.getY()
+                    p1.getX(), p1.getY(), p2.getX(), p2.getY(),
+                    true, true
             );
 
             intersections.addAll(segmentIntersections);
@@ -654,10 +584,6 @@ public class IntersectionUtils {
         double x2 = infiniteLine.getPoint2X();
         double y2 = infiniteLine.getPoint2Y();
 
-        // 计算直线的方向向量和法向量
-        double dx = x2 - x1;
-        double dy = y2 - y1;
-
         // 遍历函数采样点,检测与无限直线的交点
         for (int i = 0; i < sampledPoints.size() - 1; i++) {
             Point2D p1 = sampledPoints.get(i);
@@ -667,28 +593,13 @@ public class IntersectionUtils {
                 continue;
             }
 
-            // 计算函数采样线段与无限直线的交点
-            double x3 = p1.getX();
-            double y3 = p1.getY();
-            double x4 = p2.getX();
-            double y4 = p2.getY();
+            List<Point2D> segmentIntersections = computeLineIntersection(
+                    x1, y1, x2, y2,
+                    p1.getX(), p1.getY(), p2.getX(), p2.getY(),
+                    false, true
+            );
 
-            double denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
-            if (MathCalculationUtils.isZero(denom, GeometryConfig.Performance.MIN_VALID_DISTANCE)) {
-                continue;
-            }
-
-            double uNum = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3));
-            double u = uNum / denom;
-
-            // 只检查交点是否在函数采样线段上
-            if (u >= 0 && u <= 1) {
-                double tNum = (x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4);
-                double t = tNum / denom;
-                double ix = x1 + t * (x2 - x1);
-                double iy = y1 + t * (y2 - y1);
-                intersections.add(new Point2D(ix, iy));
-            }
+            intersections.addAll(segmentIntersections);
         }
 
         return removeDuplicatePoints(intersections, GeometryConfig.Performance.MIN_VALID_DISTANCE * 10);

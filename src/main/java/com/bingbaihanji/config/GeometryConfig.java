@@ -99,6 +99,12 @@ public final class GeometryConfig {
          */
         public static final double OBJECT_HIT_TEST_PIXELS = 5.0;
 
+        /** 鼠标点击/悬停对象命中容差（像素） */
+        public static final double HIT_TEST_PIXELS = 5.0;
+
+        /** 特殊点磁力吸附半径（像素） */
+        public static final double SPECIAL_POINT_SNAP_RADIUS_PIXELS = 10.0;
+
         /**
          * 多边形闭合检测阈值(像素)
          */

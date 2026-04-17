@@ -1,5 +1,6 @@
 package com.bingbaihanji.view.menu;
 
+import com.bingbaihanji.constant.HandDrawnParameters;
 import com.bingbaihanji.util.FxTools;
 import com.bingbaihanji.util.I18nUtil;
 import javafx.geometry.Insets;
@@ -34,11 +35,11 @@ public class DrawingSettingsDialog extends Dialog<DrawingSettingsDialog.Settings
     private Label minPointDistanceValueLabel;
 
     // 当前设置值
-    private double simplifyEpsilon;
-    private int smoothSegments;
-    private double tension;
-    private double minPointDistance;
-    private boolean enableSmoothing;
+    private final double simplifyEpsilon;
+    private final int smoothSegments;
+    private final double tension;
+    private final double minPointDistance;
+    private final boolean enableSmoothing;
 
     public DrawingSettingsDialog(double simplifyEpsilon, int smoothSegments,
                                  double tension, double minPointDistance,
@@ -212,10 +213,10 @@ public class DrawingSettingsDialog extends Dialog<DrawingSettingsDialog.Settings
      * 重置为默认值
      */
     private void resetToDefaults() {
-        simplifyEpsilonSlider.setValue(0.8);
-        smoothSegmentsSlider.setValue(16);
-        tensionSlider.setValue(0.5);
-        minPointDistanceSlider.setValue(0.05);
+        simplifyEpsilonSlider.setValue(HandDrawnParameters.DEFAULT_SIMPLIFY_EPSILON.getValue().doubleValue());
+        smoothSegmentsSlider.setValue(HandDrawnParameters.DEFAULT_SMOOTH_SEGMENTS.getValue().intValue());
+        tensionSlider.setValue(HandDrawnParameters.DEFAULT_TENSION.getValue().doubleValue());
+        minPointDistanceSlider.setValue(HandDrawnParameters.DEFAULT_MIN_POINT_DISTANCE.getValue().doubleValue());
         enableSmoothingCheckBox.setSelected(true);
     }
 

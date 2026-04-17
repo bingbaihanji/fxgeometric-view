@@ -4,7 +4,7 @@ import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.controller.DrawingContext;
 import com.bingbaihanji.model.FunctionInputResult;
 import com.bingbaihanji.util.CommandHistory;
-import com.bingbaihanji.util.Logger;
+import javafx.scene.control.Alert;
 import com.bingbaihanji.view.layout.draw.geometry.impl.FunctionGeo;
 import com.bingbaihanji.view.menu.FunctionInputDialog;
 import javafx.application.Platform;
@@ -22,8 +22,6 @@ import java.util.Optional;
  * @date 2026-01-04
  */
 public class FunctionHandler extends AbstractDrawingHandler {
-
-    private static final Logger logger = Logger.getLogger(FunctionHandler.class);
 
     @Override
     public boolean canHandle(DrawMode mode) {
@@ -52,28 +50,30 @@ public class FunctionHandler extends AbstractDrawingHandler {
 
             if (result.isPresent()) {
                 FunctionInputResult input = result.get();
-                FunctionGeo function = createFunction(input);
-
-                if (function != null) {
+                try {
+                    FunctionGeo function = com.bingbaihanji.factory.FunctionFactory.createFunction(input);
                     // 设置定义域
                     if (!input.isAutoRange()) {
                         function.setDomainRange(input.getDomainMin(), input.getDomainMax());
                     }
-
                     // 通过命令历史添加到画布(支持撤销)
                     context.executeCommand(new CommandHistory.Command() {
                         @Override
                         public void execute() {
                             context.addObject(function);
                         }
-
                         @Override
                         public void undo() {
                             context.removeObject(function);
                         }
                     });
-
                     context.redraw();
+                } catch (com.bingbaihanji.factory.FunctionCreationException ex) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("函数创建失败");
+                    alert.setHeaderText("无法创建函数图像");
+                    alert.setContentText(ex.getMessage());
+                    alert.show();
                 }
             }
         });
@@ -82,19 +82,6 @@ public class FunctionHandler extends AbstractDrawingHandler {
         return true;
     }
 
-    /**
-     * 根据输入结果创建函数对象
-     * <p>
-     * 委托给 FunctionFactory 工厂类创建,避免代码重复
-     */
-    private FunctionGeo createFunction(FunctionInputResult input) {
-        try {
-            return com.bingbaihanji.factory.FunctionFactory.createFunction(input);
-        } catch (Exception e) {
-            logger.error("创建函数对象时发生错误", e);
-            return null;
-        }
-    }
 
     @Override
     public void reset() {

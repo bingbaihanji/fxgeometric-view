@@ -5,7 +5,8 @@ import com.bingbaihanji.constant.DrawingState;
 import com.bingbaihanji.controller.handler.*;
 import com.bingbaihanji.model.FunctionInputResult;
 import com.bingbaihanji.util.CommandHistory;
-import com.bingbaihanji.util.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.bingbaihanji.util.PointNameManager;
 import com.bingbaihanji.view.DetachedCanvasWindow;
 import com.bingbaihanji.view.layout.core.GridChartView;
@@ -19,6 +20,7 @@ import javafx.application.Platform;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.control.Alert;
 import javafx.scene.input.MouseEvent;
 
 import java.util.ArrayList;
@@ -36,7 +38,7 @@ import java.util.Optional;
  */
 public class DrawingController {
 
-    private static final Logger logger = Logger.getLogger(DrawingController.class);
+    private static final Logger logger = LoggerFactory.getLogger(DrawingController.class);
 
     /**
      * 绘制上下文
@@ -325,9 +327,9 @@ public class DrawingController {
 
             if (result.isPresent()) {
                 FunctionInputResult input = result.get();
-                FunctionGeo function = createFunction(input);
+                try {
+                    FunctionGeo function = com.bingbaihanji.factory.FunctionFactory.createFunction(input);
 
-                if (function != null) {
                     // 设置定义域
                     if (!input.isAutoRange()) {
                         function.setDomainRange(input.getDomainMin(), input.getDomainMax());
@@ -347,6 +349,12 @@ public class DrawingController {
                     });
 
                     context.redraw();
+                } catch (com.bingbaihanji.factory.FunctionCreationException ex) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("函数创建失败");
+                    alert.setHeaderText("无法创建函数图像");
+                    alert.setContentText(ex.getMessage());
+                    alert.show();
                 }
             }
         });
@@ -365,19 +373,6 @@ public class DrawingController {
         }
     }
 
-    /**
-     * 根据输入结果创建函数对象
-     * <p>
-     * 委托给 FunctionFactory 工厂类创建,避免代码重复
-     */
-    private FunctionGeo createFunction(FunctionInputResult input) {
-        try {
-            return com.bingbaihanji.factory.FunctionFactory.createFunction(input);
-        } catch (Exception e) {
-            logger.error("创建函数对象时发生错误", e);
-            return null;
-        }
-    }
 
     /**
      * 判断是否可以撤销

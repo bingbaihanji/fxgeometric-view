@@ -14,6 +14,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 
+import org.slf4j.LoggerFactory;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -162,7 +164,7 @@ public interface FxTools {
                             stage.getIcons().add(new Image(iconUrl.toExternalForm()));
                         }
                     } catch (Exception e) {
-                        Logger.getLogger(FxTools.class).warn("加载对话框图标失败: " + iconPath, e);
+                        LoggerFactory.getLogger(FxTools.class).warn("加载对话框图标失败: " + iconPath, e);
                     }
                 }
             }

@@ -1,5 +1,8 @@
 package com.bingbaihanji.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class PerformanceMonitor {
 
-    private static final Logger logger = Logger.getLogger(PerformanceMonitor.class);
+    private static final Logger logger = LoggerFactory.getLogger(PerformanceMonitor.class);
     private static final Map<String, PerformanceStats> stats = new ConcurrentHashMap<>();
     private static final ThreadLocal<Map<String, Long>> threadTimers = ThreadLocal.withInitial(HashMap::new);
 

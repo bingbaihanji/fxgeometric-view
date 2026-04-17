@@ -1,6 +1,7 @@
 package com.bingbaihanji.config;
 
-import com.bingbaihanji.util.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,7 +23,7 @@ import java.util.Properties;
  */
 public class ConfigManager {
 
-    private static final Logger logger = Logger.getLogger(ConfigManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(ConfigManager.class);
     private static final String CONFIG_DIR = System.getProperty("user.home") + "/.fxgeometric";
     private static final String CONFIG_FILE = "config.properties";
     private static ConfigManager instance;
