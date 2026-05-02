@@ -26,7 +26,7 @@ public class ConfigManager {
     private static final Logger logger = LoggerFactory.getLogger(ConfigManager.class);
     private static final String CONFIG_DIR = System.getProperty("user.home") + "/.fxgeometric";
     private static final String CONFIG_FILE = "config.properties";
-    private static ConfigManager instance;
+    private static volatile ConfigManager instance;
     private final Properties properties;
     private final Path configPath;
 
