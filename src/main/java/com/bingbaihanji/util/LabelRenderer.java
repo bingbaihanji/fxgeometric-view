@@ -1,5 +1,6 @@
 package com.bingbaihanji.util;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.LabelPosition;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.scene.canvas.GraphicsContext;
@@ -70,7 +71,7 @@ public class LabelRenderer {
         double labelX = screenX + offset[0];
         double labelY = screenY + offset[1];
 
-        gc.setFill(Color.BLACK);
+        gc.setFill(GeometryConfig.Colors.LABEL_TEXT);
         gc.setFont(Font.font(12));
         gc.setTextAlign(TextAlignment.LEFT);
         gc.fillText(label, labelX, labelY);

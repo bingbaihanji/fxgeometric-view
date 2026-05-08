@@ -1,5 +1,6 @@
 package com.bingbaihanji.view.layout.draw.geometry;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.FillType;
 import com.bingbaihanji.constant.LabelPosition;
 import com.bingbaihanji.constant.LineType;
@@ -85,7 +86,7 @@ public interface WorldObject extends WorldPainter {
      * 获取标签颜色
      */
     default Color getLabelColor() {
-        return Color.BLACK;
+        return GeometryConfig.Colors.LABEL_TEXT;
     }
 
     /**
@@ -143,7 +144,7 @@ public interface WorldObject extends WorldPainter {
      * 获取对象颜色
      */
     default Color getColor() {
-        return Color.BLACK;
+        return GeometryConfig.Colors.LABEL_TEXT;
     }
 
     /**

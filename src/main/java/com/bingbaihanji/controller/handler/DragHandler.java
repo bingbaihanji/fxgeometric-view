@@ -1,5 +1,6 @@
 package com.bingbaihanji.controller.handler;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.constant.MoveMode;
 import com.bingbaihanji.controller.DrawingContext;
@@ -15,7 +16,6 @@ import com.bingbaihanji.view.layout.draw.geometry.impl.*;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,7 +58,7 @@ public class DragHandler extends AbstractDrawingHandler {
 
         // 计算容差
         double scale = context.getTransform().getScale();
-        double tolerance = 10.0 / scale; // 10像素的点击范围
+        double tolerance = GeometryConfig.Tolerance.VERTEX_HIT_TEST_PIXELS / scale; // 10像素的点击范围
 
         // 优先级1：检查所有控制点(最高优先级)
         Hits.HitPoint hitPoint = Hits.performPointHitTest(context.getObjects(), worldX, worldY, tolerance);
@@ -131,7 +131,7 @@ public class DragHandler extends AbstractDrawingHandler {
         context.setCurrentMouseY(worldY);
 
         double scale = context.getTransform().getScale();
-        double tolerance = 10.0 / scale;
+        double tolerance = GeometryConfig.Tolerance.VERTEX_HIT_TEST_PIXELS / scale;
 
         // 检查鼠标是否靠近顶点,如果是则显示十字光标
         boolean nearVertex = false;
@@ -184,7 +184,7 @@ public class DragHandler extends AbstractDrawingHandler {
             double circleRadius = state.draggingCircle.getR();
 
             // 优先级1：圆心到边吸附
-            double centerToEdgeThreshold = 12.0 / scale;
+            double centerToEdgeThreshold = GeometryConfig.Snapping.GRID_SNAP_THRESHOLD_PIXELS / scale;
             EdgeSnapManager.CircleCenterToLineResult centerToEdgeResult =
                     EdgeSnapManager.findCircleCenterToAllEdgesSnap(newCenterX, newCenterY,
                             context.getObjects(), centerToEdgeThreshold, state.owner);
@@ -197,7 +197,7 @@ public class DragHandler extends AbstractDrawingHandler {
 
             // 优先级2：圆与圆相切吸附
             if (!circleSnapApplied) {
-                double circleToCircleThreshold = 15.0 / scale;
+                double circleToCircleThreshold = GeometryConfig.Snapping.CIRCLE_TANGENT_THRESHOLD_PIXELS / scale;
                 EdgeSnapManager.CircleToCircleSnapResult circleSnapResult =
                         EdgeSnapManager.findCircleToCircleTangentSnap(newCenterX, newCenterY, circleRadius,
                                 context.getObjects(), circleToCircleThreshold, state.owner);
@@ -211,7 +211,7 @@ public class DragHandler extends AbstractDrawingHandler {
 
             // 优先级3：圆边缘与边相切吸附
             if (!circleSnapApplied) {
-                double tangentThreshold = 15.0 / scale;
+                double tangentThreshold = GeometryConfig.Snapping.CIRCLE_TANGENT_THRESHOLD_PIXELS / scale;
                 EdgeSnapManager.LineTangentResult tangentResult =
                         EdgeSnapManager.findCircleToAllEdgesTangentSnap(newCenterX, newCenterY, circleRadius,
                                 context.getObjects(), tangentThreshold, state.owner);
@@ -425,7 +425,7 @@ public class DragHandler extends AbstractDrawingHandler {
     private void syncReusePointsPosition(DrawingContext context, double oldX, double oldY,
                                          double newX, double newY, WorldObject excludeOwner) {
         double scale = context.getTransform().getScale();
-        double threshold = 10.0 / scale; // 位置重合判定阈值
+        double threshold = GeometryConfig.Tolerance.POINT_REUSE_THRESHOLD_PIXELS / scale; // 位置重合判定阈值
 
         // 遍历所有对象,查找关键点与 oldX, oldY 重合的几何图形
         for (WorldObject obj : context.getObjects()) {
@@ -544,7 +544,7 @@ public class DragHandler extends AbstractDrawingHandler {
         double worldX = context.getCurrentMouseX();
         double worldY = context.getCurrentMouseY();
         double scale = context.getTransform().getScale();
-        double tolerance = 10.0 / scale;
+        double tolerance = GeometryConfig.Tolerance.VERTEX_HIT_TEST_PIXELS / scale;
 
         for (WorldObject obj : context.getObjects()) {
             for (WorldObject.DraggablePoint point : obj.getDraggablePoints()) {
@@ -553,12 +553,12 @@ public class DragHandler extends AbstractDrawingHandler {
                     double screenY = transform.worldToScreenY(point.getY());
 
                     // 绘制外圈(高亮效果)
-                    gc.setFill(Color.rgb(117, 158, 178, 0.3));
+                    gc.setFill(GeometryConfig.Colors.PREVIEW_LIGHT_TRANSPARENT);
                     double outerRadius = 8;
                     gc.fillOval(screenX - outerRadius, screenY - outerRadius, outerRadius * 2, outerRadius * 2);
 
                     // 绘制内圈
-                    gc.setFill(Color.valueOf("#759eb2"));
+                    gc.setFill(GeometryConfig.Colors.PREVIEW);
                     double innerRadius = 5;
                     gc.fillOval(screenX - innerRadius, screenY - innerRadius, innerRadius * 2, innerRadius * 2);
 
@@ -611,11 +611,11 @@ public class DragHandler extends AbstractDrawingHandler {
         double bgY = screenY - 25;
 
         // 背景圆角矩形
-        gc.setFill(Color.rgb(0, 0, 0, 0.75));
+        gc.setFill(GeometryConfig.Colors.DRAG_COORD_TEXT_BG);
         gc.fillRoundRect(bgX - padding, bgY - textHeight, textWidth + padding * 2, textHeight + padding, 4, 4);
 
         // 文字
-        gc.setFill(Color.WHITE);
+        gc.setFill(GeometryConfig.Colors.DRAG_COORD_TEXT);
         gc.fillText(info, bgX, bgY - 3);
 
         gc.restore();

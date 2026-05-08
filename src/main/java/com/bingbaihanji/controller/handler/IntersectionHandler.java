@@ -1,5 +1,6 @@
 package com.bingbaihanji.controller.handler;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.controller.DrawingContext;
 import com.bingbaihanji.util.IntersectionUtils;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
@@ -21,6 +22,19 @@ import java.util.List;
 public class IntersectionHandler {
 
     /**
+     * 创建交点对象
+     *
+     * @param x X坐标
+     * @param y Y坐标
+     * @return 紫色交点对象
+     */
+    private PointGeo createIntersectionPoint(double x, double y) {
+        PointGeo point = new PointGeo(x, y, false);
+        point.setColor(GeometryConfig.Colors.INTERSECTION_POINT);
+        return point;
+    }
+
+    /**
      * 检查新添加的对象与已有对象的交点
      *
      * @param newObject 新添加的对象
@@ -40,57 +54,43 @@ public class IntersectionHandler {
                 // 线段与线段的交点
                 List<Point2D> intersections = IntersectionUtils.getLineLineIntersections((LineGeo) newObject, (LineGeo) obj);
                 for (Point2D point : intersections) {
-                    PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY(), false);
-                    intersectionPoint.setColor(Color.PURPLE);
-                    intersectionPoints.add(intersectionPoint);
+                    intersectionPoints.add(createIntersectionPoint(point.getX(), point.getY()));
                 }
             } else if (newObject instanceof LineGeo && obj instanceof CircleGeo) {
                 // 线段与圆的交点
                 List<Point2D> intersections = IntersectionUtils.getLineCircleIntersections((LineGeo) newObject, (CircleGeo) obj);
                 for (Point2D point : intersections) {
-                    PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY(), false);
-                    intersectionPoint.setColor(Color.PURPLE);
-                    intersectionPoints.add(intersectionPoint);
+                    intersectionPoints.add(createIntersectionPoint(point.getX(), point.getY()));
                 }
             } else if (newObject instanceof CircleGeo && obj instanceof LineGeo) {
                 // 圆与线段的交点
                 List<Point2D> intersections = IntersectionUtils.getLineCircleIntersections((LineGeo) obj, (CircleGeo) newObject);
                 for (Point2D point : intersections) {
-                    PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY(), false);
-                    intersectionPoint.setColor(Color.PURPLE);
-                    intersectionPoints.add(intersectionPoint);
+                    intersectionPoints.add(createIntersectionPoint(point.getX(), point.getY()));
                 }
             } else if (newObject instanceof CircleGeo && obj instanceof CircleGeo) {
                 // 圆与圆的交点
                 List<Point2D> intersections = IntersectionUtils.getCircleCircleIntersections((CircleGeo) newObject, (CircleGeo) obj);
                 for (Point2D point : intersections) {
-                    PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY(), false);
-                    intersectionPoint.setColor(Color.PURPLE);
-                    intersectionPoints.add(intersectionPoint);
+                    intersectionPoints.add(createIntersectionPoint(point.getX(), point.getY()));
                 }
             } else if (newObject instanceof InfiniteLineGeo && obj instanceof LineGeo) {
                 // 无限直线与线段的交点
                 List<Point2D> intersections = IntersectionUtils.getInfiniteLineLineIntersections((InfiniteLineGeo) newObject, (LineGeo) obj);
                 for (Point2D point : intersections) {
-                    PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY(), false);
-                    intersectionPoint.setColor(Color.PURPLE);
-                    intersectionPoints.add(intersectionPoint);
+                    intersectionPoints.add(createIntersectionPoint(point.getX(), point.getY()));
                 }
             } else if (newObject instanceof InfiniteLineGeo && obj instanceof CircleGeo) {
                 // 无限直线与圆的交点
                 List<Point2D> intersections = IntersectionUtils.getInfiniteLineCircleIntersections((InfiniteLineGeo) newObject, (CircleGeo) obj);
                 for (Point2D point : intersections) {
-                    PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY(), false);
-                    intersectionPoint.setColor(Color.PURPLE);
-                    intersectionPoints.add(intersectionPoint);
+                    intersectionPoints.add(createIntersectionPoint(point.getX(), point.getY()));
                 }
             } else if (newObject instanceof InfiniteLineGeo && obj instanceof InfiniteLineGeo) {
                 // 无限直线与无限直线的交点
                 List<Point2D> intersections = IntersectionUtils.getInfiniteLineInfiniteLineIntersections((InfiniteLineGeo) newObject, (InfiniteLineGeo) obj);
                 for (Point2D point : intersections) {
-                    PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY(), false);
-                    intersectionPoint.setColor(Color.PURPLE);
-                    intersectionPoints.add(intersectionPoint);
+                    intersectionPoints.add(createIntersectionPoint(point.getX(), point.getY()));
                 }
             } else if (newObject instanceof PolygonGeo polygon) {
                 // 多边形与其他图形的交点：遍历多边形的每条边
@@ -98,42 +98,32 @@ public class IntersectionHandler {
                     if (obj instanceof LineGeo line) {
                         List<Point2D> intersections = IntersectionUtils.getLineLineIntersections(edge, line);
                         for (Point2D point : intersections) {
-                            PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY(), false);
-                            intersectionPoint.setColor(Color.PURPLE);
-                            intersectionPoints.add(intersectionPoint);
+                            intersectionPoints.add(createIntersectionPoint(point.getX(), point.getY()));
                         }
                     } else if (obj instanceof CircleGeo circle) {
                         List<Point2D> intersections = IntersectionUtils.getLineCircleIntersections(edge, circle);
                         for (Point2D point : intersections) {
-                            PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY(), false);
-                            intersectionPoint.setColor(Color.PURPLE);
-                            intersectionPoints.add(intersectionPoint);
+                            intersectionPoints.add(createIntersectionPoint(point.getX(), point.getY()));
                         }
                     } else if (obj instanceof PolygonGeo otherPolygon) {
                         // 多边形与多边形的交点：遍历两个多边形的所有边
                         for (LineGeo otherEdge : otherPolygon.getEdges()) {
                             List<Point2D> intersections = IntersectionUtils.getLineLineIntersections(edge, otherEdge);
                             for (Point2D point : intersections) {
-                                PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY(), false);
-                                intersectionPoint.setColor(Color.PURPLE);
-                                intersectionPoints.add(intersectionPoint);
+                                intersectionPoints.add(createIntersectionPoint(point.getX(), point.getY()));
                             }
                         }
                     } else if (obj instanceof InfiniteLineGeo infiniteLine) {
                         List<Point2D> intersections = IntersectionUtils.getInfiniteLineLineIntersections(infiniteLine, edge);
                         for (Point2D point : intersections) {
-                            PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY(), false);
-                            intersectionPoint.setColor(Color.PURPLE);
-                            intersectionPoints.add(intersectionPoint);
+                            intersectionPoints.add(createIntersectionPoint(point.getX(), point.getY()));
                         }
                     } else if (obj instanceof PathGeo path) {
                         // 多边形与手绘路径的交点
                         for (LineGeo pathEdge : path.getEdges()) {
                             List<Point2D> intersections = IntersectionUtils.getLineLineIntersections(edge, pathEdge);
                             for (Point2D point : intersections) {
-                                PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY(), false);
-                                intersectionPoint.setColor(Color.PURPLE);
-                                intersectionPoints.add(intersectionPoint);
+                                intersectionPoints.add(createIntersectionPoint(point.getX(), point.getY()));
                             }
                         }
                     }
@@ -144,43 +134,28 @@ public class IntersectionHandler {
                     if (obj instanceof LineGeo line) {
                         List<Point2D> intersections = IntersectionUtils.getLineLineIntersections(edge, line);
                         for (Point2D point : intersections) {
-                            PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY(), false);
-                            intersectionPoint.setColor(Color.PURPLE);
-                            intersectionPoints.add(intersectionPoint);
+                            intersectionPoints.add(createIntersectionPoint(point.getX(), point.getY()));
                         }
                     } else if (obj instanceof CircleGeo circle) {
                         List<Point2D> intersections = IntersectionUtils.getLineCircleIntersections(edge, circle);
                         for (Point2D point : intersections) {
-                            PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY(), false);
-                            intersectionPoint.setColor(Color.PURPLE);
-                            intersectionPoints.add(intersectionPoint);
+                            intersectionPoints.add(createIntersectionPoint(point.getX(), point.getY()));
                         }
                     } else if (obj instanceof PolygonGeo polygon) {
                         for (LineGeo polyEdge : polygon.getEdges()) {
                             List<Point2D> intersections = IntersectionUtils.getLineLineIntersections(edge, polyEdge);
                             for (Point2D point : intersections) {
-                                PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY(), false);
-                                intersectionPoint.setColor(Color.PURPLE);
-                                intersectionPoints.add(intersectionPoint);
+                                intersectionPoints.add(createIntersectionPoint(point.getX(), point.getY()));
                             }
                         }
                     } else if (obj instanceof InfiniteLineGeo infiniteLine) {
                         List<Point2D> intersections = IntersectionUtils.getInfiniteLineLineIntersections(infiniteLine, edge);
                         for (Point2D point : intersections) {
-                            PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY(), false);
-                            intersectionPoint.setColor(Color.PURPLE);
-                            intersectionPoints.add(intersectionPoint);
+                            intersectionPoints.add(createIntersectionPoint(point.getX(), point.getY()));
                         }
-                    } else if (obj instanceof PathGeo otherPath) {
-                        // 手绘路径与手绘路径的交点
-                        for (LineGeo otherEdge : otherPath.getEdges()) {
-                            List<Point2D> intersections = IntersectionUtils.getLineLineIntersections(edge, otherEdge);
-                            for (Point2D point : intersections) {
-                                PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY(), false);
-                                intersectionPoint.setColor(Color.PURPLE);
-                                intersectionPoints.add(intersectionPoint);
-                            }
-                        }
+                    } else if (obj instanceof PathGeo) {
+                        // 手绘路径与手绘路径的交点：不显示
+                        continue;
                     }
                 }
             } else if (obj instanceof PolygonGeo polygon) {
@@ -189,23 +164,17 @@ public class IntersectionHandler {
                     if (newObject instanceof LineGeo line) {
                         List<Point2D> intersections = IntersectionUtils.getLineLineIntersections(line, edge);
                         for (Point2D point : intersections) {
-                            PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY(), false);
-                            intersectionPoint.setColor(Color.PURPLE);
-                            intersectionPoints.add(intersectionPoint);
+                            intersectionPoints.add(createIntersectionPoint(point.getX(), point.getY()));
                         }
                     } else if (newObject instanceof CircleGeo circle) {
                         List<Point2D> intersections = IntersectionUtils.getLineCircleIntersections(edge, circle);
                         for (Point2D point : intersections) {
-                            PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY(), false);
-                            intersectionPoint.setColor(Color.PURPLE);
-                            intersectionPoints.add(intersectionPoint);
+                            intersectionPoints.add(createIntersectionPoint(point.getX(), point.getY()));
                         }
                     } else if (newObject instanceof InfiniteLineGeo infiniteLine) {
                         List<Point2D> intersections = IntersectionUtils.getInfiniteLineLineIntersections(infiniteLine, edge);
                         for (Point2D point : intersections) {
-                            PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY(), false);
-                            intersectionPoint.setColor(Color.PURPLE);
-                            intersectionPoints.add(intersectionPoint);
+                            intersectionPoints.add(createIntersectionPoint(point.getX(), point.getY()));
                         }
                     }
                 }
@@ -214,16 +183,12 @@ public class IntersectionHandler {
                 if (newObject instanceof LineGeo line) {
                     List<Point2D> intersections = IntersectionUtils.getInfiniteLineLineIntersections(infiniteLine, line);
                     for (Point2D point : intersections) {
-                        PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY(), false);
-                        intersectionPoint.setColor(Color.PURPLE);
-                        intersectionPoints.add(intersectionPoint);
+                        intersectionPoints.add(createIntersectionPoint(point.getX(), point.getY()));
                     }
                 } else if (newObject instanceof CircleGeo circle) {
                     List<Point2D> intersections = IntersectionUtils.getInfiniteLineCircleIntersections(infiniteLine, circle);
                     for (Point2D point : intersections) {
-                        PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY(), false);
-                        intersectionPoint.setColor(Color.PURPLE);
-                        intersectionPoints.add(intersectionPoint);
+                        intersectionPoints.add(createIntersectionPoint(point.getX(), point.getY()));
                     }
                 }
             } else if (newObject instanceof InfiniteLineGeo infiniteLine) {
@@ -232,9 +197,7 @@ public class IntersectionHandler {
                     for (LineGeo edge : polygon.getEdges()) {
                         List<Point2D> intersections = IntersectionUtils.getInfiniteLineLineIntersections(infiniteLine, edge);
                         for (Point2D point : intersections) {
-                            PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY(), false);
-                            intersectionPoint.setColor(Color.PURPLE);
-                            intersectionPoints.add(intersectionPoint);
+                            intersectionPoints.add(createIntersectionPoint(point.getX(), point.getY()));
                         }
                     }
                 } else if (obj instanceof PathGeo path) {
@@ -242,9 +205,7 @@ public class IntersectionHandler {
                     for (LineGeo edge : path.getEdges()) {
                         List<Point2D> intersections = IntersectionUtils.getInfiniteLineLineIntersections(infiniteLine, edge);
                         for (Point2D point : intersections) {
-                            PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY(), false);
-                            intersectionPoint.setColor(Color.PURPLE);
-                            intersectionPoints.add(intersectionPoint);
+                            intersectionPoints.add(createIntersectionPoint(point.getX(), point.getY()));
                         }
                     }
                 }
@@ -290,9 +251,7 @@ public class IntersectionHandler {
                 // 计算交点
                 List<Point2D> intersections = calculateIntersections(obj1, obj2);
                 for (Point2D point : intersections) {
-                    PointGeo intersectionPoint = new PointGeo(point.getX(), point.getY(), false);
-                    intersectionPoint.setColor(Color.PURPLE);
-                    newIntersectionPoints.add(intersectionPoint);
+                    newIntersectionPoints.add(createIntersectionPoint(point.getX(), point.getY()));
                 }
             }
         }
@@ -395,10 +354,8 @@ public class IntersectionHandler {
                     }
                 } else if (obj2 instanceof InfiniteLineGeo infiniteLine) {
                     intersections.addAll(IntersectionUtils.getInfiniteLineLineIntersections(infiniteLine, edge));
-                } else if (obj2 instanceof PathGeo otherPath) {
-                    for (LineGeo otherEdge : otherPath.getEdges()) {
-                        intersections.addAll(IntersectionUtils.getLineLineIntersections(edge, otherEdge));
-                    }
+                } else if (obj2 instanceof PathGeo) {
+                    // 手绘路径与手绘路径的交点：不显示
                 }
             }
         } else if (obj2 instanceof PathGeo path) {
@@ -433,6 +390,6 @@ public class IntersectionHandler {
     public boolean isIntersectionPoint(PointGeo point) {
         // 使用新增的getColor方法
         Color color = point.getColor();
-        return Color.PURPLE.equals(color);
+        return GeometryConfig.Colors.INTERSECTION_POINT.equals(color);
     }
 }

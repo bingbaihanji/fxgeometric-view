@@ -491,7 +491,6 @@ public class IntersectionUtils {
     }
 
 
-
     /**
      * 检查点是否有效(非null且坐标有限)
      */

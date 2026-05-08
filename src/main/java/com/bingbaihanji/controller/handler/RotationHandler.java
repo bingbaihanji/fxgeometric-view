@@ -1,5 +1,6 @@
 package com.bingbaihanji.controller.handler;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.constant.DrawingState;
 import com.bingbaihanji.controller.DrawingContext;
@@ -90,7 +91,7 @@ public class RotationHandler extends AbstractDrawingHandler {
         if (context.getState() == DrawingState.ROTATE_SELECT_SHAPE) {
             // 在选择图形状态,高亮显示鼠标悬停的可旋转图形
             double scale = context.getTransform().getScale();
-            double tolerance = 10.0 / scale;
+            double tolerance = GeometryConfig.Tolerance.VERTEX_HIT_TEST_PIXELS / scale;
             double worldX = context.getCurrentMouseX();
             double worldY = context.getCurrentMouseY();
 
@@ -115,12 +116,12 @@ public class RotationHandler extends AbstractDrawingHandler {
             // 绘制旋转中心点预览
             double centerScreenX = transform.worldToScreenX(context.getCurrentMouseX());
             double centerScreenY = transform.worldToScreenY(context.getCurrentMouseY());
-            gc.setFill(javafx.scene.paint.Color.ORANGE);
+            gc.setFill(GeometryConfig.Colors.CONSTRUCTION_HIGHLIGHT);
             double pointRadius = 5;
             gc.fillOval(centerScreenX - pointRadius, centerScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
 
             // 绘制中心点标记(十字线)
-            gc.setStroke(javafx.scene.paint.Color.ORANGE);
+            gc.setStroke(GeometryConfig.Colors.CONSTRUCTION_HIGHLIGHT);
             gc.setLineWidth(1);
             double crossSize = 10;
             gc.strokeLine(centerScreenX - crossSize, centerScreenY, centerScreenX + crossSize, centerScreenY);
@@ -140,7 +141,7 @@ public class RotationHandler extends AbstractDrawingHandler {
         if (context.getState() == DrawingState.ROTATE_SELECT_SHAPE) {
             // 第一次点击：选择要旋转的图形
             double scale = context.getTransform().getScale();
-            double tolerance = 10.0 / scale;
+            double tolerance = GeometryConfig.Tolerance.VERTEX_HIT_TEST_PIXELS / scale;
 
             for (WorldObject obj : context.getObjects()) {
                 // 排除点对象(点旋转没有意义)

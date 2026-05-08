@@ -156,6 +156,22 @@ public class RegularPolygonGeo extends AbstractWorldObject {
         verticesCacheValid = false;
     }
 
+    public double getCx() {
+        return cx;
+    }
+
+    public double getCy() {
+        return cy;
+    }
+
+    public double getStartAngle() {
+        return startAngle;
+    }
+
+    public void setStartAngle(double startAngle) {
+        this.startAngle = startAngle;
+    }
+
     public String getCenterName() {
         return centerName;
     }

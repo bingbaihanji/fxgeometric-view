@@ -54,13 +54,17 @@ public class HoverTooltipManager {
                 """);
     }
 
-    /** 将鼠标监听注册到指定节点 */
+    /**
+     * 将鼠标监听注册到指定节点
+     */
     public void install(Node node) {
         node.addEventHandler(MouseEvent.MOUSE_MOVED, this::onMouseMoved);
         node.addEventHandler(MouseEvent.MOUSE_EXITED, this::onMouseExited);
     }
 
-    /** 立即取消计时器并隐藏 Tooltip */
+    /**
+     * 立即取消计时器并隐藏 Tooltip
+     */
     public void cancel() {
         hoverTimer.stop();
         hoverTooltip.hide();

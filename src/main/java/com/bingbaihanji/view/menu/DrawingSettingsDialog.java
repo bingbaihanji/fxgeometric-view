@@ -21,25 +21,23 @@ import javafx.stage.Modality;
  */
 public class DrawingSettingsDialog extends Dialog<DrawingSettingsDialog.SettingsResult> {
 
-    // 滑块组件
-    private Slider simplifyEpsilonSlider;
-    private Slider smoothSegmentsSlider;
-    private Slider tensionSlider;
-    private Slider minPointDistanceSlider;
-    private CheckBox enableSmoothingCheckBox;
-
-    // 值标签
-    private Label simplifyEpsilonValueLabel;
-    private Label smoothSegmentsValueLabel;
-    private Label tensionValueLabel;
-    private Label minPointDistanceValueLabel;
-
     // 当前设置值
     private final double simplifyEpsilon;
     private final int smoothSegments;
     private final double tension;
     private final double minPointDistance;
     private final boolean enableSmoothing;
+    // 滑块组件
+    private Slider simplifyEpsilonSlider;
+    private Slider smoothSegmentsSlider;
+    private Slider tensionSlider;
+    private Slider minPointDistanceSlider;
+    private CheckBox enableSmoothingCheckBox;
+    // 值标签
+    private Label simplifyEpsilonValueLabel;
+    private Label smoothSegmentsValueLabel;
+    private Label tensionValueLabel;
+    private Label minPointDistanceValueLabel;
 
     public DrawingSettingsDialog(double simplifyEpsilon, int smoothSegments,
                                  double tension, double minPointDistance,

@@ -90,8 +90,8 @@ public class SnapCalculator {
     /**
      * 查找最近的特殊点(用于磁性吸附)
      *
-     * @param x 当前鼠标x坐标(世界坐标)
-     * @param y 当前鼠标y坐标(世界坐标)
+     * @param x       当前鼠标x坐标(世界坐标)
+     * @param y       当前鼠标y坐标(世界坐标)
      * @param objects 对象列表
      * @return 最近的特殊点,如果没有找到则返回null
      */
@@ -110,8 +110,8 @@ public class SnapCalculator {
     /**
      * 查找最近的轴向吸附(垂直线或水平线)
      *
-     * @param worldX 当前世界坐标X
-     * @param worldY 当前世界坐标Y
+     * @param worldX  当前世界坐标X
+     * @param worldY  当前世界坐标Y
      * @param objects 对象列表
      * @return 轴向吸附结果,如果没有找到返回null
      */
@@ -235,7 +235,9 @@ public class SnapCalculator {
         return v;
     }
 
-    /** 吸附结果，包含坐标和视觉反馈状态 */
+    /**
+     * 吸附结果，包含坐标和视觉反馈状态
+     */
     public static class SnapResult {
         public final double x;
         public final double y;
@@ -250,7 +252,9 @@ public class SnapCalculator {
         }
     }
 
-    /** 轴向吸附信息类 */
+    /**
+     * 轴向吸附信息类
+     */
     public static class AxisSnapInfo {
         public final boolean isVertical;   // true=垂直线吸附, false=水平线吸附
         public final double snapValue;     // 吸附的x或y坐标值
@@ -271,7 +275,9 @@ public class SnapCalculator {
         }
     }
 
-    /** 轴向吸附结果类 */
+    /**
+     * 轴向吸附结果类
+     */
     private static class AxisSnapResult {
         AxisSnapInfo snapInfo;
         double distance;  // 到吸附线的距离

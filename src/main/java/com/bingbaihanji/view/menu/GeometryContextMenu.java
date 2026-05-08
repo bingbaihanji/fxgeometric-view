@@ -1,5 +1,6 @@
 package com.bingbaihanji.view.menu;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.controller.DrawingContext;
 import com.bingbaihanji.controller.DrawingController;
 import com.bingbaihanji.util.*;
@@ -162,7 +163,7 @@ public class GeometryContextMenu {
         } else {
             // 未在复用组中,检查是否有重合的点
             double scale = canvas.getTransform().getScale();
-            double threshold = 10.0 / scale;
+            double threshold = GeometryConfig.Tolerance.VERTEX_HIT_TEST_PIXELS / scale;
             List<PointGeo> overlappingPoints = PointReuseManager.findOverlappingPoints(
                     point, canvas.getObjects(), threshold);
 
@@ -265,7 +266,7 @@ public class GeometryContextMenu {
         } else {
             // 未在复用组中
             double scale = canvas.getTransform().getScale();
-            double threshold = 10.0 / scale;
+            double threshold = GeometryConfig.Tolerance.VERTEX_HIT_TEST_PIXELS / scale;
             List<PointGeo> overlappingPoints = PointReuseManager.findOverlappingPoints(
                     point, canvas.getObjects(), threshold);
 
@@ -528,7 +529,7 @@ public class GeometryContextMenu {
 
         // 检查该位置是否已有独立的 PointGeo
         double scale = canvas.getTransform().getScale();
-        double threshold = 5.0 / scale;
+        double threshold = GeometryConfig.Tolerance.OBJECT_HIT_TEST_PIXELS / scale;
         PointGeo existingPoint = PointReuseManager.findExistingPoint(vx, vy, canvas.getObjects(), threshold);
 
         // 检查是否有其他重合的点(包括多边形顶点、线段端点、圆心等)
@@ -539,14 +540,14 @@ public class GeometryContextMenu {
             PointGeo tempPoint = new PointGeo(vx, vy, false);
             // 使用更大的阈值来检测附近的点
             List<PointGeo> overlapping = PointReuseManager.findOverlappingPoints(
-                    tempPoint, canvas.getObjects(), 10.0 / scale);
+                    tempPoint, canvas.getObjects(), GeometryConfig.Tolerance.POINT_REUSE_THRESHOLD_PIXELS / scale);
 
             // 额外检查：是否有多个圆心在此位置(同心圆情况)
             int circleCount = 0;
             for (WorldObject obj : canvas.getObjects()) {
                 if (obj instanceof CircleGeo circle) {
                     double dist = Math.hypot(circle.getCx() - vx, circle.getCy() - vy);
-                    if (dist < 10.0 / scale) {
+                    if (dist < GeometryConfig.Tolerance.POINT_REUSE_THRESHOLD_PIXELS / scale) {
                         circleCount++;
                     }
                 }

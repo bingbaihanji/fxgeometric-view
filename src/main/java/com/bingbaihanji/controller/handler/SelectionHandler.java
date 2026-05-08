@@ -1,5 +1,6 @@
 package com.bingbaihanji.controller.handler;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.controller.DrawingContext;
 import com.bingbaihanji.controller.SelectionManager;
@@ -65,8 +66,8 @@ public class SelectionHandler extends AbstractDrawingHandler {
 
         // 计算容差
         double scale = context.getTransform().getScale();
-        double tolerance = 5.0 / scale; // 5像素的点击范围
-        double vertexTolerance = 10.0 / scale; // 控制点使用更大的容差(10像素)
+        double tolerance = GeometryConfig.Tolerance.OBJECT_HIT_TEST_PIXELS / scale; // 5像素的点击范围
+        double vertexTolerance = GeometryConfig.Tolerance.VERTEX_HIT_TEST_PIXELS / scale; // 控制点使用更大的容差(10像素)
 
         // 优先级1：检查是否点击了控制点  
         // 控制点具有最高优先级,如果点击了控制点,不选中对象,让 DragHandler 处理
@@ -117,7 +118,7 @@ public class SelectionHandler extends AbstractDrawingHandler {
                 double maxY = bounds[3];
                 
                 // 检查是否点击了旋转句柄区域(旋转句柄在边界之外)
-                double handleTolerance = 15.0 / scale; // 句柄区域容差
+                double handleTolerance = GeometryConfig.Snapping.POINT_SNAP_THRESHOLD_PIXELS / scale; // 句柄区域容差
                 ResizeHandle handle = bbox.hitTestHandles(worldX, worldY, handleTolerance);
                 if (handle != null) {
                     // 点击了句柄,交由DragHandler处理
@@ -134,7 +135,7 @@ public class SelectionHandler extends AbstractDrawingHandler {
             // 确实点击了空白区域,清除选择并启动框选
             // 在启动框选之前,再次检查是否接近控制点(使用更大的容差)
             // 这样可以避免用户点击控制点时稍微偏离而触发框选
-            double largerTolerance = 15.0 / scale; // 使用更大的容差(15像素)
+            double largerTolerance = GeometryConfig.Snapping.POINT_SNAP_THRESHOLD_PIXELS / scale; // 使用更大的容差(15像素)
             Hits.HitPoint nearPoint = Hits.performPointHitTest(context.getObjects(), worldX, worldY, largerTolerance);
             if (nearPoint != null) {
                 // 接近控制点,不启动框选,让 DragHandler 处理

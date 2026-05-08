@@ -4,10 +4,10 @@ import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.controller.DrawingContext;
 import com.bingbaihanji.model.FunctionInputResult;
 import com.bingbaihanji.util.CommandHistory;
-import javafx.scene.control.Alert;
 import com.bingbaihanji.view.layout.draw.geometry.impl.FunctionGeo;
 import com.bingbaihanji.view.menu.FunctionInputDialog;
 import javafx.application.Platform;
+import javafx.scene.control.Alert;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 
@@ -62,6 +62,7 @@ public class FunctionHandler extends AbstractDrawingHandler {
                         public void execute() {
                             context.addObject(function);
                         }
+
                         @Override
                         public void undo() {
                             context.removeObject(function);

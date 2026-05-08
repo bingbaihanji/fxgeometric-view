@@ -1,5 +1,6 @@
 package com.bingbaihanji.controller.handler;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.constant.DrawingState;
 import com.bingbaihanji.controller.DrawingContext;
@@ -16,7 +17,6 @@ import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.paint.Color;
 
 import java.util.List;
 
@@ -119,7 +119,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
         }
 
         double scale = context.getTransform().getScale();
-        double tolerance = 10.0 / scale;
+        double tolerance = GeometryConfig.Tolerance.VERTEX_HIT_TEST_PIXELS / scale;
         double worldX = context.getCurrentMouseX();
         double worldY = context.getCurrentMouseY();
 
@@ -157,7 +157,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
                         double midScreenX = transform.worldToScreenX(midX);
                         double midScreenY = transform.worldToScreenY(midY);
 
-                        gc.setFill(Color.GREEN);
+                        gc.setFill(GeometryConfig.Colors.CONSTRUCTION_POINT);
                         double pointRadius = 4;
                         gc.fillOval(midScreenX - pointRadius, midScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
                         break;
@@ -175,7 +175,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
                         double midScreenX = transform.worldToScreenX(midX);
                         double midScreenY = transform.worldToScreenY(midY);
 
-                        gc.setFill(Color.GREEN);
+                        gc.setFill(GeometryConfig.Colors.CONSTRUCTION_POINT);
                         double pointRadius = 4;
                         gc.fillOval(midScreenX - pointRadius, midScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
                         break;
@@ -216,7 +216,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
                         double sx2 = transform.worldToScreenX(px2);
                         double sy2 = transform.worldToScreenY(py2);
 
-                        gc.setStroke(Color.valueOf("#759eb2"));
+                        gc.setStroke(GeometryConfig.Colors.PREVIEW);
                         gc.setLineWidth(2);
                         gc.setLineDashes(6);
                         gc.strokeLine(sx1, sy1, sx2, sy2);
@@ -225,7 +225,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
                         // 绘制中点
                         double midScreenX = transform.worldToScreenX(midX);
                         double midScreenY = transform.worldToScreenY(midY);
-                        gc.setFill(Color.valueOf("#759eb2"));
+                        gc.setFill(GeometryConfig.Colors.PREVIEW);
                         double pointRadius = 4;
                         gc.fillOval(midScreenX - pointRadius, midScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
                         break;
@@ -237,7 +237,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
 
         // 切线模式：高亮悬停的圆,并显示切点和切线预览
         if (context.getDrawMode() == DrawMode.TANGENT && context.getState() == DrawingState.IDLE) {
-            double tangentTolerance = 15.0 / scale;
+            double tangentTolerance = GeometryConfig.Snapping.CIRCLE_TANGENT_THRESHOLD_PIXELS / scale;
             for (WorldObject obj : context.getObjects()) {
                 if (obj instanceof CircleGeo circle) {
                     // 计算点击位置到圆心的距离
@@ -262,7 +262,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
                             // 绘制切点
                             double tangentScreenX = transform.worldToScreenX(tangentPointX);
                             double tangentScreenY = transform.worldToScreenY(tangentPointY);
-                            gc.setFill(Color.ORANGE);
+                            gc.setFill(GeometryConfig.Colors.CONSTRUCTION_HIGHLIGHT);
                             double pointRadius = 5;
                             gc.fillOval(tangentScreenX - pointRadius, tangentScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
 
@@ -282,7 +282,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
                             double tsx2 = transform.worldToScreenX(tx2);
                             double tsy2 = transform.worldToScreenY(ty2);
 
-                            gc.setStroke(Color.ORANGE);
+                            gc.setStroke(GeometryConfig.Colors.CONSTRUCTION_HIGHLIGHT);
                             gc.setLineWidth(2);
                             gc.setLineDashes(6);
                             gc.strokeLine(tsx1, tsy1, tsx2, tsy2);
@@ -346,7 +346,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
             double sy2 = transform.worldToScreenY(py2);
 
             // 绘制虚线预览
-            gc.setStroke(Color.valueOf("#759eb2"));
+            gc.setStroke(GeometryConfig.Colors.PREVIEW);
             gc.setLineWidth(2);
             gc.setLineDashes(6);
             gc.strokeLine(sx1, sy1, sx2, sy2);
@@ -355,7 +355,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
             // 绘制鼠标位置的点
             double mouseScreenX = transform.worldToScreenX(context.getCurrentMouseX());
             double mouseScreenY = transform.worldToScreenY(context.getCurrentMouseY());
-            gc.setFill(Color.LIGHTGRAY);
+            gc.setFill(GeometryConfig.Colors.SELECTION_FILL);
             double pointRadius = 3;
             gc.fillOval(mouseScreenX - pointRadius, mouseScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
         }
@@ -372,7 +372,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
     private void handleMidpointClick(double worldX, double worldY, DrawingContext context) {
         // 查找点击位置附近的线段或直线
         double scale = context.getTransform().getScale();
-        double tolerance = 10.0 / scale;
+        double tolerance = GeometryConfig.Tolerance.VERTEX_HIT_TEST_PIXELS / scale;
 
         for (WorldObject obj : context.getObjects()) {
             if (obj instanceof LineGeo line) {
@@ -385,7 +385,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
 
                     // 绘制中点
                     PointGeo newPoint = new PointGeo(midpoint.getX(), midpoint.getY());
-                    newPoint.setColor(Color.GREEN);
+                    newPoint.setColor(GeometryConfig.Colors.CONSTRUCTION_POINT);
                     context.executeCommand(new CommandHistory.Command() {
                         @Override
                         public void execute() {
@@ -409,7 +409,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
 
                     // 绘制中点
                     PointGeo newPoint = new PointGeo(midpoint.getX(), midpoint.getY());
-                    newPoint.setColor(Color.GREEN);
+                    newPoint.setColor(GeometryConfig.Colors.CONSTRUCTION_POINT);
                     context.executeCommand(new CommandHistory.Command() {
                         @Override
                         public void execute() {
@@ -434,7 +434,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
         if (context.getState() == DrawingState.IDLE) {
             // 第一次点击：选择线段或直线
             double scale = context.getTransform().getScale();
-            double tolerance = 10.0 / scale;
+            double tolerance = GeometryConfig.Tolerance.VERTEX_HIT_TEST_PIXELS / scale;
 
             for (WorldObject obj : context.getObjects()) {
                 if (obj instanceof LineGeo line) {
@@ -513,7 +513,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
         if (context.getState() == DrawingState.IDLE) {
             // 第一次点击：选择线段或直线
             double scale = context.getTransform().getScale();
-            double tolerance = 10.0 / scale;
+            double tolerance = GeometryConfig.Tolerance.VERTEX_HIT_TEST_PIXELS / scale;
 
             for (WorldObject obj : context.getObjects()) {
                 if (obj instanceof LineGeo line) {
@@ -591,7 +591,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
     private void handlePerpendicularBisectorClick(double worldX, double worldY, DrawingContext context) {
         // 查找点击位置附近的线段(注意：只有线段才有垂直平分线,直线没有)
         double scale = context.getTransform().getScale();
-        double tolerance = 10.0 / scale;
+        double tolerance = GeometryConfig.Tolerance.VERTEX_HIT_TEST_PIXELS / scale;
 
         for (WorldObject obj : context.getObjects()) {
             if (obj instanceof LineGeo line) {
@@ -645,7 +645,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
     private void handleTangentClick(double worldX, double worldY, DrawingContext context) {
         // 查找点击位置附近的圆
         double scale = context.getTransform().getScale();
-        double tolerance = 15.0 / scale;
+        double tolerance = GeometryConfig.Snapping.CIRCLE_TANGENT_THRESHOLD_PIXELS / scale;
 
         for (WorldObject obj : context.getObjects()) {
             if (obj instanceof CircleGeo circle) {

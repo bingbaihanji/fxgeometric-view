@@ -1,5 +1,6 @@
 package com.bingbaihanji.controller;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import javafx.scene.canvas.GraphicsContext;
 
@@ -158,7 +159,7 @@ public class PreviewManager {
             double sy2 = transform.worldToScreenY(y2);
 
             gc.save();
-            gc.setStroke(javafx.scene.paint.Color.rgb(117, 158, 178, 0.6));
+            gc.setStroke(GeometryConfig.Colors.PREVIEW_TRANSPARENT);
             gc.setLineWidth(1.5);
             gc.setLineDashes(6);
 
@@ -223,7 +224,7 @@ public class PreviewManager {
             double screenRadius = radius * transform.getScale();
 
             gc.save();
-            gc.setStroke(javafx.scene.paint.Color.rgb(117, 158, 178, 0.6));
+            gc.setStroke(GeometryConfig.Colors.PREVIEW_TRANSPARENT);
             gc.setLineWidth(1.5);
             gc.setLineDashes(6);
             gc.strokeOval(screenCx - screenRadius, screenCy - screenRadius,
@@ -283,7 +284,7 @@ public class PreviewManager {
             if (!active || points.isEmpty()) return;
 
             gc.save();
-            gc.setStroke(javafx.scene.paint.Color.rgb(117, 158, 178, 0.6));
+            gc.setStroke(GeometryConfig.Colors.PREVIEW_TRANSPARENT);
             gc.setLineWidth(1.5);
             gc.setLineDashes(6);
 
@@ -310,7 +311,7 @@ public class PreviewManager {
                 double sy2 = transform.worldToScreenY(first[1]);
 
                 gc.setLineDashes(2);
-                gc.setStroke(javafx.scene.paint.Color.rgb(117, 158, 178, 0.3));
+                gc.setStroke(GeometryConfig.Colors.PREVIEW_LIGHT_TRANSPARENT);
                 gc.strokeLine(sx1, sy1, sx2, sy2);
             }
 
@@ -369,11 +370,11 @@ public class PreviewManager {
 
             gc.save();
             // 填充半透明背景
-            gc.setFill(javafx.scene.paint.Color.rgb(135, 206, 250, 0.2));
+            gc.setFill(GeometryConfig.Colors.PREVIEW_FILL);
             gc.fillRect(sx, sy, sw, sh);
 
             // 绘制边框
-            gc.setStroke(javafx.scene.paint.Color.rgb(70, 130, 180, 0.8));
+            gc.setStroke(GeometryConfig.Colors.PREVIEW_STROKE);
             gc.setLineWidth(1);
             gc.setLineDashes(4);
             gc.strokeRect(sx, sy, sw, sh);
@@ -453,7 +454,7 @@ public class PreviewManager {
             if (!active || radius < 1e-6) return;
 
             gc.save();
-            gc.setStroke(javafx.scene.paint.Color.rgb(117, 158, 178, 0.6));
+            gc.setStroke(GeometryConfig.Colors.PREVIEW_TRANSPARENT);
             gc.setLineWidth(1.5);
             gc.setLineDashes(6);
 

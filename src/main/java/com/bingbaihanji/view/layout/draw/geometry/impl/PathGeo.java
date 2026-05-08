@@ -2,15 +2,11 @@ package com.bingbaihanji.view.layout.draw.geometry.impl;
 
 import com.bingbaihanji.constant.ObjectType;
 import com.bingbaihanji.util.LineStyleUtil;
-import com.bingbaihanji.util.PointNameManager;
 import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.GeometryVisitor;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.TextAlignment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,9 +28,6 @@ public class PathGeo extends AbstractWorldObject {
      */
     private final List<Point> pathPoints;
 
-    private String startPointName; // 起点名称
-    private String endPointName;   // 终点名称
-
     /**
      * 构造函数
      *
@@ -52,13 +45,6 @@ public class PathGeo extends AbstractWorldObject {
         }
 
         this.color = StyleManager.GEOMETRY_LINE;
-
-        // 为起点和终点分配名称
-        PointNameManager manager = PointNameManager.getInstance();
-        Point2D startPoint = points.get(0);
-        Point2D endPoint = points.get(points.size() - 1);
-        this.startPointName = manager.assignName(startPoint.getX(), startPoint.getY());
-        this.endPointName = manager.assignName(endPoint.getX(), endPoint.getY());
     }
 
     @Override
@@ -92,31 +78,6 @@ public class PathGeo extends AbstractWorldObject {
 
         // 重置线型
         LineStyleUtil.resetLineStyle(gc);
-
-        // 只绘制起点和终点
-        Point startPoint = pathPoints.get(0);
-        Point endPoint = pathPoints.get(pathPoints.size() - 1);
-
-        double sx1 = transform.worldToScreenX(startPoint.x);
-        double sy1 = transform.worldToScreenY(startPoint.y);
-        double sx2 = transform.worldToScreenX(endPoint.x);
-        double sy2 = transform.worldToScreenY(endPoint.y);
-
-        gc.setFill(getEffectiveColor());
-        double pointRadius = hover ? 5 : 4;
-        gc.fillOval(sx1 - pointRadius, sy1 - pointRadius, pointRadius * 2, pointRadius * 2);
-        gc.fillOval(sx2 - pointRadius, sy2 - pointRadius, pointRadius * 2, pointRadius * 2);
-
-        // 绘制起点和终点名称
-        gc.setFill(Color.BLACK);
-        gc.setFont(Font.font(12));
-        gc.setTextAlign(TextAlignment.LEFT);
-        if (startPointName != null && !startPointName.isEmpty()) {
-            gc.fillText(startPointName, sx1 + 8, sy1 - 8);
-        }
-        if (endPointName != null && !endPointName.isEmpty()) {
-            gc.fillText(endPointName, sx2 + 8, sy2 - 8);
-        }
     }
 
     @Override

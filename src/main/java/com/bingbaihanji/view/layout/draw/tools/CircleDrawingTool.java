@@ -1,11 +1,11 @@
 package com.bingbaihanji.view.layout.draw.tools;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.view.layout.core.GridChartView;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.impl.CircleGeo;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.paint.Color;
 
 public class CircleDrawingTool {
 
@@ -65,7 +65,7 @@ public class CircleDrawingTool {
         double sy = transform.worldToScreenY(cy);
         double sr = previewRadius * transform.getScale();
 
-        gc.setStroke(Color.valueOf("#759eb2"));
+        gc.setStroke(GeometryConfig.Colors.PREVIEW);
         gc.setLineDashes(6);
         gc.strokeOval(sx - sr, sy - sr, sr * 2, sr * 2);
         gc.setLineDashes(null);

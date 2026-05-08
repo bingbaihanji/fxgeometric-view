@@ -1,5 +1,6 @@
 package com.bingbaihanji.controller.handler;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.constant.DrawingState;
 import com.bingbaihanji.controller.DrawingContext;
@@ -16,7 +17,6 @@ import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.paint.Color;
 
 import java.util.List;
 
@@ -118,7 +118,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
         // 点模式：检测是否靠近可约束的图形,改变光标
         if (context.getDrawMode() == DrawMode.POINT) {
             double scale = context.getTransform().getScale();
-            double snapDistance = 15.0 / scale; // 吸附距离阈值
+            double snapDistance = GeometryConfig.Snapping.POINT_SNAP_THRESHOLD_PIXELS / scale; // 吸附距离阈值
 
             // 查找是否靠近可约束图形
             boolean nearConstrainableShape = false;
@@ -162,7 +162,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             );
 
             // 检测圆相切吸附
-            double tangentThreshold = 15.0 / context.getTransform().getScale();
+            double tangentThreshold = GeometryConfig.Snapping.CIRCLE_TANGENT_THRESHOLD_PIXELS / context.getTransform().getScale();
             EdgeSnapManager.CircleTangentResult tangentResult =
                     EdgeSnapManager.findCircleTangentSnap(firstPointX, firstPointY, previewRadius,
                             context.getObjects(), tangentThreshold);
@@ -195,7 +195,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
     private void handlePointDrawing(double worldX, double worldY, DrawingContext context) {
         // 点模式：检测是否靠近图形(吸附)
         double scale = context.getTransform().getScale();
-        double snapDistance = 15.0 / scale; // 吸附距离阈值
+        double snapDistance = GeometryConfig.Snapping.POINT_SNAP_THRESHOLD_PIXELS / scale; // 吸附距离阈值
 
         // 查找最近的可约束图形
         WorldObject nearestShape = null;
@@ -298,7 +298,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                 );
 
                 // 检测圆相切吸附
-                double tangentThreshold = 15.0 / scale;
+                double tangentThreshold = GeometryConfig.Snapping.CIRCLE_TANGENT_THRESHOLD_PIXELS / scale;
                 EdgeSnapManager.CircleTangentResult tangentResult =
                         EdgeSnapManager.findCircleTangentSnap(firstPointX, firstPointY, radius,
                                 context.getObjects(), tangentThreshold);
@@ -463,11 +463,11 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             double mouseScreenX = transform.worldToScreenX(context.getCurrentMouseX());
             double mouseScreenY = transform.worldToScreenY(context.getCurrentMouseY());
 
-            gc.setStroke(Color.valueOf("#759eb2"));
+            gc.setStroke(GeometryConfig.Colors.PREVIEW);
             gc.setLineWidth(1.5);
             gc.strokeOval(mouseScreenX - 6, mouseScreenY - 6, 12, 12);
 
-            gc.setFill(Color.valueOf("#759eb2").deriveColor(0, 1, 1, 0.6));
+            gc.setFill(GeometryConfig.Colors.PREVIEW.deriveColor(0, 1, 1, 0.6));
             gc.fillOval(mouseScreenX - pointRadius, mouseScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
             return;
         }
@@ -477,7 +477,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             // 绘制第一个点(实心点)
             double firstPointScreenX = transform.worldToScreenX(firstPointX);
             double firstPointScreenY = transform.worldToScreenY(firstPointY);
-            gc.setFill(Color.valueOf("#759eb2"));
+            gc.setFill(GeometryConfig.Colors.PREVIEW);
             gc.fillOval(firstPointScreenX - pointRadius, firstPointScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
 
             // 绘制第二个点的预览(半透明点,跟随鼠标)
@@ -485,12 +485,12 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             double mouseScreenY = transform.worldToScreenY(context.getCurrentMouseY());
 
             // 外圈光晕效果
-            gc.setStroke(Color.valueOf("#759eb2").deriveColor(0, 1, 1, 0.5));
+            gc.setStroke(GeometryConfig.Colors.PREVIEW.deriveColor(0, 1, 1, 0.5));
             gc.setLineWidth(1.5);
             gc.strokeOval(mouseScreenX - 6, mouseScreenY - 6, 12, 12);
 
             // 内部半透明填充点
-            gc.setFill(Color.valueOf("#759eb2").deriveColor(0, 1, 1, 0.6));
+            gc.setFill(GeometryConfig.Colors.PREVIEW.deriveColor(0, 1, 1, 0.6));
             gc.fillOval(mouseScreenX - pointRadius, mouseScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
         }
     }

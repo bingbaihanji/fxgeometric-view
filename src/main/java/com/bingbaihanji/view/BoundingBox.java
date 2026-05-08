@@ -1,5 +1,6 @@
 package com.bingbaihanji.view;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.scene.canvas.GraphicsContext;
@@ -22,8 +23,8 @@ public class BoundingBox {
     /**
      * 边界框颜色
      */
-    private static final Color BBOX_COLOR = Color.rgb(0, 150, 255, 0.8);
-    private static final Color BBOX_FILL = Color.rgb(0, 150, 255, 0.05);
+    private static final Color BBOX_COLOR = GeometryConfig.Colors.BOUNDING_BOX_STROKE;
+    private static final Color BBOX_FILL = GeometryConfig.Colors.BOUNDING_BOX_FILL;
     /**
      * 关联的对象列表
      */
@@ -186,7 +187,7 @@ public class BoundingBox {
             double screenMaxYRotate = transform.worldToScreenY(maxY);
             double screenRotateY = transform.worldToScreenY(rotateHandle.getWorldY());
 
-            gc.setStroke(Color.rgb(255, 150, 0, 0.5));
+            gc.setStroke(GeometryConfig.Colors.ROTATION_HANDLE_STROKE);
             gc.setLineWidth(1);
             gc.setLineDashes(3, 3);
             gc.strokeLine(screenCenterX, screenMaxYRotate, screenCenterX, screenRotateY);

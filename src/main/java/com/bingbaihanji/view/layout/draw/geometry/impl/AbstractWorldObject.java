@@ -1,5 +1,6 @@
 package com.bingbaihanji.view.layout.draw.geometry.impl;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.FillType;
 import com.bingbaihanji.constant.LabelPosition;
 import com.bingbaihanji.constant.LineType;
@@ -52,7 +53,7 @@ public abstract class AbstractWorldObject implements WorldObject {
     /**
      * 标签颜色
      */
-    protected Color labelColor = Color.BLACK;
+    protected Color labelColor = GeometryConfig.Colors.LABEL_TEXT;
 
     //   交互状态  
 
@@ -71,7 +72,7 @@ public abstract class AbstractWorldObject implements WorldObject {
     /**
      * 对象颜色(描边颜色)
      */
-    protected Color color = Color.BLACK;
+    protected Color color = GeometryConfig.Colors.LABEL_TEXT;
 
     /**
      * 线型
@@ -103,7 +104,7 @@ public abstract class AbstractWorldObject implements WorldObject {
     /**
      * 填充颜色
      */
-    protected Color fillColor = Color.LIGHTGRAY;
+    protected Color fillColor = GeometryConfig.Colors.SELECTION_FILL;
 
     /**
      * 填充透明度 (0.0-1.0)
@@ -213,7 +214,7 @@ public abstract class AbstractWorldObject implements WorldObject {
 
     @Override
     public void setLabelColor(Color color) {
-        this.labelColor = color != null ? color : Color.BLACK;
+        this.labelColor = color != null ? color : GeometryConfig.Colors.LABEL_TEXT;
     }
 
     //   交互状态实现  
@@ -247,7 +248,7 @@ public abstract class AbstractWorldObject implements WorldObject {
 
     @Override
     public void setColor(Color color) {
-        this.color = color != null ? color : Color.BLACK;
+        this.color = color != null ? color : GeometryConfig.Colors.LABEL_TEXT;
     }
 
     @Override
@@ -391,7 +392,7 @@ public abstract class AbstractWorldObject implements WorldObject {
      */
     protected Color getEffectiveColor() {
         if (selected) {
-            return Color.ORANGE; // 选中时高亮颜色
+            return GeometryConfig.Colors.CONSTRUCTION_HIGHLIGHT; // 选中时高亮颜色
         } else if (hover) {
             return color.brighter(); // 悬停时变亮
         } else {

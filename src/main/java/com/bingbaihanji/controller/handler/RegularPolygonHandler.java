@@ -1,5 +1,6 @@
 package com.bingbaihanji.controller.handler;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.constant.DrawingState;
 import com.bingbaihanji.controller.DrawingContext;
@@ -219,11 +220,11 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
             double mouseScreenX = transform.worldToScreenX(context.getCurrentMouseX());
             double mouseScreenY = transform.worldToScreenY(context.getCurrentMouseY());
 
-            gc.setStroke(javafx.scene.paint.Color.valueOf("#759eb2"));
+            gc.setStroke(GeometryConfig.Colors.PREVIEW);
             gc.setLineWidth(1.5);
             gc.strokeOval(mouseScreenX - 6, mouseScreenY - 6, 12, 12);
 
-            gc.setFill(javafx.scene.paint.Color.valueOf("#759eb2").deriveColor(0, 1, 1, 0.6));
+            gc.setFill(GeometryConfig.Colors.PREVIEW.deriveColor(0, 1, 1, 0.6));
             gc.fillOval(mouseScreenX - pointRadius, mouseScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
             return;
         }
@@ -233,13 +234,13 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
             // 绘制中心点
             double centerScreenX = transform.worldToScreenX(centerX);
             double centerScreenY = transform.worldToScreenY(centerY);
-            gc.setFill(javafx.scene.paint.Color.valueOf("#759eb2"));
+            gc.setFill(GeometryConfig.Colors.PREVIEW);
             gc.fillOval(centerScreenX - pointRadius, centerScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
 
             // 绘制鼠标位置点(第一个顶点位置)
             double mouseScreenX = transform.worldToScreenX(context.getCurrentMouseX());
             double mouseScreenY = transform.worldToScreenY(context.getCurrentMouseY());
-            gc.setFill(javafx.scene.paint.Color.valueOf("#759eb2"));
+            gc.setFill(GeometryConfig.Colors.PREVIEW);
             gc.fillOval(mouseScreenX - pointRadius, mouseScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
         }
     }

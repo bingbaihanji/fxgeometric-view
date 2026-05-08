@@ -2,9 +2,9 @@ package com.bingbaihanji.factory;
 
 import com.bingbaihanji.constant.FunctionType;
 import com.bingbaihanji.model.FunctionInputResult;
+import com.bingbaihanji.view.layout.draw.geometry.impl.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.bingbaihanji.view.layout.draw.geometry.impl.*;
 
 import java.util.Map;
 

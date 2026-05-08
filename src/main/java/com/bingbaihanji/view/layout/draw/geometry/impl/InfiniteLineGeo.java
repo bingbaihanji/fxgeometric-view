@@ -1,5 +1,6 @@
 package com.bingbaihanji.view.layout.draw.geometry.impl;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.ObjectType;
 import com.bingbaihanji.util.LineStyleUtil;
 import com.bingbaihanji.util.PointNameManager;
@@ -7,7 +8,6 @@ import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.GeometryVisitor;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 
@@ -45,15 +45,24 @@ public class InfiniteLineGeo extends AbstractWorldObject {
      * 基础构造函数(坐标方式)
      */
     public InfiniteLineGeo(double point1X, double point1Y, double point2X, double point2Y) {
+        this(point1X, point1Y, point2X, point2Y, true);
+    }
+
+    /**
+     * 构造函数(坐标方式,可选自动命名)
+     */
+    public InfiniteLineGeo(double point1X, double point1Y, double point2X, double point2Y, boolean autoName) {
         super(ObjectType.LINE);
         this.point1X = point1X;
         this.point1Y = point1Y;
         this.point2X = point2X;
         this.point2Y = point2Y;
         this.color = StyleManager.GEOMETRY_LINE;
-        PointNameManager manager = PointNameManager.getInstance();
-        this.point1Name = manager.assignName(point1X, point1Y);
-        this.point2Name = manager.assignName(point2X, point2Y);
+        if (autoName) {
+            PointNameManager manager = PointNameManager.getInstance();
+            this.point1Name = manager.assignName(point1X, point1Y);
+            this.point2Name = manager.assignName(point2X, point2Y);
+        }
     }
 
     /**
@@ -108,8 +117,16 @@ public class InfiniteLineGeo extends AbstractWorldObject {
         return point1Name;
     }
 
+    public void setPoint1Name(String point1Name) {
+        this.point1Name = point1Name;
+    }
+
     public String getPoint2Name() {
         return point2Name;
+    }
+
+    public void setPoint2Name(String point2Name) {
+        this.point2Name = point2Name;
     }
 
     public PointGeo getPoint1Ref() {
@@ -143,7 +160,7 @@ public class InfiniteLineGeo extends AbstractWorldObject {
         if (point1IsInternal) {
             gc.fillOval(sx1 - pointRadius, sy1 - pointRadius, pointRadius * 2, pointRadius * 2);
             if (point1Name != null && !point1Name.isEmpty()) {
-                gc.setFill(Color.BLACK);
+                gc.setFill(GeometryConfig.Colors.LABEL_TEXT);
                 gc.setFont(Font.font(12));
                 gc.setTextAlign(TextAlignment.LEFT);
                 gc.fillText(point1Name, sx1 + 8, sy1 - 8);
@@ -154,7 +171,7 @@ public class InfiniteLineGeo extends AbstractWorldObject {
         if (point2IsInternal) {
             gc.fillOval(sx2 - pointRadius, sy2 - pointRadius, pointRadius * 2, pointRadius * 2);
             if (point2Name != null && !point2Name.isEmpty()) {
-                gc.setFill(Color.BLACK);
+                gc.setFill(GeometryConfig.Colors.LABEL_TEXT);
                 gc.setFont(Font.font(12));
                 gc.setTextAlign(TextAlignment.LEFT);
                 gc.fillText(point2Name, sx2 + 8, sy2 - 8);

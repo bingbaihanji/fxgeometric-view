@@ -1,5 +1,6 @@
 package com.bingbaihanji.view;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import javafx.scene.Cursor;
 import javafx.scene.canvas.GraphicsContext;
@@ -24,8 +25,8 @@ public class ResizeHandle {
     /**
      * 句柄颜色
      */
-    private static final Color HANDLE_COLOR = Color.rgb(0, 150, 255);
-    private static final Color HANDLE_FILL = Color.WHITE;
+    private static final Color HANDLE_COLOR = GeometryConfig.Colors.HANDLE_COLOR;
+    private static final Color HANDLE_FILL = GeometryConfig.Colors.HANDLE_FILL;
     /**
      * 句柄位置
      */
@@ -91,12 +92,12 @@ public class ResizeHandle {
             gc.setFill(HANDLE_FILL);
             gc.fillOval(screenX - halfSize, screenY - halfSize, HANDLE_SIZE, HANDLE_SIZE);
 
-            gc.setStroke(Color.rgb(255, 150, 0)); // 橙色边框
+            gc.setStroke(GeometryConfig.Colors.ROTATION_HANDLE_COLOR); // 橙色边框
             gc.setLineWidth(1.5);
             gc.strokeOval(screenX - halfSize, screenY - halfSize, HANDLE_SIZE, HANDLE_SIZE);
 
             // 绘制旋转图标(小箭头)
-            gc.setStroke(Color.rgb(255, 150, 0));
+            gc.setStroke(GeometryConfig.Colors.ROTATION_HANDLE_COLOR);
             gc.setLineWidth(1);
             gc.strokeArc(screenX - 3, screenY - 3, 6, 6, 45, 270, ArcType.OPEN);
         } else {

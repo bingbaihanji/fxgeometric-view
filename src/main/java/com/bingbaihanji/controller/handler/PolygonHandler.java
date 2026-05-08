@@ -1,5 +1,6 @@
 package com.bingbaihanji.controller.handler;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.constant.DrawingState;
 import com.bingbaihanji.controller.DrawingContext;
@@ -13,7 +14,6 @@ import com.bingbaihanji.view.layout.draw.geometry.impl.PolygonGeo;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -114,11 +114,11 @@ public class PolygonHandler extends AbstractDrawingHandler {
             double mouseScreenY = transform.worldToScreenY(context.getCurrentMouseY());
 
             // 绘制吸附预览点(浅色圆圈 + 中心点)
-            gc.setStroke(Color.valueOf("#759eb2"));
+            gc.setStroke(GeometryConfig.Colors.PREVIEW);
             gc.setLineWidth(1.5);
             gc.strokeOval(mouseScreenX - 6, mouseScreenY - 6, 12, 12);
 
-            gc.setFill(Color.valueOf("#759eb2").deriveColor(0, 1, 1, 0.6));
+            gc.setFill(GeometryConfig.Colors.PREVIEW.deriveColor(0, 1, 1, 0.6));
             gc.fillOval(mouseScreenX - pointRadius, mouseScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
             return;
         }
@@ -133,7 +133,7 @@ public class PolygonHandler extends AbstractDrawingHandler {
         }
 
         // 绘制顶点(小圆点)
-        gc.setFill(Color.valueOf("#759eb2"));
+        gc.setFill(GeometryConfig.Colors.PREVIEW);
         for (PointGeo vertex : vertexPoints) {
             double vx = transform.worldToScreenX(vertex.getX());
             double vy = transform.worldToScreenY(vertex.getY());
@@ -157,7 +157,7 @@ public class PolygonHandler extends AbstractDrawingHandler {
             if (screenDistance < threshold) {
                 nearFirstVertex = true;
                 // 鼠标靠近第一个顶点,显示更明显的闭合提示
-                gc.setFill(Color.LIGHTGREEN);
+                gc.setFill(GeometryConfig.Colors.CLOSE_HIGHLIGHT);
                 gc.fillOval(fx - pointRadius * 2, fy - pointRadius * 2, pointRadius * 4, pointRadius * 4);
 
                 // 绘制闭合线(从最后一个顶点到第一个顶点)
@@ -165,14 +165,14 @@ public class PolygonHandler extends AbstractDrawingHandler {
                 double lastScreenX = transform.worldToScreenX(lastVertex.getX());
                 double lastScreenY = transform.worldToScreenY(lastVertex.getY());
 
-                gc.setStroke(Color.LIGHTGREEN);
+                gc.setStroke(GeometryConfig.Colors.CLOSE_HIGHLIGHT);
                 gc.setLineWidth(2);
                 gc.setLineDashes(4);
                 gc.strokeLine(lastScreenX, lastScreenY, fx, fy);
                 gc.setLineDashes(null);
             } else {
                 // 正常高亮第一个顶点
-                gc.setFill(Color.LIGHTGREEN);
+                gc.setFill(GeometryConfig.Colors.CLOSE_HIGHLIGHT);
                 gc.fillOval(fx - pointRadius * 1.5, fy - pointRadius * 1.5, pointRadius * 3, pointRadius * 3);
             }
         }
@@ -182,11 +182,11 @@ public class PolygonHandler extends AbstractDrawingHandler {
             double mouseScreenX = transform.worldToScreenX(context.getCurrentMouseX());
             double mouseScreenY = transform.worldToScreenY(context.getCurrentMouseY());
 
-            gc.setStroke(Color.valueOf("#759eb2"));
+            gc.setStroke(GeometryConfig.Colors.PREVIEW);
             gc.setLineWidth(1.5);
             gc.strokeOval(mouseScreenX - 6, mouseScreenY - 6, 12, 12);
 
-            gc.setFill(Color.valueOf("#759eb2").deriveColor(0, 1, 1, 0.6));
+            gc.setFill(GeometryConfig.Colors.PREVIEW.deriveColor(0, 1, 1, 0.6));
             gc.fillOval(mouseScreenX - pointRadius, mouseScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
         }
     }
@@ -205,7 +205,7 @@ public class PolygonHandler extends AbstractDrawingHandler {
      */
     private void handlePolygonClick(double worldX, double worldY, DrawingContext context) {
         double scale = context.getTransform().getScale();
-        double threshold = 15.0 / scale; // 15像素的吸附范围
+        double threshold = GeometryConfig.Tolerance.POLYGON_CLOSE_THRESHOLD_PIXELS / scale; // 多边形闭合阈值
 
         // 检查是否与起点重合(闭合多边形)
         if (!vertexPoints.isEmpty()) {

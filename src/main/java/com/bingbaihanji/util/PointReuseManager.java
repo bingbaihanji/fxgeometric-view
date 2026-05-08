@@ -1,5 +1,6 @@
 package com.bingbaihanji.util;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import com.bingbaihanji.view.layout.draw.geometry.impl.*;
 import javafx.geometry.Point2D;
@@ -71,7 +72,7 @@ public class PointReuseManager {
      * @return 已存在的点,或null
      */
     public static PointGeo getExistingPointOrNull(double x, double y, List<WorldObject> objects, double scale) {
-        double threshold = 10.0 / scale; // 10像素的检测范围
+        double threshold = GeometryConfig.Tolerance.POINT_REUSE_THRESHOLD_PIXELS / scale; // 10像素的检测范围
         return findExistingPoint(x, y, objects, threshold);
     }
 

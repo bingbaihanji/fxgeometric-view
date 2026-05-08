@@ -40,20 +40,6 @@ public enum HandDrawnParameters {
         this.desc = desc;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public Number getValue() {
-        return value;
-    }
-
-    public String getDesc() {
-        return desc;
-    }
-
-
-
     /**
      * 根据显示名称查找枚举（支持中文名或"中文 (英文)"格式）
      *
@@ -68,6 +54,18 @@ public enum HandDrawnParameters {
             }
         }
         return null;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Number getValue() {
+        return value;
+    }
+
+    public String getDesc() {
+        return desc;
     }
 
     @Override

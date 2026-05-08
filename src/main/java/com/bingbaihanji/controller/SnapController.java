@@ -1,5 +1,6 @@
 package com.bingbaihanji.controller;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.view.layout.core.GridChartView;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 
@@ -18,7 +19,7 @@ import java.util.List;
 public class SnapController {
 
     // 容差常量
-    private static final double INITIAL_TOLERANCE = 5.0;  // 初始检测容差(像素)
+    private static final double INITIAL_TOLERANCE = GeometryConfig.Tolerance.OBJECT_HIT_TEST_PIXELS;  // 初始检测容差(像素)
     private static final double SNAPPED_TOLERANCE = 40.0; // 已吸附维持容差(像素)
     // 当前状态
     private SnapState currentState = SnapState.FREE;

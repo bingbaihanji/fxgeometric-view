@@ -13,7 +13,10 @@
       "Bash(do tail -2 \"$file\")",
       "Bash(echo:*)",
       "Bash(done)",
-      "Bash(attrib:*)"
+      "Bash(attrib:*)",
+      "Bash(dir D:bingbaihanjiFXGeometricView *)",
+      "Bash(cloc /d/bingbaihanji/FXGeometricView/src --by-file --include-lang=Java)",
+      "Bash(xargs wc -l)"
     ]
   }
 }

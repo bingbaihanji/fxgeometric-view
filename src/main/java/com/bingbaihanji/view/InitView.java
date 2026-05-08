@@ -1,20 +1,28 @@
 package com.bingbaihanji.view;
 
 import com.bingbaihanji.controller.DrawingController;
+import com.bingbaihanji.io.ProjectData;
+import com.bingbaihanji.io.ProjectFileManager;
 import com.bingbaihanji.util.FxTools;
 import com.bingbaihanji.util.I18nUtil;
+import com.bingbaihanji.util.PointNameManager;
 import com.bingbaihanji.view.layout.core.GridChartView;
+import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import com.bingbaihanji.view.layout.pane.ShapeToolPane;
 import com.bingbaihanji.view.menu.MenuEvent;
 import com.bingbaihanji.view.menu.MenuView;
 import javafx.application.Platform;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.SplitPane;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
+import java.io.File;
 
 /**
  * 首页布局配置
@@ -81,6 +89,9 @@ public class InitView {
         MenuEvent menuEvent = new MenuEvent(menuView);
         root.setTop(menuEvent.getMenuView(stage, gridChartPane));
 
+        // 绑定文件菜单事件
+        bindFileMenuEvents(menuView, gridChartPane, drawingController);
+
         return root;
     }
 
@@ -103,6 +114,97 @@ public class InitView {
 
         // 绑定正多边形按钮
         toolPane.setOnRegularPolygonClick(controller::showRegularPolygonDialog);
+    }
+
+    /**
+     * 绑定文件菜单事件（保存/打开工程）
+     */
+    private void bindFileMenuEvents(MenuView menuView, GridChartView gridChartPane, DrawingController controller) {
+        menuView.setOnSaveProjectAction(() -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("保存工程");
+            fileChooser.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("FXGeometricView 工程", "*.fxgeo")
+            );
+            File file = fileChooser.showSaveDialog(stage);
+            if (file != null) {
+                try {
+                    String path = file.getAbsolutePath();
+                    if (!path.endsWith(".fxgeo")) {
+                        path += ".fxgeo";
+                    }
+                    ProjectFileManager.saveProject(
+                            new File(path).toPath(),
+                            gridChartPane,
+                            controller.getContext().getObjects()
+                    );
+                    showInfoAlert("保存成功", "工程已保存到:\n" + path);
+                } catch (Exception ex) {
+                    showErrorAlert("保存失败", ex.getMessage());
+                }
+            }
+        });
+
+        menuView.setOnOpenProjectAction(() -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("打开工程");
+            fileChooser.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("FXGeometricView 工程", "*.fxgeo")
+            );
+            File file = fileChooser.showOpenDialog(stage);
+            if (file != null) {
+                try {
+                    ProjectFileManager.LoadResult result = ProjectFileManager.loadProject(file.toPath());
+
+                    // 清空当前对象
+                    controller.getContext().getGridChartPane().clearAllObjects();
+                    PointNameManager.getInstance().clear();
+
+                    // 恢复视图状态
+                    ProjectData projectData = result.projectData();
+                    gridChartPane.getTransform().setScaleX(projectData.getScaleX());
+                    gridChartPane.getTransform().setScaleY(projectData.getScaleY());
+                    gridChartPane.getTransform().setOffset(projectData.getOffsetX(), projectData.getOffsetY());
+                    gridChartPane.setBackgroundColor(
+                            new javafx.scene.paint.Color(
+                                    ((projectData.getBackgroundColor() >> 16) & 0xFF) / 255.0,
+                                    ((projectData.getBackgroundColor() >> 8) & 0xFF) / 255.0,
+                                    (projectData.getBackgroundColor() & 0xFF) / 255.0,
+                                    ((projectData.getBackgroundColor() >>> 24) & 0xFF) / 255.0
+                            )
+                    );
+
+                    // 恢复对象
+                    for (WorldObject obj : result.objects()) {
+                        controller.getContext().addObject(obj);
+                    }
+
+                    // 清空撤销历史
+                    controller.getContext().getCommandHistory().clear();
+
+                    gridChartPane.redraw();
+                    showInfoAlert("加载成功", "工程已加载，共 " + result.objects().size() + " 个对象");
+                } catch (Exception ex) {
+                    showErrorAlert("加载失败", ex.getMessage());
+                }
+            }
+        });
+    }
+
+    private void showInfoAlert(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
+
+    private void showErrorAlert(String title, String content) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 
     /**

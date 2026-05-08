@@ -1,5 +1,6 @@
 package com.bingbaihanji.view.layout.draw.geometry.impl;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.ObjectType;
 import com.bingbaihanji.util.LineStyleUtil;
 import com.bingbaihanji.util.PointNameManager;
@@ -7,7 +8,6 @@ import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.GeometryVisitor;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 
@@ -130,8 +130,16 @@ public class LineGeo extends AbstractWorldObject {
         return startPointName;
     }
 
+    public void setStartPointName(String startPointName) {
+        this.startPointName = startPointName;
+    }
+
     public String getEndPointName() {
         return endPointName;
+    }
+
+    public void setEndPointName(String endPointName) {
+        this.endPointName = endPointName;
     }
 
     @Override
@@ -158,7 +166,7 @@ public class LineGeo extends AbstractWorldObject {
             gc.fillOval(sx1 - pointRadius, sy1 - pointRadius, pointRadius * 2, pointRadius * 2);
             // 绘制起点名称
             if (startPointName != null && !startPointName.isEmpty()) {
-                gc.setFill(Color.BLACK);
+                gc.setFill(GeometryConfig.Colors.LABEL_TEXT);
                 gc.setFont(Font.font(12));
                 gc.setTextAlign(TextAlignment.LEFT);
                 gc.fillText(startPointName, sx1 + 8, sy1 - 8);
@@ -170,7 +178,7 @@ public class LineGeo extends AbstractWorldObject {
             gc.fillOval(sx2 - pointRadius, sy2 - pointRadius, pointRadius * 2, pointRadius * 2);
             // 绘制终点名称
             if (endPointName != null && !endPointName.isEmpty()) {
-                gc.setFill(Color.BLACK);
+                gc.setFill(GeometryConfig.Colors.LABEL_TEXT);
                 gc.setFont(Font.font(12));
                 gc.setTextAlign(TextAlignment.LEFT);
                 gc.fillText(endPointName, sx2 + 8, sy2 - 8);

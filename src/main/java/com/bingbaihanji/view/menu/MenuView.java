@@ -11,6 +11,8 @@ public class MenuView extends MenuBar {
     private final ObservableList<Menu> menus = FXCollections.observableArrayList();
 
     // 菜单项声明,方便外部访问和添加事件监听
+    private MenuItem saveProjectItem;
+    private MenuItem openProjectItem;
     private MenuItem screenshotItem;
     private RadioMenuItem dotModeItem; // 创建"点模式"单选菜单项
     private RadioMenuItem gridModeItem; // 创建"格子模式"单选菜单项
@@ -26,6 +28,14 @@ public class MenuView extends MenuBar {
     }
 
     private void initializeMenus() {
+        // 0. 创建"文件"菜单
+        Menu fileMenu = new Menu(getMenuName("menu.file"));
+        saveProjectItem = new MenuItem(getMenuName("menu.file.saveProject"));
+        saveProjectItem.setAccelerator(KeyCombination.keyCombination("Ctrl+S"));
+        openProjectItem = new MenuItem(getMenuName("menu.file.openProject"));
+        openProjectItem.setAccelerator(KeyCombination.keyCombination("Ctrl+O"));
+        fileMenu.getItems().addAll(openProjectItem, saveProjectItem);
+
         // 1. 创建"工具"菜单
         Menu toolMenu = new Menu(getMenuName("menu.view.tools"));
 
@@ -92,8 +102,8 @@ public class MenuView extends MenuBar {
         settingsMenu.getItems().addAll(systemSettingsItem, drawingSettingsItem);
 
         // 4. 将所有菜单添加到菜单栏
-        menus.addAll(toolMenu, viewMenu, settingsMenu);
-        this.getMenus().addAll(toolMenu, viewMenu, settingsMenu);
+        menus.addAll(fileMenu, toolMenu, viewMenu, settingsMenu);
+        this.getMenus().addAll(fileMenu, toolMenu, viewMenu, settingsMenu);
     }
 
 
@@ -103,6 +113,14 @@ public class MenuView extends MenuBar {
 
 
     // Getter 方法,方便外部添加事件监听
+
+    public MenuItem getSaveProjectItem() {
+        return saveProjectItem;
+    }
+
+    public MenuItem getOpenProjectItem() {
+        return openProjectItem;
+    }
 
     public MenuItem getScreenshotItem() {
         return screenshotItem;
@@ -136,6 +154,14 @@ public class MenuView extends MenuBar {
         return drawingSettingsItem;
     }
     // 添加事件监听器的方法
+
+    public void setOnSaveProjectAction(Runnable action) {
+        saveProjectItem.setOnAction(e -> action.run());
+    }
+
+    public void setOnOpenProjectAction(Runnable action) {
+        openProjectItem.setOnAction(e -> action.run());
+    }
 
     public void setOnScreenshotAction(Runnable action) {
         screenshotItem.setOnAction(e -> action.run());
