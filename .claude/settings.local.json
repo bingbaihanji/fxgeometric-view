@@ -16,7 +16,10 @@
       "Bash(attrib:*)",
       "Bash(dir D:bingbaihanjiFXGeometricView *)",
       "Bash(cloc /d/bingbaihanji/FXGeometricView/src --by-file --include-lang=Java)",
-      "Bash(xargs wc -l)"
+      "Bash(xargs wc -l)",
+      "Bash(Get-ChildItem -Path \"D:\\\\bingbaihanji\\\\FXGeometricView\\\\src\\\\main\\\\java\\\\com\\\\bingbaihanji\" -Recurse -Directory)",
+      "Bash(Select-Object FullName)",
+      "Bash(Select-Object -Last 20)"
     ]
   }
 }

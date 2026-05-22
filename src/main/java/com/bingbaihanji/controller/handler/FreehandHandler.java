@@ -1,11 +1,10 @@
 package com.bingbaihanji.controller.handler;
 
 import com.bingbaihanji.constant.DrawMode;
-import com.bingbaihanji.controller.DrawingContext;
-import com.bingbaihanji.util.CommandHistory;
+import com.bingbaihanji.controller.IDrawingContext;
+import com.bingbaihanji.util.GeometryCommand;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.impl.PathGeo;
-import com.bingbaihanji.view.layout.draw.geometry.impl.PointGeo;
 import com.bingbaihanji.view.layout.draw.tools.FreehandDrawingTool;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
@@ -42,7 +41,7 @@ public class FreehandHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public boolean handleMousePressed(MouseEvent e, DrawingContext context) {
+    public boolean handleMousePressed(MouseEvent e, IDrawingContext context) {
         if (!canHandle(context.getDrawMode())) {
             return false;
         }
@@ -53,7 +52,7 @@ public class FreehandHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public boolean handleMouseDragged(MouseEvent e, DrawingContext context) {
+    public boolean handleMouseDragged(MouseEvent e, IDrawingContext context) {
         if (!canHandle(context.getDrawMode())) {
             return false;
         }
@@ -64,7 +63,7 @@ public class FreehandHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public boolean handleMouseReleased(MouseEvent e, DrawingContext context) {
+    public boolean handleMouseReleased(MouseEvent e, IDrawingContext context) {
         if (!canHandle(context.getDrawMode())) {
             return false;
         }
@@ -79,28 +78,7 @@ public class FreehandHandler extends AbstractDrawingHandler {
         if (points.size() >= 2) {
             PathGeo newPath = new PathGeo(new ArrayList<>(points));
             // 计算此路径产生的所有交点
-            List<PointGeo> intersectionPoints = context.getIntersectionHandler()
-                    .checkIntersections(newPath, context);
-
-            context.executeCommand(new CommandHistory.Command() {
-                @Override
-                public void execute() {
-                    context.addObject(newPath);
-                    // 添加交点
-                    for (PointGeo point : intersectionPoints) {
-                        context.addObject(point);
-                    }
-                }
-
-                @Override
-                public void undo() {
-                    context.removeObject(newPath);
-                    // 移除交点
-                    for (PointGeo point : intersectionPoints) {
-                        context.removeObject(point);
-                    }
-                }
-            });
+            context.executeCommand(new GeometryCommand(context, newPath));
         }
 
         context.redraw();
@@ -109,7 +87,7 @@ public class FreehandHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public void paintPreview(GraphicsContext gc, WorldTransform transform, DrawingContext context) {
+    public void paintPreview(GraphicsContext gc, WorldTransform transform, IDrawingContext context) {
         if (canHandle(context.getDrawMode())) {
             freehandTool.paintPreview(gc, transform);
         }

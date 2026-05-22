@@ -1,8 +1,8 @@
 package com.bingbaihanji.view.menu;
 
 import com.bingbaihanji.config.GeometryConfig;
-import com.bingbaihanji.controller.DrawingContext;
 import com.bingbaihanji.controller.DrawingController;
+import com.bingbaihanji.controller.IDrawingContext;
 import com.bingbaihanji.util.*;
 import com.bingbaihanji.util.constraint.PointConstraint;
 import com.bingbaihanji.view.DetachedCanvasWindow;
@@ -486,7 +486,7 @@ public class GeometryContextMenu {
     private static void addConstraintToPoint(PointGeo point, WorldObject shape,
                                              DrawingController controller, GridChartView canvas) {
         try {
-            DrawingContext context = controller.getContext();
+            IDrawingContext context = controller.getContext();
             // 创建约束并自动检测是否为顶点
             PointConstraint constraint = context.getConstraintHandler().createConstraint(shape, point);
 

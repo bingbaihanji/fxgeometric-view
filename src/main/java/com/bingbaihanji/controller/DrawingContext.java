@@ -22,7 +22,7 @@ import java.util.List;
  * @author bingbaihanji
  * @date 2025-12-31
  */
-public class DrawingContext {
+public class DrawingContext implements IDrawingContext {
 
     /**
      * 坐标系面板(画布)
@@ -41,10 +41,6 @@ public class DrawingContext {
      * 光标管理器
      */
     private final CursorManager cursorManager;
-    /**
-     * 吸附控制器(状态机)
-     */
-    private final SnapController snapController;
     /**
      * 当前绘制模式
      */
@@ -91,7 +87,6 @@ public class DrawingContext {
         this.selectionManager = new SelectionManager();
         this.previewManager = new PreviewManager();
         this.cursorManager = new CursorManager();
-        this.snapController = new SnapController();
     }
 
     // 状态管理
@@ -339,12 +334,4 @@ public class DrawingContext {
         return cursorManager;
     }
 
-    // SnapController 管理
-
-    /**
-     * 获取吸附控制器
-     */
-    public SnapController getSnapController() {
-        return snapController;
-    }
 }

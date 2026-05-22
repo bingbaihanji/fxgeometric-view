@@ -11,9 +11,9 @@ import java.util.List;
  */
 public class LayerController {
 
-    private final DrawingContext context;
+    private final IDrawingContext context;
 
-    public LayerController(DrawingContext context) {
+    public LayerController(IDrawingContext context) {
         this.context = context;
     }
 

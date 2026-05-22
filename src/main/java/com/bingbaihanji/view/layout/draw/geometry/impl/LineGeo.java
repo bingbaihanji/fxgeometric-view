@@ -62,6 +62,23 @@ public class LineGeo extends AbstractWorldObject {
     }
 
     /**
+     * 构造函数(指定类型、可选自动命名) - 用于反序列化还原子类型
+     */
+    public LineGeo(ObjectType type, double startX, double startY, double endX, double endY, boolean autoName) {
+        super(type);
+        this.startX = startX;
+        this.startY = startY;
+        this.endX = endX;
+        this.endY = endY;
+        this.color = StyleManager.GEOMETRY_LINE;
+        if (autoName) {
+            PointNameManager manager = PointNameManager.getInstance();
+            this.startPointName = manager.assignName(startX, startY);
+            this.endPointName = manager.assignName(endX, endY);
+        }
+    }
+
+    /**
      * 构造函数(点引用方式)- 复用已有点
      *
      * @param startPoint 起点引用(可为null,表示内部创建)
@@ -144,6 +161,7 @@ public class LineGeo extends AbstractWorldObject {
 
     @Override
     public void paint(GraphicsContext gc, WorldTransform transform, double w, double h) {
+        if (!visible) return;
         double sx1 = transform.worldToScreenX(getStartX());
         double sy1 = transform.worldToScreenY(getStartY());
         double sx2 = transform.worldToScreenX(getEndX());
@@ -176,12 +194,12 @@ public class LineGeo extends AbstractWorldObject {
 
         if (endIsInternal) {
             gc.fillOval(sx2 - pointRadius, sy2 - pointRadius, pointRadius * 2, pointRadius * 2);
-            // 绘制终点名称
             if (endPointName != null && !endPointName.isEmpty()) {
                 gc.setFill(GeometryConfig.Colors.LABEL_TEXT);
                 gc.setFont(Font.font(12));
                 gc.setTextAlign(TextAlignment.LEFT);
                 gc.fillText(endPointName, sx2 + 8, sy2 - 8);
+                gc.setFill(getEffectiveColor());
             }
         }
     }
@@ -193,17 +211,20 @@ public class LineGeo extends AbstractWorldObject {
         double eX = getEndX();
         double eY = getEndY();
 
-        // 点到线段的距离计算
         double dx = eX - sX;
         double dy = eY - sY;
-        double length = Math.sqrt(dx * dx + dy * dy);
+        double lengthSquared = dx * dx + dy * dy;
 
-        if (length == 0) {
+        if (lengthSquared == 0) {
             return Math.hypot(x - sX, y - sY) <= tolerance;
         }
 
-        double distance = Math.abs(dy * x - dx * y + eX * sY - eY * sX) / length;
-        return distance <= tolerance;
+        // 投影参数t限制在[0,1]之间，确保是线段距离而非无限直线距离
+        double t = Math.max(0, Math.min(1, ((x - sX) * dx + (y - sY) * dy) / lengthSquared));
+        double nearestX = sX + t * dx;
+        double nearestY = sY + t * dy;
+
+        return Math.hypot(x - nearestX, y - nearestY) <= tolerance;
     }
 
     @Override

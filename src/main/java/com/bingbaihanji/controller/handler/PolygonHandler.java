@@ -3,9 +3,9 @@ package com.bingbaihanji.controller.handler;
 import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.constant.DrawingState;
-import com.bingbaihanji.controller.DrawingContext;
+import com.bingbaihanji.controller.IDrawingContext;
 import com.bingbaihanji.controller.PreviewManager;
-import com.bingbaihanji.util.CommandHistory;
+import com.bingbaihanji.util.GeometryCommand;
 import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.util.PointReuseManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;
@@ -51,7 +51,7 @@ public class PolygonHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public boolean handleMouseClicked(MouseEvent e, DrawingContext context) {
+    public boolean handleMouseClicked(MouseEvent e, IDrawingContext context) {
         // 只处理左键
         if (e.getButton() != MouseButton.PRIMARY || !canHandle(context.getDrawMode())) {
             return false;
@@ -72,7 +72,7 @@ public class PolygonHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public boolean handleMouseMoved(MouseEvent e, DrawingContext context) {
+    public boolean handleMouseMoved(MouseEvent e, IDrawingContext context) {
         if (!canHandle(context.getDrawMode())) {
             return false;
         }
@@ -100,7 +100,7 @@ public class PolygonHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public void paintPreview(GraphicsContext gc, WorldTransform transform, DrawingContext context) {
+    public void paintPreview(GraphicsContext gc, WorldTransform transform, IDrawingContext context) {
         // PreviewManager 统一管理,此处只绘制补充效果(吸附预览点、顶点高亮)
         if (!canHandle(context.getDrawMode())) {
             return;
@@ -203,7 +203,7 @@ public class PolygonHandler extends AbstractDrawingHandler {
     /**
      * 处理多边形点击事件
      */
-    private void handlePolygonClick(double worldX, double worldY, DrawingContext context) {
+    private void handlePolygonClick(double worldX, double worldY, IDrawingContext context) {
         double scale = context.getTransform().getScale();
         double threshold = GeometryConfig.Tolerance.POLYGON_CLOSE_THRESHOLD_PIXELS / scale; // 多边形闭合阈值
 
@@ -252,7 +252,7 @@ public class PolygonHandler extends AbstractDrawingHandler {
     /**
      * 完成多边形绘制
      */
-    private void finishPolygon(DrawingContext context) {
+    private void finishPolygon(IDrawingContext context) {
         if (vertexPoints.size() < 3) {
             return;
         }
@@ -260,41 +260,7 @@ public class PolygonHandler extends AbstractDrawingHandler {
         // 创建多边形对象,直接传入点引用列表
         PolygonGeo polygon = new PolygonGeo(new ArrayList<>(vertexPoints));
 
-        // 复制新创建的点列表(用于撤销时删除)
-        List<PointGeo> createdPoints = new ArrayList<>(newCreatedPoints);
-
-        // 计算此多边形产生的所有交点
-        List<PointGeo> intersectionPoints = context.getIntersectionHandler()
-                .checkIntersections(polygon, context);
-
-        context.executeCommand(new CommandHistory.Command() {
-            @Override
-            public void execute() {
-                // 添加多边形内部创建的新点到对象列表
-                for (PointGeo point : createdPoints) {
-                    context.addObject(point);
-                }
-                // 添加多边形
-                context.addObject(polygon);
-                // 添加交点
-                for (PointGeo point : intersectionPoints) {
-                    context.addObject(point);
-                }
-            }
-
-            @Override
-            public void undo() {
-                context.removeObject(polygon);
-                // 移除多边形内部创建的新点
-                for (PointGeo point : createdPoints) {
-                    context.removeObject(point);
-                }
-                // 移除交点
-                for (PointGeo point : intersectionPoints) {
-                    context.removeObject(point);
-                }
-            }
-        });
+        context.executeCommand(new GeometryCommand(context, polygon, newCreatedPoints));
 
         // 清除预览对象
         if (polygonPreview != null) {

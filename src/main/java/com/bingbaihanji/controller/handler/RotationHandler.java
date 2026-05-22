@@ -3,7 +3,7 @@ package com.bingbaihanji.controller.handler;
 import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.constant.DrawingState;
-import com.bingbaihanji.controller.DrawingContext;
+import com.bingbaihanji.controller.IDrawingContext;
 import com.bingbaihanji.util.CommandHistory;
 import com.bingbaihanji.util.FxTools;
 import com.bingbaihanji.util.I18nUtil;
@@ -39,7 +39,7 @@ public class RotationHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public boolean handleMouseClicked(MouseEvent e, DrawingContext context) {
+    public boolean handleMouseClicked(MouseEvent e, IDrawingContext context) {
         // 只处理左键
         if (e.getButton() != MouseButton.PRIMARY || !canHandle(context.getDrawMode())) {
             return false;
@@ -60,7 +60,7 @@ public class RotationHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public boolean handleMouseMoved(MouseEvent e, DrawingContext context) {
+    public boolean handleMouseMoved(MouseEvent e, IDrawingContext context) {
         if (!canHandle(context.getDrawMode())) {
             return false;
         }
@@ -83,7 +83,7 @@ public class RotationHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public void paintPreview(javafx.scene.canvas.GraphicsContext gc, com.bingbaihanji.view.layout.core.WorldTransform transform, DrawingContext context) {
+    public void paintPreview(javafx.scene.canvas.GraphicsContext gc, com.bingbaihanji.view.layout.core.WorldTransform transform, IDrawingContext context) {
         if (!canHandle(context.getDrawMode())) {
             return;
         }
@@ -137,7 +137,7 @@ public class RotationHandler extends AbstractDrawingHandler {
     /**
      * 处理旋转模式的点击事件
      */
-    private void handleRotateClick(double worldX, double worldY, DrawingContext context) {
+    private void handleRotateClick(double worldX, double worldY, IDrawingContext context) {
         if (context.getState() == DrawingState.ROTATE_SELECT_SHAPE) {
             // 第一次点击：选择要旋转的图形
             double scale = context.getTransform().getScale();

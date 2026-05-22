@@ -162,6 +162,7 @@ public class InitView {
 
                     // 恢复视图状态
                     ProjectData projectData = result.projectData();
+                    PointNameManager.getInstance().setNextIndex(projectData.getNextPointNameIndex());
                     gridChartPane.getTransform().setScaleX(projectData.getScaleX());
                     gridChartPane.getTransform().setScaleY(projectData.getScaleY());
                     gridChartPane.getTransform().setOffset(projectData.getOffsetX(), projectData.getOffsetY());

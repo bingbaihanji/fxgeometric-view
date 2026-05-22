@@ -3,7 +3,7 @@ package com.bingbaihanji.controller.handler;
 import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.constant.MoveMode;
-import com.bingbaihanji.controller.DrawingContext;
+import com.bingbaihanji.controller.IDrawingContext;
 import com.bingbaihanji.util.CommandHistory;
 import com.bingbaihanji.util.EdgeSnapManager;
 import com.bingbaihanji.util.Hits;
@@ -47,7 +47,7 @@ public class DragHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public boolean handleMousePressed(MouseEvent e, DrawingContext context) {
+    public boolean handleMousePressed(MouseEvent e, IDrawingContext context) {
         if (!canHandle(context.getDrawMode()) || e.getButton() != MouseButton.PRIMARY) {
             return false;
         }
@@ -66,9 +66,6 @@ public class DragHandler extends AbstractDrawingHandler {
             // 命中控制点,进入单控制点拖动模式
             WorldObject.DraggablePoint point = hitPoint.getPoint();
             WorldObject owner = hitPoint.getOwner();
-
-            // 重置 SnapController 状态机
-            context.getSnapController().reset();
 
             // 初始化拖动状态
             state.startSinglePointDrag(
@@ -100,7 +97,6 @@ public class DragHandler extends AbstractDrawingHandler {
             Hits hits = Hits.performHitTest(selectedObjects, worldX, worldY, tolerance);
             if (!hits.isEmpty()) {
                 // 点击了选中对象的边缘/内部,开始多选拖动
-                context.getSnapController().reset();
 
                 // 初始化多选拖动状态
                 state.startMultipleObjectsDrag(selectedObjects, worldX, worldY);
@@ -119,7 +115,7 @@ public class DragHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public boolean handleMouseMoved(MouseEvent e, DrawingContext context) {
+    public boolean handleMouseMoved(MouseEvent e, IDrawingContext context) {
         if (!canHandle(context.getDrawMode()) || state.isDragging()) {
             return false;
         }
@@ -158,7 +154,7 @@ public class DragHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public boolean handleMouseDragged(MouseEvent e, DrawingContext context) {
+    public boolean handleMouseDragged(MouseEvent e, IDrawingContext context) {
         if (!state.isDragging()) {
             return false;
         }
@@ -308,7 +304,7 @@ public class DragHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public boolean handleMouseReleased(MouseEvent e, DrawingContext context) {
+    public boolean handleMouseReleased(MouseEvent e, IDrawingContext context) {
         if (!state.isDragging()) {
             return false;
         }
@@ -422,7 +418,7 @@ public class DragHandler extends AbstractDrawingHandler {
      * @param newY         新位置Y
      * @param excludeOwner 排除的对象(正在拖动的对象)
      */
-    private void syncReusePointsPosition(DrawingContext context, double oldX, double oldY,
+    private void syncReusePointsPosition(IDrawingContext context, double oldX, double oldY,
                                          double newX, double newY, WorldObject excludeOwner) {
         double scale = context.getTransform().getScale();
         double threshold = GeometryConfig.Tolerance.POINT_REUSE_THRESHOLD_PIXELS / scale; // 位置重合判定阈值
@@ -529,7 +525,7 @@ public class DragHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public void paintPreview(GraphicsContext gc, WorldTransform transform, DrawingContext context) {
+    public void paintPreview(GraphicsContext gc, WorldTransform transform, IDrawingContext context) {
         if (!canHandle(context.getDrawMode())) {
             return;
         }
@@ -573,7 +569,7 @@ public class DragHandler extends AbstractDrawingHandler {
      * <p>
      * 在拖动过程中显示位移量(Δx, Δy)
      */
-    private void paintDragDisplacementHint(GraphicsContext gc, WorldTransform transform, DrawingContext context) {
+    private void paintDragDisplacementHint(GraphicsContext gc, WorldTransform transform, IDrawingContext context) {
         double dx, dy;
         double screenX, screenY;
 

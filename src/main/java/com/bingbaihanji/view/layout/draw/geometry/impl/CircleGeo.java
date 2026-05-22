@@ -115,6 +115,7 @@ public class CircleGeo extends AbstractWorldObject {
                       double w,
                       double h) {
 
+        if (!visible) return;
         double sx = transform.worldToScreenX(getCx());
         double sy = transform.worldToScreenY(getCy());
         double sr = r * transform.getScale();

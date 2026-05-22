@@ -1,7 +1,7 @@
 package com.bingbaihanji.controller.handler;
 
 import com.bingbaihanji.constant.DrawMode;
-import com.bingbaihanji.controller.DrawingContext;
+import com.bingbaihanji.controller.IDrawingContext;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
@@ -23,7 +23,7 @@ public interface DrawingHandler {
      * @param context 绘制上下文
      * @return true 表示已处理该事件,false 表示未处理,继续传递给下一个 Handler
      */
-    boolean handleMouseClicked(MouseEvent e, DrawingContext context);
+    boolean handleMouseClicked(MouseEvent e, IDrawingContext context);
 
     /**
      * 处理鼠标移动事件
@@ -32,7 +32,7 @@ public interface DrawingHandler {
      * @param context 绘制上下文
      * @return true 表示已处理该事件,false 表示未处理
      */
-    boolean handleMouseMoved(MouseEvent e, DrawingContext context);
+    boolean handleMouseMoved(MouseEvent e, IDrawingContext context);
 
     /**
      * 处理鼠标按下事件
@@ -41,7 +41,7 @@ public interface DrawingHandler {
      * @param context 绘制上下文
      * @return true 表示已处理该事件,false 表示未处理
      */
-    boolean handleMousePressed(MouseEvent e, DrawingContext context);
+    boolean handleMousePressed(MouseEvent e, IDrawingContext context);
 
     /**
      * 处理鼠标拖拽事件
@@ -50,7 +50,7 @@ public interface DrawingHandler {
      * @param context 绘制上下文
      * @return true 表示已处理该事件,false 表示未处理
      */
-    boolean handleMouseDragged(MouseEvent e, DrawingContext context);
+    boolean handleMouseDragged(MouseEvent e, IDrawingContext context);
 
     /**
      * 处理鼠标释放事件
@@ -59,7 +59,7 @@ public interface DrawingHandler {
      * @param context 绘制上下文
      * @return true 表示已处理该事件,false 表示未处理
      */
-    boolean handleMouseReleased(MouseEvent e, DrawingContext context);
+    boolean handleMouseReleased(MouseEvent e, IDrawingContext context);
 
     /**
      * 绘制预览效果
@@ -68,7 +68,7 @@ public interface DrawingHandler {
      * @param transform 世界坐标变换
      * @param context   绘制上下文
      */
-    void paintPreview(GraphicsContext gc, WorldTransform transform, DrawingContext context);
+    void paintPreview(GraphicsContext gc, WorldTransform transform, IDrawingContext context);
 
     /**
      * 判断此 Handler 是否可以处理当前绘制模式

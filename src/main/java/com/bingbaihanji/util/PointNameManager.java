@@ -58,6 +58,20 @@ public class PointNameManager {
     }
 
     /**
+     * 获取下一个可用的命名索引
+     */
+    public int getNextIndex() {
+        return nextAvailableIndex;
+    }
+
+    /**
+     * 设置下一个可用的命名索引(用于加载工程时恢复状态)
+     */
+    public synchronized void setNextIndex(int index) {
+        this.nextAvailableIndex = index;
+    }
+
+    /**
      * 为点分配名称(如果已存在则返回现有名称)
      * <p>
      * 线程安全的实现

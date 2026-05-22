@@ -1,7 +1,7 @@
 package com.bingbaihanji.controller.handler;
 
 import com.bingbaihanji.constant.DrawMode;
-import com.bingbaihanji.controller.DrawingContext;
+import com.bingbaihanji.controller.IDrawingContext;
 import com.bingbaihanji.model.FunctionInputResult;
 import com.bingbaihanji.util.CommandHistory;
 import com.bingbaihanji.view.layout.draw.geometry.impl.FunctionGeo;
@@ -29,7 +29,7 @@ public class FunctionHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public boolean handleMouseClicked(MouseEvent e, DrawingContext context) {
+    public boolean handleMouseClicked(MouseEvent e, IDrawingContext context) {
         if (e.getButton() != MouseButton.PRIMARY || !canHandle(context.getDrawMode())) {
             return false;
         }

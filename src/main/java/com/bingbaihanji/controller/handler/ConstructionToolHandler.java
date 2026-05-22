@@ -3,8 +3,8 @@ package com.bingbaihanji.controller.handler;
 import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.constant.DrawingState;
-import com.bingbaihanji.controller.DrawingContext;
-import com.bingbaihanji.util.CommandHistory;
+import com.bingbaihanji.controller.IDrawingContext;
+import com.bingbaihanji.util.GeometryCommand;
 import com.bingbaihanji.util.IntersectionUtils;
 import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.view.layout.core.WorldTransform;
@@ -18,7 +18,6 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 
-import java.util.List;
 
 /**
  * 作图工具处理器
@@ -43,7 +42,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public boolean handleMouseClicked(MouseEvent e, DrawingContext context) {
+    public boolean handleMouseClicked(MouseEvent e, IDrawingContext context) {
         // 只处理左键
         if (e.getButton() != MouseButton.PRIMARY || !canHandle(context.getDrawMode())) {
             return false;
@@ -70,7 +69,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public boolean handleMouseMoved(MouseEvent e, DrawingContext context) {
+    public boolean handleMouseMoved(MouseEvent e, IDrawingContext context) {
         if (!canHandle(context.getDrawMode())) {
             return false;
         }
@@ -113,7 +112,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public void paintPreview(GraphicsContext gc, WorldTransform transform, DrawingContext context) {
+    public void paintPreview(GraphicsContext gc, WorldTransform transform, IDrawingContext context) {
         if (!canHandle(context.getDrawMode())) {
             return;
         }
@@ -369,7 +368,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
     /**
      * 处理中点模式的点击事件
      */
-    private void handleMidpointClick(double worldX, double worldY, DrawingContext context) {
+    private void handleMidpointClick(double worldX, double worldY, IDrawingContext context) {
         // 查找点击位置附近的线段或直线
         double scale = context.getTransform().getScale();
         double tolerance = GeometryConfig.Tolerance.VERTEX_HIT_TEST_PIXELS / scale;
@@ -386,17 +385,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
                     // 绘制中点
                     PointGeo newPoint = new PointGeo(midpoint.getX(), midpoint.getY());
                     newPoint.setColor(GeometryConfig.Colors.CONSTRUCTION_POINT);
-                    context.executeCommand(new CommandHistory.Command() {
-                        @Override
-                        public void execute() {
-                            context.addObject(newPoint);
-                        }
-
-                        @Override
-                        public void undo() {
-                            context.removeObject(newPoint);
-                        }
-                    });
+                    context.executeCommand(new GeometryCommand(context, newPoint));
                     return;
                 }
             } else if (obj instanceof InfiniteLineGeo line) {
@@ -410,17 +399,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
                     // 绘制中点
                     PointGeo newPoint = new PointGeo(midpoint.getX(), midpoint.getY());
                     newPoint.setColor(GeometryConfig.Colors.CONSTRUCTION_POINT);
-                    context.executeCommand(new CommandHistory.Command() {
-                        @Override
-                        public void execute() {
-                            context.addObject(newPoint);
-                        }
-
-                        @Override
-                        public void undo() {
-                            context.removeObject(newPoint);
-                        }
-                    });
+                    context.executeCommand(new GeometryCommand(context, newPoint));
                     return;
                 }
             }
@@ -430,7 +409,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
     /**
      * 处理垂线模式的点击事件
      */
-    private void handlePerpendicularClick(double worldX, double worldY, DrawingContext context) {
+    private void handlePerpendicularClick(double worldX, double worldY, IDrawingContext context) {
         if (context.getState() == DrawingState.IDLE) {
             // 第一次点击：选择线段或直线
             double scale = context.getTransform().getScale();
@@ -479,25 +458,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
                     perpLine[0].getX(), perpLine[0].getY()
             );
 
-            // 计算交点
-            List<PointGeo> intersectionPoints = context.getIntersectionHandler().checkIntersections(newLine, context);
-            context.executeCommand(new CommandHistory.Command() {
-                @Override
-                public void execute() {
-                    context.addObject(newLine);
-                    for (PointGeo point : intersectionPoints) {
-                        context.addObject(point);
-                    }
-                }
-
-                @Override
-                public void undo() {
-                    context.removeObject(newLine);
-                    for (PointGeo point : intersectionPoints) {
-                        context.removeObject(point);
-                    }
-                }
-            });
+            context.executeCommand(new GeometryCommand(context, newLine));
 
             // 重置状态
             selectedLine = null;
@@ -509,7 +470,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
     /**
      * 处理平行线模式的点击事件
      */
-    private void handleParallelClick(double worldX, double worldY, DrawingContext context) {
+    private void handleParallelClick(double worldX, double worldY, IDrawingContext context) {
         if (context.getState() == DrawingState.IDLE) {
             // 第一次点击：选择线段或直线
             double scale = context.getTransform().getScale();
@@ -558,25 +519,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
                     parallelLine[0].getX(), parallelLine[0].getY()
             );
 
-            // 计算交点
-            List<PointGeo> intersectionPoints = context.getIntersectionHandler().checkIntersections(newLine, context);
-            context.executeCommand(new CommandHistory.Command() {
-                @Override
-                public void execute() {
-                    context.addObject(newLine);
-                    for (PointGeo point : intersectionPoints) {
-                        context.addObject(point);
-                    }
-                }
-
-                @Override
-                public void undo() {
-                    context.removeObject(newLine);
-                    for (PointGeo point : intersectionPoints) {
-                        context.removeObject(point);
-                    }
-                }
-            });
+            context.executeCommand(new GeometryCommand(context, newLine));
 
             // 重置状态
             selectedLine = null;
@@ -588,7 +531,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
     /**
      * 处理垂直平分线模式的点击事件
      */
-    private void handlePerpendicularBisectorClick(double worldX, double worldY, DrawingContext context) {
+    private void handlePerpendicularBisectorClick(double worldX, double worldY, IDrawingContext context) {
         // 查找点击位置附近的线段(注意：只有线段才有垂直平分线,直线没有)
         double scale = context.getTransform().getScale();
         double tolerance = GeometryConfig.Tolerance.VERTEX_HIT_TEST_PIXELS / scale;
@@ -613,25 +556,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
                             bisectorLine[0].getX(), bisectorLine[0].getY()
                     );
 
-                    // 计算交点
-                    List<PointGeo> intersectionPoints = context.getIntersectionHandler().checkIntersections(newLine, context);
-                    context.executeCommand(new CommandHistory.Command() {
-                        @Override
-                        public void execute() {
-                            context.addObject(newLine);
-                            for (PointGeo point : intersectionPoints) {
-                                context.addObject(point);
-                            }
-                        }
-
-                        @Override
-                        public void undo() {
-                            context.removeObject(newLine);
-                            for (PointGeo point : intersectionPoints) {
-                                context.removeObject(point);
-                            }
-                        }
-                    });
+                    context.executeCommand(new GeometryCommand(context, newLine));
                     return;
                 }
             }
@@ -642,7 +567,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
     /**
      * 处理切线模式的点击事件
      */
-    private void handleTangentClick(double worldX, double worldY, DrawingContext context) {
+    private void handleTangentClick(double worldX, double worldY, IDrawingContext context) {
         // 查找点击位置附近的圆
         double scale = context.getTransform().getScale();
         double tolerance = GeometryConfig.Snapping.CIRCLE_TANGENT_THRESHOLD_PIXELS / scale;
@@ -674,25 +599,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
                             tangentLine[0].getX(), tangentLine[0].getY()
                     );
 
-                    // 计算交点
-                    List<PointGeo> intersectionPoints = context.getIntersectionHandler().checkIntersections(newLine, context);
-                    context.executeCommand(new CommandHistory.Command() {
-                        @Override
-                        public void execute() {
-                            context.addObject(newLine);
-                            for (PointGeo point : intersectionPoints) {
-                                context.addObject(point);
-                            }
-                        }
-
-                        @Override
-                        public void undo() {
-                            context.removeObject(newLine);
-                            for (PointGeo point : intersectionPoints) {
-                                context.removeObject(point);
-                            }
-                        }
-                    });
+                    context.executeCommand(new GeometryCommand(context, newLine));
                     return;
                 }
             }

@@ -52,7 +52,7 @@ public class InfiniteLineGeo extends AbstractWorldObject {
      * 构造函数(坐标方式,可选自动命名)
      */
     public InfiniteLineGeo(double point1X, double point1Y, double point2X, double point2Y, boolean autoName) {
-        super(ObjectType.LINE);
+        super(ObjectType.INFINITE_LINE);
         this.point1X = point1X;
         this.point1Y = point1Y;
         this.point2X = point2X;
@@ -70,7 +70,7 @@ public class InfiniteLineGeo extends AbstractWorldObject {
      */
     public InfiniteLineGeo(PointGeo point1, double point1X, double point1Y,
                            PointGeo point2, double point2X, double point2Y) {
-        super(ObjectType.LINE);
+        super(ObjectType.INFINITE_LINE);
         this.point1Ref = point1;
         this.point2Ref = point2;
         this.point1X = point1X;
@@ -139,6 +139,7 @@ public class InfiniteLineGeo extends AbstractWorldObject {
 
     @Override
     public void paint(GraphicsContext gc, WorldTransform transform, double w, double h) {
+        if (!visible) return;
         double sx1 = transform.worldToScreenX(getPoint1X());
         double sy1 = transform.worldToScreenY(getPoint1Y());
         double sx2 = transform.worldToScreenX(getPoint2X());
@@ -175,6 +176,7 @@ public class InfiniteLineGeo extends AbstractWorldObject {
                 gc.setFont(Font.font(12));
                 gc.setTextAlign(TextAlignment.LEFT);
                 gc.fillText(point2Name, sx2 + 8, sy2 - 8);
+                gc.setFill(getEffectiveColor());
             }
         }
     }

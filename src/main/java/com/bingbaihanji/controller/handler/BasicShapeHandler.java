@@ -3,10 +3,10 @@ package com.bingbaihanji.controller.handler;
 import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.constant.DrawingState;
-import com.bingbaihanji.controller.DrawingContext;
+import com.bingbaihanji.controller.IDrawingContext;
 import com.bingbaihanji.controller.PreviewManager;
-import com.bingbaihanji.util.CommandHistory;
 import com.bingbaihanji.util.EdgeSnapManager;
+import com.bingbaihanji.util.GeometryCommand;
 import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.util.PointReuseManager;
 import com.bingbaihanji.util.constraint.PointConstraint;
@@ -17,8 +17,6 @@ import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-
-import java.util.List;
 
 /**
  * 基础图形绘制处理器
@@ -57,7 +55,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public boolean handleMouseClicked(MouseEvent e, DrawingContext context) {
+    public boolean handleMouseClicked(MouseEvent e, IDrawingContext context) {
         // 只处理左键
         if (e.getButton() != MouseButton.PRIMARY || !canHandle(context.getDrawMode())) {
             return false;
@@ -91,7 +89,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public boolean handleMouseMoved(MouseEvent e, DrawingContext context) {
+    public boolean handleMouseMoved(MouseEvent e, IDrawingContext context) {
         if (!canHandle(context.getDrawMode())) {
             return false;
         }
@@ -192,7 +190,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
     /**
      * 处理点模式的绘制
      */
-    private void handlePointDrawing(double worldX, double worldY, DrawingContext context) {
+    private void handlePointDrawing(double worldX, double worldY, IDrawingContext context) {
         // 点模式：检测是否靠近图形(吸附)
         double scale = context.getTransform().getScale();
         double snapDistance = GeometryConfig.Snapping.POINT_SNAP_THRESHOLD_PIXELS / scale; // 吸附距离阈值
@@ -238,17 +236,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             newPoint = new PointGeo(worldX, worldY);
         }
 
-        context.executeCommand(new CommandHistory.Command() {
-            @Override
-            public void execute() {
-                context.addObject(newPoint);
-            }
-
-            @Override
-            public void undo() {
-                context.removeObject(newPoint);
-            }
-        });
+        context.executeCommand(new GeometryCommand(context, newPoint));
 
         context.setState(DrawingState.IDLE);
     }
@@ -256,7 +244,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
     /**
      * 处理第一次点击
      */
-    private void handleFirstClick(double rawX, double rawY, double worldX, double worldY, DrawingContext context) {
+    private void handleFirstClick(double rawX, double rawY, double worldX, double worldY, IDrawingContext context) {
         // 第一次点击：记录起点,进入预览状态
         firstPointX = worldX;
         firstPointY = worldY;
@@ -285,7 +273,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
     /**
      * 处理第二次点击
      */
-    private void handleSecondClick(double worldX, double worldY, DrawingContext context) {
+    private void handleSecondClick(double worldX, double worldY, IDrawingContext context) {
         double scale = context.getTransform().getScale();
 
         // 检查第二次点击位置是否已有点对象(用于复用)
@@ -308,27 +296,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                 // 创建圆,复用已有的圆心点
                 CircleGeo newCircle = new CircleGeo(firstPointRef, firstPointX, firstPointY, finalRadius);
 
-                // 计算此圆产生的所有交点
-                List<PointGeo> intersectionPoints = context.getIntersectionHandler()
-                        .checkIntersections(newCircle, context);
-
-                context.executeCommand(new CommandHistory.Command() {
-                    @Override
-                    public void execute() {
-                        context.addObject(newCircle);
-                        for (PointGeo point : intersectionPoints) {
-                            context.addObject(point);
-                        }
-                    }
-
-                    @Override
-                    public void undo() {
-                        context.removeObject(newCircle);
-                        for (PointGeo point : intersectionPoints) {
-                            context.removeObject(point);
-                        }
-                    }
-                });
+                context.executeCommand(new GeometryCommand(context, newCircle));
 
                 // 清除预览对象
                 if (circlePreview != null) {
@@ -342,26 +310,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                 LineGeo newLine = new LineGeo(firstPointRef, firstPointX, firstPointY,
                         secondPointRef, worldX, worldY);
 
-                List<PointGeo> intersectionPoints = context.getIntersectionHandler()
-                        .checkIntersections(newLine, context);
-
-                context.executeCommand(new CommandHistory.Command() {
-                    @Override
-                    public void execute() {
-                        context.addObject(newLine);
-                        for (PointGeo point : intersectionPoints) {
-                            context.addObject(point);
-                        }
-                    }
-
-                    @Override
-                    public void undo() {
-                        context.removeObject(newLine);
-                        for (PointGeo point : intersectionPoints) {
-                            context.removeObject(point);
-                        }
-                    }
-                });
+                context.executeCommand(new GeometryCommand(context, newLine));
 
                 // 清除预览对象
                 if (linePreview != null) {
@@ -375,26 +324,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                 InfiniteLineGeo newLine = new InfiniteLineGeo(firstPointRef, firstPointX, firstPointY,
                         secondPointRef, worldX, worldY);
 
-                List<PointGeo> intersectionPoints = context.getIntersectionHandler()
-                        .checkIntersections(newLine, context);
-
-                context.executeCommand(new CommandHistory.Command() {
-                    @Override
-                    public void execute() {
-                        context.addObject(newLine);
-                        for (PointGeo point : intersectionPoints) {
-                            context.addObject(point);
-                        }
-                    }
-
-                    @Override
-                    public void undo() {
-                        context.removeObject(newLine);
-                        for (PointGeo point : intersectionPoints) {
-                            context.removeObject(point);
-                        }
-                    }
-                });
+                context.executeCommand(new GeometryCommand(context, newLine));
 
                 // 清除预览对象
                 if (linePreview != null) {
@@ -450,7 +380,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public void paintPreview(GraphicsContext gc, WorldTransform transform, DrawingContext context) {
+    public void paintPreview(GraphicsContext gc, WorldTransform transform, IDrawingContext context) {
         // PreviewManager 统一管理,此处只绘制补充效果(吸附预览点)
         if (!canHandle(context.getDrawMode())) {
             return;

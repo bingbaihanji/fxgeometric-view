@@ -1,10 +1,12 @@
 package com.bingbaihanji.io;
 
 import com.bingbaihanji.constant.*;
+import com.bingbaihanji.util.PointNameManager;
 import com.bingbaihanji.view.layout.core.GridChartView;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import com.bingbaihanji.view.layout.draw.geometry.impl.*;
+import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +40,7 @@ public class ProjectFileManager {
             data.setOffsetY(transform.getOffsetY());
             data.setBackgroundColor(colorToArgb(view.getBackgroundColor()));
             data.setUnitLabelTypeOrdinal(view.getSettings().getUnitLabelType().ordinal());
+            data.setNextPointNameIndex(PointNameManager.getInstance().getNextIndex());
 
             List<ObjectData> objectDataList = new ArrayList<>();
             for (WorldObject obj : objects) {
@@ -157,10 +160,12 @@ public class ProjectFileManager {
                 serializePoint((PointGeo) obj, props);
                 break;
             case SEGMENT:
-            case LINE:
             case RAY:
             case VECTOR:
                 serializeLine((LineGeo) obj, props);
+                break;
+            case INFINITE_LINE:
+                serializeInfiniteLine((InfiniteLineGeo) obj, props);
                 break;
             case CIRCLE:
                 serializeCircle((CircleGeo) obj, props);
@@ -180,11 +185,7 @@ public class ProjectFileManager {
                 serializeFunction((FunctionGeo) obj, props);
                 break;
             default:
-                if (obj instanceof InfiniteLineGeo) {
-                    serializeInfiniteLine((InfiniteLineGeo) obj, props);
-                } else {
-                    logger.warn("未支持的序列化类型: {}", obj.getObjectType());
-                }
+                logger.warn("未支持的序列化类型: {}", obj.getObjectType());
                 break;
         }
 
@@ -234,7 +235,7 @@ public class ProjectFileManager {
 
     private static void serializePath(PathGeo path, Map<String, Serializable> props) {
         List<Double> coords = new ArrayList<>();
-        for (WorldObject.DraggablePoint p : path.getDraggablePoints()) {
+        for (Point2D p : path.getPathPoints()) {
             coords.add(p.getX());
             coords.add(p.getY());
         }
@@ -319,13 +320,15 @@ public class ProjectFileManager {
             case POINT_DEPENDENT:
             case POINT_ON_PATH:
             case POINT_INTERSECTION:
-                obj = deserializePoint(props);
+                obj = deserializePoint(props, type);
                 break;
             case SEGMENT:
-            case LINE:
             case RAY:
             case VECTOR:
                 obj = deserializeLine(props, type);
+                break;
+            case INFINITE_LINE:
+                obj = deserializeInfiniteLine(props);
                 break;
             case CIRCLE:
                 obj = deserializeCircle(props);
@@ -345,12 +348,8 @@ public class ProjectFileManager {
                 obj = deserializeFunction(props);
                 break;
             default:
-                if (typeName.equals("INFINITE_LINE")) {
-                    obj = deserializeInfiniteLine(props);
-                } else {
-                    logger.warn("未支持的反序列化类型: {}", type);
-                    obj = null;
-                }
+                logger.warn("未支持的反序列化类型: {}", type);
+                obj = null;
                 break;
         }
 
@@ -381,10 +380,10 @@ public class ProjectFileManager {
         obj.setLabelColor(argbToColor((Integer) props.getOrDefault("labelColor", colorToArgb(Color.BLACK))));
     }
 
-    private static PointGeo deserializePoint(Map<String, Serializable> props) {
+    private static PointGeo deserializePoint(Map<String, Serializable> props, ObjectType type) {
         double x = (Double) props.get("x");
         double y = (Double) props.get("y");
-        return new PointGeo(x, y, false);
+        return new PointGeo(type, x, y, false);
     }
 
     private static LineGeo deserializeLine(Map<String, Serializable> props, ObjectType type) {
@@ -392,7 +391,7 @@ public class ProjectFileManager {
         double sy = (Double) props.get("startY");
         double ex = (Double) props.get("endX");
         double ey = (Double) props.get("endY");
-        LineGeo line = new LineGeo(sx, sy, ex, ey, false);
+        LineGeo line = new LineGeo(type, sx, sy, ex, ey, false);
         line.setStartPointName((String) props.getOrDefault("startPointName", null));
         line.setEndPointName((String) props.getOrDefault("endPointName", null));
         return line;
@@ -414,7 +413,7 @@ public class ProjectFileManager {
         for (int i = 0; i < coords.size(); i++) {
             vertices[i] = coords.get(i);
         }
-        return new PolygonGeo(vertices);
+        return new PolygonGeo(type, vertices);
     }
 
     private static RegularPolygonGeo deserializeRegularPolygon(Map<String, Serializable> props) {

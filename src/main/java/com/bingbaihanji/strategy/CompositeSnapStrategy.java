@@ -1,6 +1,6 @@
 package com.bingbaihanji.strategy;
 
-import com.bingbaihanji.controller.DrawingContext;
+import com.bingbaihanji.controller.IDrawingContext;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -55,7 +55,7 @@ public class CompositeSnapStrategy implements SnapStrategy {
     }
 
     @Override
-    public double[] snap(double x, double y, DrawingContext context) {
+    public double[] snap(double x, double y, IDrawingContext context) {
         // 按优先级依次尝试每个策略
         for (SnapStrategy strategy : strategies) {
             double[] result = strategy.snap(x, y, context);

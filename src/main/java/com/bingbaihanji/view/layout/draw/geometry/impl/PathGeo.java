@@ -29,6 +29,12 @@ public class PathGeo extends AbstractWorldObject {
     private final List<Point> pathPoints;
 
     /**
+     * 边列表缓存(避免每次getEdges()都创建新对象)
+     */
+    private List<LineGeo> cachedEdges;
+    private boolean edgesDirty = true;
+
+    /**
      * 构造函数
      *
      * @param points 路径点列表
@@ -49,7 +55,7 @@ public class PathGeo extends AbstractWorldObject {
 
     @Override
     public void paint(GraphicsContext gc, WorldTransform transform, double w, double h) {
-        if (pathPoints.size() < 2) return;
+        if (!visible || pathPoints.size() < 2) return;
 
         // 绘制曲线路径(使用 Path API 一次性绘制,性能更好)
         LineStyleUtil.applyLineStyle(gc, lineType);
@@ -132,6 +138,7 @@ public class PathGeo extends AbstractWorldObject {
                 (newX, newY) -> {
                     pathPoints.get(0).x = newX;
                     pathPoints.get(0).y = newY;
+                    invalidateEdgeCache();
                 }
         ));
 
@@ -143,6 +150,7 @@ public class PathGeo extends AbstractWorldObject {
                 (newX, newY) -> {
                     pathPoints.get(lastIndex).x = newX;
                     pathPoints.get(lastIndex).y = newY;
+                    invalidateEdgeCache();
                 }
         ));
 
@@ -150,16 +158,35 @@ public class PathGeo extends AbstractWorldObject {
     }
 
     /**
-     * 获取路径的所有边(作为线段,用于交点计算)
+     * 获取路径的所有点(完整曲线数据)
+     */
+    public List<Point2D> getPathPoints() {
+        List<Point2D> points = new ArrayList<>();
+        for (Point p : pathPoints) {
+            points.add(new Point2D(p.x, p.y));
+        }
+        return points;
+    }
+
+    /**
+     * 获取路径的所有边(带缓存,用于交点计算)
      */
     public List<LineGeo> getEdges() {
-        List<LineGeo> edges = new ArrayList<>();
+        if (!edgesDirty && cachedEdges != null) {
+            return cachedEdges;
+        }
+        cachedEdges = new ArrayList<>();
         for (int i = 0; i < pathPoints.size() - 1; i++) {
             Point p1 = pathPoints.get(i);
             Point p2 = pathPoints.get(i + 1);
-            edges.add(new LineGeo(p1.x, p1.y, p2.x, p2.y, false));  // 不自动命名
+            cachedEdges.add(new LineGeo(p1.x, p1.y, p2.x, p2.y, false));
         }
-        return edges;
+        edgesDirty = false;
+        return cachedEdges;
+    }
+
+    private void invalidateEdgeCache() {
+        edgesDirty = true;
     }
 
     @Override
@@ -174,6 +201,7 @@ public class PathGeo extends AbstractWorldObject {
             point.x = centerX + dx * cos - dy * sin;
             point.y = centerY + dx * sin + dy * cos;
         }
+        invalidateEdgeCache();
     }
 
     @Override
@@ -184,9 +212,9 @@ public class PathGeo extends AbstractWorldObject {
 
         // 计算所有路径点的边界框
         double minX = Double.MAX_VALUE;
-        double maxX = Double.MIN_VALUE;
+        double maxX = -Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
-        double maxY = Double.MIN_VALUE;
+        double maxY = -Double.MAX_VALUE;
 
         for (Point point : pathPoints) {
             minX = Math.min(minX, point.x);

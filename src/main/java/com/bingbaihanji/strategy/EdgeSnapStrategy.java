@@ -1,7 +1,7 @@
 package com.bingbaihanji.strategy;
 
 import com.bingbaihanji.config.GeometryConfig;
-import com.bingbaihanji.controller.DrawingContext;
+import com.bingbaihanji.controller.IDrawingContext;
 import com.bingbaihanji.util.visitor.EdgeSnapVisitor;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 
@@ -16,7 +16,7 @@ import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 public class EdgeSnapStrategy implements SnapStrategy {
 
     @Override
-    public double[] snap(double x, double y, DrawingContext context) {
+    public double[] snap(double x, double y, IDrawingContext context) {
         // 计算吸附阈值
         double scale = context.getTransform().getScale();
         double threshold = GeometryConfig.Snapping.EDGE_SNAP_THRESHOLD_PIXELS / scale;

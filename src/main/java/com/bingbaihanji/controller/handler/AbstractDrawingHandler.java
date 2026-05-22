@@ -1,6 +1,6 @@
 package com.bingbaihanji.controller.handler;
 
-import com.bingbaihanji.controller.DrawingContext;
+import com.bingbaihanji.controller.IDrawingContext;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseEvent;
@@ -16,32 +16,32 @@ import javafx.scene.input.MouseEvent;
 public abstract class AbstractDrawingHandler implements DrawingHandler {
 
     @Override
-    public boolean handleMouseClicked(MouseEvent e, DrawingContext context) {
+    public boolean handleMouseClicked(MouseEvent e, IDrawingContext context) {
         return false;
     }
 
     @Override
-    public boolean handleMouseMoved(MouseEvent e, DrawingContext context) {
+    public boolean handleMouseMoved(MouseEvent e, IDrawingContext context) {
         return false;
     }
 
     @Override
-    public boolean handleMousePressed(MouseEvent e, DrawingContext context) {
+    public boolean handleMousePressed(MouseEvent e, IDrawingContext context) {
         return false;
     }
 
     @Override
-    public boolean handleMouseDragged(MouseEvent e, DrawingContext context) {
+    public boolean handleMouseDragged(MouseEvent e, IDrawingContext context) {
         return false;
     }
 
     @Override
-    public boolean handleMouseReleased(MouseEvent e, DrawingContext context) {
+    public boolean handleMouseReleased(MouseEvent e, IDrawingContext context) {
         return false;
     }
 
     @Override
-    public void paintPreview(GraphicsContext gc, WorldTransform transform, DrawingContext context) {
+    public void paintPreview(GraphicsContext gc, WorldTransform transform, IDrawingContext context) {
         // 默认不绘制预览
     }
 

@@ -1,6 +1,6 @@
 package com.bingbaihanji.controller.handler;
 
-import com.bingbaihanji.controller.DrawingContext;
+import com.bingbaihanji.controller.IDrawingContext;
 import com.bingbaihanji.util.constraint.*;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import com.bingbaihanji.view.layout.draw.geometry.impl.*;
@@ -85,7 +85,7 @@ public class ConstraintHandler {
      *
      * @param context 绘制上下文
      */
-    public void updateAllConstrainedPoints(DrawingContext context) {
+    public void updateAllConstrainedPoints(IDrawingContext context) {
         for (WorldObject obj : context.getObjects()) {
             if (obj instanceof PointGeo point) {
                 if (point.isConstrained()) {

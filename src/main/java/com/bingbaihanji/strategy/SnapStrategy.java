@@ -1,6 +1,6 @@
 package com.bingbaihanji.strategy;
 
-import com.bingbaihanji.controller.DrawingContext;
+import com.bingbaihanji.controller.IDrawingContext;
 
 /**
  * 吸附策略接口
@@ -20,7 +20,7 @@ public interface SnapStrategy {
      * @param context 绘制上下文
      * @return 吸附后的坐标 [x, y],如果不吸附则返回null
      */
-    double[] snap(double x, double y, DrawingContext context);
+    double[] snap(double x, double y, IDrawingContext context);
 
     /**
      * 获取策略的优先级

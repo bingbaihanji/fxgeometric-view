@@ -30,12 +30,28 @@ public class PolygonGeo extends AbstractWorldObject {
     private final List<PointGeo> vertexPoints;
 
     /**
+     * 边列表缓存
+     */
+    private List<LineGeo> cachedEdges;
+    private boolean edgesDirty = true;
+
+    /**
      * 构造函数
      *
      * @param vertices 顶点坐标数组 [x1, y1, x2, y2, ...]
      */
     public PolygonGeo(double... vertices) {
-        super(ObjectType.POLYGON);
+        this(ObjectType.POLYGON, vertices);
+    }
+
+    /**
+     * 构造函数(指定类型) - 用于反序列化还原三角形/矩形等子类型
+     *
+     * @param type     对象类型
+     * @param vertices 顶点坐标数组 [x1, y1, x2, y2, ...]
+     */
+    public PolygonGeo(ObjectType type, double... vertices) {
+        super(type);
         if (vertices.length < 6) {
             throw new IllegalArgumentException("多边形至少需要3个顶点");
         }
@@ -72,7 +88,7 @@ public class PolygonGeo extends AbstractWorldObject {
 
     @Override
     public void paint(GraphicsContext gc, WorldTransform transform, double w, double h) {
-        if (vertexPoints.isEmpty()) return;
+        if (!visible || vertexPoints.isEmpty()) return;
 
         // 从引用的点对象获取坐标
         double[] xPoints = new double[vertexPoints.size()];
@@ -194,13 +210,21 @@ public class PolygonGeo extends AbstractWorldObject {
      * @return 线段列表
      */
     public List<LineGeo> getEdges() {
-        List<LineGeo> edges = new ArrayList<>();
+        if (!edgesDirty && cachedEdges != null) {
+            return cachedEdges;
+        }
+        cachedEdges = new ArrayList<>();
         for (int i = 0; i < vertexPoints.size(); i++) {
             PointGeo p1 = vertexPoints.get(i);
             PointGeo p2 = vertexPoints.get((i + 1) % vertexPoints.size());
-            edges.add(new LineGeo(p1.getX(), p1.getY(), p2.getX(), p2.getY(), false));  // 不自动命名
+            cachedEdges.add(new LineGeo(p1.getX(), p1.getY(), p2.getX(), p2.getY(), false));
         }
-        return edges;
+        edgesDirty = false;
+        return cachedEdges;
+    }
+
+    private void invalidateEdgeCache() {
+        edgesDirty = true;
     }
 
     @Override
@@ -215,6 +239,7 @@ public class PolygonGeo extends AbstractWorldObject {
                 // 直接更新点对象的位置
                 // 如果点有约束,updatePosition会自动处理约束逻辑
                 vertexPoint.updatePosition(newX, newY);
+                invalidateEdgeCache();
             }));
         }
         return points;
@@ -236,6 +261,7 @@ public class PolygonGeo extends AbstractWorldObject {
             }
             // 有约束的点或外部复用的点不参与旋转
         }
+        invalidateEdgeCache();
     }
 
     @Override
@@ -246,9 +272,9 @@ public class PolygonGeo extends AbstractWorldObject {
 
         // 计算所有顶点的边界框
         double minX = Double.MAX_VALUE;
-        double maxX = Double.MIN_VALUE;
+        double maxX = -Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
-        double maxY = Double.MIN_VALUE;
+        double maxY = -Double.MAX_VALUE;
 
         for (PointGeo point : vertexPoints) {
             minX = Math.min(minX, point.getX());

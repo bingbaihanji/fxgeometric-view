@@ -43,6 +43,12 @@ public class RegularPolygonGeo extends AbstractWorldObject {
     private boolean verticesCacheValid = false;
 
     /**
+     * 边列表缓存
+     */
+    private List<LineGeo> cachedEdges;
+    private boolean edgesDirty = true;
+
+    /**
      * 基础构造函数(坐标方式)
      */
     public RegularPolygonGeo(double cx, double cy, double radius, int sideCount) {
@@ -145,6 +151,7 @@ public class RegularPolygonGeo extends AbstractWorldObject {
     public void setRadius(double radius) {
         this.radius = radius;
         verticesCacheValid = false;
+        invalidateEdgeCache();
     }
 
     public int getSideCount() {
@@ -154,6 +161,7 @@ public class RegularPolygonGeo extends AbstractWorldObject {
     public void setSideCount(int sideCount) {
         this.sideCount = Math.max(3, Math.min(10, sideCount));
         verticesCacheValid = false;
+        invalidateEdgeCache();
     }
 
     public double getCx() {
@@ -251,15 +259,21 @@ public class RegularPolygonGeo extends AbstractWorldObject {
      */
     public List<LineGeo> getEdges() {
         calculateVertices();
-        List<LineGeo> edges = new ArrayList<>();
-
+        if (!edgesDirty && cachedEdges != null) {
+            return cachedEdges;
+        }
+        cachedEdges = new ArrayList<>();
         for (int i = 0; i < cachedVertices.size(); i++) {
             Point2D p1 = cachedVertices.get(i);
             Point2D p2 = cachedVertices.get((i + 1) % cachedVertices.size());
-            edges.add(new LineGeo(p1.getX(), p1.getY(), p2.getX(), p2.getY(), false));
+            cachedEdges.add(new LineGeo(p1.getX(), p1.getY(), p2.getX(), p2.getY(), false));
         }
+        edgesDirty = false;
+        return cachedEdges;
+    }
 
-        return edges;
+    private void invalidateEdgeCache() {
+        edgesDirty = true;
     }
 
     @Override
@@ -268,6 +282,7 @@ public class RegularPolygonGeo extends AbstractWorldObject {
                       double w,
                       double h) {
 
+        if (!visible) return;
         calculateVertices();
 
         // 转换顶点到屏幕坐标
@@ -415,6 +430,7 @@ public class RegularPolygonGeo extends AbstractWorldObject {
                     }
                     // 中心移动后需要重新计算顶点
                     verticesCacheValid = false;
+                    invalidateEdgeCache();
                 })
         );
     }
@@ -441,6 +457,7 @@ public class RegularPolygonGeo extends AbstractWorldObject {
 
         // 旋转后需要重新计算顶点
         verticesCacheValid = false;
+        invalidateEdgeCache();
     }
 
     @Override
@@ -448,9 +465,9 @@ public class RegularPolygonGeo extends AbstractWorldObject {
         calculateVertices();
 
         double minX = Double.MAX_VALUE;
-        double maxX = Double.MIN_VALUE;
+        double maxX = -Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
-        double maxY = Double.MIN_VALUE;
+        double maxY = -Double.MAX_VALUE;
 
         for (Point2D vertex : cachedVertices) {
             minX = Math.min(minX, vertex.getX());

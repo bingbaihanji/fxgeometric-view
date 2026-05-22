@@ -15,7 +15,11 @@ import java.util.List;
  * 容差策略：
  * - 初始检测：5px(敏感触发)
  * - 持续吸附：40px(宽松维持)
+ *
+ * @deprecated 未使用，吸附功能已由 {@link com.bingbaihanji.controller.handler.SnappingHandler} 和
+ * {@link com.bingbaihanji.controller.SnapCalculator} 接管
  */
+@Deprecated
 public class SnapController {
 
     // 容差常量

@@ -49,6 +49,16 @@ public class PointGeo extends AbstractWorldObject {
         this.color = StyleManager.GEOMETRY_DEFAULT; // 默认颜色
     }
 
+    public PointGeo(ObjectType type, double x, double y, boolean autoName) {
+        super(type);
+        this.x = x;
+        this.y = y;
+        if (autoName) {
+            this.label = PointNameManager.getInstance().assignName(x, y);
+        }
+        this.color = StyleManager.GEOMETRY_DEFAULT;
+    }
+
     public PointGeo(double x, double y, boolean autoName) {
         super(ObjectType.POINT_FREE); // 默认为自由点
         this.x = x;
@@ -204,8 +214,7 @@ public class PointGeo extends AbstractWorldObject {
 
     @Override
     public void paint(GraphicsContext gc, WorldTransform t, double w, double h) {
-        // 多边形内部顶点由多边形负责绘制,这里不绘制
-        if (polygonVertex) {
+        if (!visible || polygonVertex) {
             return;
         }
 

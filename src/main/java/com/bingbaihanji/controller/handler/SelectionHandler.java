@@ -2,7 +2,7 @@ package com.bingbaihanji.controller.handler;
 
 import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.DrawMode;
-import com.bingbaihanji.controller.DrawingContext;
+import com.bingbaihanji.controller.IDrawingContext;
 import com.bingbaihanji.controller.SelectionManager;
 import com.bingbaihanji.util.Hits;
 import com.bingbaihanji.view.layout.core.WorldTransform;
@@ -53,7 +53,7 @@ public class SelectionHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public boolean handleMousePressed(MouseEvent e, DrawingContext context) {
+    public boolean handleMousePressed(MouseEvent e, IDrawingContext context) {
         if (!canHandle(context.getDrawMode()) || e.getButton() != MouseButton.PRIMARY) {
             return false;
         }
@@ -161,7 +161,7 @@ public class SelectionHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public boolean handleMouseDragged(MouseEvent e, DrawingContext context) {
+    public boolean handleMouseDragged(MouseEvent e, IDrawingContext context) {
         if (!canHandle(context.getDrawMode()) || !boxSelecting) {
             return false;
         }
@@ -185,7 +185,7 @@ public class SelectionHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public boolean handleMouseReleased(MouseEvent e, DrawingContext context) {
+    public boolean handleMouseReleased(MouseEvent e, IDrawingContext context) {
         if (!canHandle(context.getDrawMode()) || !boxSelecting) {
             return false;
         }
@@ -231,7 +231,7 @@ public class SelectionHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public void paintPreview(GraphicsContext gc, WorldTransform transform, DrawingContext context) {
+    public void paintPreview(GraphicsContext gc, WorldTransform transform, IDrawingContext context) {
         if (boxSelecting) {
             // 计算距离,只有超过阈值才绘制框选矩形
             double dx = boxCurrentX - boxStartX;

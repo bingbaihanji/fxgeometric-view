@@ -10,6 +10,7 @@ import com.bingbaihanji.view.layout.draw.geometry.impl.AxesPainter;
 import com.bingbaihanji.view.layout.draw.geometry.impl.GridPainter;
 import com.bingbaihanji.view.layout.draw.geometry.impl.TrigonometricFunctionGeo;
 import com.bingbaihanji.view.layout.draw.tools.CircleDrawingTool;
+import javafx.application.Platform;
 import javafx.scene.Cursor;
 import javafx.scene.ImageCursor;
 import javafx.scene.canvas.GraphicsContext;
@@ -19,6 +20,7 @@ import javafx.scene.paint.Color;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 
@@ -70,6 +72,9 @@ public class GridChartView extends Pane {
     private Color backgroundColor = Color.WHITE;
     // 自定义默认光标
     private Cursor customDefaultCursor = null;
+    // 重绘防抖标记：避免同帧内多次redraw()导致重复绘制
+    private boolean redrawScheduled = false;
+    private int trigFunctionCount = 0;
 
     //  构造
     public GridChartView() {
@@ -158,6 +163,8 @@ public class GridChartView extends Pane {
         return transform.screenToWorldY(y);
     }
 
+    //  重绘
+
     /**
      * 保证窗口尺寸变化时,视图中心的世界点不发生跳变
      */
@@ -167,12 +174,27 @@ public class GridChartView extends Pane {
         transform.centerWorldAt(centerWorldX, centerWorldY, getWidth(), getHeight());
     }
 
-    //  重绘
-
     /**
-     * 重绘整个画布
+     * 重绘整个画布(防抖：同帧内多次调用只触发一次实际重绘)
      */
     public void redraw() {
+        if (redrawScheduled) {
+            return;
+        }
+        redrawScheduled = true;
+        Platform.runLater(() -> {
+            redrawScheduled = false;
+            redrawBackground();
+            redrawObjects();
+            redrawInteraction();
+        });
+    }
+
+    /**
+     * 立即重绘(不经过防抖，用于需要同步绘制结果的场景)
+     */
+    public void redrawImmediate() {
+        redrawScheduled = false;
         redrawBackground();
         redrawObjects();
         redrawInteraction();
@@ -260,6 +282,8 @@ public class GridChartView extends Pane {
         gc.fillOval(sx - centerRadius, sy - centerRadius, centerRadius * 2, centerRadius * 2);
     }
 
+    // 对象管理
+
     /**
      * 绘制轴向吸附辅助线
      */
@@ -278,10 +302,9 @@ public class GridChartView extends Pane {
         gc.setLineDashes(null);
     }
 
-    // 对象管理
-
     public void addObject(WorldObject obj) {
         objects.add(obj);
+        incrementTrigCountIfApplicable(obj);
         updateAxisUnitTypeBasedOnFunctions();
         notifyObjectChange();
         redraw();
@@ -289,6 +312,7 @@ public class GridChartView extends Pane {
 
     public void removeObject(WorldObject obj) {
         objects.remove(obj);
+        decrementTrigCountIfApplicable(obj);
         updateAxisUnitTypeBasedOnFunctions();
         notifyObjectChange();
         redraw();
@@ -299,28 +323,42 @@ public class GridChartView extends Pane {
      */
     public void clearAllObjects() {
         objects.clear();
+        trigFunctionCount = 0;
         updateAxisUnitTypeBasedOnFunctions();
         redraw();
     }
 
     /**
-     * 获取所有图形对象的副本
+     * 获取所有图形对象的只读视图(零分配)
      */
     public List<WorldObject> getObjects() {
+        return Collections.unmodifiableList(objects);
+    }
+
+    /**
+     * 获取所有图形对象的副本(需要修改列表时使用)
+     */
+    public List<WorldObject> getObjectsCopy() {
         return new ArrayList<>(objects);
     }
 
     /**
      * 根据当前对象列表中是否有三角函数来自动调整坐标轴单位类型
+     * 增量更新模式：通过计数器避免每次O(n)扫描
      */
     private void updateAxisUnitTypeBasedOnFunctions() {
-        boolean hasTrigFunction = objects.stream()
-                .anyMatch(obj -> obj instanceof TrigonometricFunctionGeo);
+        settings.setUnitLabelType(trigFunctionCount > 0 ? UnitLabelType.PI : UnitLabelType.NUMERIC);
+    }
 
-        if (hasTrigFunction) {
-            settings.setUnitLabelType(UnitLabelType.PI);
-        } else {
-            settings.setUnitLabelType(UnitLabelType.NUMERIC);
+    private void incrementTrigCountIfApplicable(WorldObject obj) {
+        if (obj instanceof TrigonometricFunctionGeo) {
+            trigFunctionCount++;
+        }
+    }
+
+    private void decrementTrigCountIfApplicable(WorldObject obj) {
+        if (obj instanceof TrigonometricFunctionGeo) {
+            trigFunctionCount--;
         }
     }
 

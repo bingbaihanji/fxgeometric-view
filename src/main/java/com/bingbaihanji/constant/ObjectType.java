@@ -39,9 +39,9 @@ public enum ObjectType {
     SEGMENT("线段", "线段"),
 
     /**
-     * 直线(无限延伸)
+     * 无限直线(两端无限延伸)
      */
-    LINE("直线", "直线"),
+    INFINITE_LINE("直线", "无限直线"),
 
     /**
      * 射线(半无限线)
@@ -185,7 +185,7 @@ public enum ObjectType {
      */
     public boolean isLine() {
         return this == SEGMENT
-                || this == LINE
+                || this == INFINITE_LINE
                 || this == RAY
                 || this == VECTOR;
     }

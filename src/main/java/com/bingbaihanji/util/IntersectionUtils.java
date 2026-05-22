@@ -95,6 +95,15 @@ public class IntersectionUtils {
         double b = 2 * (dx * (x1 - cx) + dy * (y1 - cy));
         double c = (x1 - cx) * (x1 - cx) + (y1 - cy) * (y1 - cy) - r * r;
 
+        // 退化线段(起点=终点): 当作点与圆的交点处理
+        if (MathCalculationUtils.isZero(a, 1e-10)) {
+            double dist = MathCalculationUtils.hypot(x1 - cx, y1 - cy);
+            if (MathCalculationUtils.isZero(dist - r, GeometryConfig.Performance.MIN_VALID_DISTANCE)) {
+                intersections.add(new Point2D(x1, y1));
+            }
+            return intersections;
+        }
+
         double discriminant = b * b - 4 * a * c;
 
         if (discriminant < 0) {
@@ -235,6 +244,15 @@ public class IntersectionUtils {
         double a = dx * dx + dy * dy;
         double b = 2 * (dx * (x1 - cx) + dy * (y1 - cy));
         double c = (x1 - cx) * (x1 - cx) + (y1 - cy) * (y1 - cy) - r * r;
+
+        // 退化情况(定义点重合): 当作点与圆的交点处理
+        if (MathCalculationUtils.isZero(a, 1e-10)) {
+            double dist = MathCalculationUtils.hypot(x1 - cx, y1 - cy);
+            if (MathCalculationUtils.isZero(dist - r, GeometryConfig.Performance.MIN_VALID_DISTANCE)) {
+                intersections.add(new Point2D(x1, y1));
+            }
+            return intersections;
+        }
 
         double discriminant = b * b - 4 * a * c;
 

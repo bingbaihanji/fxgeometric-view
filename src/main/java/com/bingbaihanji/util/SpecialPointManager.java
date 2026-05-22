@@ -1,5 +1,6 @@
 package com.bingbaihanji.util;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import com.bingbaihanji.view.layout.draw.geometry.impl.*;
 import javafx.geometry.Point2D;
@@ -322,9 +323,10 @@ public class SpecialPointManager {
 
         @Override
         public int hashCode() {
-            // 为了处理浮点数精度问题,我们将坐标四舍五入到一定精度
-            long xBits = Double.doubleToLongBits(Math.round(x * 1e10) / 1e10);
-            long yBits = Double.doubleToLongBits(Math.round(y * 1e10) / 1e10);
+            // 使用与equals一致的精度进行舍入,保证equals为true的两个对象hashCode相同
+            double eps = GeometryConfig.Performance.EPSILON;
+            long xBits = Double.doubleToLongBits(Math.round(x / eps) * eps);
+            long yBits = Double.doubleToLongBits(Math.round(y / eps) * eps);
             return (int) (xBits * 31 + yBits);
         }
     }

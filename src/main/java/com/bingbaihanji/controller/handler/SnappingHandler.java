@@ -1,6 +1,6 @@
 package com.bingbaihanji.controller.handler;
 
-import com.bingbaihanji.controller.DrawingContext;
+import com.bingbaihanji.controller.IDrawingContext;
 import com.bingbaihanji.util.AxisTickCalculator;
 import com.bingbaihanji.util.EdgeSnapManager;
 import com.bingbaihanji.util.SpecialPointManager;
@@ -66,7 +66,7 @@ public class SnappingHandler {
      * @param context 绘制上下文
      * @return 最近的特殊点,如果在阈值范围内没有则返回 null
      */
-    public SpecialPoint findNearestSpecialPoint(double x, double y, DrawingContext context) {
+    public SpecialPoint findNearestSpecialPoint(double x, double y, IDrawingContext context) {
         return findNearestSpecialPoint(x, y, context, null);
     }
 
@@ -79,7 +79,7 @@ public class SnappingHandler {
      * @param excludedObject 要排除的对象(通常是正在拖动的对象)
      * @return 最近的特殊点,如果在阈值范围内没有则返回 null
      */
-    public SpecialPoint findNearestSpecialPoint(double x, double y, DrawingContext context, WorldObject excludedObject) {
+    public SpecialPoint findNearestSpecialPoint(double x, double y, IDrawingContext context, WorldObject excludedObject) {
         // 如果缓存无效,重新提取特殊点
         if (!cacheValid || cachedSpecialPoints == null) {
             cachedSpecialPoints = SpecialPointManager.extractSpecialPoints(context.getObjects());
@@ -111,7 +111,7 @@ public class SnappingHandler {
      * @param context 绘制上下文
      * @return 最近的边吸附结果,如果在阈值范围内没有则返回 null
      */
-    public EdgeSnapManager.EdgeSnapResult findNearestEdge(double x, double y, DrawingContext context) {
+    public EdgeSnapManager.EdgeSnapResult findNearestEdge(double x, double y, IDrawingContext context) {
         return findNearestEdge(x, y, context, null);
     }
 
@@ -124,7 +124,7 @@ public class SnappingHandler {
      * @param excludedObject 要排除的对象(通常是正在拖动的对象)
      * @return 最近的边吸附结果,如果在阈值范围内没有则返回 null
      */
-    public EdgeSnapManager.EdgeSnapResult findNearestEdge(double x, double y, DrawingContext context, WorldObject excludedObject) {
+    public EdgeSnapManager.EdgeSnapResult findNearestEdge(double x, double y, IDrawingContext context, WorldObject excludedObject) {
         // 计算吸附阈值(像素距离转换为世界坐标距离)
         double scale = context.getTransform().getScale();
         double threshold = EDGE_SNAP_THRESHOLD_PIXELS / scale;
@@ -154,7 +154,7 @@ public class SnappingHandler {
      * @param context 绘制上下文
      * @return 吸附后的坐标数组 [x, y]
      */
-    public double[] applySnapping(double x, double y, DrawingContext context) {
+    public double[] applySnapping(double x, double y, IDrawingContext context) {
         // 1. 优先尝试点吸附
         SpecialPoint nearestPoint = findNearestSpecialPoint(x, y, context);
         if (nearestPoint != null) {
@@ -190,7 +190,7 @@ public class SnappingHandler {
      * @param context 绘制上下文
      * @return 吸附后的坐标,如果距离太远则返回 null
      */
-    private double[] snapToGrid(double x, double y, DrawingContext context) {
+    private double[] snapToGrid(double x, double y, IDrawingContext context) {
         double scale = context.getTransform().getScale();
         double threshold = GRID_SNAP_THRESHOLD_PIXELS / scale;
 

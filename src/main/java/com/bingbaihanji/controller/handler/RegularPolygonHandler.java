@@ -3,9 +3,9 @@ package com.bingbaihanji.controller.handler;
 import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.constant.DrawingState;
-import com.bingbaihanji.controller.DrawingContext;
+import com.bingbaihanji.controller.IDrawingContext;
 import com.bingbaihanji.controller.PreviewManager;
-import com.bingbaihanji.util.CommandHistory;
+import com.bingbaihanji.util.GeometryCommand;
 import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.util.PointReuseManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;
@@ -66,7 +66,7 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public boolean handleMouseClicked(MouseEvent e, DrawingContext context) {
+    public boolean handleMouseClicked(MouseEvent e, IDrawingContext context) {
         // 只处理左键
         if (e.getButton() != MouseButton.PRIMARY || !canHandle(context.getDrawMode())) {
             return false;
@@ -91,7 +91,7 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public boolean handleMouseMoved(MouseEvent e, DrawingContext context) {
+    public boolean handleMouseMoved(MouseEvent e, IDrawingContext context) {
         if (!canHandle(context.getDrawMode())) {
             return false;
         }
@@ -123,7 +123,7 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
     /**
      * 处理第一次点击(确定中心)
      */
-    private void handleFirstClick(double worldX, double worldY, DrawingContext context) {
+    private void handleFirstClick(double worldX, double worldY, IDrawingContext context) {
         // 记录中心点
         centerX = worldX;
         centerY = worldY;
@@ -143,7 +143,7 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
     /**
      * 处理第二次点击(确定半径)
      */
-    private void handleSecondClick(double worldX, double worldY, DrawingContext context) {
+    private void handleSecondClick(double worldX, double worldY, IDrawingContext context) {
         // 鼠标位置是第一个顶点的位置,计算半径
         double radius = MathCalculationUtils.sqrt(
                 MathCalculationUtils.pow(worldX - centerX, 2) + MathCalculationUtils.pow(worldY - centerY, 2)
@@ -158,37 +158,7 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
         // 获取顶点点对象列表
         List<PointGeo> vertexPoints = newPolygon.getVertexPoints();
 
-        // 计算此正多边形产生的所有交点
-        List<PointGeo> intersectionPoints = context.getIntersectionHandler()
-                .checkIntersections(newPolygon, context);
-
-        context.executeCommand(new CommandHistory.Command() {
-            @Override
-            public void execute() {
-                context.addObject(newPolygon);
-                // 添加顶点点对象到场景
-                for (PointGeo vertexPoint : vertexPoints) {
-                    context.addObject(vertexPoint);
-                }
-                // 添加交点
-                for (PointGeo point : intersectionPoints) {
-                    context.addObject(point);
-                }
-            }
-
-            @Override
-            public void undo() {
-                context.removeObject(newPolygon);
-                // 移除顶点点对象
-                for (PointGeo vertexPoint : vertexPoints) {
-                    context.removeObject(vertexPoint);
-                }
-                // 移除交点
-                for (PointGeo point : intersectionPoints) {
-                    context.removeObject(point);
-                }
-            }
-        });
+        context.executeCommand(new GeometryCommand(context, newPolygon, vertexPoints));
 
         // 清理状态
         cleanupPreview(context);
@@ -199,7 +169,7 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
     /**
      * 清理预览对象
      */
-    private void cleanupPreview(DrawingContext context) {
+    private void cleanupPreview(IDrawingContext context) {
         if (polygonPreview != null) {
             context.getPreviewManager().removePreviewable(polygonPreview);
             polygonPreview = null;
@@ -207,7 +177,7 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public void paintPreview(GraphicsContext gc, WorldTransform transform, DrawingContext context) {
+    public void paintPreview(GraphicsContext gc, WorldTransform transform, IDrawingContext context) {
         // 只在正多边形模式下绘制预览
         if (!canHandle(context.getDrawMode())) {
             return;

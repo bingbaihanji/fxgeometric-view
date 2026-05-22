@@ -34,7 +34,7 @@ public class DrawingController {
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(DrawingController.class);
 
-    private final DrawingContext context;
+    private final IDrawingContext context;
     private final List<DrawingHandler> handlers = new ArrayList<>();
     private final List<DetachedCanvasWindow> childWindows = new ArrayList<>();
     private final MenuController menuController;
@@ -251,7 +251,7 @@ public class DrawingController {
         return context.getCommandHistory().canRedo();
     }
 
-    public DrawingContext getContext() {
+    public IDrawingContext getContext() {
         return context;
     }
 
