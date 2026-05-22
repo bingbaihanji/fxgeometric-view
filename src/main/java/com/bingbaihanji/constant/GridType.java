@@ -44,6 +44,7 @@ public enum GridType {
     public static GridType fromGridMode(GridMode gridMode) {
         return switch (gridMode) {
             case DOT -> DOT;
+            case SUBGRID -> CARTESIAN_WITH_SUBGRID;
             default -> CARTESIAN;
         };
     }

@@ -18,28 +18,11 @@ import java.util.List;
  * <p>
  * 通过两个点定义一条无限直线,直线会延伸至屏幕边界
  * 支持点复用：如果定义点位置已有PointGeo,直接引用而不是创建新点
- *
- * @author bingbaihanji
- * @date 2025-12-23
  */
 public class InfiniteLineGeo extends AbstractWorldObject {
 
-    // 定义点引用(如果复用已有点)
-    private PointGeo point1Ref;
-    private PointGeo point2Ref;
-
-    // 内部坐标(当没有引用时使用)
-    private double point1X;
-    private double point1Y;
-    private double point2X;
-    private double point2Y;
-
-    private String point1Name; // 定义点1名称
-    private String point2Name; // 定义点2名称
-
-    // 标记定义点是否是内部创建的
-    private boolean point1IsInternal = true;
-    private boolean point2IsInternal = true;
+    private final ReusableCoordinate point1;
+    private final ReusableCoordinate point2;
 
     /**
      * 基础构造函数(坐标方式)
@@ -53,88 +36,70 @@ public class InfiniteLineGeo extends AbstractWorldObject {
      */
     public InfiniteLineGeo(double point1X, double point1Y, double point2X, double point2Y, boolean autoName) {
         super(ObjectType.INFINITE_LINE);
-        this.point1X = point1X;
-        this.point1Y = point1Y;
-        this.point2X = point2X;
-        this.point2Y = point2Y;
+        PointNameManager manager = PointNameManager.getInstance();
+        this.point1 = new ReusableCoordinate(point1X, point1Y,
+                autoName ? manager.assignName(point1X, point1Y) : null);
+        this.point2 = new ReusableCoordinate(point2X, point2Y,
+                autoName ? manager.assignName(point2X, point2Y) : null);
         this.color = StyleManager.GEOMETRY_LINE;
-        if (autoName) {
-            PointNameManager manager = PointNameManager.getInstance();
-            this.point1Name = manager.assignName(point1X, point1Y);
-            this.point2Name = manager.assignName(point2X, point2Y);
-        }
     }
 
     /**
      * 构造函数(点引用方式)- 复用已有点
      */
-    public InfiniteLineGeo(PointGeo point1, double point1X, double point1Y,
-                           PointGeo point2, double point2X, double point2Y) {
+    public InfiniteLineGeo(PointGeo point1Ref, double point1X, double point1Y,
+                           PointGeo point2Ref, double point2X, double point2Y) {
         super(ObjectType.INFINITE_LINE);
-        this.point1Ref = point1;
-        this.point2Ref = point2;
-        this.point1X = point1X;
-        this.point1Y = point1Y;
-        this.point2X = point2X;
-        this.point2Y = point2Y;
-        this.color = StyleManager.GEOMETRY_LINE;
-
         PointNameManager manager = PointNameManager.getInstance();
-        if (point1 != null) {
-            this.point1Name = point1.getName();
-            this.point1IsInternal = false;
-        } else {
-            this.point1Name = manager.assignName(point1X, point1Y);
-            this.point1IsInternal = true;
+        this.point1 = new ReusableCoordinate(point1Ref, point1X, point1Y);
+        if (point1Ref == null) {
+            this.point1.setName(manager.assignName(point1X, point1Y));
         }
-
-        if (point2 != null) {
-            this.point2Name = point2.getName();
-            this.point2IsInternal = false;
-        } else {
-            this.point2Name = manager.assignName(point2X, point2Y);
-            this.point2IsInternal = true;
+        this.point2 = new ReusableCoordinate(point2Ref, point2X, point2Y);
+        if (point2Ref == null) {
+            this.point2.setName(manager.assignName(point2X, point2Y));
         }
+        this.color = StyleManager.GEOMETRY_LINE;
     }
 
     public double getPoint1X() {
-        return point1Ref != null ? point1Ref.getX() : point1X;
+        return point1.getX();
     }
 
     public double getPoint1Y() {
-        return point1Ref != null ? point1Ref.getY() : point1Y;
+        return point1.getY();
     }
 
     public double getPoint2X() {
-        return point2Ref != null ? point2Ref.getX() : point2X;
+        return point2.getX();
     }
 
     public double getPoint2Y() {
-        return point2Ref != null ? point2Ref.getY() : point2Y;
+        return point2.getY();
     }
 
     public String getPoint1Name() {
-        return point1Name;
+        return point1.getName();
     }
 
-    public void setPoint1Name(String point1Name) {
-        this.point1Name = point1Name;
+    public void setPoint1Name(String name) {
+        point1.setName(name);
     }
 
     public String getPoint2Name() {
-        return point2Name;
+        return point2.getName();
     }
 
-    public void setPoint2Name(String point2Name) {
-        this.point2Name = point2Name;
+    public void setPoint2Name(String name) {
+        point2.setName(name);
     }
 
     public PointGeo getPoint1Ref() {
-        return point1Ref;
+        return point1.getRef();
     }
 
     public PointGeo getPoint2Ref() {
-        return point2Ref;
+        return point2.getRef();
     }
 
     @Override
@@ -145,7 +110,6 @@ public class InfiniteLineGeo extends AbstractWorldObject {
         double sx2 = transform.worldToScreenX(getPoint2X());
         double sy2 = transform.worldToScreenY(getPoint2Y());
 
-        // 计算直线与屏幕边界的交点
         double[] endpoints = calculateLineScreenIntersection(sx1, sy1, sx2, sy2, w, h);
 
         LineStyleUtil.applyLineStyle(gc, lineType);
@@ -154,73 +118,50 @@ public class InfiniteLineGeo extends AbstractWorldObject {
         gc.strokeLine(endpoints[0], endpoints[1], endpoints[2], endpoints[3]);
         LineStyleUtil.resetLineStyle(gc);
 
-        // 只绘制内部创建的定义点
         gc.setFill(getEffectiveColor());
         double pointRadius = hover ? 5 : 4;
 
-        if (point1IsInternal) {
+        if (point1.isInternal()) {
             gc.fillOval(sx1 - pointRadius, sy1 - pointRadius, pointRadius * 2, pointRadius * 2);
-            if (point1Name != null && !point1Name.isEmpty()) {
+            if (point1.getName() != null && !point1.getName().isEmpty()) {
                 gc.setFill(GeometryConfig.Colors.LABEL_TEXT);
                 gc.setFont(Font.font(12));
                 gc.setTextAlign(TextAlignment.LEFT);
-                gc.fillText(point1Name, sx1 + 8, sy1 - 8);
+                gc.fillText(point1.getName(), sx1 + 8, sy1 - 8);
                 gc.setFill(getEffectiveColor());
             }
         }
 
-        if (point2IsInternal) {
+        if (point2.isInternal()) {
             gc.fillOval(sx2 - pointRadius, sy2 - pointRadius, pointRadius * 2, pointRadius * 2);
-            if (point2Name != null && !point2Name.isEmpty()) {
+            if (point2.getName() != null && !point2.getName().isEmpty()) {
                 gc.setFill(GeometryConfig.Colors.LABEL_TEXT);
                 gc.setFont(Font.font(12));
                 gc.setTextAlign(TextAlignment.LEFT);
-                gc.fillText(point2Name, sx2 + 8, sy2 - 8);
+                gc.fillText(point2.getName(), sx2 + 8, sy2 - 8);
                 gc.setFill(getEffectiveColor());
             }
         }
     }
 
-    /**
-     * 计算直线与屏幕边界的交点,使直线延伸至屏幕边界
-     */
     private double[] calculateLineScreenIntersection(double sx1, double sy1, double sx2, double sy2, double w, double h) {
         double dx = sx2 - sx1;
         double dy = sy2 - sy1;
 
-        // 如果两点重合,返回原点
         if (Math.abs(dx) < 1e-10 && Math.abs(dy) < 1e-10) {
             return new double[]{sx1, sy1, sx1, sy1};
         }
 
-        // 扩展倍数(足够覆盖整个屏幕)
         double scale = Math.max(w, h) * 2;
 
-        // 计算扩展后的端点
-        double p1x, p1y, p2x, p2y;
-
         if (Math.abs(dx) < 1e-10) {
-            // 垂直线
-            p1x = sx1;
-            p1y = -scale;
-            p2x = sx1;
-            p2y = scale;
+            return new double[]{sx1, -scale, sx1, scale};
         } else if (Math.abs(dy) < 1e-10) {
-            // 水平线
-            p1x = -scale;
-            p1y = sy1;
-            p2x = scale;
-            p2y = sy1;
+            return new double[]{-scale, sy1, scale, sy1};
         } else {
-            // 一般情况：使用参数化方程
             double t = scale / Math.hypot(dx, dy);
-            p1x = sx1 - t * dx;
-            p1y = sy1 - t * dy;
-            p2x = sx1 + t * dx;
-            p2y = sy1 + t * dy;
+            return new double[]{sx1 - t * dx, sy1 - t * dy, sx1 + t * dx, sy1 + t * dy};
         }
-
-        return new double[]{p1x, p1y, p2x, p2y};
     }
 
     @Override
@@ -244,28 +185,13 @@ public class InfiniteLineGeo extends AbstractWorldObject {
 
     @Override
     public void onClick(double x, double y) {
-        // 直线本身暂时不响应点击
     }
 
     @Override
     public List<DraggablePoint> getDraggablePoints() {
         return List.of(
-                new DraggablePoint(getPoint1X(), getPoint1Y(), (newX, newY) -> {
-                    if (point1Ref != null) {
-                        point1Ref.updatePosition(newX, newY);
-                    } else {
-                        point1X = newX;
-                        point1Y = newY;
-                    }
-                }),
-                new DraggablePoint(getPoint2X(), getPoint2Y(), (newX, newY) -> {
-                    if (point2Ref != null) {
-                        point2Ref.updatePosition(newX, newY);
-                    } else {
-                        point2X = newX;
-                        point2Y = newY;
-                    }
-                })
+                new DraggablePoint(getPoint1X(), getPoint1Y(), (newX, newY) -> point1.updatePosition(newX, newY)),
+                new DraggablePoint(getPoint2X(), getPoint2Y(), (newX, newY) -> point2.updatePosition(newX, newY))
         );
     }
 
@@ -273,34 +199,8 @@ public class InfiniteLineGeo extends AbstractWorldObject {
     public void rotateAroundPoint(double centerX, double centerY, double angle) {
         double cos = Math.cos(angle);
         double sin = Math.sin(angle);
-
-        if (point1Ref != null && !point1Ref.isConstrained()) {
-            double dx1 = point1Ref.getX() - centerX;
-            double dy1 = point1Ref.getY() - centerY;
-            point1Ref.updatePosition(
-                    centerX + dx1 * cos - dy1 * sin,
-                    centerY + dx1 * sin + dy1 * cos
-            );
-        } else if (point1Ref == null) {
-            double dx1 = point1X - centerX;
-            double dy1 = point1Y - centerY;
-            point1X = centerX + dx1 * cos - dy1 * sin;
-            point1Y = centerY + dx1 * sin + dy1 * cos;
-        }
-
-        if (point2Ref != null && !point2Ref.isConstrained()) {
-            double dx2 = point2Ref.getX() - centerX;
-            double dy2 = point2Ref.getY() - centerY;
-            point2Ref.updatePosition(
-                    centerX + dx2 * cos - dy2 * sin,
-                    centerY + dx2 * sin + dy2 * cos
-            );
-        } else if (point2Ref == null) {
-            double dx2 = point2X - centerX;
-            double dy2 = point2Y - centerY;
-            point2X = centerX + dx2 * cos - dy2 * sin;
-            point2Y = centerY + dx2 * sin + dy2 * cos;
-        }
+        point1.rotateAround(centerX, centerY, cos, sin);
+        point2.rotateAround(centerX, centerY, cos, sin);
     }
 
     @Override

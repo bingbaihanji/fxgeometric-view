@@ -366,5 +366,19 @@ public class MathCalculationUtils {
         return FastMath.atan2(y, x);
     }
 
+    /**
+     * 计算点到无限直线的垂直距离
+     */
+    public static double pointToInfiniteLineDistance(double px, double py,
+                                                     double x1, double y1,
+                                                     double x2, double y2) {
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+        double len = Math.hypot(dx, dy);
+        if (len < 1e-10) {
+            return Math.hypot(px - x1, py - y1);
+        }
+        return Math.abs((y2 - y1) * px - (x2 - x1) * py + x2 * y1 - y2 * x1) / len;
+    }
 
 }

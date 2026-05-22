@@ -9,6 +9,9 @@ import com.bingbaihanji.util.ObjectIdGenerator;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.scene.paint.Color;
 
+import java.util.List;
+import java.util.function.ToDoubleFunction;
+
 /**
  * 抽象世界对象基类
  *
@@ -143,6 +146,10 @@ public abstract class AbstractWorldObject implements WorldObject {
      */
     protected boolean selectable = true;
 
+    //   边缓存(子类 getEdges() 使用)
+    protected List<LineGeo> cachedEdges;
+    protected boolean edgesDirty = true;
+
     //   构造函数  
 
     /**
@@ -156,6 +163,29 @@ public abstract class AbstractWorldObject implements WorldObject {
     }
 
     //   基本信息实现  
+
+    /**
+     * 计算点列表的边界框
+     *
+     * @param points 点列表
+     * @param getX   X坐标提取函数
+     * @param getY   Y坐标提取函数
+     * @return [minX, maxX, minY, maxY], 空列表返回null
+     */
+    protected static <T> double[] computeBoundingBox(List<T> points,
+                                                     ToDoubleFunction<T> getX,
+                                                     ToDoubleFunction<T> getY) {
+        if (points.isEmpty()) return null;
+        double minX = Double.MAX_VALUE, maxX = -Double.MAX_VALUE;
+        double minY = Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
+        for (T p : points) {
+            minX = Math.min(minX, getX.applyAsDouble(p));
+            maxX = Math.max(maxX, getX.applyAsDouble(p));
+            minY = Math.min(minY, getY.applyAsDouble(p));
+            maxY = Math.max(maxY, getY.applyAsDouble(p));
+        }
+        return new double[]{minX, maxX, minY, maxY};
+    }
 
     @Override
     public long getId() {
@@ -212,12 +242,12 @@ public abstract class AbstractWorldObject implements WorldObject {
         return labelColor;
     }
 
+    //   交互状态实现  
+
     @Override
     public void setLabelColor(Color color) {
         this.labelColor = color != null ? color : GeometryConfig.Colors.LABEL_TEXT;
     }
-
-    //   交互状态实现  
 
     @Override
     public boolean isHover() {
@@ -234,12 +264,12 @@ public abstract class AbstractWorldObject implements WorldObject {
         return selected;
     }
 
+    //   视觉属性实现  
+
     @Override
     public void setSelected(boolean selected) {
         this.selected = selected;
     }
-
-    //   视觉属性实现  
 
     @Override
     public Color getColor() {
@@ -286,12 +316,12 @@ public abstract class AbstractWorldObject implements WorldObject {
         return layer;
     }
 
+    //   填充属性实现  
+
     @Override
     public void setLayer(int layer) {
         this.layer = Math.max(0, Math.min(layer, 9)); // 限制范围 0-9
     }
-
-    //   填充属性实现  
 
     @Override
     public FillType getFillType() {
@@ -338,12 +368,12 @@ public abstract class AbstractWorldObject implements WorldObject {
         return hatchDistance;
     }
 
+    //   可见性和锁定实现  
+
     @Override
     public void setHatchDistance(int distance) {
         this.hatchDistance = Math.max(1, Math.min(distance, 50)); // 限制范围 1-50
     }
-
-    //   可见性和锁定实现  
 
     @Override
     public boolean isVisible() {
@@ -380,12 +410,12 @@ public abstract class AbstractWorldObject implements WorldObject {
         return selectable;
     }
 
+    //   工具方法  
+
     @Override
     public void setSelectable(boolean selectable) {
         this.selectable = selectable;
     }
-
-    //   工具方法  
 
     /**
      * 获取有效的描边颜色(考虑透明度和选中/悬停状态)
@@ -427,9 +457,151 @@ public abstract class AbstractWorldObject implements WorldObject {
         return lineWidth;
     }
 
+    /**
+     * 使边缓存失效
+     */
+    protected final void invalidateEdgeCache() {
+        this.edgesDirty = true;
+    }
+
     @Override
     public String toString() {
         return String.format("%s[id=%d, label='%s']",
                 objectType.getDisplayName(), id, label);
+    }
+
+    /**
+     * 可复用坐标点 — 统一管理 PointGeo 引用和内部坐标回退
+     * <p>
+     * 当一个几何对象需要存储坐标(端点/圆心等)时,既可以直接引用外部 PointGeo
+     * 实现点复用,也可以使用独立的内部坐标。此类封装了这两种情况的差异,
+     * 提供统一的 getter/setter/旋转/拖动接口。
+     */
+    protected static class ReusableCoordinate {
+        private PointGeo pointRef;
+        private double x, y;
+        private String name;
+        private boolean internal;
+
+        /**
+         * 内部坐标构造(不自动命名)
+         */
+        public ReusableCoordinate(double x, double y) {
+            this(x, y, null);
+        }
+
+        /**
+         * 内部坐标构造(指定名称)
+         */
+        public ReusableCoordinate(double x, double y, String name) {
+            this.pointRef = null;
+            this.x = x;
+            this.y = y;
+            this.name = name;
+            this.internal = true;
+        }
+
+        /**
+         * 引用外部点构造
+         */
+        public ReusableCoordinate(PointGeo ref, double x, double y) {
+            this.pointRef = ref;
+            this.x = x;
+            this.y = y;
+            if (ref != null) {
+                this.name = ref.getName();
+                this.internal = false;
+            } else {
+                this.name = null;
+                this.internal = true;
+            }
+        }
+
+        public double getX() {
+            return pointRef != null ? pointRef.getX() : x;
+        }
+
+        public double getY() {
+            return pointRef != null ? pointRef.getY() : y;
+        }
+
+        /**
+         * 获取内部坐标(忽略引用,用于序列化)
+         */
+        public double getRawX() {
+            return x;
+        }
+
+        /**
+         * 获取内部坐标(忽略引用,用于序列化)
+         */
+        public double getRawY() {
+            return y;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public boolean isInternal() {
+            return internal;
+        }
+
+        public PointGeo getRef() {
+            return pointRef;
+        }
+
+        public boolean hasRef() {
+            return pointRef != null;
+        }
+
+        public boolean isConstrained() {
+            return pointRef != null && pointRef.isConstrained();
+        }
+
+        /**
+         * 更新位置(引用存在时委托给 PointGeo,否则更新内部坐标)
+         */
+        public void updatePosition(double newX, double newY) {
+            if (pointRef != null) {
+                pointRef.updatePosition(newX, newY);
+            } else {
+                x = newX;
+                y = newY;
+            }
+        }
+
+        /**
+         * 直接设置内部坐标(不触发 PointNameManager 更新)
+         */
+        public void setInternalPosition(double x, double y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        /**
+         * 绕指定中心旋转
+         *
+         * @param cx  旋转中心X
+         * @param cy  旋转中心Y
+         * @param cos cos(angle)
+         * @param sin sin(angle)
+         */
+        public void rotateAround(double cx, double cy, double cos, double sin) {
+            if (pointRef != null && !pointRef.isConstrained()) {
+                double dx = pointRef.getX() - cx;
+                double dy = pointRef.getY() - cy;
+                pointRef.updatePosition(cx + dx * cos - dy * sin, cy + dx * sin + dy * cos);
+            } else if (pointRef == null) {
+                double dx = x - cx;
+                double dy = y - cy;
+                x = cx + dx * cos - dy * sin;
+                y = cy + dx * sin + dy * cos;
+            }
+        }
     }
 }

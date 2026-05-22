@@ -49,12 +49,12 @@ public class MenuEvent {
         });
 
         menuView.setOnGridModeSelected(() -> {
-            System.out.println("切换到格子模式");
+            System.out.println("切换到格子模式(含次网格)");
             if (node instanceof GridChartView gridChartView) {
                 Platform.runLater(() -> {
                     gridChartView.getPainters().forEach(painter -> {
                         if (painter instanceof GridPainter gridPainter) {
-                            gridPainter.setGridMode(GridMode.LINE);
+                            gridPainter.setGridMode(GridMode.SUBGRID);
                         }
                     });
                     gridChartView.redraw();
@@ -62,8 +62,7 @@ public class MenuEvent {
             }
         });
 
-
-        menuView.getShowAxis().setOnAction(event -> {
+menuView.getShowAxis().setOnAction(event -> {
             System.out.println("显示坐标轴");
             if (node instanceof GridChartView gridChartView) {
                 Platform.runLater(() -> {

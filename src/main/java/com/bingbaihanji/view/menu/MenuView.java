@@ -14,8 +14,8 @@ public class MenuView extends MenuBar {
     private MenuItem saveProjectItem;
     private MenuItem openProjectItem;
     private MenuItem screenshotItem;
-    private RadioMenuItem dotModeItem; // 创建"点模式"单选菜单项
-    private RadioMenuItem gridModeItem; // 创建"格子模式"单选菜单项
+    private RadioMenuItem dotModeItem;
+    private RadioMenuItem gridModeItem;
 
     private RadioMenuItem showAxis; // 显示坐标轴
     private RadioMenuItem hideAxis; // 隐藏坐标轴
@@ -134,7 +134,7 @@ public class MenuView extends MenuBar {
         return gridModeItem;
     }
 
-    public ToggleGroup getGridModeGroup() {
+public ToggleGroup getGridModeGroup() {
         return dotModeItem.getToggleGroup();
     }
 
@@ -175,7 +175,7 @@ public class MenuView extends MenuBar {
         gridModeItem.setOnAction(e -> action.run());
     }
 
-    public void setOnShowAxisSelected(Runnable action) {
+public void setOnShowAxisSelected(Runnable action) {
         showAxis.setOnAction(e -> action.run());
     }
 

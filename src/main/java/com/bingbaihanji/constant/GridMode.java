@@ -17,5 +17,10 @@ public enum GridMode {
     /**
      * 线状网格
      */
-    LINE
+    LINE,
+
+    /**
+     * 带次网格的线状网格(主网格 + 次网格)
+     */
+    SUBGRID
 }

@@ -2,6 +2,7 @@ package com.bingbaihanji.view.layout.draw.geometry.impl;
 
 import com.bingbaihanji.constant.ObjectType;
 import com.bingbaihanji.util.LineStyleUtil;
+import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.GeometryVisitor;
@@ -27,12 +28,6 @@ public class PathGeo extends AbstractWorldObject {
      * 路径上的所有点(世界坐标)
      */
     private final List<Point> pathPoints;
-
-    /**
-     * 边列表缓存(避免每次getEdges()都创建新对象)
-     */
-    private List<LineGeo> cachedEdges;
-    private boolean edgesDirty = true;
 
     /**
      * 构造函数
@@ -93,32 +88,12 @@ public class PathGeo extends AbstractWorldObject {
             Point p1 = pathPoints.get(i);
             Point p2 = pathPoints.get(i + 1);
 
-            double dist = pointToSegmentDistance(wx, wy, p1.x, p1.y, p2.x, p2.y);
+            double dist = MathCalculationUtils.pointToSegmentDistance(wx, wy, p1.x, p1.y, p2.x, p2.y);
             if (dist < tol) {
                 return true;
             }
         }
         return false;
-    }
-
-    /**
-     * 计算点到线段的距离
-     */
-    private double pointToSegmentDistance(double px, double py,
-                                          double x1, double y1, double x2, double y2) {
-        double dx = x2 - x1;
-        double dy = y2 - y1;
-        double lengthSquared = dx * dx + dy * dy;
-
-        if (lengthSquared == 0) {
-            return Math.hypot(px - x1, py - y1);
-        }
-
-        double t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / lengthSquared));
-        double nearestX = x1 + t * dx;
-        double nearestY = y1 + t * dy;
-
-        return Math.hypot(px - nearestX, py - nearestY);
     }
 
     @Override
@@ -185,10 +160,6 @@ public class PathGeo extends AbstractWorldObject {
         return cachedEdges;
     }
 
-    private void invalidateEdgeCache() {
-        edgesDirty = true;
-    }
-
     @Override
     public void rotateAroundPoint(double centerX, double centerY, double angle) {
         double cos = Math.cos(angle);
@@ -206,24 +177,7 @@ public class PathGeo extends AbstractWorldObject {
 
     @Override
     public double[] getBoundingBox() {
-        if (pathPoints.isEmpty()) {
-            return null;
-        }
-
-        // 计算所有路径点的边界框
-        double minX = Double.MAX_VALUE;
-        double maxX = -Double.MAX_VALUE;
-        double minY = Double.MAX_VALUE;
-        double maxY = -Double.MAX_VALUE;
-
-        for (Point point : pathPoints) {
-            minX = Math.min(minX, point.x);
-            maxX = Math.max(maxX, point.x);
-            minY = Math.min(minY, point.y);
-            maxY = Math.max(maxY, point.y);
-        }
-
-        return new double[]{minX, maxX, minY, maxY};
+        return computeBoundingBox(pathPoints, p -> p.x, p -> p.y);
     }
 
     @Override

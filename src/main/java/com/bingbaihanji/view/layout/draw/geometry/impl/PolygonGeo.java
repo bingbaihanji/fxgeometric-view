@@ -1,10 +1,7 @@
 package com.bingbaihanji.view.layout.draw.geometry.impl;
 
 import com.bingbaihanji.constant.ObjectType;
-import com.bingbaihanji.util.FillRenderer;
-import com.bingbaihanji.util.LabelRenderer;
-import com.bingbaihanji.util.LineStyleUtil;
-import com.bingbaihanji.util.StyleManager;
+import com.bingbaihanji.util.*;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.GeometryVisitor;
 import javafx.scene.canvas.GraphicsContext;
@@ -28,12 +25,6 @@ public class PolygonGeo extends AbstractWorldObject {
      * 多边形不再自己管理顶点坐标,而是从引用的PointGeo获取
      */
     private final List<PointGeo> vertexPoints;
-
-    /**
-     * 边列表缓存
-     */
-    private List<LineGeo> cachedEdges;
-    private boolean edgesDirty = true;
 
     /**
      * 构造函数
@@ -142,32 +133,12 @@ public class PolygonGeo extends AbstractWorldObject {
             PointGeo p2 = vertexPoints.get((i + 1) % vertexPoints.size());
 
             // 检查点到线段的距离
-            double dist = pointToSegmentDistance(wx, wy, p1.getX(), p1.getY(), p2.getX(), p2.getY());
+            double dist = MathCalculationUtils.pointToSegmentDistance(wx, wy, p1.getX(), p1.getY(), p2.getX(), p2.getY());
             if (dist < tol) {
                 return true;
             }
         }
         return false;
-    }
-
-    /**
-     * 计算点到线段的距离
-     */
-    private double pointToSegmentDistance(double px, double py,
-                                          double x1, double y1, double x2, double y2) {
-        double dx = x2 - x1;
-        double dy = y2 - y1;
-        double lengthSquared = dx * dx + dy * dy;
-
-        if (lengthSquared == 0) {
-            return Math.hypot(px - x1, py - y1);
-        }
-
-        double t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / lengthSquared));
-        double nearestX = x1 + t * dx;
-        double nearestY = y1 + t * dy;
-
-        return Math.hypot(px - nearestX, py - nearestY);
     }
 
     @Override
@@ -223,10 +194,6 @@ public class PolygonGeo extends AbstractWorldObject {
         return cachedEdges;
     }
 
-    private void invalidateEdgeCache() {
-        edgesDirty = true;
-    }
-
     @Override
     public List<DraggablePoint> getDraggablePoints() {
         // 所有顶点都可拖动
@@ -266,24 +233,7 @@ public class PolygonGeo extends AbstractWorldObject {
 
     @Override
     public double[] getBoundingBox() {
-        if (vertexPoints.isEmpty()) {
-            return null;
-        }
-
-        // 计算所有顶点的边界框
-        double minX = Double.MAX_VALUE;
-        double maxX = -Double.MAX_VALUE;
-        double minY = Double.MAX_VALUE;
-        double maxY = -Double.MAX_VALUE;
-
-        for (PointGeo point : vertexPoints) {
-            minX = Math.min(minX, point.getX());
-            maxX = Math.max(maxX, point.getX());
-            minY = Math.min(minY, point.getY());
-            maxY = Math.max(maxY, point.getY());
-        }
-
-        return new double[]{minX, maxX, minY, maxY};
+        return computeBoundingBox(vertexPoints, PointGeo::getX, PointGeo::getY);
     }
 
     @Override

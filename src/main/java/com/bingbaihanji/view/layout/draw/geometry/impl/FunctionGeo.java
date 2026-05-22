@@ -372,20 +372,7 @@ public abstract class FunctionGeo extends AbstractWorldObject {
         if (sampledPoints.isEmpty()) {
             return new double[]{0, 0, 0, 0};
         }
-
-        double minX = Double.MAX_VALUE;
-        double maxX = -Double.MAX_VALUE;
-        double minY = Double.MAX_VALUE;
-        double maxY = -Double.MAX_VALUE;
-
-        for (Point2D p : sampledPoints) {
-            minX = Math.min(minX, p.getX());
-            maxX = Math.max(maxX, p.getX());
-            minY = Math.min(minY, p.getY());
-            maxY = Math.max(maxY, p.getY());
-        }
-
-        return new double[]{minX, maxX, minY, maxY};
+        return computeBoundingBox(sampledPoints, Point2D::getX, Point2D::getY);
     }
 
     @Override

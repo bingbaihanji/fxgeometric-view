@@ -9,6 +9,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -298,5 +299,16 @@ public interface FxTools {
         }
     }
 
+    /**
+     * 为对话框添加 Escape 键关闭功能
+     */
+    public static void addEscapeKeyHandler(Dialog<?> dialog) {
+        dialog.getDialogPane().setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ESCAPE) {
+                dialog.close();
+                event.consume();
+            }
+        });
+    }
 
 }
