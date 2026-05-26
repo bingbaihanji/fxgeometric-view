@@ -50,6 +50,17 @@ public enum GridType {
     }
 
     /**
+     * 转换为旧版 GridMode（向后兼容）
+     */
+    public GridMode toGridMode() {
+        return switch (this) {
+            case DOT -> GridMode.DOT;
+            case CARTESIAN_WITH_SUBGRID -> GridMode.SUBGRID;
+            default -> GridMode.LINE;
+        };
+    }
+
+    /**
      * 获取国际化显示名称
      */
     public String getDisplayName() {

@@ -10,342 +10,291 @@ import com.bingbaihanji.view.layout.draw.geometry.WorldPainter;
 import javafx.scene.canvas.GraphicsContext;
 
 /**
- * 增强的世界网格绘制器
+ * 世界网格绘制器（路径批处理优化版）
+ * <p>
+ * 核心优化：将所有网格线汇入单个 beginPath()/stroke() 调用，
+ * 而非逐条 strokeLine()，将 GPU 绘制调用从 O(n) 降低到 O(1)。
+ * 参考 GeoGebra 的 DrawGrid + GeneralPath 批处理模式。
  *
  * @author bingbaihanji
- * @date 2025-12-31
- * @description 支持笛卡尔、极坐标、等距、主次网格等多种网格类型
  */
 public class GridPainter implements WorldPainter {
 
-    private static final double MINOR_GRID_COUNT = 5; // 次网格分割数
+    private static final int SUB_GRID_DIVISIONS = 5;
 
-    private GridMode gridMode; // 旧版兼容
-    private EuclidianViewSettings settings; // 新版配置
+    private EuclidianViewSettings settings;
 
-    /**
-     * 旧版构造函数(向后兼容)
-     */
-    public GridPainter(GridMode gridMode) {
-        this.gridMode = gridMode;
-        this.settings = new EuclidianViewSettings(); // 使用默认设置
-        // 将GridMode转换为GridType
-        this.settings.setGridType(GridType.fromGridMode(gridMode));
-    }
-
-    /**
-     * 新构造函数(支持配置注入)
-     */
     public GridPainter(EuclidianViewSettings settings) {
         this.settings = settings;
     }
 
-    public GridMode getGridMode() {
-        return gridMode;
-    }
-
-    public void setGridMode(GridMode gridMode) {
-        this.gridMode = gridMode;
-        if (settings != null) {
-            settings.setGridType(GridType.fromGridMode(gridMode));
-        }
+    /** 旧版兼容 */
+    public GridPainter(GridMode gridMode) {
+        this.settings = new EuclidianViewSettings();
+        this.settings.setGridType(GridType.fromGridMode(gridMode));
     }
 
     public void setSettings(EuclidianViewSettings settings) {
         this.settings = settings;
     }
 
-    @Override
-    public void paint(GraphicsContext gc,
-                      WorldTransform transform,
-                      double width,
-                      double height) {
+    /** 旧版兼容：获取当前网格类型对应的 GridMode */
+    public GridMode getGridMode() {
+        return settings.getGridType().toGridMode();
+    }
 
+    /** 旧版兼容：设置网格模式（自动转换为新 GridType） */
+    public void setGridMode(GridMode gridMode) {
+        if (settings != null) {
+            settings.setGridType(GridType.fromGridMode(gridMode));
+        }
+    }
+
+    @Override
+    public void paint(GraphicsContext gc, WorldTransform transform,
+                      double width, double height) {
         if (settings == null || !settings.isShowGrid()) {
             return;
         }
 
-        GridType gridType = settings.getGridType();
-
-        switch (gridType) {
-            case DOT:
-                paintDotGrid(gc, transform, width, height);
-                break;
-            case CARTESIAN:
-                paintCartesianGrid(gc, transform, width, height, false);
-                break;
-            case CARTESIAN_WITH_SUBGRID:
-                paintCartesianGrid(gc, transform, width, height, true);
-                break;
-            case POLAR:
-                paintPolarGrid(gc, transform, width, height);
-                break;
-            case ISOMETRIC:
-                paintIsometricGrid(gc, transform, width, height);
-                break;
+        switch (settings.getGridType()) {
+            case DOT          -> paintDotGrid(gc, transform, width, height);
+            case CARTESIAN    -> paintCartesianGrid(gc, transform, width, height, false);
+            case CARTESIAN_WITH_SUBGRID -> paintCartesianGrid(gc, transform, width, height, true);
+            case POLAR        -> paintPolarGrid(gc, transform, width, height);
+            case ISOMETRIC    -> paintIsometricGrid(gc, transform, width, height);
         }
     }
 
-    /**
-     * 绘制点状网格
-     * 参考 GeoGebra 的模运算对齐原理
-     */
+    // ==================== 点状网格 ====================
+
     private void paintDotGrid(GraphicsContext gc, WorldTransform transform,
                               double width, double height) {
-        double worldLeft = transform.screenToWorldX(0);
-        double worldRight = transform.screenToWorldX(width);
-        double worldTop = transform.screenToWorldY(0);
-        double worldBottom = transform.screenToWorldY(height);
-
         double step = getGridStep(transform.getScale());
-
-        gc.setFill(settings.getGridColor());
-
-        // 使用模运算对齐原点(GeoGebra方式)
         double tickStepX = transform.getScaleX() * step;
         double tickStepY = transform.getScaleY() * step;
-
         double xZero = transform.worldToScreenX(0);
         double yZero = transform.worldToScreenY(0);
+        double startX = xZero % tickStepX;
+        double startY = yZero % tickStepY;
 
-        double startScreenX = xZero % tickStepX;
-        double startScreenY = yZero % tickStepY;
-
-        // 遍历屏幕坐标绘制点
-        for (double sx = startScreenX; sx <= width; sx += tickStepX) {
-            for (double sy = startScreenY; sy <= height; sy += tickStepY) {
-                gc.fillOval(sx - 1, sy - 1, 2, 2);
+        gc.setFill(settings.getGridColor());
+        double dotSize = 2;
+        for (double sx = startX; sx <= width; sx += tickStepX) {
+            for (double sy = startY; sy <= height; sy += tickStepY) {
+                gc.fillOval(sx - dotSize / 2, sy - dotSize / 2, dotSize, dotSize);
             }
         }
     }
 
+    // ==================== 笛卡尔网格（路径批处理） ====================
+
     /**
-     * 绘制笛卡尔网格(可选次网格)
-     * 参考 GeoGebra 的 DrawGrid.drawCartesianGrid() 实现
+     * 笛卡尔网格 — 所有主网格线汇入一个路径后一次性描边。
+     * 参考 GeoGebra DrawGrid.drawCartesianGrid() 的 startGeneralPath/endAndDrawGeneralPath 模式。
      */
     private void paintCartesianGrid(GraphicsContext gc, WorldTransform transform,
-                                    double width, double height, boolean withSubGrid) {
-        double worldLeft = transform.screenToWorldX(0);
-        double worldRight = transform.screenToWorldX(width);
-        double worldTop = transform.screenToWorldY(0);
-        double worldBottom = transform.screenToWorldY(height);
-
+                                     double width, double height, boolean withSubGrid) {
         double step = getGridStep(transform.getScale());
-
-        // 绘制次网格(如果启用)
-        if (withSubGrid) {
-            paintSubGrid(gc, transform, width, height, worldLeft, worldRight,
-                    worldTop, worldBottom, step);
-        }
-
-        // 绘制主网格
-        gc.setStroke(settings.getGridColor());
-        gc.setLineWidth(1);
-        LineStyleUtil.applyLineStyle(gc, settings.getGridLineType());
-
-        // 计算像素步长(GeoGebra方式)
         double tickStepX = transform.getScaleX() * step;
         double tickStepY = transform.getScaleY() * step;
-
-        // 原点在屏幕上的位置(关键！)
         double xZero = transform.worldToScreenX(0);
         double yZero = transform.worldToScreenY(0);
 
-        // 垂直线 - 使用模运算相对原点对齐(GeoGebra DrawGrid.java:58-59)
-        double startScreenX = xZero % tickStepX;
-        for (double sx = startScreenX; sx <= width; sx += tickStepX) {
-            gc.strokeLine(sx, 0, sx, height);
+        // 次网格（先绘制，位于主网格之下）
+        if (withSubGrid) {
+            paintSubGridBatched(gc, width, height, tickStepX, tickStepY, xZero, yZero);
         }
 
-        // 水平线 - 使用模运算相对原点对齐
-        double startScreenY = yZero % tickStepY;
-        for (double sy = startScreenY; sy <= height; sy += tickStepY) {
-            gc.strokeLine(0, sy, width, sy);
+        // 主网格 — 路径批处理
+        gc.setStroke(settings.getGridColor());
+        gc.setLineWidth(1);
+        LineStyleUtil.applyLineStyle(gc, settings.getGridLineType());
+        gc.beginPath();
+
+        double startX = xZero % tickStepX;
+        for (double sx = startX; sx <= width; sx += tickStepX) {
+            gc.moveTo(sx, 0);
+            gc.lineTo(sx, height);
         }
 
+        double startY = yZero % tickStepY;
+        for (double sy = startY; sy <= height; sy += tickStepY) {
+            gc.moveTo(0, sy);
+            gc.lineTo(width, sy);
+        }
+
+        gc.stroke();
         LineStyleUtil.resetLineStyle(gc);
     }
 
     /**
-     * 绘制次网格(浅色,细分主网格)
-     * 参考 GeoGebra 的次网格实现(5等分)
+     * 次网格 — 同样使用路径批处理，跳过与主网格重叠的线。
      */
-    private void paintSubGrid(GraphicsContext gc, WorldTransform transform,
-                              double width, double height,
-                              double worldLeft, double worldRight,
-                              double worldTop, double worldBottom,
-                              double mainStep) {
-        double subStep = mainStep / MINOR_GRID_COUNT;
+    private void paintSubGridBatched(GraphicsContext gc,
+                                     double width, double height,
+                                     double mainTickStepX, double mainTickStepY,
+                                     double xZero, double yZero) {
+        double subStepX = mainTickStepX / SUB_GRID_DIVISIONS;
+        double subStepY = mainTickStepY / SUB_GRID_DIVISIONS;
 
         gc.setStroke(settings.getSubGridColor());
         gc.setLineWidth(0.5);
         LineStyleUtil.applyLineStyle(gc, settings.getGridLineType());
+        gc.beginPath();
 
-        // 计算像素步长
-        double mainTickStepX = transform.getScaleX() * mainStep;
-        double subTickStepX = transform.getScaleX() * subStep;
-
-        double mainTickStepY = transform.getScaleY() * mainStep;
-        double subTickStepY = transform.getScaleY() * subStep;
-
-        double xZero = transform.worldToScreenX(0);
-        double yZero = transform.worldToScreenY(0);
-
-        // 垂直次网格线 - 使用模运算对齐
-        double startScreenX = xZero % subTickStepX;
-        for (double sx = startScreenX; sx <= width; sx += subTickStepX) {
-            // 跳过主网格线(像素级别判断)
-            if (Math.abs((sx - xZero) % mainTickStepX) < 0.5) {
-                continue;
-            }
-            gc.strokeLine(sx, 0, sx, height);
+        double startX = xZero % subStepX;
+        for (double sx = startX; sx <= width; sx += subStepX) {
+            if (Math.abs((sx - xZero) % mainTickStepX) < 0.5) continue;
+            gc.moveTo(sx, 0);
+            gc.lineTo(sx, height);
         }
 
-        // 水平次网格线 - 使用模运算对齐
-        double startScreenY = yZero % subTickStepY;
-        for (double sy = startScreenY; sy <= height; sy += subTickStepY) {
-            // 跳过主网格线(像素级别判断)
-            if (Math.abs((sy - yZero) % mainTickStepY) < 0.5) {
-                continue;
-            }
-            gc.strokeLine(0, sy, width, sy);
+        double startY = yZero % subStepY;
+        for (double sy = startY; sy <= height; sy += subStepY) {
+            if (Math.abs((sy - yZero) % mainTickStepY) < 0.5) continue;
+            gc.moveTo(0, sy);
+            gc.lineTo(width, sy);
         }
 
+        gc.stroke();
         LineStyleUtil.resetLineStyle(gc);
     }
 
+    // ==================== 极坐标网格 ====================
+
     /**
-     * 绘制极坐标网格(同心圆 + 放射线)
-     * 参考 Desktop 的 EuclidianView.java 实现
+     * 极坐标网格 — 以世界原点(0,0)为圆心的同心圆 + 放射线。
+     * 参考 GeoGebra 的 DrawGrid：
+     * - 圆心固定在坐标原点
+     * - X/Y 不等比例时画椭圆（屏幕椭圆 = 世界正圆）
+     * - 放射线按 scaleX/scaleY 分别拉伸
      */
     private void paintPolarGrid(GraphicsContext gc, WorldTransform transform,
                                 double width, double height) {
-        double worldLeft = transform.screenToWorldX(0);
-        double worldRight = transform.screenToWorldX(width);
-        double worldTop = transform.screenToWorldY(0);
-        double worldBottom = transform.screenToWorldY(height);
-
-        // 原点在屏幕上的位置
         double x0 = transform.worldToScreenX(0);
         double y0 = transform.worldToScreenY(0);
+        double scaleX = transform.getScaleX();
+        double scaleY = transform.getScaleY();
+        double step = getGridStep(transform.getScale());
+        double angleStep = settings.getPolarAngleStep();
+
+        // 世界最大半径（覆盖整个屏幕），取 min(scale) 确保四个角都能覆盖
+        double maxRadiusWorld = Math.max(
+                Math.abs(transform.screenToWorldX(0) - transform.screenToWorldX(width)),
+                Math.abs(transform.screenToWorldY(0) - transform.screenToWorldY(height))
+        );
 
         gc.setStroke(settings.getGridColor());
         gc.setLineWidth(1);
         LineStyleUtil.applyLineStyle(gc, settings.getGridLineType());
 
-        // 径向步长(世界单位)
-        double radialStep = getGridStep(transform.getScale());
-
-        // 绘制同心圆
-        double maxRadius = Math.sqrt(width * width + height * height) / transform.getScale();
-        for (double r = radialStep; r <= maxRadius; r += radialStep) {
-            double screenR = r * transform.getScale();
-            gc.strokeOval(x0 - screenR, y0 - screenR, 2 * screenR, 2 * screenR);
+        // 同心圆 — 路径批处理
+        // JavaFX arc(centerX, centerY, radiusX, radiusY, startAngle, length)
+        // 参数是圆心坐标 + 半径，不是矩形左上角 + 宽高
+        gc.beginPath();
+        for (double r = step; r <= maxRadiusWorld; r += step) {
+            double srX = r * scaleX;
+            double srY = r * scaleY;
+            gc.moveTo(x0 + srX, y0);
+            gc.arc(x0, y0, srX, srY, 0, 360);
         }
+        gc.stroke();
 
-        // 绘制放射线(角度步长从配置读取,默认30度)
-        double angleStep = settings.getPolarAngleStep(); // 弧度
-
+        // 放射线 — 路径批处理
+        // 世界角度 θ 在屏幕空间的映射：x = cosθ * scaleX, y = -sinθ * scaleY（屏幕 y 向下）
+        gc.beginPath();
         int numRays = (int) Math.ceil(2 * Math.PI / angleStep);
+        double screenMaxRadiusX = maxRadiusWorld * scaleX;
+        double screenMaxRadiusY = maxRadiusWorld * scaleY;
         for (int i = 0; i < numRays; i++) {
             double angle = i * angleStep;
-
-            // 计算射线终点(足够远)
-            double dx = Math.cos(angle) * maxRadius;
-            double dy = Math.sin(angle) * maxRadius;
-
-            double x1 = transform.worldToScreenX(dx);
-            double y1 = transform.worldToScreenY(dy);
-
-            gc.strokeLine(x0, y0, x1, y1);
+            double dx = Math.cos(angle) * screenMaxRadiusX;
+            double dy = -Math.sin(angle) * screenMaxRadiusY;  // 屏幕 y 向下
+            gc.moveTo(x0, y0);
+            gc.lineTo(x0 + dx, y0 + dy);
         }
+        gc.stroke();
 
         LineStyleUtil.resetLineStyle(gc);
     }
 
+    // ==================== 等距网格 ====================
+
     /**
-     * 绘制等距网格(三角形格子)
-     * 参考 Desktop 的 EuclidianView.java 实现(使用√3比例)
+     * 等距网格 — 三组平行线交汇形成等边三角形格子。
+     * 参考 GeoGebra 的 DrawGrid.isometricGrid()：
+     * - 所有线经过世界原点(0,0)，保证网格顶点与坐标轴同步
+     * - 屏幕斜率 = ±√3 * scaleY/scaleX，考虑 X/Y 轴不等比例
      */
     private void paintIsometricGrid(GraphicsContext gc, WorldTransform transform,
-                                    double width, double height) {
+                                     double width, double height) {
+        double step = getGridStep(transform.getScale());
+        double tickStepX = transform.getScaleX() * step * Math.sqrt(3.0);
+        double x0 = transform.worldToScreenX(0);
+        double y0 = transform.worldToScreenY(0);
         double worldLeft = transform.screenToWorldX(0);
         double worldRight = transform.screenToWorldX(width);
-        double worldTop = transform.screenToWorldY(0);
-        double worldBottom = transform.screenToWorldY(height);
-
-        double step = getGridStep(transform.getScale());
-
-        // 等距网格使用 √3 比例
-        double tickStepX = transform.getScaleX() * step * Math.sqrt(3.0);
-        double tickStepY = transform.getScaleY() * step;
 
         gc.setStroke(settings.getGridColor());
         gc.setLineWidth(1);
         LineStyleUtil.applyLineStyle(gc, settings.getGridLineType());
 
-        // 原点在屏幕上的位置
-        double x0 = transform.worldToScreenX(0);
-        double y0 = transform.worldToScreenY(0);
-
-        // 绘制垂直线
         int xCount = (int) Math.ceil(Math.max(Math.abs(worldLeft), Math.abs(worldRight)) / (step * Math.sqrt(3.0)));
-        for (int i = -xCount; i <= xCount; i++) {
-            double sx = x0 + i * tickStepX;
-            gc.strokeLine(sx, 0, sx, height);
-        }
-
-        // 绘制斜线(60度和120度)
-        // 计算足够的偏移范围以覆盖整个屏幕
         int offsetRange = (int) Math.ceil((width + height) / tickStepX) + xCount;
 
-        // 60度斜线(向右上)
-        for (int i = -offsetRange; i <= offsetRange; i++) {
-            double sx1 = x0 + i * tickStepX;
-            double sy1 = 0;  // 从屏幕顶部开始
-            double sx2 = sx1 + height * Math.sqrt(3.0);
-            double sy2 = height;  // 到屏幕底部
-            gc.strokeLine(sx1, sy1, sx2, sy2);
+        double sqrt3 = Math.sqrt(3.0);
+        // 屏幕斜率：世界 60°/120° 线映射到屏幕时，需考虑 Y 轴反转和 X/Y 不等比例
+        double diagSlope = sqrt3 * transform.getScaleY() / transform.getScaleX();
+
+        // 全部三种方向的线汇入一个路径
+        gc.beginPath();
+
+        // 垂直线 — 通过世界原点在 x 轴上的投影点
+        for (int i = -xCount; i <= xCount; i++) {
+            double sx = x0 + i * tickStepX;
+            gc.moveTo(sx, 0);
+            gc.lineTo(sx, height);
         }
 
-        // 120度斜线(向左上)
+        // 60° 斜线（世界坐标向右上）— 每条线经过 (sx1, y0)，屏幕斜率为 -diagSlope
+        // 线方程: y - y0 = -diagSlope * (x - sx1)
         for (int i = -offsetRange; i <= offsetRange; i++) {
             double sx1 = x0 + i * tickStepX;
-            double sy1 = 0;  // 从屏幕顶部开始
-            double sx2 = sx1 - height * Math.sqrt(3.0);
-            double sy2 = height;  // 到屏幕底部
-            gc.strokeLine(sx1, sy1, sx2, sy2);
+            double xTop = sx1 + y0 / diagSlope;
+            double xBottom = sx1 - (height - y0) / diagSlope;
+            gc.moveTo(xTop, 0);
+            gc.lineTo(xBottom, height);
         }
 
+        // 120° 斜线（世界坐标向左上）— 每条线经过 (sx1, y0)，屏幕斜率为 +diagSlope
+        // 线方程: y - y0 = diagSlope * (x - sx1)
+        for (int i = -offsetRange; i <= offsetRange; i++) {
+            double sx1 = x0 + i * tickStepX;
+            double xTop = sx1 - y0 / diagSlope;
+            double xBottom = sx1 + (height - y0) / diagSlope;
+            gc.moveTo(xTop, 0);
+            gc.lineTo(xBottom, height);
+        }
+
+        gc.stroke();
         LineStyleUtil.resetLineStyle(gc);
     }
 
+    // ==================== 网格步长计算 ====================
+
     /**
-     * 获取网格步长(根据配置或自动计算)
-     * 参考 GeoGebra 的 DrawGrid 实现和网格同步机制
+     * 获取网格步长（世界单位）。
+     * 优先与坐标轴刻度同步，这是 GeoGebra 的核心设计理念。
      */
     private double getGridStep(double scale) {
-        // 如果启用网格与坐标轴同步(推荐模式)
         if (settings.isSyncGridWithAxes() && settings.isAutoGridDistance()) {
-            // 计算坐标轴刻度距离(使用统一的算法)
-            double axisTickDistance = AxisTickCalculator.calculateAxisTickDistance(
-                    scale,
-                    false  // 网格通常不使用π单位
-            );
-
-            // 网格距离 = 坐标轴刻度 * 因子(参考GeoGebra的gridDistances计算)
-            return AxisTickCalculator.calculateGridDistance(
-                    axisTickDistance,
-                    settings.getGridDistanceFactor()
-            );
+            double axisTickDistance = AxisTickCalculator.calculateAxisTickDistance(scale, false);
+            return AxisTickCalculator.calculateGridDistance(axisTickDistance, settings.getGridDistanceFactor());
         }
-
-        // 手动模式：使用配置的固定值
         if (!settings.isAutoGridDistance()) {
             return settings.getGridDistance();
         }
-
-        // 独立自动计算模式(降级,保持向后兼容)
         return AxisTickCalculator.calculateAxisTickDistance(scale, false);
     }
 }

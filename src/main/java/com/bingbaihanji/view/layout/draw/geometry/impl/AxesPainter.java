@@ -84,6 +84,11 @@ public class AxesPainter implements WorldPainter {
 
     /**
      * 绘制主要坐标轴
+     * <p>
+     * 轴标签位置的计算逻辑：
+     * - X轴标签放在轴线右端，避开最右侧刻度标签
+     * - Y轴标签放在轴线上端，避开最上方刻度标签
+     * 参考 GeoGebra DrawAxis 的标签防重叠机制。
      */
     private void drawMainAxes(GraphicsContext gc,
                               WorldTransform transform,
@@ -100,24 +105,24 @@ public class AxesPainter implements WorldPainter {
         // 应用线型
         LineStyleUtil.applyLineStyle(gc, settings.getAxesLineType());
 
-        // 绘制X轴(仅在可见范围内绘制)
+        // 绘制X轴（仅在可见范围内绘制）
         if (xAxisVisible) {
             // 绘制水平轴线
             gc.strokeLine(0, y0, width, y0);
-            // 绘制X轴箭头(根据配置)
+            // 绘制X轴箭头（根据配置）
             drawArrowByType(gc, settings.getXArrowType(), width - 10, y0, width, y0, true);
-            // 绘制文字(X轴)
-            drawAxisLabel(gc, getLabelName("axis.xAxis"), width - 25, y0, width, height, true);
+            // 绘制X轴标签 — 远离右边缘以避免与刻度数字重叠
+            drawAxisLabel(gc, getLabelName("axis.xAxis"), width - 40, y0, width, height, true);
         }
 
-        // 绘制Y轴(仅在可见范围内绘制)
+        // 绘制Y轴（仅在可见范围内绘制）
         if (yAxisVisible) {
             // 绘制垂直轴线
             gc.strokeLine(x0, 0, x0, height);
-            // 绘制Y轴箭头(根据配置)
+            // 绘制Y轴箭头（根据配置）
             drawArrowByType(gc, settings.getYArrowType(), x0, 10, x0, 0, false);
-            // 绘制文字(Y轴)
-            drawAxisLabel(gc, getLabelName("axis.yAxis"), x0, 20, width, height, false);
+            // 绘制Y轴标签 — 远离顶部边缘以避免与刻度数字重叠
+            drawAxisLabel(gc, getLabelName("axis.yAxis"), x0, 28, width, height, false);
         }
 
         // 恢复实线样式
@@ -235,7 +240,10 @@ public class AxesPainter implements WorldPainter {
     }
 
     /**
-     * 绘制X轴刻度(主刻度 + 次刻度)
+     * 绘制X轴刻度（主刻度 + 次刻度）
+     * <p>
+     * 跳过距视口边缘过近的刻度标签，防止文字被裁剪。
+     * 参考 GeoGebra 的 drawAxes 中对于 xLabelHeights 和边界标签的处理。
      */
     private void drawXAxisTicks(GraphicsContext gc, WorldTransform transform,
                                 double worldLeft, double worldRight,
@@ -247,11 +255,14 @@ public class AxesPainter implements WorldPainter {
 
             double sx = transform.worldToScreenX(x);
 
-            // 绘制主刻度线(长度8)
+            // 跳过视口边缘外的刻度（避免标签被裁剪）
+            if (sx < 15 || sx > gc.getCanvas().getWidth() - 15) continue;
+
+            // 绘制主刻度线（长度8）
             gc.setLineWidth(2);
             gc.strokeLine(sx, tickY - 4, sx, tickY + 4);
 
-            // 绘制刻度数值标签(π单位模式下,X轴用π,Y轴用数值)
+            // 绘制刻度数值标签
             UnitLabelType xAxisUnitType = settings.getUnitLabelType();
             gc.fillText(formatNumber(x, xAxisUnitType, step), sx + 2, tickY - 6);
 
@@ -263,7 +274,9 @@ public class AxesPainter implements WorldPainter {
     }
 
     /**
-     * 绘制Y轴刻度(主刻度 + 次刻度)
+     * 绘制Y轴刻度（主刻度 + 次刻度）
+     * <p>
+     * 跳过距视口边缘过近的刻度，防止文字被裁剪。
      */
     private void drawYAxisTicks(GraphicsContext gc, WorldTransform transform,
                                 double worldBottom, double worldTop,
@@ -275,11 +288,14 @@ public class AxesPainter implements WorldPainter {
 
             double sy = transform.worldToScreenY(y);
 
-            // 绘制主刻度线(长度8)
+            // 跳过视口边缘外的刻度（避免标签被裁剪）
+            if (sy < 15 || sy > gc.getCanvas().getHeight() - 10) continue;
+
+            // 绘制主刻度线（长度8）
             gc.setLineWidth(2);
             gc.strokeLine(tickX - 4, sy, tickX + 4, sy);
 
-            // 绘制刻度数值标签(π单位模式下,Y轴始终用数值)
+            // Y轴π单位模式下始终用数值显示
             UnitLabelType yAxisUnitType = settings.getUnitLabelType() == UnitLabelType.PI
                     ? UnitLabelType.NUMERIC
                     : settings.getUnitLabelType();
@@ -400,26 +416,21 @@ public class AxesPainter implements WorldPainter {
 
     /**
      * 绘制坐标轴标签
+     * <p>
+     * 智能定位：根据轴在视口中的位置自适应偏移，避免标签与刻度数字或视口边缘重叠。
+     * 参考 GeoGebra 的轴标签偏移策略。
      */
     private void drawAxisLabel(GraphicsContext gc, String text,
                                double x, double y,
                                double width, double height,
                                boolean isXAxis) {
         if (isXAxis) {
-            double textY;
-            if (y < 15) {
-                textY = y + 15;
-            } else {
-                textY = y - 8;
-            }
+            // X轴标签：优先放在轴线上方，若空间不足则放在下方
+            double textY = (y < 20) ? y + 18 : y - 10;
             gc.fillText(text, x, textY);
         } else {
-            double textX;
-            if (x > width - 25) {
-                textX = x - 25;
-            } else {
-                textX = x + 6;
-            }
+            // Y轴标签：优先放在轴线右侧，若靠近右边缘则放在左侧
+            double textX = (x > width - 40) ? x - 35 : x + 8;
             gc.fillText(text, textX, y);
         }
     }

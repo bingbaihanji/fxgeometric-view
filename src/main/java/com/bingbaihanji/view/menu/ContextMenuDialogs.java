@@ -291,7 +291,8 @@ public final class ContextMenuDialogs {
                 }
             }
         }
-        canvas.removeObject(obj);
+        // 通过 DrawingContext 删除（自动清理交点所有权）
+        controller.getContext().removeObject(obj);
         canvas.redraw();
     }
 }

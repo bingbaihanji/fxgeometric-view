@@ -190,25 +190,34 @@ public abstract class FunctionGeo extends AbstractWorldObject {
     }
 
     /**
-     * 绘制曲线(处理断点)
+     * 绘制曲线（路径批处理优化版）
+     * <p>
+     * 将所有相邻采样点构成的线段汇入单个 beginPath()/stroke() 调用，
+     * GPU 绘制调用从 O(n) 降至 O(1)。断点处通过 moveTo 跳过不连续段。
+     * 参考 GeoGebra 的 GeneralPathClippedForCurvePlotter 批处理模式。
      */
     protected void drawCurve(GraphicsContext gc, WorldTransform transform) {
         if (sampledPoints.isEmpty()) {
             return;
         }
 
+        gc.beginPath();
+
         Point2D prevPoint = null;
         for (Point2D point : sampledPoints) {
-            if (prevPoint != null && !hasDiscontinuityBetween(prevPoint, point)) {
-                double sx1 = transform.worldToScreenX(prevPoint.getX());
-                double sy1 = transform.worldToScreenY(prevPoint.getY());
-                double sx2 = transform.worldToScreenX(point.getX());
-                double sy2 = transform.worldToScreenY(point.getY());
+            double sx = transform.worldToScreenX(point.getX());
+            double sy = transform.worldToScreenY(point.getY());
 
-                gc.strokeLine(sx1, sy1, sx2, sy2);
+            if (prevPoint == null || hasDiscontinuityBetween(prevPoint, point)) {
+                // 断点或起点：跳转到新位置，不画线
+                gc.moveTo(sx, sy);
+            } else {
+                gc.lineTo(sx, sy);
             }
             prevPoint = point;
         }
+
+        gc.stroke();
     }
 
     /**

@@ -158,6 +158,7 @@ public class InitView {
 
                     // 清空当前对象
                     controller.getContext().getGridChartPane().clearAllObjects();
+                    controller.getContext().getIntersectionHandler().clearOwnershipMap();
                     PointNameManager.getInstance().clear();
 
                     // 恢复视图状态

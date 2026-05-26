@@ -19,8 +19,10 @@ import javafx.scene.input.MouseEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 拖动处理器
@@ -294,9 +296,22 @@ public class DragHandler extends AbstractDrawingHandler {
             state.endY = newY;
         }
 
-        // 更新约束点和交点
+        // 更新约束点
         context.getConstraintHandler().updateAllConstrainedPoints(context);
-        context.getIntersectionHandler().recalculateAllIntersections(context);
+
+        // 增量更新交点：仅重算涉及被拖对象的交点（O(k)，非 O(n²)）
+        if (state.type == DragType.SINGLE_POINT && state.owner != null) {
+            context.getIntersectionHandler().updateAffectedIntersections(state.owner, context);
+        } else if (state.type == DragType.MULTIPLE_OBJECTS) {
+            // 多选拖动时，对每个独立 owner 更新一次
+            Set<WorldObject> uniqueOwners = new HashSet<>();
+            for (WorldObject obj : state.objects) {
+                uniqueOwners.add(obj);
+            }
+            for (WorldObject owner : uniqueOwners) {
+                context.getIntersectionHandler().updateAffectedIntersections(owner, context);
+            }
+        }
 
         context.redraw();
         e.consume();

@@ -196,6 +196,10 @@ public class DrawingContext implements IDrawingContext {
      * @param obj 几何对象
      */
     public void removeObject(WorldObject obj) {
+        // 清理交点所有权记录（仅对非交点对象，交点由所有权管理器自动清理）
+        if (intersectionHandler != null && !(obj instanceof com.bingbaihanji.view.layout.draw.geometry.impl.PointGeo)) {
+            intersectionHandler.cleanupOwnership(obj, this);
+        }
         gridChartPane.removeObject(obj);
         // 使吸附缓存失效,因为移除对象会减少特殊点
         if (snappingHandler != null) {

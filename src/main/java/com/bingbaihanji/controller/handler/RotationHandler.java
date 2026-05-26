@@ -189,8 +189,8 @@ public class RotationHandler extends AbstractDrawingHandler {
                     }
                 });
 
-                // 重新计算交点
-                context.getIntersectionHandler().recalculateAllIntersections(context);
+                // 增量更新交点（仅重算旋转图形的交点）
+                context.getIntersectionHandler().updateAffectedIntersections(shapeToRotate, context);
             }
 
             // 重置状态

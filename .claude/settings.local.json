@@ -19,7 +19,8 @@
       "Bash(xargs wc -l)",
       "Bash(Get-ChildItem -Path \"D:\\\\bingbaihanji\\\\FXGeometricView\\\\src\\\\main\\\\java\\\\com\\\\bingbaihanji\" -Recurse -Directory)",
       "Bash(Select-Object FullName)",
-      "Bash(Select-Object -Last 20)"
+      "Bash(Select-Object -Last 20)",
+      "Bash(sort -t: -k2 -rn)"
     ]
   }
 }

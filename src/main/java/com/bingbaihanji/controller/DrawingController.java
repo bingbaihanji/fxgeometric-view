@@ -172,6 +172,7 @@ public class DrawingController {
                 @Override
                 public void execute() {
                     context.getGridChartPane().clearAllObjects();
+                    context.getIntersectionHandler().clearOwnershipMap();
                     PointNameManager.getInstance().clear();
                 }
 

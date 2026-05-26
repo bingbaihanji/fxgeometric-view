@@ -220,6 +220,9 @@ public class GridChartView extends Pane {
 
     /**
      * 仅重绘对象层
+     * <p>
+     * 按图层（layer）升序排列后绘制，确保高图层对象在低图层对象之上。
+     * 参考 GeoGebra 的 DrawableList —— 所有 Drawable 按 z-order 排序后遍历绘制。
      */
     public void redrawObjects() {
         GraphicsContext gc = canvasManager.getObjectGC();
@@ -228,8 +231,14 @@ public class GridChartView extends Pane {
         double w = canvasManager.getWidth();
         double h = canvasManager.getHeight();
 
-        for (WorldObject obj : objects) {
-            obj.paint(gc, transform, w, h);
+        // 按图层排序：低 layer 先绘制（在底层），高 layer 后绘制（在上层）
+        List<WorldObject> sortedObjects = new ArrayList<>(objects);
+        sortedObjects.sort((a, b) -> Integer.compare(a.getLayer(), b.getLayer()));
+
+        for (WorldObject obj : sortedObjects) {
+            if (obj.isVisible()) {
+                obj.paint(gc, transform, w, h);
+            }
         }
     }
 

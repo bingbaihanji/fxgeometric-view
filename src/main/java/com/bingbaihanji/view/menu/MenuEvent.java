@@ -62,7 +62,7 @@ public class MenuEvent {
             }
         });
 
-menuView.getShowAxis().setOnAction(event -> {
+        menuView.getShowAxis().setOnAction(event -> {
             System.out.println("显示坐标轴");
             if (node instanceof GridChartView gridChartView) {
                 Platform.runLater(() -> {
