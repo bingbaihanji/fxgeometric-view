@@ -23,6 +23,9 @@ public class BackgroundBuffer {
     /** 脏标记：true 表示缓存失效，需要重绘 */
     private boolean dirty = true;
 
+    /** 缓存的快照图像，避免每次 copyTo 时重新分配 */
+    private WritableImage cachedImage;
+
     /** 当前缓存对应的视口宽度 */
     private double cachedWidth;
 
@@ -34,6 +37,7 @@ public class BackgroundBuffer {
      */
     public void invalidate() {
         dirty = true;
+        cachedImage = null;  // 释放旧快照
     }
 
     /**
@@ -75,6 +79,11 @@ public class BackgroundBuffer {
      * 完成离屏绘制，清除脏标记
      */
     public void endDraw() {
+        if (offscreenCanvas != null) {
+            SnapshotParameters params = new SnapshotParameters();
+            params.setFill(Color.TRANSPARENT);
+            cachedImage = offscreenCanvas.snapshot(params, null);
+        }
         dirty = false;
     }
 
@@ -84,11 +93,8 @@ public class BackgroundBuffer {
      * @param targetGc 目标画布的 GraphicsContext
      */
     public void copyTo(GraphicsContext targetGc) {
-        if (offscreenCanvas != null) {
-            SnapshotParameters params = new SnapshotParameters();
-            params.setFill(Color.TRANSPARENT);
-            WritableImage snapshot = offscreenCanvas.snapshot(params, null);
-            targetGc.drawImage(snapshot, 0, 0);
+        if (cachedImage != null) {
+            targetGc.drawImage(cachedImage, 0, 0);
         }
     }
 }

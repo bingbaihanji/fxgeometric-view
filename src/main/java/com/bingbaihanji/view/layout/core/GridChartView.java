@@ -209,28 +209,17 @@ public class GridChartView extends Pane {
         double w = canvasManager.getWidth();
         double h = canvasManager.getHeight();
 
-        // 缓存有效时直接复制，跳过重绘
-        if (backgroundBuffer.isValid(w, h)) {
-            GraphicsContext screenGc = canvasManager.getBackgroundGC();
-            screenGc.clearRect(0, 0, w, h);
-            screenGc.setFill(backgroundColor);
-            screenGc.fillRect(0, 0, w, h);
-            backgroundBuffer.copyTo(screenGc);
-            return;
+        if (!backgroundBuffer.isValid(w, h)) {
+            GraphicsContext gc = backgroundBuffer.beginDraw(w, h);
+            gc.setFill(backgroundColor);
+            gc.fillRect(0, 0, w, h);
+            for (WorldPainter painter : painters) {
+                painter.paint(gc, transform, w, h);
+            }
+            backgroundBuffer.endDraw();
         }
 
-        // 缓存失效：在离屏画布上重新绘制
-        GraphicsContext gc = backgroundBuffer.beginDraw(w, h);
-        gc.setFill(backgroundColor);
-        gc.fillRect(0, 0, w, h);
-
-        for (WorldPainter painter : painters) {
-            painter.paint(gc, transform, w, h);
-        }
-
-        backgroundBuffer.endDraw();
-
-        // 将缓存结果复制到屏幕
+        // 统一屏幕复制（缓存命中或重绘后都执行）
         GraphicsContext screenGc = canvasManager.getBackgroundGC();
         screenGc.clearRect(0, 0, w, h);
         screenGc.setFill(backgroundColor);
@@ -500,11 +489,13 @@ public class GridChartView extends Pane {
 
     public void addPainter(WorldPainter painter) {
         painters.add(painter);
+        invalidateBackground();
         redraw();
     }
 
     public void removePainter(WorldPainter painter) {
         painters.remove(painter);
+        invalidateBackground();
         redraw();
     }
 
@@ -516,6 +507,7 @@ public class GridChartView extends Pane {
 
     public void setBackgroundColor(Color color) {
         this.backgroundColor = color;
+        invalidateBackground();
         redraw();
     }
 
