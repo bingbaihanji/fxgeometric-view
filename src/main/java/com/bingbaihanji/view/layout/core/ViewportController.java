@@ -36,6 +36,7 @@ public class ViewportController {
         settings.setYScale(newScale);
 
         transform.centerWorldAt(centerWorldX, centerWorldY, view.getWidth(), view.getHeight());
+        view.invalidateBackground();
         view.redraw();
     }
 
@@ -51,6 +52,7 @@ public class ViewportController {
         settings.setYScale(transform.getScaleY());
 
         transform.centerWorldAtWithScales(centerWorldX, centerWorldY, view.getWidth(), view.getHeight());
+        view.invalidateBackground();
         view.redraw();
     }
 
@@ -83,6 +85,7 @@ public class ViewportController {
         double centerY = (range[2] + range[3]) / 2;
 
         transform.centerWorldAt(centerX, centerY, view.getWidth(), view.getHeight());
+        view.invalidateBackground();
         view.redraw();
     }
 
@@ -97,6 +100,7 @@ public class ViewportController {
         settings.setYScale(standardScale);
 
         transform.centerWorldAt(0, 0, view.getWidth(), view.getHeight());
+        view.invalidateBackground();
         view.redraw();
     }
 }

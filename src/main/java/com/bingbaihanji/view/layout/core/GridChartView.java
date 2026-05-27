@@ -74,6 +74,8 @@ public class GridChartView extends Pane {
     private Cursor customDefaultCursor = null;
     // 重绘防抖标记：避免同帧内多次redraw()导致重复绘制
     private boolean redrawScheduled = false;
+    /** 背景层离屏缓存，避免每帧重复绘制网格和坐标轴 */
+    private final BackgroundBuffer backgroundBuffer = new BackgroundBuffer();
     private int trigFunctionCount = 0;
 
     //  构造
@@ -201,21 +203,46 @@ public class GridChartView extends Pane {
     }
 
     /**
-     * 仅重绘背景层（网格 + 坐标轴）
+     * 仅重绘背景层（网格 + 坐标轴），使用离屏缓存避免重复绘制
      */
     public void redrawBackground() {
-        GraphicsContext gc = canvasManager.getBackgroundGC();
-        gc.clearRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
-
-        gc.setFill(backgroundColor);
-        gc.fillRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
-
         double w = canvasManager.getWidth();
         double h = canvasManager.getHeight();
+
+        // 缓存有效时直接复制，跳过重绘
+        if (backgroundBuffer.isValid(w, h)) {
+            GraphicsContext screenGc = canvasManager.getBackgroundGC();
+            screenGc.clearRect(0, 0, w, h);
+            screenGc.setFill(backgroundColor);
+            screenGc.fillRect(0, 0, w, h);
+            backgroundBuffer.copyTo(screenGc);
+            return;
+        }
+
+        // 缓存失效：在离屏画布上重新绘制
+        GraphicsContext gc = backgroundBuffer.beginDraw(w, h);
+        gc.setFill(backgroundColor);
+        gc.fillRect(0, 0, w, h);
 
         for (WorldPainter painter : painters) {
             painter.paint(gc, transform, w, h);
         }
+
+        backgroundBuffer.endDraw();
+
+        // 将缓存结果复制到屏幕
+        GraphicsContext screenGc = canvasManager.getBackgroundGC();
+        screenGc.clearRect(0, 0, w, h);
+        screenGc.setFill(backgroundColor);
+        screenGc.fillRect(0, 0, w, h);
+        backgroundBuffer.copyTo(screenGc);
+    }
+
+    /**
+     * 标脏背景缓存，坐标变换或设置变更后调用
+     */
+    public void invalidateBackground() {
+        backgroundBuffer.invalidate();
     }
 
     /**
