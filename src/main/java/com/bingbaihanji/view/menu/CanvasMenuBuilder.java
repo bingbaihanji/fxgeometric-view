@@ -1,11 +1,11 @@
 package com.bingbaihanji.view.menu;
 
 import com.bingbaihanji.constant.GridMode;
+import com.bingbaihanji.constant.GridType;
 import com.bingbaihanji.controller.DrawingController;
 import com.bingbaihanji.util.I18nUtil;
 import com.bingbaihanji.view.DetachedCanvasWindow;
 import com.bingbaihanji.view.layout.core.GridChartView;
-import com.bingbaihanji.view.layout.draw.geometry.impl.GridPainter;
 import javafx.scene.control.*;
 import javafx.scene.paint.Color;
 
@@ -130,13 +130,11 @@ public final class CanvasMenuBuilder {
         MenuItem dotTypeItem = new MenuItem(I18nUtil.getString("gridType.dot"));
         dotTypeItem.setOnAction(e -> {
             setGridMode(canvas, GridMode.DOT);
-            canvas.redraw();
         });
 
         MenuItem lineTypeItem = new MenuItem(I18nUtil.getString("gridType.cartesian"));
         lineTypeItem.setOnAction(e -> {
             setGridMode(canvas, GridMode.SUBGRID);
-            canvas.redraw();
         });
 
         gridTypeMenu.getItems().addAll(dotTypeItem, lineTypeItem);
@@ -169,10 +167,7 @@ public final class CanvasMenuBuilder {
     }
 
     private static void setGridMode(GridChartView canvas, GridMode mode) {
-        canvas.getPainters().forEach(painter -> {
-            if (painter instanceof GridPainter gridPainter) {
-                gridPainter.setGridMode(mode);
-            }
-        });
+        canvas.getSettings().setGridType(GridType.fromGridMode(mode));
+        canvas.applySettings();
     }
 }

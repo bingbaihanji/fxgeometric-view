@@ -116,6 +116,12 @@ public class GridChartView extends Pane {
 
         applySettingsToTransform();
 
+        // 注册设置变更监听器：任何视觉设置变更后自动标脏背景缓存
+        settings.addSettingsChangeListener(() -> {
+            invalidateBackground();
+            redraw();
+        });
+
         setCustomCursorForPane(this, "/icon/mouseStyle.png");
 
         tooltipManager.install(this);
@@ -464,6 +470,7 @@ public class GridChartView extends Pane {
      */
     public void applySettings() {
         applySettingsToTransform();
+        invalidateBackground();
         redraw();
     }
 

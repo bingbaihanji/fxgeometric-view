@@ -52,6 +52,7 @@ public class ZoomHandler {
 
         transform.setOffset(newOffsetX, newOffsetY);
 
+        view.invalidateBackground();
         view.redraw();
     }
 }

@@ -48,6 +48,7 @@ public class PanHandler {
             lastMouseX = e.getX();
             lastMouseY = e.getY();
 
+            view.invalidateBackground();
             view.redraw();
         });
 

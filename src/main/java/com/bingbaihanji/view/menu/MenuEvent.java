@@ -1,6 +1,7 @@
 package com.bingbaihanji.view.menu;
 
 import com.bingbaihanji.constant.GridMode;
+import com.bingbaihanji.constant.GridType;
 import com.bingbaihanji.util.FxTools;
 import com.bingbaihanji.view.layout.core.GridChartView;
 import com.bingbaihanji.view.layout.draw.geometry.impl.AxesPainter;
@@ -37,12 +38,8 @@ public class MenuEvent {
             System.out.println("切换到点模式");
             if (node instanceof GridChartView gridChartView) {
                 Platform.runLater(() -> {
-                    gridChartView.getPainters().forEach(painter -> {
-                        if (painter instanceof GridPainter gridPainter) {
-                            gridPainter.setGridMode(GridMode.DOT);
-                        }
-                    });
-                    gridChartView.redraw();
+                    gridChartView.getSettings().setGridType(GridType.DOT);
+                    gridChartView.applySettings();
                 });
             }
 
@@ -52,12 +49,8 @@ public class MenuEvent {
             System.out.println("切换到格子模式(含次网格)");
             if (node instanceof GridChartView gridChartView) {
                 Platform.runLater(() -> {
-                    gridChartView.getPainters().forEach(painter -> {
-                        if (painter instanceof GridPainter gridPainter) {
-                            gridPainter.setGridMode(GridMode.SUBGRID);
-                        }
-                    });
-                    gridChartView.redraw();
+                    gridChartView.getSettings().setGridType(GridType.CARTESIAN_WITH_SUBGRID);
+                    gridChartView.applySettings();
                 });
             }
         });
@@ -66,12 +59,9 @@ public class MenuEvent {
             System.out.println("显示坐标轴");
             if (node instanceof GridChartView gridChartView) {
                 Platform.runLater(() -> {
-                    gridChartView.getPainters().forEach(painter -> {
-                        if (painter instanceof AxesPainter axesPainter) {
-                            axesPainter.setShowCartesianCoordinateAxis(true);
-                        }
-                    });
-                    gridChartView.redraw();
+                    gridChartView.getSettings().setShowXAxis(true);
+                    gridChartView.getSettings().setShowYAxis(true);
+                    gridChartView.applySettings();
                 });
             }
 
@@ -80,12 +70,9 @@ public class MenuEvent {
             System.out.println("隐藏坐标轴");
             if (node instanceof GridChartView gridChartView) {
                 Platform.runLater(() -> {
-                    gridChartView.getPainters().forEach(painter -> {
-                        if (painter instanceof AxesPainter axesPainter) {
-                            axesPainter.setShowCartesianCoordinateAxis(false);
-                        }
-                    });
-                    gridChartView.redraw();
+                    gridChartView.getSettings().setShowXAxis(false);
+                    gridChartView.getSettings().setShowYAxis(false);
+                    gridChartView.applySettings();
                 });
             }
         });
