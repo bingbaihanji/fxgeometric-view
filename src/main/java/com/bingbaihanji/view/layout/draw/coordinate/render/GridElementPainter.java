@@ -46,53 +46,46 @@ public class GridElementPainter {
         paintDots(gc, elements, settings.getGridColor());
     }
 
-    /** 绘制指定类型的网格线段 */
+    /** 绘制指定类型的网格线段和圆（分两批次，避免圆弧干扰直线路径） */
     private void paintByType(GraphicsContext gc, List<GridElement> elements, boolean subGrid,
                              Color color, double lineWidth, EuclidianViewSettings settings) {
-        boolean hasContent = false;
-        for (GridElement element : elements) {
-            if (matchesType(element, subGrid)) {
-                hasContent = true;
-                break;
-            }
-        }
-        if (!hasContent) return;
-
         gc.setStroke(color);
         gc.setLineWidth(lineWidth);
         LineStyleUtil.applyLineStyle(gc, settings.getGridLineType());
-        gc.beginPath();
 
+        // 第一批：圆（strokeOval），每个圆独立绘制
+        // 注意：gc.arc() 在 path 内会自动从上一个点 lineTo 到弧起始点，导致穿越线条
+        // 必须用 strokeOval 或每个圆单独 beginPath/arc/stroke
         for (GridElement element : elements) {
-            if (element instanceof GridElement.GridLineSegment seg) {
-                if (seg.isSubGrid() == subGrid) {
-                    gc.moveTo(seg.start().getX(), seg.start().getY());
-                    gc.lineTo(seg.end().getX(), seg.end().getY());
-                }
-            } else if (element instanceof GridElement.GridCircle circle) {
-                if (circle.isSubGrid() == subGrid) {
-                    gc.moveTo(
-                            circle.center().getX() + circle.radiusX(),
-                            circle.center().getY());
-                    gc.arc(circle.center().getX(), circle.center().getY(),
-                            circle.radiusX(), circle.radiusY(),
-                            circle.startAngle(), circle.length());
-                }
+            if (element instanceof GridElement.GridCircle circle && circle.isSubGrid() == subGrid) {
+                double cx = circle.center().getX();
+                double cy = circle.center().getY();
+                double rx = circle.radiusX();
+                double ry = circle.radiusY();
+                gc.strokeOval(cx - rx, cy - ry, rx * 2, ry * 2);
             }
         }
 
-        gc.stroke();
-        LineStyleUtil.resetLineStyle(gc);
-    }
-
-    /** 检查元素是否属于目标类型 */
-    private boolean matchesType(GridElement element, boolean subGrid) {
-        if (element instanceof GridElement.GridLineSegment seg) {
-            return seg.isSubGrid() == subGrid;
-        } else if (element instanceof GridElement.GridCircle circle) {
-            return circle.isSubGrid() == subGrid;
+        // 第二批：直线段，独立 beginPath/stroke
+        boolean hasLines = false;
+        for (GridElement element : elements) {
+            if (element instanceof GridElement.GridLineSegment seg && seg.isSubGrid() == subGrid) {
+                hasLines = true;
+                break;
+            }
         }
-        return false;
+        if (hasLines) {
+            gc.beginPath();
+            for (GridElement element : elements) {
+                if (element instanceof GridElement.GridLineSegment seg && seg.isSubGrid() == subGrid) {
+                    gc.moveTo(seg.start().getX(), seg.start().getY());
+                    gc.lineTo(seg.end().getX(), seg.end().getY());
+                }
+            }
+            gc.stroke();
+        }
+
+        LineStyleUtil.resetLineStyle(gc);
     }
 
     /** 绘制点状网格节点 */
