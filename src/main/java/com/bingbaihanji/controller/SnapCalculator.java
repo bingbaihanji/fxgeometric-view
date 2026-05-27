@@ -1,11 +1,13 @@
 package com.bingbaihanji.controller;
 
+import com.bingbaihanji.constant.GridType;
 import com.bingbaihanji.constant.SnapMode;
 import com.bingbaihanji.util.AxisTickCalculator;
 import com.bingbaihanji.util.SpecialPointManager;
 import com.bingbaihanji.util.SpecialPointManager.SpecialPoint;
 import com.bingbaihanji.view.layout.core.EuclidianViewSettings;
 import com.bingbaihanji.view.layout.core.WorldTransform;
+import com.bingbaihanji.view.layout.draw.coordinate.grid.CartesianGridGenerator;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.scene.layout.Region;
 
@@ -65,23 +67,32 @@ public class SnapCalculator {
             return new SnapResult(x, y, null, axisSnapInfo);
         }
 
-        // 3. 网格吸附(最低优先级)
-        // 检查是否启用网格吸附开关且模式包含 GRID
+        // 3. 网格吸附(最低优先级)，根据网格类型分发
         if (settings.isGridSnapEnabled() && snapModes.contains(SnapMode.GRID)) {
-            // 使用统一的刻度计算器(确保与网格和坐标轴一致)
-            // 网格吸附精度随坐标轴刻度动态变化
-            double step = AxisTickCalculator.calculateAxisTickDistance(
-                    transform.getScale(),
-                    false  // 网格吸附通常不使用π单位
-            );
-
-            x = snapToInteger(rawX);
-            x = snapToGrid(x, step);
-            x = stabilize(x);
-
-            y = snapToInteger(rawY);
-            y = snapToGrid(y, step);
-            y = stabilize(y);
+            GridType gridType = settings.getGridType();
+            if (gridType == GridType.POLAR) {
+                double[] snapped = snapToPolarGrid(rawX, rawY);
+                if (snapped != null) {
+                    x = snapped[0];
+                    y = snapped[1];
+                }
+            } else if (gridType == GridType.ISOMETRIC) {
+                double[] snapped = snapToIsometricGrid(rawX, rawY);
+                if (snapped != null) {
+                    x = snapped[0];
+                    y = snapped[1];
+                }
+            } else {
+                // 笛卡尔 / 点状 / 含次网格：统一使用最近网格点对齐
+                double step = AxisTickCalculator.calculateAxisTickDistance(
+                        transform.getScale(), false);
+                x = snapToInteger(rawX);
+                x = snapToGrid(x, step);
+                x = stabilize(x);
+                y = snapToInteger(rawY);
+                y = snapToGrid(y, step);
+                y = stabilize(y);
+            }
         }
 
         return new SnapResult(x, y, snappedPoint, axisSnapInfo);
@@ -218,6 +229,62 @@ public class SnapCalculator {
             return snapped;
         }
         return worldValue;
+    }
+
+    /** 极坐标网格吸附：转极坐标 → 对齐 r/θ → 转回直角坐标 */
+    private double[] snapToPolarGrid(double worldX, double worldY) {
+        double step = CartesianGridGenerator.getGridStep(transform, settings);
+        double angleStep = settings.getPolarAngleStep();
+
+        double r = Math.sqrt(worldX * worldX + worldY * worldY);
+        double theta = Math.atan2(worldY, worldX);
+
+        double snappedR = Math.round(r / step) * step;
+        if (snappedR < 0) snappedR = 0;
+        double snappedTheta = Math.round(theta / angleStep) * angleStep;
+
+        double snappedX = snappedR * Math.cos(snappedTheta);
+        double snappedY = snappedR * Math.sin(snappedTheta);
+
+        double scale = (transform.getScaleX() + transform.getScaleY()) / 2.0;
+        double pixelDist = Math.hypot(snappedX - worldX, snappedY - worldY) * scale;
+        if (pixelDist < 8) { // GRID_SNAP_THRESHOLD_PIXELS = 8
+            return new double[]{stabilize(snappedX), stabilize(snappedY)};
+        }
+        return null;
+    }
+
+    /** 等距网格吸附：屏幕空间查找最近格子顶点 → 转回世界坐标 */
+    private double[] snapToIsometricGrid(double worldX, double worldY) {
+        double step = CartesianGridGenerator.getGridStep(transform, settings);
+        double scaleX = transform.getScaleX();
+        double scaleY = transform.getScaleY();
+        double sqrt3 = Math.sqrt(3.0);
+
+        double screenX = transform.worldToScreenX(worldX);
+        double screenY = transform.worldToScreenY(worldY);
+        double x0 = transform.worldToScreenX(0);
+        double y0 = transform.worldToScreenY(0);
+
+        double tickStepX = scaleX * step * sqrt3;
+        double tickStepY = scaleY * step;
+        double startX2 = x0 % (tickStepX / 2.0);
+        double startY = y0 % tickStepY;
+
+        int j = (int) Math.round((screenX - startX2) / (tickStepX / 2.0));
+        double yBase = startY + ((j % 2) * tickStepY / 2.0);
+        int k = (int) Math.round((screenY - yBase) / tickStepY);
+
+        double snappedSX = startX2 + j * tickStepX / 2.0;
+        double snappedSY = yBase + k * tickStepY;
+
+        double pixelDist = Math.hypot(snappedSX - screenX, snappedSY - screenY);
+        if (pixelDist < 8) { // GRID_SNAP_THRESHOLD_PIXELS = 8
+            double swx = transform.screenToWorldX(snappedSX);
+            double swy = transform.screenToWorldY(snappedSY);
+            return new double[]{stabilize(swx), stabilize(swy)};
+        }
+        return null;
     }
 
     /**

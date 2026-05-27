@@ -91,7 +91,7 @@ public class CartesianGridGenerator {
      * <p>
      * 优先与坐标轴刻度同步，参考 GeoGebra 的 gridDistances 计算。
      */
-    static double getGridStep(WorldTransform transform, EuclidianViewSettings settings) {
+    public static double getGridStep(WorldTransform transform, EuclidianViewSettings settings) {
         if (settings.isSyncGridWithAxes() && settings.isAutoGridDistance()) {
             double axisTickDistance = AxisTickCalculator.calculateAxisTickDistance(
                     transform.getScale(), false);
