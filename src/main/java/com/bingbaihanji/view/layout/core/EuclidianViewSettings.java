@@ -305,6 +305,7 @@ public class EuclidianViewSettings {
 
     public void setXTickStyle(AxisTickStyle xTickStyle) {
         this.xTickStyle = xTickStyle;
+        notifySettingsChanged();
     }
 
     public AxisTickStyle getYTickStyle() {
@@ -313,6 +314,7 @@ public class EuclidianViewSettings {
 
     public void setYTickStyle(AxisTickStyle yTickStyle) {
         this.yTickStyle = yTickStyle;
+        notifySettingsChanged();
     }
 
     public AxisArrowType getXArrowType() {
@@ -321,6 +323,7 @@ public class EuclidianViewSettings {
 
     public void setXArrowType(AxisArrowType xArrowType) {
         this.xArrowType = xArrowType;
+        notifySettingsChanged();
     }
 
     public AxisArrowType getYArrowType() {
@@ -329,6 +332,7 @@ public class EuclidianViewSettings {
 
     public void setYArrowType(AxisArrowType yArrowType) {
         this.yArrowType = yArrowType;
+        notifySettingsChanged();
     }
 
     public UnitLabelType getUnitLabelType() {
@@ -337,6 +341,7 @@ public class EuclidianViewSettings {
 
     public void setUnitLabelType(UnitLabelType unitLabelType) {
         this.unitLabelType = unitLabelType;
+        notifySettingsChanged();
     }
 
     public String getCustomUnitLabel() {
@@ -353,6 +358,7 @@ public class EuclidianViewSettings {
 
     public void setAxesColor(Color axesColor) {
         this.axesColor = axesColor;
+        notifySettingsChanged();
     }
 
     public LineType getAxesLineType() {
@@ -361,6 +367,7 @@ public class EuclidianViewSettings {
 
     public void setAxesLineType(LineType axesLineType) {
         this.axesLineType = axesLineType;
+        notifySettingsChanged();
     }
 
     public boolean isShowXAxis() {
@@ -369,6 +376,7 @@ public class EuclidianViewSettings {
 
     public void setShowXAxis(boolean showXAxis) {
         this.showXAxis = showXAxis;
+        notifySettingsChanged();
     }
 
     public boolean isShowYAxis() {
@@ -377,6 +385,7 @@ public class EuclidianViewSettings {
 
     public void setShowYAxis(boolean showYAxis) {
         this.showYAxis = showYAxis;
+        notifySettingsChanged();
     }
 
     public boolean isShowAxesNumbers() {
@@ -385,6 +394,7 @@ public class EuclidianViewSettings {
 
     public void setShowAxesNumbers(boolean showAxesNumbers) {
         this.showAxesNumbers = showAxesNumbers;
+        notifySettingsChanged();
     }
 
     public GridType getGridType() {
@@ -393,6 +403,7 @@ public class EuclidianViewSettings {
 
     public void setGridType(GridType gridType) {
         this.gridType = gridType;
+        notifySettingsChanged();
     }
 
     public boolean isShowGrid() {
@@ -401,6 +412,7 @@ public class EuclidianViewSettings {
 
     public void setShowGrid(boolean showGrid) {
         this.showGrid = showGrid;
+        notifySettingsChanged();
     }
 
     public Color getGridColor() {
@@ -409,6 +421,7 @@ public class EuclidianViewSettings {
 
     public void setGridColor(Color gridColor) {
         this.gridColor = gridColor;
+        notifySettingsChanged();
     }
 
     public Color getSubGridColor() {
@@ -417,6 +430,7 @@ public class EuclidianViewSettings {
 
     public void setSubGridColor(Color subGridColor) {
         this.subGridColor = subGridColor;
+        notifySettingsChanged();
     }
 
     public LineType getGridLineType() {
@@ -425,6 +439,7 @@ public class EuclidianViewSettings {
 
     public void setGridLineType(LineType gridLineType) {
         this.gridLineType = gridLineType;
+        notifySettingsChanged();
     }
 
     public boolean isAutoGridDistance() {
@@ -433,6 +448,7 @@ public class EuclidianViewSettings {
 
     public void setAutoGridDistance(boolean autoGridDistance) {
         this.autoGridDistance = autoGridDistance;
+        notifySettingsChanged();
     }
 
     public double getGridDistance() {
@@ -473,6 +489,7 @@ public class EuclidianViewSettings {
 
     public void setGridDistanceFactor(double gridDistanceFactor) {
         this.gridDistanceFactor = gridDistanceFactor;
+        notifySettingsChanged();
     }
 
     public boolean isSyncGridWithAxes() {
@@ -481,6 +498,7 @@ public class EuclidianViewSettings {
 
     public void setSyncGridWithAxes(boolean syncGridWithAxes) {
         this.syncGridWithAxes = syncGridWithAxes;
+        notifySettingsChanged();
     }
 
     public boolean isXAxisPiUnit() {
@@ -505,6 +523,50 @@ public class EuclidianViewSettings {
 
     public void setGridSnapEnabled(boolean gridSnapEnabled) {
         this.gridSnapEnabled = gridSnapEnabled;
+    }
+
+    // ==================== 设置变更传播 ====================
+
+    /** 设置变更监听器列表 */
+    private final java.util.List<Runnable> settingsChangeListeners = new java.util.ArrayList<>();
+
+    /**
+     * 批量修改多个设置，只触发一次回调通知
+     *
+     * @param updater 批量更新函数，接收当前 settings 实例
+     */
+    public void batchUpdate(java.util.function.Consumer<EuclidianViewSettings> updater) {
+        updater.accept(this);
+        notifySettingsChanged();
+    }
+
+    /**
+     * 添加设置变更监听器
+     *
+     * @param listener 回调（设置变更后触发）
+     */
+    public void addSettingsChangeListener(Runnable listener) {
+        if (listener != null && !settingsChangeListeners.contains(listener)) {
+            settingsChangeListeners.add(listener);
+        }
+    }
+
+    /**
+     * 移除设置变更监听器
+     */
+    public void removeSettingsChangeListener(Runnable listener) {
+        settingsChangeListeners.remove(listener);
+    }
+
+    /** 通知所有监听器设置已变更 */
+    private void notifySettingsChanged() {
+        for (Runnable listener : settingsChangeListeners) {
+            try {
+                listener.run();
+            } catch (Exception e) {
+                // 静默处理异常，不中断其他监听器
+            }
+        }
     }
 
     /**
