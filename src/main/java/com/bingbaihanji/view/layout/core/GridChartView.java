@@ -6,8 +6,6 @@ import com.bingbaihanji.controller.SnapCalculator;
 import com.bingbaihanji.util.SpecialPointManager.SpecialPoint;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import com.bingbaihanji.view.layout.draw.geometry.WorldPainter;
-import com.bingbaihanji.view.layout.draw.geometry.impl.AxesPainter;
-import com.bingbaihanji.view.layout.draw.geometry.impl.GridPainter;
 import com.bingbaihanji.view.layout.draw.geometry.impl.TrigonometricFunctionGeo;
 import com.bingbaihanji.view.layout.draw.tools.CircleDrawingTool;
 import javafx.application.Platform;
@@ -76,6 +74,8 @@ public class GridChartView extends Pane {
     private boolean redrawScheduled = false;
     /** 背景层离屏缓存，避免每帧重复绘制网格和坐标轴 */
     private final BackgroundBuffer backgroundBuffer = new BackgroundBuffer();
+    /** 坐标系统统一渲染器（替代 GridPainter + AxesPainter） */
+    private final CoordSystemRenderer coordSystemRenderer = new CoordSystemRenderer();
     private int trigFunctionCount = 0;
 
     //  构造
@@ -111,8 +111,8 @@ public class GridChartView extends Pane {
 
         redraw();
 
-        addPainter(new GridPainter(settings));
-        addPainter(new AxesPainter(true, settings));
+        // 网格和坐标轴由 CoordSystemRenderer 在 redrawBackground 中统⼀绘制
+        // 不再通过 painters 列表注册 GridPainter / AxesPainter
 
         applySettingsToTransform();
 
@@ -203,7 +203,7 @@ public class GridChartView extends Pane {
     }
 
     /**
-     * 仅重绘背景层（网格 + 坐标轴），使用离屏缓存避免重复绘制
+     * 仅重绘背景层（网格 + 坐标轴），使用离屏缓存和 CoordSystemRenderer
      */
     public void redrawBackground() {
         double w = canvasManager.getWidth();
@@ -213,6 +213,8 @@ public class GridChartView extends Pane {
             GraphicsContext gc = backgroundBuffer.beginDraw(w, h);
             gc.setFill(backgroundColor);
             gc.fillRect(0, 0, w, h);
+            coordSystemRenderer.render(gc, transform, settings, w, h);
+            // painters 列表保留用于其他自定义背景绘制（向前兼容）
             for (WorldPainter painter : painters) {
                 painter.paint(gc, transform, w, h);
             }

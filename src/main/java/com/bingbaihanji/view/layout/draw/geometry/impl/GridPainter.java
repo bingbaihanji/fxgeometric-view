@@ -17,7 +17,10 @@ import javafx.scene.canvas.GraphicsContext;
  * 参考 GeoGebra 的 DrawGrid + GeneralPath 批处理模式。
  *
  * @author bingbaihanji
+ * @deprecated 已拆分为 CartesianGridGenerator, PolarGridGenerator, IsometricGridGenerator, DotGridGenerator。
+ *             请使用 CoordSystemRenderer 替代。
  */
+@Deprecated
 public class GridPainter implements WorldPainter {
 
     private static final int SUB_GRID_DIVISIONS = 5;

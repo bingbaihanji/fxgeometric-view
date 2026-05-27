@@ -21,4 +21,7 @@ module FXGeometricView {
     exports com.bingbaihanji.util;
     exports com.bingbaihanji.view.layout.draw.geometry;
     exports com.bingbaihanji.view.layout.draw.tools;
+    exports com.bingbaihanji.view.layout.draw.coordinate;
+    exports com.bingbaihanji.view.layout.draw.coordinate.grid;
+    exports com.bingbaihanji.view.layout.draw.coordinate.render;
 }

@@ -16,7 +16,10 @@ import javafx.scene.text.Font;
  * @author bingbaihanji
  * @date 2025-12-31
  * @description 支持多种箭头类型、主次刻度、π单位、自定义颜色和线型
+ * @deprecated 已拆分为 AxesLineRenderer, TickLineRenderer, TickLabelRenderer, AxisLabelRenderer。
+ *             请使用 CoordSystemRenderer 替代。
  */
+@Deprecated
 public class AxesPainter implements WorldPainter {
 
     private static final double EDGE_THRESHOLD = 30; // 边缘绘制阈值(像素)
