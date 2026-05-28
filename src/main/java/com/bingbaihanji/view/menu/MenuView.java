@@ -16,6 +16,8 @@ public class MenuView extends MenuBar {
     private MenuItem screenshotItem;
     private RadioMenuItem dotModeItem;
     private RadioMenuItem gridModeItem;
+    private RadioMenuItem polarModeItem;
+    private RadioMenuItem isometricModeItem;
 
     private RadioMenuItem showAxis; // 显示坐标轴
     private RadioMenuItem hideAxis; // 隐藏坐标轴
@@ -65,11 +67,20 @@ public class MenuView extends MenuBar {
         gridModeItem = new RadioMenuItem(getMenuName("menu.view.view.gridsMode"));
         gridModeItem.setToggleGroup(gridModeGroup);
 
+        // 创建"极坐标模式"单选菜单项
+        polarModeItem = new RadioMenuItem(getMenuName("menu.view.view.polarMode"));
+        polarModeItem.setToggleGroup(gridModeGroup);
+
+        // 创建"等距网格模式"单选菜单项
+        isometricModeItem = new RadioMenuItem(getMenuName("menu.view.view.isometricMode"));
+        isometricModeItem.setToggleGroup(gridModeGroup);
+
         // 默认选择"点模式"
         dotModeItem.setSelected(true);
 
-        // 将两个模式添加到"格点模式"子菜单
-        gridModeMenu.getItems().addAll(dotModeItem, gridModeItem);
+        // 将所有模式添加到"格点模式"子菜单
+        gridModeMenu.getItems().addAll(dotModeItem, gridModeItem,
+                polarModeItem, isometricModeItem);
 
 
         // 是否显示坐标轴
@@ -134,6 +145,14 @@ public class MenuView extends MenuBar {
         return gridModeItem;
     }
 
+    public RadioMenuItem getPolarModeItem() {
+        return polarModeItem;
+    }
+
+    public RadioMenuItem getIsometricModeItem() {
+        return isometricModeItem;
+    }
+
 public ToggleGroup getGridModeGroup() {
         return dotModeItem.getToggleGroup();
     }
@@ -173,6 +192,14 @@ public ToggleGroup getGridModeGroup() {
 
     public void setOnGridModeSelected(Runnable action) {
         gridModeItem.setOnAction(e -> action.run());
+    }
+
+    public void setOnPolarModeSelected(Runnable action) {
+        polarModeItem.setOnAction(e -> action.run());
+    }
+
+    public void setOnIsometricModeSelected(Runnable action) {
+        isometricModeItem.setOnAction(e -> action.run());
     }
 
 public void setOnShowAxisSelected(Runnable action) {

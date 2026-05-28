@@ -42,22 +42,32 @@ public enum GridType {
      * @return 对应的GridType
      */
     public static GridType fromGridMode(GridMode gridMode) {
-        return switch (gridMode) {
-            case DOT -> DOT;
-            case SUBGRID -> CARTESIAN_WITH_SUBGRID;
-            default -> CARTESIAN;
-        };
+        if (gridMode == GridMode.DOT) {
+            return DOT;
+        } else if (gridMode == GridMode.SUBGRID) {
+            return CARTESIAN_WITH_SUBGRID;
+        } else if (gridMode == GridMode.POLAR) {
+            return POLAR;
+        } else if (gridMode == GridMode.ISOMETRIC) {
+            return ISOMETRIC;
+        }
+        return CARTESIAN;
     }
 
     /**
      * 转换为旧版 GridMode（向后兼容）
      */
     public GridMode toGridMode() {
-        return switch (this) {
-            case DOT -> GridMode.DOT;
-            case CARTESIAN_WITH_SUBGRID -> GridMode.SUBGRID;
-            default -> GridMode.LINE;
-        };
+        if (this == DOT) {
+            return GridMode.DOT;
+        } else if (this == CARTESIAN_WITH_SUBGRID) {
+            return GridMode.SUBGRID;
+        } else if (this == POLAR) {
+            return GridMode.POLAR;
+        } else if (this == ISOMETRIC) {
+            return GridMode.ISOMETRIC;
+        }
+        return GridMode.LINE;
     }
 
     /**

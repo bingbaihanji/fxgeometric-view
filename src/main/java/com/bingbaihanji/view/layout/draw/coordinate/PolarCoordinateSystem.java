@@ -25,6 +25,7 @@ public class PolarCoordinateSystem implements CoordinateSystem {
     public List<GridElement> generateGrid(WorldTransform transform, EuclidianViewSettings settings,
                                           double viewWidth, double viewHeight) {
         return polarGridGenerator.generate(transform, settings, viewWidth, viewHeight);
+
     }
 
     @Override

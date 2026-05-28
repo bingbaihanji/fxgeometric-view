@@ -48,6 +48,20 @@ public class CoordSystemRenderer {
         // 选择坐标系统
         currentSystem = selectSystem(settings.getGridType());
 
+        // 极坐标系统要求 X/Y 轴比例锁定为 1:1，确保极轴保持水平
+        if (currentSystem.isAxesRatioLocked()) {
+            double sx = transform.getScaleX();
+            double sy = transform.getScaleY();
+            if (Math.abs(sx - sy) > 0.001) {
+                double avgScale = (sx + sy) / 2;
+                transform.setScaleX(avgScale);
+                transform.setScaleY(avgScale);
+                // 同步回 settings，但不在此处触发布局通知（避免循环）
+                settings.setXScale(avgScale);
+                settings.setYScale(avgScale);
+            }
+        }
+
         // 1. 生成并绘制网格
         if (settings.isShowGrid()) {
             List<GridElement> gridElements = currentSystem.generateGrid(
@@ -94,11 +108,12 @@ public class CoordSystemRenderer {
 
     /** 根据 GridType 选择 CoordinateSystem 实现 */
     private CoordinateSystem selectSystem(GridType gridType) {
-        return switch (gridType) {
-            case POLAR -> polarSystem;
-            case ISOMETRIC -> isometricSystem;
-            default -> cartesianSystem; // CARTESIAN, CARTESIAN_WITH_SUBGRID, DOT
-        };
+        if (gridType == GridType.POLAR) {
+            return polarSystem;
+        } else if (gridType == GridType.ISOMETRIC) {
+            return isometricSystem;
+        }
+        return cartesianSystem; // CARTESIAN, CARTESIAN_WITH_SUBGRID, DOT
     }
 
     /**

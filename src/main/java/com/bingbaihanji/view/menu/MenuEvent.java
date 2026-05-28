@@ -55,6 +55,26 @@ public class MenuEvent {
             }
         });
 
+        menuView.setOnPolarModeSelected(() -> {
+            System.out.println("切换到极坐标模式");
+            if (node instanceof GridChartView gridChartView) {
+                Platform.runLater(() -> {
+                    gridChartView.getSettings().setGridType(GridType.POLAR);
+                    gridChartView.applySettings();
+                });
+            }
+        });
+
+        menuView.setOnIsometricModeSelected(() -> {
+            System.out.println("切换到等距网格模式");
+            if (node instanceof GridChartView gridChartView) {
+                Platform.runLater(() -> {
+                    gridChartView.getSettings().setGridType(GridType.ISOMETRIC);
+                    gridChartView.applySettings();
+                });
+            }
+        });
+
         menuView.getShowAxis().setOnAction(event -> {
             System.out.println("显示坐标轴");
             if (node instanceof GridChartView gridChartView) {

@@ -1,6 +1,7 @@
 package com.bingbaihanji.view.layout.draw.coordinate;
 
 import com.bingbaihanji.constant.AxisTickStyle;
+import com.bingbaihanji.constant.GridType;
 import com.bingbaihanji.util.AxisTickCalculator;
 import com.bingbaihanji.view.layout.core.EuclidianViewSettings;
 import com.bingbaihanji.view.layout.core.WorldTransform;
@@ -26,12 +27,13 @@ public class CartesianCoordinateSystem implements CoordinateSystem {
     @Override
     public List<GridElement> generateGrid(WorldTransform transform, EuclidianViewSettings settings,
                                           double viewWidth, double viewHeight) {
-        return switch (settings.getGridType()) {
-            case DOT -> dotGridGenerator.generate(transform, settings, viewWidth, viewHeight);
-            case CARTESIAN, CARTESIAN_WITH_SUBGRID ->
-                    cartesianGridGenerator.generate(transform, settings, viewWidth, viewHeight);
-            default -> List.of();
-        };
+        GridType gridType = settings.getGridType();
+        if (gridType == GridType.DOT) {
+            return dotGridGenerator.generate(transform, settings, viewWidth, viewHeight);
+        } else if (gridType == GridType.CARTESIAN || gridType == GridType.CARTESIAN_WITH_SUBGRID) {
+            return cartesianGridGenerator.generate(transform, settings, viewWidth, viewHeight);
+        }
+        return List.of();
     }
 
     @Override

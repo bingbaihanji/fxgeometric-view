@@ -137,7 +137,18 @@ public final class CanvasMenuBuilder {
             setGridMode(canvas, GridMode.SUBGRID);
         });
 
-        gridTypeMenu.getItems().addAll(dotTypeItem, lineTypeItem);
+        MenuItem polarTypeItem = new MenuItem(I18nUtil.getString("gridType.polar"));
+        polarTypeItem.setOnAction(e -> {
+            setGridMode(canvas, GridMode.POLAR);
+        });
+
+        MenuItem isometricTypeItem = new MenuItem(I18nUtil.getString("gridType.isometric"));
+        isometricTypeItem.setOnAction(e -> {
+            setGridMode(canvas, GridMode.ISOMETRIC);
+        });
+
+        gridTypeMenu.getItems().addAll(dotTypeItem, lineTypeItem,
+                new SeparatorMenuItem(), polarTypeItem, isometricTypeItem);
 
         MenuItem detachItem = new MenuItem(I18nUtil.getString("geo.menu.detachWindow"));
         detachItem.setOnAction(e -> {

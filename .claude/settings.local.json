@@ -20,7 +20,18 @@
       "Bash(Get-ChildItem -Path \"D:\\\\bingbaihanji\\\\FXGeometricView\\\\src\\\\main\\\\java\\\\com\\\\bingbaihanji\" -Recurse -Directory)",
       "Bash(Select-Object FullName)",
       "Bash(Select-Object -Last 20)",
-      "Bash(sort -t: -k2 -rn)"
+      "Bash(sort -t: -k2 -rn)",
+      "Bash(dir /s /b \"D:\\\\bingbaihanji\\\\FXGeometricView\")",
+      "Bash(dir /b)",
+      "Bash(git add *)",
+      "Bash(git commit -m '@ *)",
+      "Bash(dir *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git status *)",
+      "Bash(Get-ChildItem -Path \"D:\\\\javaProject\\\\github\\\\ggb\\\\geogebra-desktop\\\\shared\\\\common\" -Recurse -Filter \"EuclidianView.java\" -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(mvn javafx:run *)",
+      "Bash(git commit *)"
     ]
   }
 }

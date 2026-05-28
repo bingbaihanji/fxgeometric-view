@@ -147,7 +147,7 @@ public class EuclidianViewSettings {
     /**
      * 网格线型
      */
-    private LineType gridLineType = LineType.FULL;
+    private LineType gridLineType = LineType.DASHED_SHORT;
 
     /**
      * 是否自动计算网格间距
@@ -162,7 +162,7 @@ public class EuclidianViewSettings {
     /**
      * 极坐标网格的角度步长(弧度)
      */
-    private double polarAngleStep = Math.PI / 6; // 30度
+    private double polarAngleStep = 30.0; // 30度
 
     /**
      * 是否启用网格吸附

@@ -22,5 +22,15 @@ public enum GridMode {
     /**
      * 带次网格的线状网格(主网格 + 次网格)
      */
-    SUBGRID
+    SUBGRID,
+
+    /**
+     * 极坐标网格(同心圆 + 放射线)
+     */
+    POLAR,
+
+    /**
+     * 等距网格(三角形格子)
+     */
+    ISOMETRIC
 }

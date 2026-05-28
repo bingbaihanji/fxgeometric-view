@@ -1,6 +1,7 @@
 package com.bingbaihanji.view.layout.core;
 
 import com.bingbaihanji.config.GeometryConfig;
+import com.bingbaihanji.constant.GridType;
 import com.bingbaihanji.constant.UnitLabelType;
 import com.bingbaihanji.controller.SnapCalculator;
 import com.bingbaihanji.util.SpecialPointManager.SpecialPoint;
@@ -480,6 +481,15 @@ public class GridChartView extends Pane {
     private void applySettingsToTransform() {
         transform.setScaleX(settings.getXScale());
         transform.setScaleY(settings.getYScale());
+
+        // 极坐标系统要求 X/Y 轴比例锁定为 1:1，确保极轴保持水平
+        if (settings.getGridType() == GridType.POLAR) {
+            double avgScale = (transform.getScaleX() + transform.getScaleY()) / 2;
+            transform.setScaleX(avgScale);
+            transform.setScaleY(avgScale);
+            settings.setXScale(avgScale);
+            settings.setYScale(avgScale);
+        }
     }
 
     /**
