@@ -30,6 +30,12 @@ public class SpecialPointManager {
             if (obj instanceof CircleGeo circle) {
                 // 添加圆心点
                 specialPointsSet.add(new SpecialPoint(circle.getCx(), circle.getCy(), "CENTER"));
+            } else if (obj instanceof EllipseGeo ellipse) {
+                // 添加椭圆的两个焦点
+                specialPointsSet.add(new SpecialPoint(ellipse.getF1x(), ellipse.getF1y(), "FOCUS"));
+                specialPointsSet.add(new SpecialPoint(ellipse.getF2x(), ellipse.getF2y(), "FOCUS"));
+                // 添加椭圆中心
+                specialPointsSet.add(new SpecialPoint(ellipse.getCx(), ellipse.getCy(), "CENTER"));
             } else if (obj instanceof LineGeo line) {
                 // 添加线段的两个端点
                 specialPointsSet.add(new SpecialPoint(line.getStartX(), line.getStartY(), "ENDPOINT"));
@@ -191,6 +197,18 @@ public class SpecialPointManager {
         // 圆与圆的交点
         else if (obj1 instanceof CircleGeo && obj2 instanceof CircleGeo) {
             intersections.addAll(IntersectionUtils.getCircleCircleIntersections((CircleGeo) obj1, (CircleGeo) obj2));
+        }
+        // 椭圆与线段的交点
+        else if (obj1 instanceof EllipseGeo && obj2 instanceof LineGeo) {
+            intersections.addAll(IntersectionUtils.getEllipseLineIntersections((EllipseGeo) obj1, (LineGeo) obj2));
+        } else if (obj1 instanceof LineGeo && obj2 instanceof EllipseGeo) {
+            intersections.addAll(IntersectionUtils.getEllipseLineIntersections((EllipseGeo) obj2, (LineGeo) obj1));
+        }
+        // 椭圆与圆的交点
+        else if (obj1 instanceof EllipseGeo && obj2 instanceof CircleGeo) {
+            intersections.addAll(IntersectionUtils.getEllipseCircleIntersections((EllipseGeo) obj1, (CircleGeo) obj2));
+        } else if (obj1 instanceof CircleGeo && obj2 instanceof EllipseGeo) {
+            intersections.addAll(IntersectionUtils.getEllipseCircleIntersections((EllipseGeo) obj2, (CircleGeo) obj1));
         }
         // 无限直线与线段的交点
         else if (obj1 instanceof InfiniteLineGeo && obj2 instanceof LineGeo) {

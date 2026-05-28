@@ -54,6 +54,9 @@ public class IntersectionVisitor implements GeometryVisitor<List<Point2D>> {
         if (other instanceof RegularPolygonGeo rp) {
             return intersectLineWithEdges(line, rp.getEdges());
         }
+        if (other instanceof EllipseGeo ellipse) {
+            return IntersectionUtils.getEllipseLineIntersections(ellipse, line);
+        }
         return List.of();
     }
 
@@ -79,6 +82,10 @@ public class IntersectionVisitor implements GeometryVisitor<List<Point2D>> {
         }
         if (other instanceof RegularPolygonGeo rp) {
             return intersectInfiniteLineWithEdges(il, rp.getEdges());
+        }
+        if (other instanceof EllipseGeo ellipse) {
+            return IntersectionUtils.getEllipseLineIntersections(ellipse,
+                    new LineGeo(il.getPoint1X(), il.getPoint1Y(), il.getPoint2X(), il.getPoint2Y()));
         }
         return List.of();
     }
@@ -106,6 +113,9 @@ public class IntersectionVisitor implements GeometryVisitor<List<Point2D>> {
         if (other instanceof RegularPolygonGeo rp) {
             return intersectCircleWithEdges(circle, rp.getEdges());
         }
+        if (other instanceof EllipseGeo ellipse) {
+            return IntersectionUtils.getEllipseCircleIntersections(ellipse, circle);
+        }
         return List.of();
     }
 
@@ -125,6 +135,33 @@ public class IntersectionVisitor implements GeometryVisitor<List<Point2D>> {
             return List.of(); // 手绘路径之间不显示交点
         }
         return intersectEdgesWithOther(path.getEdges());
+    }
+
+    @Override
+    public List<Point2D> visitEllipse(EllipseGeo ellipse) {
+        if (other instanceof LineGeo line) {
+            return intersectEllipseWithEdges(ellipse, List.of(line));
+        }
+        if (other instanceof InfiniteLineGeo il) {
+            return intersectEllipseWithEdges(ellipse, List.of(new LineGeo(il.getPoint1X(), il.getPoint1Y(),
+                    il.getPoint2X(), il.getPoint2Y())));
+        }
+        if (other instanceof CircleGeo circle) {
+            return IntersectionUtils.getEllipseCircleIntersections(ellipse, circle);
+        }
+        if (other instanceof FunctionGeo func) {
+            return intersectEllipseWithFunction(ellipse, func);
+        }
+        if (other instanceof PolygonGeo polygon) {
+            return intersectEllipseWithEdges(ellipse, polygon.getEdges());
+        }
+        if (other instanceof RegularPolygonGeo rp) {
+            return intersectEllipseWithEdges(ellipse, rp.getEdges());
+        }
+        if (other instanceof PathGeo path) {
+            return intersectEllipseWithEdges(ellipse, path.getEdges());
+        }
+        return List.of();
     }
 
     @Override
@@ -187,6 +224,29 @@ public class IntersectionVisitor implements GeometryVisitor<List<Point2D>> {
         List<Point2D> results = new ArrayList<>();
         for (LineGeo edge : edges) {
             results.addAll(IntersectionUtils.getLineCircleIntersections(edge, circle));
+        }
+        return results;
+    }
+
+    private List<Point2D> intersectEllipseWithEdges(EllipseGeo ellipse, List<LineGeo> edges) {
+        List<Point2D> results = new ArrayList<>();
+        for (LineGeo edge : edges) {
+            results.addAll(IntersectionUtils.getEllipseLineIntersections(ellipse, edge));
+        }
+        return results;
+    }
+
+    private List<Point2D> intersectEllipseWithFunction(EllipseGeo ellipse, FunctionGeo func) {
+        List<Point2D> results = new ArrayList<>();
+        List<javafx.geometry.Point2D> points = func.getSampledPoints();
+        if (points == null || points.size() < 2) return results;
+        for (int i = 0; i < points.size() - 1; i++) {
+            javafx.geometry.Point2D p1 = points.get(i);
+            javafx.geometry.Point2D p2 = points.get(i + 1);
+            if (!Double.isFinite(p1.getX()) || !Double.isFinite(p1.getY())
+                    || !Double.isFinite(p2.getX()) || !Double.isFinite(p2.getY())) continue;
+            LineGeo seg = new LineGeo(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+            results.addAll(IntersectionUtils.getEllipseLineIntersections(ellipse, seg));
         }
         return results;
     }

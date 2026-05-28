@@ -30,5 +30,10 @@ public enum DrawingState {
     /**
      * 旋转模式：选择旋转中心点
      */
-    ROTATE_SELECT_CENTER
+    ROTATE_SELECT_CENTER,
+
+    /**
+     * 已点击第二个点,等待第三次点击（椭圆绘制等）
+     */
+    SECOND_CLICK
 }

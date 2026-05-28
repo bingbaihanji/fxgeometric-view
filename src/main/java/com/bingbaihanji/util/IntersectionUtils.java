@@ -2,6 +2,7 @@ package com.bingbaihanji.util;
 
 import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.view.layout.draw.geometry.impl.CircleGeo;
+import com.bingbaihanji.view.layout.draw.geometry.impl.EllipseGeo;
 import com.bingbaihanji.view.layout.draw.geometry.impl.FunctionGeo;
 import com.bingbaihanji.view.layout.draw.geometry.impl.InfiniteLineGeo;
 import com.bingbaihanji.view.layout.draw.geometry.impl.LineGeo;
@@ -664,5 +665,115 @@ public class IntersectionUtils {
         }
 
         return removeDuplicatePoints(intersections, GeometryConfig.Performance.MIN_VALID_DISTANCE * 10);
+    }
+
+    /**
+     * 计算椭圆与线段的交点（近似方法：用多边形逼近椭圆）
+     *
+     * @param ellipse 椭圆
+     * @param line    线段
+     * @return 交点列表
+     */
+    public static List<Point2D> getEllipseLineIntersections(EllipseGeo ellipse, LineGeo line) {
+        // 椭圆与线段的精确交点计算较复杂，使用数值方法近似
+        List<Point2D> intersections = new ArrayList<>();
+        double a = ellipse.getA();
+        double b = ellipse.getB();
+        double cx = ellipse.getCx();
+        double cy = ellipse.getCy();
+        double cos = Math.cos(ellipse.getRotationAngle());
+        double sin = Math.sin(ellipse.getRotationAngle());
+
+        // 在 0 到 2π 间采样，检测符号变化
+        int samples = 128;
+        double prevSign = 0;
+        boolean prevValid = false;
+        double prevT = 0;
+
+        for (int i = 0; i <= samples; i++) {
+            double t = 2 * Math.PI * i / samples;
+            double xt = a * Math.cos(t);
+            double yt = b * Math.sin(t);
+            double wx = cx + xt * cos - yt * sin;
+            double wy = cy + xt * sin + yt * cos;
+
+            double dist = signedDistanceToLine(wx, wy, line.getStartX(), line.getStartY(),
+                    line.getEndX(), line.getEndY());
+
+            if (prevValid && prevSign * dist < 0) {
+                double midT = (prevT + t) / 2;
+                double mxt = a * Math.cos(midT);
+                double myt = b * Math.sin(midT);
+                double mwx = cx + mxt * cos - myt * sin;
+                double mwy = cy + mxt * sin + myt * cos;
+                double midDist = signedDistanceToLine(mwx, mwy, line.getStartX(), line.getStartY(),
+                        line.getEndX(), line.getEndY());
+                if (Math.abs(midDist) < GeometryConfig.Performance.MIN_VALID_DISTANCE) {
+                    intersections.add(new Point2D(mwx, mwy));
+                }
+            }
+            prevSign = Math.signum(dist);
+            prevValid = true;
+            prevT = t;
+        }
+        return intersections;
+    }
+
+    /** 点到线段的符号距离（正=线一侧，负=另一侧） */
+    private static double signedDistanceToLine(double px, double py,
+                                               double x1, double y1, double x2, double y2) {
+        return (x2 - x1) * (py - y1) - (y2 - y1) * (px - x1);
+    }
+
+    /**
+     * 计算椭圆与圆的交点（使用数值方法近似）
+     *
+     * @param ellipse 椭圆
+     * @param circle  圆
+     * @return 交点列表
+     */
+    public static List<Point2D> getEllipseCircleIntersections(EllipseGeo ellipse, CircleGeo circle) {
+        // 在椭圆上采样，检测到圆心的距离符号变化
+        List<Point2D> intersections = new ArrayList<>();
+        double a = ellipse.getA();
+        double b = ellipse.getB();
+        double cx = ellipse.getCx();
+        double cy = ellipse.getCy();
+        double cos = Math.cos(ellipse.getRotationAngle());
+        double sin = Math.sin(ellipse.getRotationAngle());
+        double ccx = circle.getCx();
+        double ccy = circle.getCy();
+        double cr = circle.getR();
+
+        int samples = 256;
+        double prevDiff = 0;
+        boolean prevValid = false;
+        double prevT = 0;
+
+        for (int i = 0; i <= samples; i++) {
+            double t = 2 * Math.PI * i / samples;
+            double xt = a * Math.cos(t);
+            double yt = b * Math.sin(t);
+            double wx = cx + xt * cos - yt * sin;
+            double wy = cy + xt * sin + yt * cos;
+
+            double distToCircle = Math.hypot(wx - ccx, wy - ccy) - cr;
+
+            if (prevValid && prevDiff * distToCircle < 0) {
+                double midT = (prevT + t) / 2;
+                double mxt = a * Math.cos(midT);
+                double myt = b * Math.sin(midT);
+                double mwx = cx + mxt * cos - myt * sin;
+                double mwy = cy + mxt * sin + myt * cos;
+                double midDist = Math.hypot(mwx - ccx, mwy - ccy) - cr;
+                if (Math.abs(midDist) < GeometryConfig.Performance.MIN_VALID_DISTANCE * 2) {
+                    intersections.add(new Point2D(mwx, mwy));
+                }
+            }
+            prevDiff = Math.signum(distToCircle);
+            prevValid = true;
+            prevT = t;
+        }
+        return intersections;
     }
 }

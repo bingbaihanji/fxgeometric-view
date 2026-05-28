@@ -35,7 +35,7 @@ public class StyleManager {
     public static final Color GEOMETRY_HOVER = Color.ORANGE;
     public static final Color GEOMETRY_CONSTRAINED = Color.DARKBLUE;
     public static final Color GEOMETRY_REUSED = Color.PURPLE;        // 复用组点颜色
-    public static final Color GEOMETRY_LINE = Color.DODGERBLUE; // 线条颜色
+    public static final Color GEOMETRY_LINE = Color.LIGHTSLATEGRAY; // 默认线条颜色
 
     // 坐标轴和网格颜色
     public static final Color AXES_COLOR = Color.valueOf("#f7a707");

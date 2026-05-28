@@ -31,7 +31,8 @@
       "Bash(Get-ChildItem -Path \"D:\\\\javaProject\\\\github\\\\ggb\\\\geogebra-desktop\\\\shared\\\\common\" -Recurse -Filter \"EuclidianView.java\" -ErrorAction SilentlyContinue)",
       "Bash(Select-Object -ExpandProperty FullName)",
       "Bash(mvn javafx:run *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(Test-Path *)"
     ]
   }
 }

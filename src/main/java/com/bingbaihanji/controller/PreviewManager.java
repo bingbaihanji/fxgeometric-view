@@ -404,6 +404,132 @@ public class PreviewManager {
     }
 
     /**
+     * 椭圆预览对象
+     * <p>
+     * 三阶段：F1 固定 → F2 固定 → 鼠标确定椭圆上一点 P，2a = |PF1| + |PF2|
+     */
+    public static class EllipsePreview implements Previewable {
+        private double f1x, f1y;      // 焦点1（固定）
+        private double f2x, f2y;      // 焦点2（固定，第二阶段设置）
+        private double mouseX, mouseY; // 当前鼠标位置
+        private boolean active = false;
+        private boolean f2Set = false; // F2 是否已设置
+
+        /** 设置焦点1 */
+        public void setFocus1(double x, double y) {
+            this.f1x = x;
+            this.f1y = y;
+            this.active = true;
+            this.f2Set = false;
+        }
+
+        /** 设置焦点2，进入第三阶段 */
+        public void setFocus2(double x, double y) {
+            this.f2x = x;
+            this.f2y = y;
+            this.f2Set = true;
+        }
+
+        /** 当前 2a 值（鼠标位置到两焦点距离之和） */
+        public double getTwoA() {
+            if (!f2Set) return 0;
+            return Math.hypot(mouseX - f1x, mouseY - f1y)
+                    + Math.hypot(mouseX - f2x, mouseY - f2y);
+        }
+
+        @Override
+        public void updatePreview(double mouseX, double mouseY) {
+            this.mouseX = mouseX;
+            this.mouseY = mouseY;
+        }
+
+        @Override
+        public void paintPreview(GraphicsContext gc, WorldTransform transform) {
+            if (!active) return;
+
+            gc.save();
+            gc.setStroke(GeometryConfig.Colors.PREVIEW_TRANSPARENT);
+            gc.setLineWidth(1.5);
+
+            // 绘制 F1
+            drawFocusDot(gc, transform, f1x, f1y, true);
+
+            if (f2Set) {
+                // 绘制 F2
+                drawFocusDot(gc, transform, f2x, f2y, true);
+                // 绘制 F1-F2 连线
+                gc.setLineDashes(2);
+                gc.strokeLine(
+                        transform.worldToScreenX(f1x), transform.worldToScreenY(f1y),
+                        transform.worldToScreenX(f2x), transform.worldToScreenY(f2y));
+
+                // 计算椭圆参数并绘制预览椭圆
+                double twoA = getTwoA();
+                double a = twoA / 2.0;
+                double c = Math.hypot(f2x - f1x, f2y - f1y) / 2.0;
+                if (a > c && a > 1e-9) {
+                    double b = Math.sqrt(a * a - c * c);
+                    double cx = (f1x + f2x) / 2.0;
+                    double cy = (f1y + f2y) / 2.0;
+                    double angle = Math.atan2(f2y - f1y, f2x - f1x);
+                    double cos = Math.cos(angle);
+                    double sin = Math.sin(angle);
+
+                    gc.setLineDashes(6);
+                    int n = 128;
+                    double[] sx = new double[n];
+                    double[] sy = new double[n];
+                    for (int i = 0; i < n; i++) {
+                        double t = 2 * Math.PI * i / n;
+                        double xt = a * Math.cos(t);
+                        double yt = b * Math.sin(t);
+                        double wx = cx + xt * cos - yt * sin;
+                        double wy = cy + xt * sin + yt * cos;
+                        sx[i] = transform.worldToScreenX(wx);
+                        sy[i] = transform.worldToScreenY(wy);
+                    }
+                    gc.strokePolygon(sx, sy, n);
+                }
+            }
+
+            // 绘制鼠标跟随点（半透明）
+            double mouseSx = transform.worldToScreenX(mouseX);
+            double mouseSy = transform.worldToScreenY(mouseY);
+            gc.setStroke(GeometryConfig.Colors.PREVIEW.deriveColor(0, 1, 1, 0.5));
+            gc.setLineWidth(1.5);
+            gc.setLineDashes(null);
+            gc.strokeOval(mouseSx - 6, mouseSy - 6, 12, 12);
+            gc.setFill(GeometryConfig.Colors.PREVIEW.deriveColor(0, 1, 1, 0.6));
+            gc.fillOval(mouseSx - 4, mouseSy - 4, 8, 8);
+
+            gc.restore();
+        }
+
+        private void drawFocusDot(GraphicsContext gc, WorldTransform transform,
+                                  double wx, double wy, boolean filled) {
+            double sx = transform.worldToScreenX(wx);
+            double sy = transform.worldToScreenY(wy);
+            gc.setFill(GeometryConfig.Colors.PREVIEW);
+            gc.fillOval(sx - 4, sy - 4, 8, 8);
+        }
+
+        @Override
+        public boolean isActive() {
+            return active;
+        }
+
+        @Override
+        public void reset() {
+            active = false;
+            f2Set = false;
+        }
+
+        public boolean isF2Set() {
+            return f2Set;
+        }
+    }
+
+    /**
      * 正多边形预览对象
      */
     public static class RegularPolygonPreview implements Previewable {

@@ -44,6 +44,8 @@ public class ConstraintHandler {
             constraint = new InfiniteLineConstraint(infiniteLine);
         } else if (shape instanceof CircleGeo circle) {
             constraint = new CircleConstraint(circle);
+        } else if (shape instanceof EllipseGeo ellipse) {
+            constraint = new EllipseConstraint(ellipse);
         } else if (shape instanceof PolygonGeo polygon) {
             constraint = new PolygonConstraint(polygon);
         } else if (shape instanceof PathGeo path) {

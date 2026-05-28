@@ -270,6 +270,20 @@ public final class ContextMenuDialogs {
                 polygon.setColor(props.getColor());
                 canvas.redraw();
             });
+        } else if (shape instanceof EllipseGeo ellipse) {
+            dialog = new ShapePropertiesDialog(ellipse.getColor());
+            Optional<ShapePropertiesResult> result = dialog.showAndWait();
+            result.ifPresent(props -> {
+                ellipse.setColor(props.getColor());
+                canvas.redraw();
+            });
+        } else if (shape instanceof RegularPolygonGeo regularPolygon) {
+            dialog = new ShapePropertiesDialog(regularPolygon.getColor());
+            Optional<ShapePropertiesResult> result = dialog.showAndWait();
+            result.ifPresent(props -> {
+                regularPolygon.setColor(props.getColor());
+                canvas.redraw();
+            });
         } else if (shape instanceof FunctionGeo function) {
             dialog = new ShapePropertiesDialog(function.getColor());
             Optional<ShapePropertiesResult> result = dialog.showAndWait();

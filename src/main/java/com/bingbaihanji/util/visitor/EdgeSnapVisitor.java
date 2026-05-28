@@ -141,6 +141,12 @@ public class EdgeSnapVisitor implements GeometryVisitor<EdgeSnapVisitor.SnapResu
     }
 
     @Override
+    public SnapResult visitEllipse(EllipseGeo ellipse) {
+        // 椭圆边吸附：将鼠标投影到椭圆上的计算较复杂，暂不实现
+        return null;
+    }
+
+    @Override
     public SnapResult visitFunction(FunctionGeo function) {
         List<Point2D> points = function.getSampledPoints();
         if (points == null || points.size() < 2) {

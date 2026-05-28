@@ -85,5 +85,10 @@ public enum DrawMode {
     /**
      * 正多边形(两次点击：中心和半径,边数可选3-10)
      */
-    REGULAR_POLYGON
+    REGULAR_POLYGON,
+
+    /**
+     * 椭圆(三次点击：焦点1、焦点2、椭圆上一点)
+     */
+    ELLIPSE
 }

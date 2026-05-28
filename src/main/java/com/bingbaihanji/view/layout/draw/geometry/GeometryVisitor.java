@@ -50,6 +50,11 @@ public interface GeometryVisitor<T> {
     T visitRegularPolygon(RegularPolygonGeo regularPolygon);
 
     /**
+     * 访问椭圆对象
+     */
+    T visitEllipse(EllipseGeo ellipse);
+
+    /**
      * 访问手绘路径对象
      */
     T visitPath(PathGeo path);

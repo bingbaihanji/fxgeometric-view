@@ -39,7 +39,12 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
     private PreviewManager.LinePreview linePreview = null;
 
     /**
-     * 第一个点的世界坐标(用于绘制圆、线段等)
+     * 椭圆预览对象
+     */
+    private PreviewManager.EllipsePreview ellipsePreview = null;
+
+    /**
+     * 第一个点的世界坐标(用于绘制圆、线段、椭圆焦点1等)
      */
     private double firstPointX;
     private double firstPointY;
@@ -48,10 +53,21 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
      */
     private PointGeo firstPointRef = null;
 
+    /**
+     * 第二个点的世界坐标（用于椭圆焦点2）
+     */
+    private double secondPointX;
+    private double secondPointY;
+    /**
+     * 第二次点击时复用的点引用（椭圆焦点2）
+     */
+    private PointGeo secondPointRef = null;
+
     @Override
     public boolean canHandle(DrawMode mode) {
         return mode == DrawMode.POINT || mode == DrawMode.LINE ||
-                mode == DrawMode.INFINITE_LINE || mode == DrawMode.CIRCLE;
+                mode == DrawMode.INFINITE_LINE || mode == DrawMode.CIRCLE ||
+                mode == DrawMode.ELLIPSE;
     }
 
     @Override
@@ -82,6 +98,8 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             handleFirstClick(rawX, rawY, worldX, worldY, context);
         } else if (context.getState() == DrawingState.FIRST_CLICK) {
             handleSecondClick(worldX, worldY, context);
+        } else if (context.getState() == DrawingState.SECOND_CLICK) {
+            handleThirdClick(worldX, worldY, context);
         }
 
         e.consume();
@@ -122,8 +140,9 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             boolean nearConstrainableShape = false;
             for (WorldObject obj : context.getObjects()) {
                 if (obj instanceof LineGeo || obj instanceof InfiniteLineGeo ||
-                        obj instanceof CircleGeo || obj instanceof PolygonGeo ||
-                        obj instanceof PathGeo || obj instanceof FunctionGeo) {
+                        obj instanceof CircleGeo || obj instanceof EllipseGeo ||
+                        obj instanceof PolygonGeo || obj instanceof PathGeo ||
+                        obj instanceof FunctionGeo) {
                     PointConstraint tempConstraint = context.getConstraintHandler().createConstraint(obj);
                     double distance = tempConstraint.distanceToShape(rawX, rawY);
 
@@ -147,7 +166,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
         }
 
         // 其他模式：预览逻辑
-        if (context.getState() != DrawingState.FIRST_CLICK) {
+        if (context.getState() != DrawingState.FIRST_CLICK && context.getState() != DrawingState.SECOND_CLICK) {
             // 即使在 IDLE 状态,也重绘以显示吸附预览点
             context.redraw();
             return true;
@@ -173,6 +192,10 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             // 更新圆形预览
             if (circlePreview != null) {
                 circlePreview.updatePreview(worldX, worldY);
+            }
+        } else if (context.getDrawMode() == DrawMode.ELLIPSE) {
+            if (ellipsePreview != null) {
+                ellipsePreview.updatePreview(worldX, worldY);
             }
         } else if (context.getDrawMode() == DrawMode.LINE || context.getDrawMode() == DrawMode.INFINITE_LINE) {
             // 更新线段/直线预览
@@ -201,7 +224,8 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
 
         for (WorldObject obj : context.getObjects()) {
             if (obj instanceof LineGeo || obj instanceof InfiniteLineGeo ||
-                    obj instanceof CircleGeo || obj instanceof PolygonGeo || obj instanceof PathGeo) {
+                    obj instanceof CircleGeo || obj instanceof EllipseGeo ||
+                    obj instanceof PolygonGeo || obj instanceof PathGeo) {
                 // 创建临时约束来计算距离
                 PointConstraint tempConstraint = context.getConstraintHandler().createConstraint(obj);
                 double distance = tempConstraint.distanceToShape(worldX, worldY);
@@ -259,6 +283,10 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             circlePreview = new PreviewManager.CirclePreview();
             circlePreview.setCenterPoint(firstPointX, firstPointY);
             context.getPreviewManager().addPreviewable(circlePreview);
+        } else if (context.getDrawMode() == DrawMode.ELLIPSE) {
+            ellipsePreview = new PreviewManager.EllipsePreview();
+            ellipsePreview.setFocus1(firstPointX, firstPointY);
+            context.getPreviewManager().addPreviewable(ellipsePreview);
         } else if (context.getDrawMode() == DrawMode.LINE) {
             linePreview = new PreviewManager.LinePreview(false); // 普通线段
             linePreview.setStartPoint(firstPointX, firstPointY);
@@ -305,6 +333,20 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                 }
                 firstPointRef = null;
             }
+            case ELLIPSE -> {
+                // 椭圆：第二次点击设置焦点2，进入三阶段模式
+                secondPointX = worldX;
+                secondPointY = worldY;
+                secondPointRef = PointReuseManager.getExistingPointOrNull(worldX, worldY, context.getObjects(), scale);
+
+                if (ellipsePreview != null) {
+                    ellipsePreview.setFocus2(worldX, worldY);
+                }
+                firstPointRef = null;
+                context.setState(DrawingState.SECOND_CLICK);
+                context.redraw();
+                return; // 不执行后面的 setState(IDLE)
+            }
             case LINE -> {
                 // 创建线段,复用已有的端点
                 LineGeo newLine = new LineGeo(firstPointRef, firstPointX, firstPointY,
@@ -334,6 +376,46 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                 firstPointRef = null;
             }
         }
+
+        context.setState(DrawingState.IDLE);
+        context.redraw();
+    }
+
+    /**
+     * 处理第三次点击（椭圆确认：确定椭圆上一点）
+     */
+    private void handleThirdClick(double worldX, double worldY, IDrawingContext context) {
+        if (context.getDrawMode() != DrawMode.ELLIPSE || ellipsePreview == null) {
+            context.setState(DrawingState.IDLE);
+            return;
+        }
+
+        double twoA = ellipsePreview.getTwoA();
+        if (twoA <= 0) {
+            context.setState(DrawingState.IDLE);
+            return;
+        }
+
+        // 确保 2a > 焦距
+        double focalDist = Math.hypot(secondPointX - firstPointX, secondPointY - firstPointY);
+        if (twoA <= focalDist) {
+            context.setState(DrawingState.IDLE);
+            return;
+        }
+
+        // 创建椭圆
+        EllipseGeo ellipse = new EllipseGeo(firstPointRef, firstPointX, firstPointY,
+                secondPointRef, secondPointX, secondPointY, twoA);
+
+        context.executeCommand(new GeometryCommand(context, ellipse));
+
+        // 清除预览对象
+        if (ellipsePreview != null) {
+            context.getPreviewManager().removePreviewable(ellipsePreview);
+            ellipsePreview = null;
+        }
+        firstPointRef = null;
+        secondPointRef = null;
 
         context.setState(DrawingState.IDLE);
         context.redraw();
@@ -373,10 +455,14 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
         firstPointX = 0;
         firstPointY = 0;
         firstPointRef = null;
+        secondPointX = 0;
+        secondPointY = 0;
+        secondPointRef = null;
 
         // 清除预览对象
         circlePreview = null;
         linePreview = null;
+        ellipsePreview = null;
     }
 
     @Override
@@ -410,6 +496,11 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             gc.setFill(GeometryConfig.Colors.PREVIEW);
             gc.fillOval(firstPointScreenX - pointRadius, firstPointScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
 
+            // 椭圆模式下，F1 已固定，显示焦点标签
+            if (context.getDrawMode() == DrawMode.ELLIPSE) {
+                drawFocusLabel(gc, transform, firstPointX, firstPointY, "F1");
+            }
+
             // 绘制第二个点的预览(半透明点,跟随鼠标)
             double mouseScreenX = transform.worldToScreenX(context.getCurrentMouseX());
             double mouseScreenY = transform.worldToScreenY(context.getCurrentMouseY());
@@ -423,5 +514,32 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             gc.setFill(GeometryConfig.Colors.PREVIEW.deriveColor(0, 1, 1, 0.6));
             gc.fillOval(mouseScreenX - pointRadius, mouseScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
         }
+
+        // 在 SECOND_CLICK 状态下（椭圆），绘制 F1 和 F2
+        if (context.getState() == DrawingState.SECOND_CLICK && context.getDrawMode() == DrawMode.ELLIPSE) {
+            drawFocusLabel(gc, transform, firstPointX, firstPointY, "F1");
+            drawFocusLabel(gc, transform, secondPointX, secondPointY, "F2");
+
+            // 绘制鼠标跟随点
+            double mouseScreenX = transform.worldToScreenX(context.getCurrentMouseX());
+            double mouseScreenY = transform.worldToScreenY(context.getCurrentMouseY());
+            gc.setStroke(GeometryConfig.Colors.PREVIEW.deriveColor(0, 1, 1, 0.5));
+            gc.setLineWidth(1.5);
+            gc.strokeOval(mouseScreenX - 6, mouseScreenY - 6, 12, 12);
+            gc.setFill(GeometryConfig.Colors.PREVIEW.deriveColor(0, 1, 1, 0.6));
+            gc.fillOval(mouseScreenX - pointRadius, mouseScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
+        }
+    }
+
+    /** 绘制焦点标签 */
+    private void drawFocusLabel(GraphicsContext gc, WorldTransform transform,
+                                double wx, double wy, String label) {
+        double sx = transform.worldToScreenX(wx);
+        double sy = transform.worldToScreenY(wy);
+        gc.setFill(GeometryConfig.Colors.PREVIEW);
+        gc.fillOval(sx - 4, sy - 4, 8, 8);
+        gc.setStroke(GeometryConfig.Colors.PREVIEW);
+        gc.setLineWidth(1);
+        gc.strokeText(label, sx + 6, sy - 6);
     }
 }

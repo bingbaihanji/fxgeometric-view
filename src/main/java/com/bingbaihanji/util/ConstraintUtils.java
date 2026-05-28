@@ -29,6 +29,7 @@ public final class ConstraintUtils {
         return obj instanceof LineGeo ||
                 obj instanceof InfiniteLineGeo ||
                 obj instanceof CircleGeo ||
+                obj instanceof EllipseGeo ||
                 obj instanceof PolygonGeo ||
                 obj instanceof PathGeo ||
                 obj instanceof FunctionGeo;
@@ -46,6 +47,10 @@ public final class ConstraintUtils {
             return MathCalculationUtils.pointToInfiniteLineDistance(x, y,
                     infLine.getPoint1X(), infLine.getPoint1Y(),
                     infLine.getPoint2X(), infLine.getPoint2Y()) < threshold;
+        } else if (shape instanceof EllipseGeo ellipse) {
+            double d1 = Math.hypot(x - ellipse.getF1x(), y - ellipse.getF1y());
+            double d2 = Math.hypot(x - ellipse.getF2x(), y - ellipse.getF2y());
+            return Math.abs(d1 + d2 - ellipse.getTwoA()) < threshold;
         } else if (shape instanceof CircleGeo circle) {
             double dist = Math.abs(Math.hypot(x - circle.getCx(), y - circle.getCy()) - circle.getR());
             return dist < threshold;
@@ -100,6 +105,8 @@ public final class ConstraintUtils {
         } else if (shape instanceof InfiniteLineGeo infLine) {
             return I18nUtil.getString("geo.shape.line",
                     infLine.getPoint1Name(), infLine.getPoint2Name());
+        } else if (shape instanceof EllipseGeo ellipse) {
+            return I18nUtil.getString("geo.shape.ellipse", "");
         } else if (shape instanceof CircleGeo circle) {
             return I18nUtil.getString("geo.shape.circle", circle.getCenterName());
         } else if (shape instanceof PolygonGeo polygon) {
@@ -158,6 +165,16 @@ public final class ConstraintUtils {
                 }
             } else if (obj instanceof InfiniteLineGeo infLine) {
                 if (infLine.getPoint1Ref() == point || infLine.getPoint2Ref() == point) {
+                    result.add(obj);
+                }
+            } else if (obj instanceof EllipseGeo ellipse) {
+                if (ellipse.getF1Ref() == point || ellipse.getF2Ref() == point) {
+                    result.add(obj);
+                } else if (Math.abs(ellipse.getF1x() - px) < threshold &&
+                        Math.abs(ellipse.getF1y() - py) < threshold) {
+                    result.add(obj);
+                } else if (Math.abs(ellipse.getF2x() - px) < threshold &&
+                        Math.abs(ellipse.getF2y() - py) < threshold) {
                     result.add(obj);
                 }
             } else if (obj instanceof CircleGeo circle) {

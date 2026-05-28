@@ -78,6 +78,7 @@ public class ShapeToolPane extends VBox {
                 createTool("geo.segment", DrawMode.LINE, group),
                 createTool("geo.line", DrawMode.INFINITE_LINE, group),
                 createTool("geo.circle", DrawMode.CIRCLE, group),
+                createTool("geo.ellipse", DrawMode.ELLIPSE, group),
                 createTool("geo.polygon", DrawMode.POLYGON, group),
                 createTool("geo.regularPolygon", DrawMode.REGULAR_POLYGON, group),
                 createTool("geo.handpainted", DrawMode.FREEHAND, group)
@@ -138,6 +139,7 @@ public class ShapeToolPane extends VBox {
             case "geo.point" -> "icon/point.png";
             case "geo.segment" -> "icon/segment.png";
             case "geo.circle" -> "icon/circle.png";
+            case "geo.ellipse" -> "icon/elliptic.png";
             case "geo.polygon" -> "icon/rectangle.png";
             case "geo.regularPolygon" -> "icon/regularPolygons.png";
             case "geo.restore" -> "icon/restore.png";
