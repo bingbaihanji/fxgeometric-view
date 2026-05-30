@@ -5,6 +5,8 @@ import com.bingbaihanji.util.*;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.GeometryVisitor;
 import javafx.scene.canvas.GraphicsContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +21,8 @@ import java.util.List;
  * @date 2025-12-23
  */
 public class PolygonGeo extends AbstractWorldObject {
+
+    private final static Logger log = LoggerFactory.getLogger(PolygonGeo.class);
 
     /**
      * 多边形顶点列表(直接引用PointGeo对象)
@@ -97,13 +101,13 @@ public class PolygonGeo extends AbstractWorldObject {
 
         // 发光通道（稍宽、半透明、实线）
         if (StyleManager.GLOW_ENABLED) {
-        gc.save();
-        LineStyleUtil.resetLineStyle(gc);
-        gc.setGlobalAlpha(StyleManager.GLOW_ALPHA);
-        gc.setLineWidth(getEffectiveLineWidth() + StyleManager.GLOW_WIDTH_BONUS);
-        gc.setStroke(getEffectiveColor());
-        gc.strokePolygon(xPoints, yPoints, vertexPoints.size());
-        gc.restore();
+            gc.save();
+            LineStyleUtil.resetLineStyle(gc);
+            gc.setGlobalAlpha(StyleManager.GLOW_ALPHA);
+            gc.setLineWidth(getEffectiveLineWidth() + StyleManager.GLOW_WIDTH_BONUS);
+            gc.setStroke(getEffectiveColor());
+            gc.strokePolygon(xPoints, yPoints, vertexPoints.size());
+            gc.restore();
         }
 
         // 主描边
@@ -153,7 +157,7 @@ public class PolygonGeo extends AbstractWorldObject {
 
     @Override
     public void onClick(double wx, double wy) {
-        System.out.println("多边形被点击");
+        log.info("多边形被点击");
     }
 
     /**

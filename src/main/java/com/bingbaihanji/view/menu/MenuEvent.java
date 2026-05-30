@@ -1,14 +1,15 @@
 package com.bingbaihanji.view.menu;
 
-import com.bingbaihanji.constant.GridMode;
 import com.bingbaihanji.constant.GridType;
 import com.bingbaihanji.util.FxTools;
 import com.bingbaihanji.view.layout.core.GridChartView;
-import com.bingbaihanji.view.layout.draw.geometry.impl.AxesPainter;
-import com.bingbaihanji.view.layout.draw.geometry.impl.GridPainter;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.stage.Stage;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * @author bingbaihanji
@@ -16,6 +17,8 @@ import javafx.stage.Stage;
  * @description
  */
 public class MenuEvent {
+
+    private final static Logger log = LoggerFactory.getLogger(MenuEvent.class);
 
     private MenuView menuView;
 
@@ -30,12 +33,12 @@ public class MenuEvent {
 
         // 添加事件监听
         menuView.setOnScreenshotAction(() -> {
-            System.out.println("截图功能被点击");
+            log.info("截图功能被点击");
             FxTools.screenshots(primaryStage, node);
         });
 
         menuView.setOnDotModeSelected(() -> {
-            System.out.println("切换到点模式");
+            log.info("切换到点模式");
             if (node instanceof GridChartView gridChartView) {
                 Platform.runLater(() -> {
                     gridChartView.getSettings().setGridType(GridType.DOT);
@@ -46,7 +49,7 @@ public class MenuEvent {
         });
 
         menuView.setOnGridModeSelected(() -> {
-            System.out.println("切换到格子模式(含次网格)");
+            log.info("切换到格子模式(含次网格)");
             if (node instanceof GridChartView gridChartView) {
                 Platform.runLater(() -> {
                     gridChartView.getSettings().setGridType(GridType.CARTESIAN_WITH_SUBGRID);
@@ -56,7 +59,7 @@ public class MenuEvent {
         });
 
         menuView.setOnPolarModeSelected(() -> {
-            System.out.println("切换到极坐标模式");
+            log.info("切换到极坐标模式");
             if (node instanceof GridChartView gridChartView) {
                 Platform.runLater(() -> {
                     gridChartView.getSettings().setGridType(GridType.POLAR);
@@ -66,7 +69,7 @@ public class MenuEvent {
         });
 
         menuView.setOnIsometricModeSelected(() -> {
-            System.out.println("切换到等距网格模式");
+            log.info("切换到等距网格模式");
             if (node instanceof GridChartView gridChartView) {
                 Platform.runLater(() -> {
                     gridChartView.getSettings().setGridType(GridType.ISOMETRIC);
@@ -76,7 +79,7 @@ public class MenuEvent {
         });
 
         menuView.getShowAxis().setOnAction(event -> {
-            System.out.println("显示坐标轴");
+            log.info("显示坐标轴");
             if (node instanceof GridChartView gridChartView) {
                 Platform.runLater(() -> {
                     gridChartView.getSettings().setShowXAxis(true);
@@ -87,7 +90,7 @@ public class MenuEvent {
 
         });
         menuView.getHideAxis().setOnAction(event -> {
-            System.out.println("隐藏坐标轴");
+            log.info("隐藏坐标轴");
             if (node instanceof GridChartView gridChartView) {
                 Platform.runLater(() -> {
                     gridChartView.getSettings().setShowXAxis(false);
@@ -99,7 +102,7 @@ public class MenuEvent {
 
         // 系统设置菜单
         menuView.setOnSystemSettingsAction(() -> {
-            System.out.println("打开系统设置");
+            log.info("打开系统设置");
             Platform.runLater(() -> {
                 SystemSettingsDialog dialog = new SystemSettingsDialog();
                 dialog.showAndWait();
@@ -108,7 +111,7 @@ public class MenuEvent {
 
         // 绘制设置菜单
         menuView.setOnDrawingSettingsAction(() -> {
-            System.out.println("打开绘制设置");
+            log.info("打开绘制设置");
             Platform.runLater(() -> {
                 // 获取当前的 FreehandDrawingTool 配置
                 var freehandTool = com.bingbaihanji.controller.handler.FreehandHandler.getFreehandTool();
@@ -129,14 +132,14 @@ public class MenuEvent {
                     freehandTool.setTension(settings.getTension());
                     freehandTool.setMinPointDistance(settings.getMinPointDistance());
                     freehandTool.setEnableSmoothing(settings.isEnableSmoothing());
-                    System.out.println("绘制设置已更新");
+                    log.info("绘制设置已更新");
                 });
             });
         });
 
         // 线条样式设置菜单
         menuView.setOnLineStyleSettingsAction(() -> {
-            System.out.println("打开线条样式设置");
+            log.info("打开线条样式设置");
             Platform.runLater(() -> {
                 LineStyleSettingsDialog dialog = new LineStyleSettingsDialog();
                 var result = dialog.showAndWait();
@@ -146,7 +149,7 @@ public class MenuEvent {
                     com.bingbaihanji.util.StyleManager.GLOW_ENABLED = settings.isGlowEnabled();
                     com.bingbaihanji.util.StyleManager.GLOW_ALPHA = settings.getGlowAlpha();
                     com.bingbaihanji.util.StyleManager.GLOW_WIDTH_BONUS = settings.getGlowWidth();
-                    System.out.println("线条样式设置已更新");
+                    log.info("线条样式设置已更新");
                     // 已绘制图形需要重绘以反映变化
                     if (node instanceof GridChartView gcv) {
                         gcv.redraw();

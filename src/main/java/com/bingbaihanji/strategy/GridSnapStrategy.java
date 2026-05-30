@@ -51,28 +51,47 @@ public class GridSnapStrategy implements SnapStrategy {
         return null;
     }
 
-    /** 极坐标网格吸附 */
+    /** 极坐标网格吸附：搜索鼠标附近 3×3 网格交点，找最近者 */
     private double[] snapToPolar(double worldX, double worldY,
                                   EuclidianViewSettings settings, WorldTransform transform) {
         double step = CartesianGridGenerator.getGridStep(transform, settings);
-        double angleStep = settings.getPolarAngleStep();
+        double angleStepDeg = settings.getPolarAngleStep();
+        double angleStepRad = Math.toRadians(angleStepDeg);
 
         double r = Math.sqrt(worldX * worldX + worldY * worldY);
         double theta = Math.atan2(worldY, worldX);
 
-        double snappedR = Math.round(r / step) * step;
-        if (snappedR < 0) snappedR = 0;
-        double snappedTheta = Math.round(theta / angleStep) * angleStep;
+        int kR = (int) Math.round(r / step);
+        if (kR < 0) kR = 0;
+        int kTheta = (int) Math.round(theta / angleStepRad);
 
-        double snappedX = snappedR * Math.cos(snappedTheta);
-        double snappedY = snappedR * Math.sin(snappedTheta);
+        double mouseSX = transform.worldToScreenX(worldX);
+        double mouseSY = transform.worldToScreenY(worldY);
+        double bestDist = Double.MAX_VALUE;
+        double bestX = worldX, bestY = worldY;
 
-        double scale = (transform.getScaleX() + transform.getScaleY()) / 2.0;
-        double pixelDist = Math.hypot(snappedX - worldX, snappedY - worldY) * scale;
-        if (pixelDist < GeometryConfig.Snapping.GRID_SNAP_THRESHOLD_PIXELS) {
-            if (Math.abs(snappedX - Math.round(snappedX)) < 1e-9) snappedX = Math.round(snappedX);
-            if (Math.abs(snappedY - Math.round(snappedY)) < 1e-9) snappedY = Math.round(snappedY);
-            return new double[]{snappedX, snappedY};
+        for (int dr = -1; dr <= 1; dr++) {
+            double cr = (kR + dr) * step;
+            if (cr < 0) continue;
+            for (int dt = -1; dt <= 1; dt++) {
+                double ct = (kTheta + dt) * angleStepRad;
+                double cx = cr * Math.cos(ct);
+                double cy = cr * Math.sin(ct);
+                double sx = transform.worldToScreenX(cx);
+                double sy = transform.worldToScreenY(cy);
+                double dist = Math.hypot(sx - mouseSX, sy - mouseSY);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestX = cx;
+                    bestY = cy;
+                }
+            }
+        }
+
+        if (bestDist < GeometryConfig.Snapping.GRID_SNAP_THRESHOLD_PIXELS) {
+            if (Math.abs(bestX - Math.round(bestX)) < 1e-9) bestX = Math.round(bestX);
+            if (Math.abs(bestY - Math.round(bestY)) < 1e-9) bestY = Math.round(bestY);
+            return new double[]{bestX, bestY};
         }
         return null;
     }

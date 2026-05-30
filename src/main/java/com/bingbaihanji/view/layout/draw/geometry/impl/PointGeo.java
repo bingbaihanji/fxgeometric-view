@@ -11,11 +11,15 @@ import com.bingbaihanji.view.layout.draw.geometry.GeometryVisitor;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 public class PointGeo extends AbstractWorldObject {
 
+    private final static Logger log = LoggerFactory.getLogger(PointGeo.class);
+    
     private double x;
     private double y;
 
@@ -250,7 +254,7 @@ public class PointGeo extends AbstractWorldObject {
 
     @Override
     public void onClick(double wx, double wy) {
-        System.out.println("点被点击：" + x + ", " + y);
+        log.info("点被点击：{}, {}", x, y);
     }
 
     @Override

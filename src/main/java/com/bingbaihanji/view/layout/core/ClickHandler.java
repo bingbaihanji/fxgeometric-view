@@ -4,6 +4,8 @@ import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.controller.SnapCalculator;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.scene.input.MouseEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -13,6 +15,8 @@ import java.util.List;
  * 鼠标左键点击: 吸附计算 → 命中测试 → 分派 onClick 或打印坐标
  */
 public class ClickHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(ClickHandler.class);
 
     private final GridChartView view;
     private final WorldTransform transform;
@@ -45,8 +49,7 @@ public class ClickHandler {
                     return;
                 }
             }
-
-            System.out.printf("point(x = %.2f, y = %.2f)%n", worldX, worldY);
+            log.info("point(x = {}, y = {})", String.format("%.2f", worldX), String.format("%.2f", worldY));
         });
     }
 }

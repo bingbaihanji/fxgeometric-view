@@ -1,6 +1,8 @@
 package com.bingbaihanji.view.layout.core;
 
+import com.bingbaihanji.constant.GridType;
 import com.bingbaihanji.controller.SnapCalculator;
+import com.bingbaihanji.view.layout.core.EuclidianViewSettings;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.animation.PauseTransition;
 import javafx.scene.Node;
@@ -102,7 +104,17 @@ public class HoverTooltipManager {
         double x = snap.x;
         double y = snap.y;
 
-        String text = String.format("(%.2f, %.2f)", x, y);
+        // 极坐标网格下显示极坐标 (r, θ°)，其他网格显示笛卡尔坐标 (x, y)
+        String text;
+        EuclidianViewSettings settings = snapCalculator.getSettings();
+        if (settings.getGridType() == GridType.POLAR) {
+            double r = Math.sqrt(x * x + y * y);
+            double thetaDeg = Math.toDegrees(Math.atan2(y, x));
+            thetaDeg = Math.round(thetaDeg * 10) / 10.0; // 消除浮点精度噪声
+            text = String.format("(r=%.2f, θ=%.1f°)", r, thetaDeg);
+        } else {
+            text = String.format("(%.2f, %.2f)", x, y);
+        }
         hoverTooltip.setText(text);
 
         hoverTooltip.show(

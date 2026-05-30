@@ -44,7 +44,7 @@ public class StyleManager {
     // 描边发光效果（可运行时调整）
     public static boolean GLOW_ENABLED = true;
     public static double GLOW_ALPHA = 0.3;   // 发光透明度
-    public static double GLOW_WIDTH_BONUS = 2.5; // 发光额外线宽（像素）
+    public static double GLOW_WIDTH_BONUS = 3.2; // 发光额外线宽（像素）
 
     // 坐标轴和网格颜色
     public static final Color AXES_COLOR = Color.valueOf("#f7a707");

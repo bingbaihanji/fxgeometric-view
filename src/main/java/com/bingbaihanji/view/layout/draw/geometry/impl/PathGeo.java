@@ -8,6 +8,8 @@ import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.GeometryVisitor;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +25,8 @@ import java.util.List;
  * @date 2025-12-23
  */
 public class PathGeo extends AbstractWorldObject {
+    
+    private final static Logger log = LoggerFactory.getLogger(PathGeo.class);
 
     /**
      * 路径上的所有点(世界坐标)
@@ -106,7 +110,7 @@ public class PathGeo extends AbstractWorldObject {
 
     @Override
     public void onClick(double wx, double wy) {
-        System.out.println("手绘路径被点击");
+        log.info("手绘路径被点击");
     }
 
     @Override

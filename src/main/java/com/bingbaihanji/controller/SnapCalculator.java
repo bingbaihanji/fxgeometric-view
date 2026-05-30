@@ -29,6 +29,11 @@ public class SnapCalculator {
         this(settings, transform, null);
     }
 
+    /** 获取视图设置（供 HoverTooltipManager 等读取网格类型） */
+    public EuclidianViewSettings getSettings() {
+        return settings;
+    }
+
     public SnapCalculator(EuclidianViewSettings settings, WorldTransform transform, Region host) {
         this.settings = settings;
         this.transform = transform;
@@ -231,25 +236,44 @@ public class SnapCalculator {
         return worldValue;
     }
 
-    /** 极坐标网格吸附：转极坐标 → 对齐 r/θ → 转回直角坐标 */
+    /** 极坐标网格吸附：搜索鼠标附近 3×3 网格交点，找最近者 */
     private double[] snapToPolarGrid(double worldX, double worldY) {
         double step = CartesianGridGenerator.getGridStep(transform, settings);
-        double angleStep = settings.getPolarAngleStep();
+        double angleStepDeg = settings.getPolarAngleStep();
+        double angleStepRad = Math.toRadians(angleStepDeg);
 
         double r = Math.sqrt(worldX * worldX + worldY * worldY);
         double theta = Math.atan2(worldY, worldX);
 
-        double snappedR = Math.round(r / step) * step;
-        if (snappedR < 0) snappedR = 0;
-        double snappedTheta = Math.round(theta / angleStep) * angleStep;
+        int kR = (int) Math.round(r / step);
+        if (kR < 0) kR = 0;
+        int kTheta = (int) Math.round(theta / angleStepRad);
 
-        double snappedX = snappedR * Math.cos(snappedTheta);
-        double snappedY = snappedR * Math.sin(snappedTheta);
+        double mouseSX = transform.worldToScreenX(worldX);
+        double mouseSY = transform.worldToScreenY(worldY);
+        double bestDist = Double.MAX_VALUE;
+        double bestX = worldX, bestY = worldY;
 
-        double scale = (transform.getScaleX() + transform.getScaleY()) / 2.0;
-        double pixelDist = Math.hypot(snappedX - worldX, snappedY - worldY) * scale;
-        if (pixelDist < 8) { // GRID_SNAP_THRESHOLD_PIXELS = 8
-            return new double[]{stabilize(snappedX), stabilize(snappedY)};
+        for (int dr = -1; dr <= 1; dr++) {
+            double cr = (kR + dr) * step;
+            if (cr < 0) continue;
+            for (int dt = -1; dt <= 1; dt++) {
+                double ct = (kTheta + dt) * angleStepRad;
+                double cx = cr * Math.cos(ct);
+                double cy = cr * Math.sin(ct);
+                double sx = transform.worldToScreenX(cx);
+                double sy = transform.worldToScreenY(cy);
+                double dist = Math.hypot(sx - mouseSX, sy - mouseSY);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestX = cx;
+                    bestY = cy;
+                }
+            }
+        }
+
+        if (bestDist < 12) {
+            return new double[]{stabilize(bestX), stabilize(bestY)};
         }
         return null;
     }

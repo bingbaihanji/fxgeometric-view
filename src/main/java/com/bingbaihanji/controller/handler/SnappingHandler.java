@@ -41,7 +41,7 @@ public class SnappingHandler {
     /**
      * 网格吸附阈值(像素)
      */
-    private static final double GRID_SNAP_THRESHOLD_PIXELS = 8.0;
+    private static final double GRID_SNAP_THRESHOLD_PIXELS = 12.0;
 
     /**
      * 特殊点缓存
@@ -229,38 +229,52 @@ public class SnappingHandler {
     }
 
     /**
-     * 极坐标网格吸附：转为极坐标 → 对齐 r 和 θ → 转回直角坐标
+     * 极坐标网格吸附：搜索鼠标附近 3×3 网格交点，找屏幕距离最近的点
      * <p>
-     * 极坐标网格的交点位于同心圆与放射线的交点上。
-     * 世界原点(0,0)为极点，正X轴为极轴。
+     * 不能简单地独立取整 r 和 θ，因为极坐标网格交点在屏幕空间的
+     * 间距差异很大（同一圆上相邻放射线的弧距随 r 增大而增大）。
+     * 改为在 r 和 θ 的取整值附近搜索 3×3 邻域，取屏幕距离最近者。
      */
     private double[] snapToPolarGrid(double worldX, double worldY,
                                       EuclidianViewSettings settings, WorldTransform transform) {
         double step = CartesianGridGenerator.getGridStep(transform, settings);
-        double angleStep = settings.getPolarAngleStep();
+        double angleStepDeg = settings.getPolarAngleStep();
+        double angleStepRad = Math.toRadians(angleStepDeg);
 
-        // 世界坐标 → 极坐标（原点为极点）
         double r = Math.sqrt(worldX * worldX + worldY * worldY);
         double theta = Math.atan2(worldY, worldX);
 
-        // 对齐 r 和 θ 到最近步长
-        double snappedR = Math.round(r / step) * step;
-        if (snappedR < 0) {
-            snappedR = 0;
+        int kR = (int) Math.round(r / step);
+        if (kR < 0) kR = 0;
+        int kTheta = (int) Math.round(theta / angleStepRad);
+
+        double mouseSX = transform.worldToScreenX(worldX);
+        double mouseSY = transform.worldToScreenY(worldY);
+
+        double bestDist = Double.MAX_VALUE;
+        double bestX = worldX, bestY = worldY;
+
+        // 搜索 r 索引 ±1、θ 索引 ±1 范围内的网格交点
+        for (int dr = -1; dr <= 1; dr++) {
+            double cr = (kR + dr) * step;
+            if (cr < 0) continue;
+            for (int dt = -1; dt <= 1; dt++) {
+                double ct = (kTheta + dt) * angleStepRad;
+                double cx = cr * Math.cos(ct);
+                double cy = cr * Math.sin(ct);
+                double sx = transform.worldToScreenX(cx);
+                double sy = transform.worldToScreenY(cy);
+                double dist = Math.hypot(sx - mouseSX, sy - mouseSY);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestX = cx;
+                    bestY = cy;
+                }
+            }
         }
-        double snappedTheta = Math.round(theta / angleStep) * angleStep;
 
-        // 极坐标 → 直角坐标
-        double snappedX = snappedR * Math.cos(snappedTheta);
-        double snappedY = snappedR * Math.sin(snappedTheta);
-
-        // 用屏幕像素距离判断阈值（等比例缩放下世界距离×scale=像素距离）
-        double scale = (transform.getScaleX() + transform.getScaleY()) / 2.0;
-        double worldDist = Math.hypot(snappedX - worldX, snappedY - worldY);
-        if (worldDist * scale < GRID_SNAP_THRESHOLD_PIXELS) {
-            snappedX = stabilize(snappedX);
-            snappedY = stabilize(snappedY);
-            return new double[]{snappedX, snappedY};
+        if (bestDist < GRID_SNAP_THRESHOLD_PIXELS) {
+            return new double[]{stabilize(bestX), stabilize(bestY)};
         }
         return null;
     }
