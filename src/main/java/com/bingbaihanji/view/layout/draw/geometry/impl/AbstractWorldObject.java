@@ -160,6 +160,7 @@ public abstract class AbstractWorldObject implements WorldObject {
     protected AbstractWorldObject(ObjectType objectType) {
         this.id = ObjectIdGenerator.nextId();
         this.objectType = objectType;
+        this.lineWidth = com.bingbaihanji.util.StyleManager.defaultLineWidth;
     }
 
     //   基本信息实现  

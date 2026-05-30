@@ -66,6 +66,36 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.graalvm.buildtools</groupId>
+        <artifactId>native-maven-plugin</artifactId>
+        <version>1.1.1</version>
+        <extensions>true</extensions>
+        <executions>
+          <execution>
+            <id>build-native</id>
+            <phase>package</phase>
+            <goals>
+              <goal>compile-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <mainClass>com.bingbaihanji.FXGeometricApplication</mainClass>
+          <buildArgs>
+            <arg>--no-fallback</arg>
+            <arg>-H:+ReportExceptionStackTraces</arg>
+          </buildArgs>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.gluonhq</groupId>
+        <artifactId>gluonfx-maven-plugin</artifactId>
+        <version>1.0.27</version>
+        <configuration>
+          <mainClass>com.bingbaihanji.FXGeometricApplication</mainClass>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
   <dependencies>
@@ -107,12 +137,11 @@
     </dependency>
   </dependencies>
   <properties>
-    <maven.compiler.target>17</maven.compiler.target>
-    <java.version>17</java.version>
-    <maven.compiler.source>17</maven.compiler.source>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <javafx.version>17.0.6</javafx.version>
-    <org.joml.version>1.10.5</org.joml.version>
+    <java.version>21</java.version>
+    <maven.compiler.source>21</maven.compiler.source>
     <apache.commons.math3.version>3.6.1</apache.commons.math3.version>
+    <maven.compiler.target>21</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <org.joml.version>1.10.5</org.joml.version>
   </properties>
 </project>

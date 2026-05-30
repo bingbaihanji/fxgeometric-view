@@ -35,7 +35,16 @@ public class StyleManager {
     public static final Color GEOMETRY_HOVER = Color.ORANGE;
     public static final Color GEOMETRY_CONSTRAINED = Color.DARKBLUE;
     public static final Color GEOMETRY_REUSED = Color.PURPLE;        // 复用组点颜色
-    public static final Color GEOMETRY_LINE = Color.LIGHTSLATEGRAY; // 默认线条颜色
+    public static final Color GEOMETRY_LINE = Color.LIGHTSLATEGRAY; // 历史常量，请使用 defaultLineColor
+
+    // 可配置的线条样式默认值
+    public static Color defaultLineColor = Color.LIGHTSLATEGRAY;  // 默认线条颜色
+    public static double defaultLineWidth = 0.8;                   // 默认线宽（像素）
+
+    // 描边发光效果（可运行时调整）
+    public static boolean GLOW_ENABLED = true;
+    public static double GLOW_ALPHA = 0.3;   // 发光透明度
+    public static double GLOW_WIDTH_BONUS = 2.5; // 发光额外线宽（像素）
 
     // 坐标轴和网格颜色
     public static final Color AXES_COLOR = Color.valueOf("#f7a707");

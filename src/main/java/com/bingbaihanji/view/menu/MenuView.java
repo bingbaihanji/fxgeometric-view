@@ -24,6 +24,7 @@ public class MenuView extends MenuBar {
 
     private MenuItem systemSettingsItem; // 系统设置菜单项
     private MenuItem drawingSettingsItem; // 绘制设置菜单项
+    private MenuItem lineStyleSettingsItem; // 线条样式设置菜单项
 
     public MenuView() {
         initializeMenus();
@@ -110,7 +111,10 @@ public class MenuView extends MenuBar {
         // 创建"绘制设置"菜单项
         drawingSettingsItem = new MenuItem(getMenuName("menu.settings.drawingSettings"));
 
-        settingsMenu.getItems().addAll(systemSettingsItem, drawingSettingsItem);
+        // 创建"线条样式设置"菜单项
+        lineStyleSettingsItem = new MenuItem(getMenuName("menu.settings.lineStyleSettings"));
+
+        settingsMenu.getItems().addAll(systemSettingsItem, drawingSettingsItem, lineStyleSettingsItem);
 
         // 4. 将所有菜单添加到菜单栏
         menus.addAll(fileMenu, toolMenu, viewMenu, settingsMenu);
@@ -216,5 +220,13 @@ public void setOnShowAxisSelected(Runnable action) {
 
     public void setOnDrawingSettingsAction(Runnable action) {
         drawingSettingsItem.setOnAction(e -> action.run());
+    }
+
+    public MenuItem getLineStyleSettingsItem() {
+        return lineStyleSettingsItem;
+    }
+
+    public void setOnLineStyleSettingsAction(Runnable action) {
+        lineStyleSettingsItem.setOnAction(e -> action.run());
     }
 }

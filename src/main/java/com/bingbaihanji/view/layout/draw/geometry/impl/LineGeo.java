@@ -48,7 +48,7 @@ public class LineGeo extends AbstractWorldObject {
                 autoName ? manager.assignName(startX, startY) : null);
         this.endPoint = new ReusableCoordinate(endX, endY,
                 autoName ? manager.assignName(endX, endY) : null);
-        this.color = StyleManager.GEOMETRY_LINE;
+        this.color = StyleManager.defaultLineColor;
     }
 
     /**
@@ -66,7 +66,7 @@ public class LineGeo extends AbstractWorldObject {
         if (endPointRef == null) {
             this.endPoint.setName(manager.assignName(endX, endY));
         }
-        this.color = StyleManager.GEOMETRY_LINE;
+        this.color = StyleManager.defaultLineColor;
     }
 
     public double getStartX() {
@@ -117,6 +117,18 @@ public class LineGeo extends AbstractWorldObject {
         double sx2 = transform.worldToScreenX(getEndX());
         double sy2 = transform.worldToScreenY(getEndY());
 
+        // 发光通道（稍宽、半透明、实线）
+        if (StyleManager.GLOW_ENABLED) {
+        gc.save();
+        LineStyleUtil.resetLineStyle(gc);
+        gc.setGlobalAlpha(StyleManager.GLOW_ALPHA);
+        gc.setLineWidth(getEffectiveLineWidth() + StyleManager.GLOW_WIDTH_BONUS);
+        gc.setStroke(getEffectiveColor());
+        gc.strokeLine(sx1, sy1, sx2, sy2);
+        gc.restore();
+        }
+
+        // 主描边
         LineStyleUtil.applyLineStyle(gc, lineType);
         gc.setStroke(getEffectiveColor());
         gc.setLineWidth(getEffectiveLineWidth());

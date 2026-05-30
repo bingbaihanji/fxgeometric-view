@@ -47,7 +47,7 @@ public class RegularPolygonGeo extends AbstractWorldObject {
         this.startAngle = -Math.PI / 2;
         this.center = new ReusableCoordinate(cx, cy,
                 PointNameManager.getInstance().assignCenterName(cx, cy));
-        this.color = StyleManager.GEOMETRY_LINE;
+        this.color = StyleManager.defaultLineColor;
         this.cachedVertices = new ArrayList<>();
         this.vertexPoints = new ArrayList<>();
         createVertexPoints();
@@ -63,7 +63,7 @@ public class RegularPolygonGeo extends AbstractWorldObject {
         this.startAngle = -Math.PI / 2;
         this.center = new ReusableCoordinate(cx, cy,
                 autoNameCenter ? PointNameManager.getInstance().assignCenterName(cx, cy) : null);
-        this.color = StyleManager.GEOMETRY_LINE;
+        this.color = StyleManager.defaultLineColor;
         this.cachedVertices = new ArrayList<>();
         this.vertexPoints = new ArrayList<>();
         createVertexPoints();
@@ -88,7 +88,7 @@ public class RegularPolygonGeo extends AbstractWorldObject {
         if (centerPoint == null) {
             this.center.setName(PointNameManager.getInstance().assignCenterName(cx, cy));
         }
-        this.color = StyleManager.GEOMETRY_LINE;
+        this.color = StyleManager.defaultLineColor;
         this.cachedVertices = new ArrayList<>();
         this.vertexPoints = new ArrayList<>();
         createVertexPoints();
@@ -230,6 +230,18 @@ public class RegularPolygonGeo extends AbstractWorldObject {
         FillRenderer.fillPolygon(gc, fillType, fillColor, fillOpacity,
                 hatchAngle, hatchDistance, xPoints, yPoints, sideCount);
 
+        // 发光通道（稍宽、半透明、实线）
+        if (StyleManager.GLOW_ENABLED) {
+        gc.save();
+        LineStyleUtil.resetLineStyle(gc);
+        gc.setGlobalAlpha(StyleManager.GLOW_ALPHA);
+        gc.setLineWidth(getEffectiveLineWidth() + StyleManager.GLOW_WIDTH_BONUS);
+        gc.setStroke(getEffectiveColor());
+        gc.strokePolygon(xPoints, yPoints, sideCount);
+        gc.restore();
+        }
+
+        // 主描边
         LineStyleUtil.applyLineStyle(gc, lineType);
         gc.setStroke(getEffectiveColor());
         gc.setLineWidth(getEffectiveLineWidth());

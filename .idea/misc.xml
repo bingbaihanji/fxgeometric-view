@@ -12,5 +12,5 @@
       </list>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_25" default="true" project-jdk-name="liberica-25" project-jdk-type="JavaSDK" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_21" default="true" project-jdk-name="bellsoft-liberica-graalvm-full-openjdk21-23.1.11" project-jdk-type="JavaSDK" />
 </project>

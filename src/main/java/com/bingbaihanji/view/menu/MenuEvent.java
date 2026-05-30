@@ -134,6 +134,27 @@ public class MenuEvent {
             });
         });
 
+        // 线条样式设置菜单
+        menuView.setOnLineStyleSettingsAction(() -> {
+            System.out.println("打开线条样式设置");
+            Platform.runLater(() -> {
+                LineStyleSettingsDialog dialog = new LineStyleSettingsDialog();
+                var result = dialog.showAndWait();
+                result.ifPresent(settings -> {
+                    com.bingbaihanji.util.StyleManager.defaultLineColor = settings.getColor();
+                    com.bingbaihanji.util.StyleManager.defaultLineWidth = settings.getLineWidth();
+                    com.bingbaihanji.util.StyleManager.GLOW_ENABLED = settings.isGlowEnabled();
+                    com.bingbaihanji.util.StyleManager.GLOW_ALPHA = settings.getGlowAlpha();
+                    com.bingbaihanji.util.StyleManager.GLOW_WIDTH_BONUS = settings.getGlowWidth();
+                    System.out.println("线条样式设置已更新");
+                    // 已绘制图形需要重绘以反映变化
+                    if (node instanceof GridChartView gcv) {
+                        gcv.redraw();
+                    }
+                });
+            });
+        });
+
         return menuView;
     }
 

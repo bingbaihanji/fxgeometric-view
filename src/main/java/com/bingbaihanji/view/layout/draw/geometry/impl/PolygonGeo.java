@@ -51,7 +51,7 @@ public class PolygonGeo extends AbstractWorldObject {
         }
 
         this.vertexPoints = new ArrayList<>();
-        this.color = StyleManager.GEOMETRY_LINE;
+        this.color = StyleManager.defaultLineColor;
 
         // 为每个坐标创建内部顶点点对象(不显示名称,作为多边形内部顶点)
         for (int i = 0; i < vertices.length; i += 2) {
@@ -74,7 +74,7 @@ public class PolygonGeo extends AbstractWorldObject {
         }
 
         this.vertexPoints = new ArrayList<>(pointRefs);
-        this.color = StyleManager.GEOMETRY_LINE;
+        this.color = StyleManager.defaultLineColor;
     }
 
     @Override
@@ -95,8 +95,18 @@ public class PolygonGeo extends AbstractWorldObject {
         FillRenderer.fillPolygon(gc, fillType, fillColor, fillOpacity,
                 hatchAngle, hatchDistance, xPoints, yPoints, vertexPoints.size());
 
-        // 再绘制多边形边框
-        // 应用线型
+        // 发光通道（稍宽、半透明、实线）
+        if (StyleManager.GLOW_ENABLED) {
+        gc.save();
+        LineStyleUtil.resetLineStyle(gc);
+        gc.setGlobalAlpha(StyleManager.GLOW_ALPHA);
+        gc.setLineWidth(getEffectiveLineWidth() + StyleManager.GLOW_WIDTH_BONUS);
+        gc.setStroke(getEffectiveColor());
+        gc.strokePolygon(xPoints, yPoints, vertexPoints.size());
+        gc.restore();
+        }
+
+        // 主描边
         LineStyleUtil.applyLineStyle(gc, lineType);
         gc.setStroke(getEffectiveColor());
         gc.setLineWidth(getEffectiveLineWidth());

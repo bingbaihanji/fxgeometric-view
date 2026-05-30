@@ -45,40 +45,48 @@ public class PathGeo extends AbstractWorldObject {
             this.pathPoints.add(new Point(p.getX(), p.getY()));
         }
 
-        this.color = StyleManager.GEOMETRY_LINE;
+        this.color = StyleManager.defaultLineColor;
     }
 
     @Override
     public void paint(GraphicsContext gc, WorldTransform transform, double w, double h) {
         if (!visible || pathPoints.size() < 2) return;
 
-        // 绘制曲线路径(使用 Path API 一次性绘制,性能更好)
+        // 发光通道（稍宽、半透明、实线）
+        if (StyleManager.GLOW_ENABLED) {
+        gc.save();
+        LineStyleUtil.resetLineStyle(gc);
+        gc.setGlobalAlpha(StyleManager.GLOW_ALPHA);
+        gc.setLineWidth(getEffectiveLineWidth() + StyleManager.GLOW_WIDTH_BONUS);
+        gc.setStroke(getEffectiveColor());
+        drawPath(gc, transform);
+        gc.restore();
+        }
+
+        // 主描边
         LineStyleUtil.applyLineStyle(gc, lineType);
         gc.setStroke(getEffectiveColor());
         gc.setLineWidth(getEffectiveLineWidth());
+        drawPath(gc, transform);
+        LineStyleUtil.resetLineStyle(gc);
+    }
 
-        // 开始路径绘制
+    /** 构建并描边路径（from beginPath 到 stroke） */
+    private void drawPath(GraphicsContext gc, WorldTransform transform) {
         gc.beginPath();
 
-        // 移动到起点
         Point firstPoint = pathPoints.get(0);
         double sx = transform.worldToScreenX(firstPoint.x);
         double sy = transform.worldToScreenY(firstPoint.y);
         gc.moveTo(sx, sy);
 
-        // 连接后续所有点
         for (int i = 1; i < pathPoints.size(); i++) {
             Point p = pathPoints.get(i);
             double screenX = transform.worldToScreenX(p.x);
             double screenY = transform.worldToScreenY(p.y);
             gc.lineTo(screenX, screenY);
         }
-
-        // 描边路径
         gc.stroke();
-
-        // 重置线型
-        LineStyleUtil.resetLineStyle(gc);
     }
 
     @Override

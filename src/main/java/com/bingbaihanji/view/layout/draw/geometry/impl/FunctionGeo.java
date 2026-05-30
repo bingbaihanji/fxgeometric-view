@@ -84,7 +84,7 @@ public abstract class FunctionGeo extends AbstractWorldObject {
      */
     protected FunctionGeo() {
         super(ObjectType.FUNCTION);
-        this.color = StyleManager.GEOMETRY_LINE;
+        this.color = StyleManager.defaultLineColor;
         this.lineWidth = 2.0;
         this.labelVisible = true;
     }
@@ -173,10 +173,21 @@ public abstract class FunctionGeo extends AbstractWorldObject {
         LineStyleUtil.applyLineStyle(gc, lineType);
         gc.setStroke(getEffectiveColor());
         // 悬停时增加线宽以提供视觉反馈
-        gc.setLineWidth(hover ? getEffectiveLineWidth() + 1.5 : getEffectiveLineWidth());
+        double mainLineWidth = hover ? getEffectiveLineWidth() + 1.5 : getEffectiveLineWidth();
+        gc.setLineWidth(mainLineWidth);
         gc.setGlobalAlpha(opacity);
 
-        // 绘制曲线(处理断点)
+        // 发光通道（稍宽、半透明、实线）
+        if (StyleManager.GLOW_ENABLED) {
+        gc.save();
+        LineStyleUtil.resetLineStyle(gc);
+        gc.setGlobalAlpha(opacity * StyleManager.GLOW_ALPHA);
+        gc.setLineWidth(mainLineWidth + StyleManager.GLOW_WIDTH_BONUS);
+        drawCurve(gc, transform);
+        gc.restore();
+        }
+
+        // 主描边
         drawCurve(gc, transform);
 
         // 重置状态
