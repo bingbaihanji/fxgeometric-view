@@ -31,7 +31,9 @@ public class CoordSystemRenderer {
     private final TickLabelRenderer tickLabelRenderer = new TickLabelRenderer();
     private final AxisLabelRenderer axisLabelRenderer = new AxisLabelRenderer();
 
-    /** 当前使用的坐标系统 */
+    /**
+     * 当前使用的坐标系统
+     */
     private CoordinateSystem currentSystem;
 
     /**
@@ -106,7 +108,9 @@ public class CoordSystemRenderer {
         axisLabelRenderer.paint(gc, transform, settings, width, height);
     }
 
-    /** 根据 GridType 选择 CoordinateSystem 实现 */
+    /**
+     * 根据 GridType 选择 CoordinateSystem 实现
+     */
     private CoordinateSystem selectSystem(GridType gridType) {
         if (gridType == GridType.POLAR) {
             return polarSystem;

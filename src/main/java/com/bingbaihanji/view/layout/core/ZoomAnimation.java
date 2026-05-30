@@ -18,10 +18,14 @@ import java.util.function.Consumer;
  */
 public class ZoomAnimation {
 
-    /** 动画帧数 */
+    /**
+     * 动画帧数
+     */
     private static final int FRAMES = 15;
 
-    /** 总时长 */
+    /**
+     * 总时长
+     */
     private static final Duration DURATION = Duration.millis(400);
 
     private Timeline timeline;
@@ -69,19 +73,25 @@ public class ZoomAnimation {
         timeline.play();
     }
 
-    /** 停止当前动画 */
+    /**
+     * 停止当前动画
+     */
     public void stop() {
         if (timeline != null) {
             timeline.stop();
         }
     }
 
-    /** 线性插值 */
+    /**
+     * 线性插值
+     */
     private double lerp(double a, double b, double t) {
         return a + (b - a) * t;
     }
 
-    /** easeInOutCubic 缓动函数：起止慢，中间快 */
+    /**
+     * easeInOutCubic 缓动函数：起止慢，中间快
+     */
     private double easeInOutCubic(double t) {
         return t < 0.5
                 ? 4 * t * t * t
@@ -98,13 +108,17 @@ public class ZoomAnimation {
      */
     public record TransformSnapshot(double xZero, double yZero, double xScale, double yScale) {
 
-        /** 从 WorldTransform 创建快照 */
+        /**
+         * 从 WorldTransform 创建快照
+         */
         public static TransformSnapshot from(WorldTransform t) {
             return new TransformSnapshot(t.getOffsetX(), t.getOffsetY(),
                     t.getScaleX(), t.getScaleY());
         }
 
-        /** 将快照应用到 WorldTransform */
+        /**
+         * 将快照应用到 WorldTransform
+         */
         public void applyTo(WorldTransform t) {
             t.setOffset(xZero, yZero);
             t.setScaleX(xScale);

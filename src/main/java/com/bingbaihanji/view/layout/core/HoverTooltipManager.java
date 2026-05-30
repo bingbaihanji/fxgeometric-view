@@ -2,7 +2,6 @@ package com.bingbaihanji.view.layout.core;
 
 import com.bingbaihanji.constant.GridType;
 import com.bingbaihanji.controller.SnapCalculator;
-import com.bingbaihanji.view.layout.core.EuclidianViewSettings;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import javafx.animation.PauseTransition;
 import javafx.scene.Node;

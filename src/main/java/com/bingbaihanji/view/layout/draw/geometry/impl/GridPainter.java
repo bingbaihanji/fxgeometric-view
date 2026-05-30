@@ -18,7 +18,7 @@ import javafx.scene.canvas.GraphicsContext;
  *
  * @author bingbaihanji
  * @deprecated 已拆分为 CartesianGridGenerator, PolarGridGenerator, IsometricGridGenerator, DotGridGenerator。
- *             请使用 CoordSystemRenderer 替代。
+ * 请使用 CoordSystemRenderer 替代。
  */
 @Deprecated
 public class GridPainter implements WorldPainter {
@@ -31,7 +31,9 @@ public class GridPainter implements WorldPainter {
         this.settings = settings;
     }
 
-    /** 旧版兼容 */
+    /**
+     * 旧版兼容
+     */
     public GridPainter(GridMode gridMode) {
         this.settings = new EuclidianViewSettings();
         this.settings.setGridType(GridType.fromGridMode(gridMode));
@@ -41,12 +43,16 @@ public class GridPainter implements WorldPainter {
         this.settings = settings;
     }
 
-    /** 旧版兼容：获取当前网格类型对应的 GridMode */
+    /**
+     * 旧版兼容：获取当前网格类型对应的 GridMode
+     */
     public GridMode getGridMode() {
         return settings.getGridType().toGridMode();
     }
 
-    /** 旧版兼容：设置网格模式（自动转换为新 GridType） */
+    /**
+     * 旧版兼容：设置网格模式（自动转换为新 GridType）
+     */
     public void setGridMode(GridMode gridMode) {
         if (settings != null) {
             settings.setGridType(GridType.fromGridMode(gridMode));
@@ -61,11 +67,11 @@ public class GridPainter implements WorldPainter {
         }
 
         switch (settings.getGridType()) {
-            case DOT          -> paintDotGrid(gc, transform, width, height);
-            case CARTESIAN    -> paintCartesianGrid(gc, transform, width, height, false);
+            case DOT -> paintDotGrid(gc, transform, width, height);
+            case CARTESIAN -> paintCartesianGrid(gc, transform, width, height, false);
             case CARTESIAN_WITH_SUBGRID -> paintCartesianGrid(gc, transform, width, height, true);
-            case POLAR        -> paintPolarGrid(gc, transform, width, height);
-            case ISOMETRIC    -> paintIsometricGrid(gc, transform, width, height);
+            case POLAR -> paintPolarGrid(gc, transform, width, height);
+            case ISOMETRIC -> paintIsometricGrid(gc, transform, width, height);
         }
     }
 
@@ -97,7 +103,7 @@ public class GridPainter implements WorldPainter {
      * 参考 GeoGebra DrawGrid.drawCartesianGrid() 的 startGeneralPath/endAndDrawGeneralPath 模式。
      */
     private void paintCartesianGrid(GraphicsContext gc, WorldTransform transform,
-                                     double width, double height, boolean withSubGrid) {
+                                    double width, double height, boolean withSubGrid) {
         double step = getGridStep(transform.getScale());
         double tickStepX = transform.getScaleX() * step;
         double tickStepY = transform.getScaleY() * step;
@@ -231,7 +237,7 @@ public class GridPainter implements WorldPainter {
      * - 屏幕斜率 = ±√3 * scaleY/scaleX，考虑 X/Y 轴不等比例
      */
     private void paintIsometricGrid(GraphicsContext gc, WorldTransform transform,
-                                     double width, double height) {
+                                    double width, double height) {
         double step = getGridStep(transform.getScale());
         double tickStepX = transform.getScaleX() * step * Math.sqrt(3.0);
         double x0 = transform.worldToScreenX(0);

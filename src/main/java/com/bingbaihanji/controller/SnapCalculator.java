@@ -29,15 +29,17 @@ public class SnapCalculator {
         this(settings, transform, null);
     }
 
-    /** 获取视图设置（供 HoverTooltipManager 等读取网格类型） */
-    public EuclidianViewSettings getSettings() {
-        return settings;
-    }
-
     public SnapCalculator(EuclidianViewSettings settings, WorldTransform transform, Region host) {
         this.settings = settings;
         this.transform = transform;
         this.host = host;
+    }
+
+    /**
+     * 获取视图设置（供 HoverTooltipManager 等读取网格类型）
+     */
+    public EuclidianViewSettings getSettings() {
+        return settings;
     }
 
     /**
@@ -236,7 +238,9 @@ public class SnapCalculator {
         return worldValue;
     }
 
-    /** 极坐标网格吸附：搜索鼠标附近 3×3 网格交点，找最近者 */
+    /**
+     * 极坐标网格吸附：搜索鼠标附近 3×3 网格交点，找最近者
+     */
     private double[] snapToPolarGrid(double worldX, double worldY) {
         double step = CartesianGridGenerator.getGridStep(transform, settings);
         double angleStepDeg = settings.getPolarAngleStep();
@@ -278,7 +282,9 @@ public class SnapCalculator {
         return null;
     }
 
-    /** 等距网格吸附：屏幕空间查找最近格子顶点 → 转回世界坐标 */
+    /**
+     * 等距网格吸附：屏幕空间查找最近格子顶点 → 转回世界坐标
+     */
     private double[] snapToIsometricGrid(double worldX, double worldY) {
         double step = CartesianGridGenerator.getGridStep(transform, settings);
         double scaleX = transform.getScaleX();

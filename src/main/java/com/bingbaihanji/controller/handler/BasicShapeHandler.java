@@ -531,7 +531,9 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
         }
     }
 
-    /** 绘制焦点标签 */
+    /**
+     * 绘制焦点标签
+     */
     private void drawFocusLabel(GraphicsContext gc, WorldTransform transform,
                                 double wx, double wy, String label) {
         double sx = transform.worldToScreenX(wx);

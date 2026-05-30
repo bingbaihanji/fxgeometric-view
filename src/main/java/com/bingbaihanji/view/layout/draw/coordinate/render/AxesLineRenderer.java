@@ -17,7 +17,9 @@ import javafx.scene.canvas.GraphicsContext;
  */
 public class AxesLineRenderer {
 
-    /** 边界轴线判定阈值（像素） */
+    /**
+     * 边界轴线判定阈值（像素）
+     */
     private static final double EDGE_THRESHOLD = 30;
 
     /**

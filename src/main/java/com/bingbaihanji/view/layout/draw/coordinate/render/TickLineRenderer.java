@@ -15,18 +15,22 @@ import java.util.List;
  */
 public class TickLineRenderer {
 
-    /** 主刻度线长度（像素） */
+    /**
+     * 主刻度线长度（像素）
+     */
     private static final double MAJOR_TICK_LENGTH = 8;
 
-    /** 次刻度线长度（像素） */
+    /**
+     * 次刻度线长度（像素）
+     */
     private static final double MINOR_TICK_LENGTH = 4;
 
     /**
      * 绘制 X 轴方向的刻度线
      *
-     * @param gc     画布上下文
-     * @param ticks  刻度信息列表
-     * @param axisY  Y 轴在屏幕上的位置
+     * @param gc    画布上下文
+     * @param ticks 刻度信息列表
+     * @param axisY Y 轴在屏幕上的位置
      */
     public void drawXTickLines(GraphicsContext gc, List<TickInfo> ticks, double axisY) {
         for (TickInfo tick : ticks) {
@@ -45,9 +49,9 @@ public class TickLineRenderer {
     /**
      * 绘制 Y 轴方向的刻度线
      *
-     * @param gc     画布上下文
-     * @param ticks  刻度信息列表
-     * @param axisX  X 轴在屏幕上的位置
+     * @param gc    画布上下文
+     * @param ticks 刻度信息列表
+     * @param axisX X 轴在屏幕上的位置
      */
     public void drawYTickLines(GraphicsContext gc, List<TickInfo> ticks, double axisX) {
         for (TickInfo tick : ticks) {

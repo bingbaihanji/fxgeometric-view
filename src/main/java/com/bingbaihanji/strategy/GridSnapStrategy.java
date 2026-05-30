@@ -33,7 +33,9 @@ public class GridSnapStrategy implements SnapStrategy {
         }
     }
 
-    /** 笛卡尔网格吸附 */
+    /**
+     * 笛卡尔网格吸附
+     */
     private double[] snapToCartesian(double x, double y, WorldTransform transform) {
         double scale = transform.getScale();
         double threshold = GeometryConfig.Snapping.GRID_SNAP_THRESHOLD_PIXELS / scale;
@@ -51,9 +53,11 @@ public class GridSnapStrategy implements SnapStrategy {
         return null;
     }
 
-    /** 极坐标网格吸附：搜索鼠标附近 3×3 网格交点，找最近者 */
+    /**
+     * 极坐标网格吸附：搜索鼠标附近 3×3 网格交点，找最近者
+     */
     private double[] snapToPolar(double worldX, double worldY,
-                                  EuclidianViewSettings settings, WorldTransform transform) {
+                                 EuclidianViewSettings settings, WorldTransform transform) {
         double step = CartesianGridGenerator.getGridStep(transform, settings);
         double angleStepDeg = settings.getPolarAngleStep();
         double angleStepRad = Math.toRadians(angleStepDeg);
@@ -96,9 +100,11 @@ public class GridSnapStrategy implements SnapStrategy {
         return null;
     }
 
-    /** 等距网格吸附 */
+    /**
+     * 等距网格吸附
+     */
     private double[] snapToIsometric(double worldX, double worldY,
-                                      EuclidianViewSettings settings, WorldTransform transform) {
+                                     EuclidianViewSettings settings, WorldTransform transform) {
         double step = CartesianGridGenerator.getGridStep(transform, settings);
         double scaleX = transform.getScaleX();
         double scaleY = transform.getScaleY();

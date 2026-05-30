@@ -184,7 +184,9 @@ public class LineStyleSettingsDialog extends Dialog<LineStyleSettingsDialog.Sett
         glowWidthSlider.setValue(2.0);
     }
 
-    /** 设置结果 */
+    /**
+     * 设置结果
+     */
     public static class SettingsResult {
         private final Color color;
         private final double lineWidth;
@@ -193,7 +195,7 @@ public class LineStyleSettingsDialog extends Dialog<LineStyleSettingsDialog.Sett
         private final double glowWidth;
 
         public SettingsResult(Color color, double lineWidth, boolean glowEnabled,
-                             double glowAlpha, double glowWidth) {
+                              double glowAlpha, double glowWidth) {
             this.color = color;
             this.lineWidth = lineWidth;
             this.glowEnabled = glowEnabled;
@@ -201,10 +203,24 @@ public class LineStyleSettingsDialog extends Dialog<LineStyleSettingsDialog.Sett
             this.glowWidth = glowWidth;
         }
 
-        public Color getColor() { return color; }
-        public double getLineWidth() { return lineWidth; }
-        public boolean isGlowEnabled() { return glowEnabled; }
-        public double getGlowAlpha() { return glowAlpha; }
-        public double getGlowWidth() { return glowWidth; }
+        public Color getColor() {
+            return color;
+        }
+
+        public double getLineWidth() {
+            return lineWidth;
+        }
+
+        public boolean isGlowEnabled() {
+            return glowEnabled;
+        }
+
+        public double getGlowAlpha() {
+            return glowAlpha;
+        }
+
+        public double getGlowWidth() {
+            return glowWidth;
+        }
     }
 }

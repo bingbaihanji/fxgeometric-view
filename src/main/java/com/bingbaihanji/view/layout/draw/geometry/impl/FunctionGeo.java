@@ -179,12 +179,12 @@ public abstract class FunctionGeo extends AbstractWorldObject {
 
         // 发光通道（稍宽、半透明、实线）
         if (StyleManager.GLOW_ENABLED) {
-        gc.save();
-        LineStyleUtil.resetLineStyle(gc);
-        gc.setGlobalAlpha(opacity * StyleManager.GLOW_ALPHA);
-        gc.setLineWidth(mainLineWidth + StyleManager.GLOW_WIDTH_BONUS);
-        drawCurve(gc, transform);
-        gc.restore();
+            gc.save();
+            LineStyleUtil.resetLineStyle(gc);
+            gc.setGlobalAlpha(opacity * StyleManager.GLOW_ALPHA);
+            gc.setLineWidth(mainLineWidth + StyleManager.GLOW_WIDTH_BONUS);
+            drawCurve(gc, transform);
+            gc.restore();
         }
 
         // 主描边

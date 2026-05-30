@@ -157,7 +157,7 @@ public class MenuView extends MenuBar {
         return isometricModeItem;
     }
 
-public ToggleGroup getGridModeGroup() {
+    public ToggleGroup getGridModeGroup() {
         return dotModeItem.getToggleGroup();
     }
 
@@ -206,7 +206,7 @@ public ToggleGroup getGridModeGroup() {
         isometricModeItem.setOnAction(e -> action.run());
     }
 
-public void setOnShowAxisSelected(Runnable action) {
+    public void setOnShowAxisSelected(Runnable action) {
         showAxis.setOnAction(e -> action.run());
     }
 

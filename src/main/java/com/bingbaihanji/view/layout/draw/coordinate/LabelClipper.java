@@ -10,7 +10,9 @@ package com.bingbaihanji.view.layout.draw.coordinate;
  */
 public class LabelClipper {
 
-    /** 默认边缘安全距离（像素） */
+    /**
+     * 默认边缘安全距离（像素）
+     */
     private static final int DEFAULT_MARGIN = 15;
 
     /**

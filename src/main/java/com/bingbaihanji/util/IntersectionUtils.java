@@ -1,11 +1,7 @@
 package com.bingbaihanji.util;
 
 import com.bingbaihanji.config.GeometryConfig;
-import com.bingbaihanji.view.layout.draw.geometry.impl.CircleGeo;
-import com.bingbaihanji.view.layout.draw.geometry.impl.EllipseGeo;
-import com.bingbaihanji.view.layout.draw.geometry.impl.FunctionGeo;
-import com.bingbaihanji.view.layout.draw.geometry.impl.InfiniteLineGeo;
-import com.bingbaihanji.view.layout.draw.geometry.impl.LineGeo;
+import com.bingbaihanji.view.layout.draw.geometry.impl.*;
 import javafx.geometry.Point2D;
 
 import java.util.ArrayList;
@@ -719,7 +715,9 @@ public class IntersectionUtils {
         return intersections;
     }
 
-    /** 点到线段的符号距离（正=线一侧，负=另一侧） */
+    /**
+     * 点到线段的符号距离（正=线一侧，负=另一侧）
+     */
     private static double signedDistanceToLine(double px, double py,
                                                double x1, double y1, double x2, double y2) {
         return (x2 - x1) * (py - y1) - (y2 - y1) * (px - x1);

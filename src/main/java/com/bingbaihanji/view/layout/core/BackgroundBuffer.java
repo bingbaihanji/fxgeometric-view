@@ -17,19 +17,29 @@ import javafx.scene.paint.Color;
  */
 public class BackgroundBuffer {
 
-    /** 离屏画布，尺寸跟随视口 */
+    /**
+     * 离屏画布，尺寸跟随视口
+     */
     private Canvas offscreenCanvas;
 
-    /** 脏标记：true 表示缓存失效，需要重绘 */
+    /**
+     * 脏标记：true 表示缓存失效，需要重绘
+     */
     private boolean dirty = true;
 
-    /** 缓存的快照图像，避免每次 copyTo 时重新分配 */
+    /**
+     * 缓存的快照图像，避免每次 copyTo 时重新分配
+     */
     private WritableImage cachedImage;
 
-    /** 当前缓存对应的视口宽度 */
+    /**
+     * 当前缓存对应的视口宽度
+     */
     private double cachedWidth;
 
-    /** 当前缓存对应的视口高度 */
+    /**
+     * 当前缓存对应的视口高度
+     */
     private double cachedHeight;
 
     /**

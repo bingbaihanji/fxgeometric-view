@@ -20,15 +20,35 @@ import java.util.List;
  */
 public class CartesianGridGenerator {
 
-    /** 次网格等分数量 */
+    /**
+     * 次网格等分数量
+     */
     private static final int SUB_GRID_DIVISIONS = 5;
+
+    /**
+     * 计算网格步长（世界单位）
+     * <p>
+     * 优先与坐标轴刻度同步，参考 GeoGebra 的 gridDistances 计算。
+     */
+    public static double getGridStep(WorldTransform transform, EuclidianViewSettings settings) {
+        if (settings.isSyncGridWithAxes() && settings.isAutoGridDistance()) {
+            double axisTickDistance = AxisTickCalculator.calculateAxisTickDistance(
+                    transform.getScale(), false);
+            return AxisTickCalculator.calculateGridDistance(axisTickDistance,
+                    settings.getGridDistanceFactor());
+        }
+        if (!settings.isAutoGridDistance()) {
+            return settings.getGridDistance();
+        }
+        return AxisTickCalculator.calculateAxisTickDistance(transform.getScale(), false);
+    }
 
     /**
      * 生成笛卡尔网格线列表
      *
-     * @param transform 世界坐标变换
-     * @param settings  视图配置
-     * @param viewWidth 视口宽度（像素）
+     * @param transform  世界坐标变换
+     * @param settings   视图配置
+     * @param viewWidth  视口宽度（像素）
      * @param viewHeight 视口高度（像素）
      * @return 网格线段列表（屏幕坐标）
      */
@@ -63,7 +83,9 @@ public class CartesianGridGenerator {
         return elements;
     }
 
-    /** 生成次网格线段，跳过与主网格重叠的线 */
+    /**
+     * 生成次网格线段，跳过与主网格重叠的线
+     */
     private void generateSubGridLines(List<GridElement> elements,
                                       double viewWidth, double viewHeight,
                                       double mainStepX, double mainStepY,
@@ -84,23 +106,5 @@ public class CartesianGridGenerator {
             elements.add(new GridElement.GridLineSegment(
                     new Point2D(0, sy), new Point2D(viewHeight, sy), true));
         }
-    }
-
-    /**
-     * 计算网格步长（世界单位）
-     * <p>
-     * 优先与坐标轴刻度同步，参考 GeoGebra 的 gridDistances 计算。
-     */
-    public static double getGridStep(WorldTransform transform, EuclidianViewSettings settings) {
-        if (settings.isSyncGridWithAxes() && settings.isAutoGridDistance()) {
-            double axisTickDistance = AxisTickCalculator.calculateAxisTickDistance(
-                    transform.getScale(), false);
-            return AxisTickCalculator.calculateGridDistance(axisTickDistance,
-                    settings.getGridDistanceFactor());
-        }
-        if (!settings.isAutoGridDistance()) {
-            return settings.getGridDistance();
-        }
-        return AxisTickCalculator.calculateAxisTickDistance(transform.getScale(), false);
     }
 }

@@ -19,7 +19,9 @@ import java.util.List;
  */
 public class TickLabelRenderer {
 
-    /** 标签距离视口边缘的安全距离（像素） */
+    /**
+     * 标签距离视口边缘的安全距离（像素）
+     */
     private static final double LABEL_EDGE_MARGIN = 15;
 
     /**
@@ -92,7 +94,9 @@ public class TickLabelRenderer {
         return formatNumericUnit(v, step);
     }
 
-    /** 格式化 π 单位 */
+    /**
+     * 格式化 π 单位
+     */
     private String formatPiUnit(double v) {
         double piMultiple = v / Math.PI;
         if (MathCalculationUtils.isZero(piMultiple, 1e-6)) return "0";
@@ -111,7 +115,9 @@ public class TickLabelRenderer {
         return String.format("%.2fπ", piMultiple);
     }
 
-    /** 格式化数值单位 */
+    /**
+     * 格式化数值单位
+     */
     private String formatNumericUnit(double v, double step) {
         if (step >= 10000) {
             return String.format("%.1E", v).replaceAll("E([+-])0+(\\d)", "E$1$2");

@@ -280,8 +280,13 @@ public class IntersectionHandler {
             }
         }
 
-        public WorldObject getA() { return a; }
-        public WorldObject getB() { return b; }
+        public WorldObject getA() {
+            return a;
+        }
+
+        public WorldObject getB() {
+            return b;
+        }
 
         boolean contains(WorldObject obj) {
             return a == obj || b == obj;

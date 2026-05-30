@@ -236,7 +236,7 @@ public class SnappingHandler {
      * 改为在 r 和 θ 的取整值附近搜索 3×3 邻域，取屏幕距离最近者。
      */
     private double[] snapToPolarGrid(double worldX, double worldY,
-                                      EuclidianViewSettings settings, WorldTransform transform) {
+                                     EuclidianViewSettings settings, WorldTransform transform) {
         double step = CartesianGridGenerator.getGridStep(transform, settings);
         double angleStepDeg = settings.getPolarAngleStep();
         double angleStepRad = Math.toRadians(angleStepDeg);
@@ -286,7 +286,7 @@ public class SnappingHandler {
      * x = x0 + j * tickStepX/2, y = startY + (j%2)*tickStepY/2 + k*tickStepY
      */
     private double[] snapToIsometricGrid(double worldX, double worldY,
-                                          EuclidianViewSettings settings, WorldTransform transform) {
+                                         EuclidianViewSettings settings, WorldTransform transform) {
         double step = CartesianGridGenerator.getGridStep(transform, settings);
         double scaleX = transform.getScaleX();
         double scaleY = transform.getScaleY();

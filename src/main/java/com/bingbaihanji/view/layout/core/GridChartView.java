@@ -45,6 +45,14 @@ public class GridChartView extends Pane {
     private final SnapCalculator snapCalculator;
     private final HoverTooltipManager tooltipManager;
     private final ViewportController viewportController;
+    /**
+     * 背景层离屏缓存，避免每帧重复绘制网格和坐标轴
+     */
+    private final BackgroundBuffer backgroundBuffer = new BackgroundBuffer();
+    /**
+     * 坐标系统统一渲染器（替代 GridPainter + AxesPainter）
+     */
+    private final CoordSystemRenderer coordSystemRenderer = new CoordSystemRenderer();
     private WorldObject hoverObject = null;
     // 预览绘制器
     private BiConsumer<GraphicsContext, WorldTransform> previewPainter;
@@ -73,10 +81,6 @@ public class GridChartView extends Pane {
     private Cursor customDefaultCursor = null;
     // 重绘防抖标记：避免同帧内多次redraw()导致重复绘制
     private boolean redrawScheduled = false;
-    /** 背景层离屏缓存，避免每帧重复绘制网格和坐标轴 */
-    private final BackgroundBuffer backgroundBuffer = new BackgroundBuffer();
-    /** 坐标系统统一渲染器（替代 GridPainter + AxesPainter） */
-    private final CoordSystemRenderer coordSystemRenderer = new CoordSystemRenderer();
     private int trigFunctionCount = 0;
 
     //  构造

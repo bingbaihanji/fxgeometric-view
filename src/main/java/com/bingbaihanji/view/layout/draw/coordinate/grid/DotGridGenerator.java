@@ -19,9 +19,9 @@ public class DotGridGenerator {
     /**
      * 生成点状网格元素列表
      *
-     * @param transform 世界坐标变换
-     * @param settings  视图配置
-     * @param viewWidth 视口宽度（像素）
+     * @param transform  世界坐标变换
+     * @param settings   视图配置
+     * @param viewWidth  视口宽度（像素）
      * @param viewHeight 视口高度（像素）
      * @return 点状网格元素列表（屏幕坐标）
      */

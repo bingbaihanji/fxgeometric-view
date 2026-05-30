@@ -25,7 +25,7 @@ import java.util.List;
  * @date 2025-12-23
  */
 public class PathGeo extends AbstractWorldObject {
-    
+
     private final static Logger log = LoggerFactory.getLogger(PathGeo.class);
 
     /**
@@ -58,13 +58,13 @@ public class PathGeo extends AbstractWorldObject {
 
         // 发光通道（稍宽、半透明、实线）
         if (StyleManager.GLOW_ENABLED) {
-        gc.save();
-        LineStyleUtil.resetLineStyle(gc);
-        gc.setGlobalAlpha(StyleManager.GLOW_ALPHA);
-        gc.setLineWidth(getEffectiveLineWidth() + StyleManager.GLOW_WIDTH_BONUS);
-        gc.setStroke(getEffectiveColor());
-        drawPath(gc, transform);
-        gc.restore();
+            gc.save();
+            LineStyleUtil.resetLineStyle(gc);
+            gc.setGlobalAlpha(StyleManager.GLOW_ALPHA);
+            gc.setLineWidth(getEffectiveLineWidth() + StyleManager.GLOW_WIDTH_BONUS);
+            gc.setStroke(getEffectiveColor());
+            drawPath(gc, transform);
+            gc.restore();
         }
 
         // 主描边
@@ -75,7 +75,9 @@ public class PathGeo extends AbstractWorldObject {
         LineStyleUtil.resetLineStyle(gc);
     }
 
-    /** 构建并描边路径（from beginPath 到 stroke） */
+    /**
+     * 构建并描边路径（from beginPath 到 stroke）
+     */
     private void drawPath(GraphicsContext gc, WorldTransform transform) {
         gc.beginPath();
 

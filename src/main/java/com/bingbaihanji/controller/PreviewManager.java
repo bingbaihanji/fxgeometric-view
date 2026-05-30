@@ -415,7 +415,9 @@ public class PreviewManager {
         private boolean active = false;
         private boolean f2Set = false; // F2 是否已设置
 
-        /** 设置焦点1 */
+        /**
+         * 设置焦点1
+         */
         public void setFocus1(double x, double y) {
             this.f1x = x;
             this.f1y = y;
@@ -423,14 +425,18 @@ public class PreviewManager {
             this.f2Set = false;
         }
 
-        /** 设置焦点2，进入第三阶段 */
+        /**
+         * 设置焦点2，进入第三阶段
+         */
         public void setFocus2(double x, double y) {
             this.f2x = x;
             this.f2y = y;
             this.f2Set = true;
         }
 
-        /** 当前 2a 值（鼠标位置到两焦点距离之和） */
+        /**
+         * 当前 2a 值（鼠标位置到两焦点距离之和）
+         */
         public double getTwoA() {
             if (!f2Set) return 0;
             return Math.hypot(mouseX - f1x, mouseY - f1y)

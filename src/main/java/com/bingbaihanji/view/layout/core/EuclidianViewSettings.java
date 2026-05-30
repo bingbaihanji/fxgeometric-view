@@ -18,196 +18,167 @@ public class EuclidianViewSettings {
     //   坐标轴配置  
 
     /**
+     * 设置变更监听器列表
+     */
+    private final java.util.List<Runnable> settingsChangeListeners = new java.util.ArrayList<>();
+    /**
      * X轴缩放比例(像素/单位)
      */
     private double xScale = 50.0;
-
     /**
      * Y轴缩放比例(像素/单位)
      */
     private double yScale = 50.0;
-
     /**
      * X轴最小值
      */
     private double xMin = -10.0;
-
     /**
      * X轴最大值
      */
     private double xMax = 10.0;
-
     /**
      * Y轴最小值
      */
     private double yMin = -10.0;
-
     /**
      * Y轴最大值
      */
     private double yMax = 10.0;
-
     /**
      * 是否自动计算X轴刻度间距
      */
     private boolean autoXTickDistance = true;
-
     /**
      * X轴刻度间距(手动模式)
      */
     private double xTickDistance = 1.0;
-
     /**
      * 是否自动计算Y轴刻度间距
      */
     private boolean autoYTickDistance = true;
-
     /**
      * Y轴刻度间距(手动模式)
      */
     private double yTickDistance = 1.0;
-
     /**
      * X轴刻度样式
      */
     private AxisTickStyle xTickStyle = AxisTickStyle.MAJOR_ONLY;
-
     /**
      * Y轴刻度样式
      */
     private AxisTickStyle yTickStyle = AxisTickStyle.MAJOR_ONLY;
-
     /**
      * X轴箭头类型
      */
     private AxisArrowType xArrowType = AxisArrowType.ARROW;
-
     /**
      * Y轴箭头类型
      */
     private AxisArrowType yArrowType = AxisArrowType.ARROW;
-
     /**
      * 单位标签类型
      */
     private UnitLabelType unitLabelType = UnitLabelType.NUMERIC;
-
     /**
      * 自定义单位标签(如 "cm", "m" 等)
      */
     private String customUnitLabel = "";
-
     /**
      * 坐标轴颜色
      */
     private Color axesColor = Color.web("#f7a707"); // 橙色
-
     /**
      * 坐标轴线型
      */
     private LineType axesLineType = LineType.FULL;
-
     /**
      * 是否显示X轴
      */
     private boolean showXAxis = true;
-
     /**
      * 是否显示Y轴
      */
     private boolean showYAxis = true;
 
+    //   网格配置  
     /**
      * 是否显示坐标轴刻度数字
      */
     private boolean showAxesNumbers = true;
-
-    //   网格配置  
-
     /**
      * 网格类型
      */
     private GridType gridType = GridType.DOT;
-
     /**
      * 是否显示网格
      */
     private boolean showGrid = true;
-
     /**
      * 网格颜色
      */
     private Color gridColor = Color.rgb(126, 126, 126);
-
     /**
      * 次网格颜色(用于主网格+次网格模式)
      */
     private Color subGridColor = Color.rgb(200, 200, 200);
-
     /**
      * 网格线型
      */
     private LineType gridLineType = LineType.DASHED_SHORT;
-
     /**
      * 是否自动计算网格间距
      */
     private boolean autoGridDistance = true;
-
     /**
      * 网格间距(手动模式)
      */
     private double gridDistance = 1.0;
-
     /**
      * 极坐标网格的角度步长(弧度)
      */
     private double polarAngleStep = 30.0; // 30度
-
     /**
      * 是否启用网格吸附
      * true: 鼠标在网格交点附近时自动吸附
      * false: 禁用网格吸附
      */
     private boolean gridSnapEnabled = true;
-
     /**
      * 网格距离因子(用于计算网格间距相对于坐标轴刻度的倍数)
      * 默认为1.0,表示网格间距 = 坐标轴刻度间距 * 1.0
      * 参考 GeoGebra 的 DEFAULT_GRID_DIST_FACTOR
      */
     private double gridDistanceFactor = 1.0;
-
     /**
      * 是否启用网格与坐标轴刻度同步
      * true: 网格间距自动跟随坐标轴刻度变化(推荐)
      * false: 网格间距独立计算
      */
     private boolean syncGridWithAxes = true;
-
     /**
      * X轴是否使用π单位(影响刻度计算)
      */
     private boolean xAxisPiUnit = false;
 
+    //   吸附配置  
     /**
      * Y轴是否使用π单位(影响刻度计算)
      */
     private boolean yAxisPiUnit = false;
-
-    //   吸附配置  
-
     /**
      * 吸附模式集合(可同时启用多种)
      */
     private Set<SnapMode> snapModes = new HashSet<>();
 
+    //   构造函数  
     /**
      * 吸附阈值(像素)
      */
     private double snapThreshold = 10.0;
 
-    //   构造函数  
+    //   Getter and Setter  
 
     public EuclidianViewSettings() {
         // 默认启用网格吸附、点吸附和轴向吸附
@@ -216,8 +187,6 @@ public class EuclidianViewSettings {
         snapModes.add(SnapMode.AXIS_VERTICAL);
         snapModes.add(SnapMode.AXIS_HORIZONTAL);
     }
-
-    //   Getter and Setter  
 
     public double getXScale() {
         return xScale;
@@ -521,14 +490,11 @@ public class EuclidianViewSettings {
         return gridSnapEnabled;
     }
 
+    // ==================== 设置变更传播 ====================
+
     public void setGridSnapEnabled(boolean gridSnapEnabled) {
         this.gridSnapEnabled = gridSnapEnabled;
     }
-
-    // ==================== 设置变更传播 ====================
-
-    /** 设置变更监听器列表 */
-    private final java.util.List<Runnable> settingsChangeListeners = new java.util.ArrayList<>();
 
     /**
      * 批量修改多个设置，只触发一次回调通知
@@ -558,7 +524,9 @@ public class EuclidianViewSettings {
         settingsChangeListeners.remove(listener);
     }
 
-    /** 通知所有监听器设置已变更 */
+    /**
+     * 通知所有监听器设置已变更
+     */
     private void notifySettingsChanged() {
         for (Runnable listener : settingsChangeListeners) {
             try {

@@ -19,7 +19,9 @@ import java.util.List;
  */
 public class GridElementPainter {
 
-    /** 网格点直径（像素） */
+    /**
+     * 网格点直径（像素）
+     */
     private static final double DOT_SIZE = 2.0;
 
     /**
@@ -46,7 +48,9 @@ public class GridElementPainter {
         paintDots(gc, elements, settings.getGridColor());
     }
 
-    /** 绘制指定类型的网格线段和圆（分两批次，避免圆弧干扰直线路径） */
+    /**
+     * 绘制指定类型的网格线段和圆（分两批次，避免圆弧干扰直线路径）
+     */
     private void paintByType(GraphicsContext gc, List<GridElement> elements, boolean subGrid,
                              Color color, double lineWidth, EuclidianViewSettings settings) {
         gc.setStroke(color);
@@ -88,7 +92,9 @@ public class GridElementPainter {
         LineStyleUtil.resetLineStyle(gc);
     }
 
-    /** 绘制点状网格节点 */
+    /**
+     * 绘制点状网格节点
+     */
     private void paintDots(GraphicsContext gc, List<GridElement> elements, Color color) {
         gc.setFill(color);
         for (GridElement element : elements) {

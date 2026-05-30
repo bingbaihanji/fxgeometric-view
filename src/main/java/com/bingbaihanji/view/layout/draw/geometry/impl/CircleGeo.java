@@ -96,13 +96,13 @@ public class CircleGeo extends AbstractWorldObject {
 
         // 发光通道（稍宽、半透明、实线）
         if (StyleManager.GLOW_ENABLED) {
-        gc.save();
-        LineStyleUtil.resetLineStyle(gc);
-        gc.setGlobalAlpha(StyleManager.GLOW_ALPHA);
-        gc.setLineWidth(getEffectiveLineWidth() + StyleManager.GLOW_WIDTH_BONUS);
-        gc.setStroke(getEffectiveColor());
-        gc.strokeOval(sx - sr, sy - sr, sr * 2, sr * 2);
-        gc.restore();
+            gc.save();
+            LineStyleUtil.resetLineStyle(gc);
+            gc.setGlobalAlpha(StyleManager.GLOW_ALPHA);
+            gc.setLineWidth(getEffectiveLineWidth() + StyleManager.GLOW_WIDTH_BONUS);
+            gc.setStroke(getEffectiveColor());
+            gc.strokeOval(sx - sr, sy - sr, sr * 2, sr * 2);
+            gc.restore();
         }
 
         // 主描边

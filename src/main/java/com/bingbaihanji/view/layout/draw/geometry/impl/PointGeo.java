@@ -19,7 +19,7 @@ import java.util.List;
 public class PointGeo extends AbstractWorldObject {
 
     private final static Logger log = LoggerFactory.getLogger(PointGeo.class);
-    
+
     private double x;
     private double y;
 

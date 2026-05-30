@@ -15,11 +15,14 @@ import java.util.List;
  */
 public class LabelPositionTracker {
 
-    /** 已占用区域列表（屏幕坐标） */
-    private final List<Rectangle2D> occupiedRegions = new ArrayList<>();
-
-    /** 标签周围的安全边距（像素） */
+    /**
+     * 标签周围的安全边距（像素）
+     */
     private static final double PADDING = 4.0;
+    /**
+     * 已占用区域列表（屏幕坐标）
+     */
+    private final List<Rectangle2D> occupiedRegions = new ArrayList<>();
 
     /**
      * 记录一个标签的屏幕位置
@@ -72,5 +75,6 @@ public class LabelPositionTracker {
      * @param start 区间起点 X（屏幕坐标）
      * @param end   区间终点 X（屏幕坐标）
      */
-    public record SkipInterval(double start, double end) {}
+    public record SkipInterval(double start, double end) {
+    }
 }
