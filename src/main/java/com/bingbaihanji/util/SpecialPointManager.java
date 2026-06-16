@@ -111,31 +111,36 @@ public class SpecialPointManager {
      */
     private static List<SpecialPoint> extractFunctionAxisIntersections(FunctionGeo function) {
         List<SpecialPoint> intersections = new ArrayList<>();
-        List<Point2D> sampledPoints = function.getSampledPoints();
+        List<List<Point2D>> sampledSegments = function.getSampledSegments();
 
-        if (sampledPoints == null || sampledPoints.size() < 2) {
+        if (sampledSegments == null || sampledSegments.isEmpty()) {
             return intersections;
         }
 
-        // 遍历采样点,查找与x轴的交点(y=0)
-        for (int i = 0; i < sampledPoints.size() - 1; i++) {
-            Point2D p1 = sampledPoints.get(i);
-            Point2D p2 = sampledPoints.get(i + 1);
-
-            if (!isValidPoint(p1) || !isValidPoint(p2)) {
+        // 遍历连续采样片段,查找与x轴的交点(y=0)
+        for (List<Point2D> sampledPoints : sampledSegments) {
+            if (sampledPoints == null || sampledPoints.size() < 2) {
                 continue;
             }
+            for (int i = 0; i < sampledPoints.size() - 1; i++) {
+                Point2D p1 = sampledPoints.get(i);
+                Point2D p2 = sampledPoints.get(i + 1);
 
-            // 检查y值符号变化(穿过x轴)
-            if (p1.getY() * p2.getY() < 0) {
-                // 线性插值找到交点
-                double t = Math.abs(p1.getY()) / (Math.abs(p1.getY()) + Math.abs(p2.getY()));
-                double xIntersect = p1.getX() + t * (p2.getX() - p1.getX());
-                intersections.add(new SpecialPoint(xIntersect, 0, "AXIS_INTERSECTION"));
-            }
-            // 特殊情况：某个点恰好在x轴上
-            else if (Math.abs(p1.getY()) < 1e-6) {
-                intersections.add(new SpecialPoint(p1.getX(), 0, "AXIS_INTERSECTION"));
+                if (!isValidPoint(p1) || !isValidPoint(p2)) {
+                    continue;
+                }
+
+                // 检查y值符号变化(穿过x轴)
+                if (p1.getY() * p2.getY() < 0) {
+                    // 线性插值找到交点
+                    double t = Math.abs(p1.getY()) / (Math.abs(p1.getY()) + Math.abs(p2.getY()));
+                    double xIntersect = p1.getX() + t * (p2.getX() - p1.getX());
+                    intersections.add(new SpecialPoint(xIntersect, 0, "AXIS_INTERSECTION"));
+                }
+                // 特殊情况：某个点恰好在x轴上
+                else if (Math.abs(p1.getY()) < 1e-6) {
+                    intersections.add(new SpecialPoint(p1.getX(), 0, "AXIS_INTERSECTION"));
+                }
             }
         }
 
@@ -173,13 +178,13 @@ public class SpecialPointManager {
         // 如果涉及函数对象,先检查采样点是否有效
         if (obj1 instanceof FunctionGeo) {
             FunctionGeo func = (FunctionGeo) obj1;
-            if (func.getSampledPoints() == null || func.getSampledPoints().isEmpty()) {
+            if (func.getSampledSegments().isEmpty()) {
                 return intersections; // 采样点未生成,跳过
             }
         }
         if (obj2 instanceof FunctionGeo) {
             FunctionGeo func = (FunctionGeo) obj2;
-            if (func.getSampledPoints() == null || func.getSampledPoints().isEmpty()) {
+            if (func.getSampledSegments().isEmpty()) {
                 return intersections; // 采样点未生成,跳过
             }
         }

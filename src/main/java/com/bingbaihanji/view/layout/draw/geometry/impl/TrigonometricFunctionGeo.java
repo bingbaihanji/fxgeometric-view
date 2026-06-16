@@ -76,7 +76,7 @@ public class TrigonometricFunctionGeo extends FunctionGeo {
     protected void samplePoints(double viewMinX, double viewMaxX,
                                 double viewMinY, double viewMaxY,
                                 double scale) {
-        sampledPoints.clear();
+        clearSampleCache();
 
         // 计算周期
         double period = 2 * Math.PI / Math.abs(omega);
@@ -110,7 +110,9 @@ public class TrigonometricFunctionGeo extends FunctionGeo {
             double y = evaluate(x);
 
             if (Double.isFinite(y)) {
-                sampledPoints.add(new Point2D(x, y));
+                addSamplePoint(new Point2D(x, y));
+            } else {
+                startNewSampleSegment();
             }
         }
     }
@@ -127,14 +129,16 @@ public class TrigonometricFunctionGeo extends FunctionGeo {
 
             // 检查是否在渐近线附近
             if (isNearAsymptote(x)) {
+                startNewSampleSegment();
                 continue;
             }
 
             double y = evaluate(x);
 
-            // 使用基类方法检查y值范围
-            if (isYInViewRange(y, viewMinY, viewMaxY)) {
-                sampledPoints.add(new Point2D(x, y));
+            if (isDrawableFiniteY(y, viewMinY, viewMaxY)) {
+                addSamplePoint(new Point2D(x, y));
+            } else {
+                startNewSampleSegment();
             }
         }
     }

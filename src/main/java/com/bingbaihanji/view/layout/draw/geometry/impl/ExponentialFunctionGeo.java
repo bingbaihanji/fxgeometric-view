@@ -50,7 +50,7 @@ public class ExponentialFunctionGeo extends FunctionGeo {
             double x = x1 + i * dx;
             double y = evaluate(x);
 
-            if (isYInViewRange(y, viewMinY, viewMaxY)) {
+            if (isDrawableFiniteY(y, viewMinY, viewMaxY)) {
                 sampledPoints.add(new Point2D(x, y));
             }
         }

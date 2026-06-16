@@ -491,8 +491,10 @@ public class GridChartView extends Pane {
             double avgScale = (transform.getScaleX() + transform.getScaleY()) / 2;
             transform.setScaleX(avgScale);
             transform.setScaleY(avgScale);
-            settings.setXScale(avgScale);
-            settings.setYScale(avgScale);
+            settings.silentUpdate(s -> {
+                s.setXScale(avgScale);
+                s.setYScale(avgScale);
+            });
         }
     }
 

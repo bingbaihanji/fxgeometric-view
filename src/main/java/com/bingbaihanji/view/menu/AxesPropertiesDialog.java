@@ -291,44 +291,46 @@ public class AxesPropertiesDialog extends Dialog<ButtonType> {
      * 保存UI设置到配置
      */
     private void saveSettings() {
-        settings.setShowXAxis(cbShowXAxis.isSelected());
-        settings.setShowYAxis(cbShowYAxis.isSelected());
-        settings.setShowAxesNumbers(cbShowAxesNumbers.isSelected());
+        settings.batchUpdate(s -> {
+            s.setShowXAxis(cbShowXAxis.isSelected());
+            s.setShowYAxis(cbShowYAxis.isSelected());
+            s.setShowAxesNumbers(cbShowAxesNumbers.isSelected());
 
-        try {
-            settings.setXScale(Double.parseDouble(tfXScale.getText()));
-            settings.setYScale(Double.parseDouble(tfYScale.getText()));
-        } catch (NumberFormatException e) {
-            // 保持原值
-        }
-
-        settings.setAutoXTickDistance(cbAutoXTick.isSelected());
-        if (!cbAutoXTick.isSelected()) {
             try {
-                settings.setXTickDistance(Double.parseDouble(tfXTickDistance.getText()));
+                s.setXScale(Double.parseDouble(tfXScale.getText()));
+                s.setYScale(Double.parseDouble(tfYScale.getText()));
             } catch (NumberFormatException e) {
                 // 保持原值
             }
-        }
 
-        settings.setAutoYTickDistance(cbAutoYTick.isSelected());
-        if (!cbAutoYTick.isSelected()) {
-            try {
-                settings.setYTickDistance(Double.parseDouble(tfYTickDistance.getText()));
-            } catch (NumberFormatException e) {
-                // 保持原值
+            s.setAutoXTickDistance(cbAutoXTick.isSelected());
+            if (!cbAutoXTick.isSelected()) {
+                try {
+                    s.setXTickDistance(Double.parseDouble(tfXTickDistance.getText()));
+                } catch (NumberFormatException e) {
+                    // 保持原值
+                }
             }
-        }
 
-        settings.setXTickStyle(cmbXTickStyle.getValue());
-        settings.setYTickStyle(cmbYTickStyle.getValue());
+            s.setAutoYTickDistance(cbAutoYTick.isSelected());
+            if (!cbAutoYTick.isSelected()) {
+                try {
+                    s.setYTickDistance(Double.parseDouble(tfYTickDistance.getText()));
+                } catch (NumberFormatException e) {
+                    // 保持原值
+                }
+            }
 
-        settings.setXArrowType(cmbXArrowType.getValue());
-        settings.setYArrowType(cmbYArrowType.getValue());
+            s.setXTickStyle(cmbXTickStyle.getValue());
+            s.setYTickStyle(cmbYTickStyle.getValue());
 
-        settings.setUnitLabelType(cmbUnitLabelType.getValue());
+            s.setXArrowType(cmbXArrowType.getValue());
+            s.setYArrowType(cmbYArrowType.getValue());
 
-        settings.setAxesLineType(cmbLineType.getValue());
-        settings.setAxesColor(colorPicker.getValue());
+            s.setUnitLabelType(cmbUnitLabelType.getValue());
+
+            s.setAxesLineType(cmbLineType.getValue());
+            s.setAxesColor(colorPicker.getValue());
+        });
     }
 }

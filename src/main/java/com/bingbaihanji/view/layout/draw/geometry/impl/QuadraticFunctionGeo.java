@@ -66,8 +66,7 @@ public class QuadraticFunctionGeo extends FunctionGeo {
             double x = x1 + i * dx;
             double y = evaluate(x);
 
-            // 使用基类方法检查y值范围
-            if (isYInViewRange(y, viewMinY, viewMaxY)) {
+            if (isDrawableFiniteY(y, viewMinY, viewMaxY)) {
                 sampledPoints.add(new Point2D(x, y));
             }
         }

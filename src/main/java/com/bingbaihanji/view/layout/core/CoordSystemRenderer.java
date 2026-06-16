@@ -59,8 +59,10 @@ public class CoordSystemRenderer {
                 transform.setScaleX(avgScale);
                 transform.setScaleY(avgScale);
                 // 同步回 settings，但不在此处触发布局通知（避免循环）
-                settings.setXScale(avgScale);
-                settings.setYScale(avgScale);
+                settings.silentUpdate(s -> {
+                    s.setXScale(avgScale);
+                    s.setYScale(avgScale);
+                });
             }
         }
 

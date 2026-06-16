@@ -454,50 +454,59 @@ public class IntersectionUtils {
     public static List<Point2D> getFunctionFunctionIntersections(FunctionGeo function1, FunctionGeo function2) {
         List<Point2D> intersections = new ArrayList<>();
 
-        List<Point2D> points1 = function1.getSampledPoints();
-        List<Point2D> points2 = function2.getSampledPoints();
+        List<List<Point2D>> segments1 = function1.getSampledSegments();
+        List<List<Point2D>> segments2 = function2.getSampledSegments();
 
-        if (points1 == null || points1.size() < 2 || points2 == null || points2.size() < 2) {
+        if (segments1 == null || segments1.isEmpty() || segments2 == null || segments2.isEmpty()) {
             return intersections;
         }
 
-        // 遍历第一个函数的所有采样点段
-        for (int i = 0; i < points1.size() - 1; i++) {
-            Point2D p1a = points1.get(i);
-            Point2D p1b = points1.get(i + 1);
-
-            if (!isValidPoint(p1a) || !isValidPoint(p1b)) {
+        // 遍历两个函数的所有连续采样片段
+        for (List<Point2D> points1 : segments1) {
+            if (points1 == null || points1.size() < 2) {
                 continue;
             }
+            for (int i = 0; i < points1.size() - 1; i++) {
+                Point2D p1a = points1.get(i);
+                Point2D p1b = points1.get(i + 1);
 
-            // 遍历第二个函数的所有采样点段
-            for (int j = 0; j < points2.size() - 1; j++) {
-                Point2D p2a = points2.get(j);
-                Point2D p2b = points2.get(j + 1);
-
-                if (!isValidPoint(p2a) || !isValidPoint(p2b)) {
+                if (!isValidPoint(p1a) || !isValidPoint(p1b)) {
                     continue;
                 }
 
-                // 检查两个线段的x范围是否重叠
-                double x1Min = Math.min(p1a.getX(), p1b.getX());
-                double x1Max = Math.max(p1a.getX(), p1b.getX());
-                double x2Min = Math.min(p2a.getX(), p2b.getX());
-                double x2Max = Math.max(p2a.getX(), p2b.getX());
+                for (List<Point2D> points2 : segments2) {
+                    if (points2 == null || points2.size() < 2) {
+                        continue;
+                    }
+                    for (int j = 0; j < points2.size() - 1; j++) {
+                        Point2D p2a = points2.get(j);
+                        Point2D p2b = points2.get(j + 1);
 
-                // 如果x范围不重叠,跳过
-                if (x1Max < x2Min || x2Max < x1Min) {
-                    continue;
+                        if (!isValidPoint(p2a) || !isValidPoint(p2b)) {
+                            continue;
+                        }
+
+                        // 检查两个线段的x范围是否重叠
+                        double x1Min = Math.min(p1a.getX(), p1b.getX());
+                        double x1Max = Math.max(p1a.getX(), p1b.getX());
+                        double x2Min = Math.min(p2a.getX(), p2b.getX());
+                        double x2Max = Math.max(p2a.getX(), p2b.getX());
+
+                        // 如果x范围不重叠,跳过
+                        if (x1Max < x2Min || x2Max < x1Min) {
+                            continue;
+                        }
+
+                        // 计算两条线段的交点
+                        List<Point2D> segmentIntersections = computeLineIntersection(
+                                p1a.getX(), p1a.getY(), p1b.getX(), p1b.getY(),
+                                p2a.getX(), p2a.getY(), p2b.getX(), p2b.getY(),
+                                true, true
+                        );
+
+                        intersections.addAll(segmentIntersections);
+                    }
                 }
-
-                // 计算两条线段的交点
-                List<Point2D> segmentIntersections = computeLineIntersection(
-                        p1a.getX(), p1a.getY(), p1b.getX(), p1b.getY(),
-                        p2a.getX(), p2a.getY(), p2b.getX(), p2b.getY(),
-                        true, true
-                );
-
-                intersections.addAll(segmentIntersections);
             }
         }
 
@@ -545,9 +554,9 @@ public class IntersectionUtils {
      */
     public static List<Point2D> getLineFunctionIntersections(LineGeo line, FunctionGeo function) {
         List<Point2D> intersections = new ArrayList<>();
-        List<Point2D> sampledPoints = function.getSampledPoints();
+        List<List<Point2D>> sampledSegments = function.getSampledSegments();
 
-        if (sampledPoints == null || sampledPoints.size() < 2) {
+        if (sampledSegments == null || sampledSegments.isEmpty()) {
             return intersections;
         }
 
@@ -556,23 +565,28 @@ public class IntersectionUtils {
         double x2 = line.getEndX();
         double y2 = line.getEndY();
 
-        // 遍历函数采样点,检测与线段的交点
-        for (int i = 0; i < sampledPoints.size() - 1; i++) {
-            Point2D p1 = sampledPoints.get(i);
-            Point2D p2 = sampledPoints.get(i + 1);
-
-            if (!isValidPoint(p1) || !isValidPoint(p2)) {
+        // 遍历函数连续采样片段,检测与线段的交点
+        for (List<Point2D> sampledPoints : sampledSegments) {
+            if (sampledPoints == null || sampledPoints.size() < 2) {
                 continue;
             }
+            for (int i = 0; i < sampledPoints.size() - 1; i++) {
+                Point2D p1 = sampledPoints.get(i);
+                Point2D p2 = sampledPoints.get(i + 1);
 
-            // 计算两条线段的交点
-            List<Point2D> segmentIntersections = computeLineIntersection(
-                    x1, y1, x2, y2,
-                    p1.getX(), p1.getY(), p2.getX(), p2.getY(),
-                    true, true
-            );
+                if (!isValidPoint(p1) || !isValidPoint(p2)) {
+                    continue;
+                }
 
-            intersections.addAll(segmentIntersections);
+                // 计算两条线段的交点
+                List<Point2D> segmentIntersections = computeLineIntersection(
+                        x1, y1, x2, y2,
+                        p1.getX(), p1.getY(), p2.getX(), p2.getY(),
+                        true, true
+                );
+
+                intersections.addAll(segmentIntersections);
+            }
         }
 
         return removeDuplicatePoints(intersections, GeometryConfig.Performance.MIN_VALID_DISTANCE * 10);
@@ -587,9 +601,9 @@ public class IntersectionUtils {
      */
     public static List<Point2D> getInfiniteLineFunctionIntersections(InfiniteLineGeo infiniteLine, FunctionGeo function) {
         List<Point2D> intersections = new ArrayList<>();
-        List<Point2D> sampledPoints = function.getSampledPoints();
+        List<List<Point2D>> sampledSegments = function.getSampledSegments();
 
-        if (sampledPoints == null || sampledPoints.size() < 2) {
+        if (sampledSegments == null || sampledSegments.isEmpty()) {
             return intersections;
         }
 
@@ -598,22 +612,27 @@ public class IntersectionUtils {
         double x2 = infiniteLine.getPoint2X();
         double y2 = infiniteLine.getPoint2Y();
 
-        // 遍历函数采样点,检测与无限直线的交点
-        for (int i = 0; i < sampledPoints.size() - 1; i++) {
-            Point2D p1 = sampledPoints.get(i);
-            Point2D p2 = sampledPoints.get(i + 1);
-
-            if (!isValidPoint(p1) || !isValidPoint(p2)) {
+        // 遍历函数连续采样片段,检测与无限直线的交点
+        for (List<Point2D> sampledPoints : sampledSegments) {
+            if (sampledPoints == null || sampledPoints.size() < 2) {
                 continue;
             }
+            for (int i = 0; i < sampledPoints.size() - 1; i++) {
+                Point2D p1 = sampledPoints.get(i);
+                Point2D p2 = sampledPoints.get(i + 1);
 
-            List<Point2D> segmentIntersections = computeLineIntersection(
-                    x1, y1, x2, y2,
-                    p1.getX(), p1.getY(), p2.getX(), p2.getY(),
-                    false, true
-            );
+                if (!isValidPoint(p1) || !isValidPoint(p2)) {
+                    continue;
+                }
 
-            intersections.addAll(segmentIntersections);
+                List<Point2D> segmentIntersections = computeLineIntersection(
+                        x1, y1, x2, y2,
+                        p1.getX(), p1.getY(), p2.getX(), p2.getY(),
+                        false, true
+                );
+
+                intersections.addAll(segmentIntersections);
+            }
         }
 
         return removeDuplicatePoints(intersections, GeometryConfig.Performance.MIN_VALID_DISTANCE * 10);
@@ -628,9 +647,9 @@ public class IntersectionUtils {
      */
     public static List<Point2D> getCircleFunctionIntersections(CircleGeo circle, FunctionGeo function) {
         List<Point2D> intersections = new ArrayList<>();
-        List<Point2D> sampledPoints = function.getSampledPoints();
+        List<List<Point2D>> sampledSegments = function.getSampledSegments();
 
-        if (sampledPoints == null || sampledPoints.size() < 2) {
+        if (sampledSegments == null || sampledSegments.isEmpty()) {
             return intersections;
         }
 
@@ -638,25 +657,30 @@ public class IntersectionUtils {
         double cy = circle.getCy();
         double r = circle.getR();
 
-        // 遍历函数采样线段,检测与圆的交点
-        for (int i = 0; i < sampledPoints.size() - 1; i++) {
-            Point2D p1 = sampledPoints.get(i);
-            Point2D p2 = sampledPoints.get(i + 1);
-
-            if (!isValidPoint(p1) || !isValidPoint(p2)) {
+        // 遍历函数连续采样线段,检测与圆的交点
+        for (List<Point2D> sampledPoints : sampledSegments) {
+            if (sampledPoints == null || sampledPoints.size() < 2) {
                 continue;
             }
+            for (int i = 0; i < sampledPoints.size() - 1; i++) {
+                Point2D p1 = sampledPoints.get(i);
+                Point2D p2 = sampledPoints.get(i + 1);
 
-            // 计算点到圆心的距离
-            double d1 = Math.hypot(p1.getX() - cx, p1.getY() - cy);
-            double d2 = Math.hypot(p2.getX() - cx, p2.getY() - cy);
+                if (!isValidPoint(p1) || !isValidPoint(p2)) {
+                    continue;
+                }
 
-            // 检查是否跨越圆(一个点在圆内,一个点在圆外,或者恰好在圆上)
-            if ((d1 - r) * (d2 - r) <= 0 || Math.abs(d1 - r) < 1e-6 || Math.abs(d2 - r) < 1e-6) {
-                // 创建临时线段,使用线段-圆交点算法
-                LineGeo tempLine = new LineGeo(p1.getX(), p1.getY(), p2.getX(), p2.getY(), false);
-                List<Point2D> segmentIntersections = getLineCircleIntersections(tempLine, circle);
-                intersections.addAll(segmentIntersections);
+                // 计算点到圆心的距离
+                double d1 = Math.hypot(p1.getX() - cx, p1.getY() - cy);
+                double d2 = Math.hypot(p2.getX() - cx, p2.getY() - cy);
+
+                // 检查是否跨越圆(一个点在圆内,一个点在圆外,或者恰好在圆上)
+                if ((d1 - r) * (d2 - r) <= 0 || Math.abs(d1 - r) < 1e-6 || Math.abs(d2 - r) < 1e-6) {
+                    // 创建临时线段,使用线段-圆交点算法
+                    LineGeo tempLine = new LineGeo(p1.getX(), p1.getY(), p2.getX(), p2.getY(), false);
+                    List<Point2D> segmentIntersections = getLineCircleIntersections(tempLine, circle);
+                    intersections.addAll(segmentIntersections);
+                }
             }
         }
 

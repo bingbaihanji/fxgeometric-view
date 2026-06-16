@@ -32,8 +32,10 @@ public class ViewportController {
         double centerWorldY = transform.screenToWorldY(view.getHeight() / 2);
 
         transform.setScale(newScale);
-        settings.setXScale(newScale);
-        settings.setYScale(newScale);
+        settings.silentUpdate(s -> {
+            s.setXScale(newScale);
+            s.setYScale(newScale);
+        });
 
         transform.centerWorldAt(centerWorldX, centerWorldY, view.getWidth(), view.getHeight());
         view.invalidateBackground();
@@ -48,8 +50,10 @@ public class ViewportController {
         double centerWorldY = transform.screenToWorldY(view.getHeight() / 2);
 
         transform.setAxisRatio(xRatio, yRatio);
-        settings.setXScale(transform.getScaleX());
-        settings.setYScale(transform.getScaleY());
+        settings.silentUpdate(s -> {
+            s.setXScale(transform.getScaleX());
+            s.setYScale(transform.getScaleY());
+        });
 
         transform.centerWorldAtWithScales(centerWorldX, centerWorldY, view.getWidth(), view.getHeight());
         view.invalidateBackground();
@@ -78,8 +82,10 @@ public class ViewportController {
         double newScale = Math.min(newScaleX, newScaleY) * 0.9;
 
         transform.setScale(newScale);
-        settings.setXScale(newScale);
-        settings.setYScale(newScale);
+        settings.silentUpdate(s -> {
+            s.setXScale(newScale);
+            s.setYScale(newScale);
+        });
 
         double centerX = (range[0] + range[1]) / 2;
         double centerY = (range[2] + range[3]) / 2;
@@ -96,8 +102,10 @@ public class ViewportController {
         double standardScale = 50.0;
 
         transform.setScale(standardScale);
-        settings.setXScale(standardScale);
-        settings.setYScale(standardScale);
+        settings.silentUpdate(s -> {
+            s.setXScale(standardScale);
+            s.setYScale(standardScale);
+        });
 
         transform.centerWorldAt(0, 0, view.getWidth(), view.getHeight());
         view.invalidateBackground();

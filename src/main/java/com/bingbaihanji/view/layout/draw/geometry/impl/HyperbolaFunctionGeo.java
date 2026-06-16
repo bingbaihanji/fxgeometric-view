@@ -2,9 +2,7 @@ package com.bingbaihanji.view.layout.draw.geometry.impl;
 
 import com.bingbaihanji.util.constraint.HyperbolaFunctionConstraint;
 import com.bingbaihanji.util.constraint.PointConstraint;
-import com.bingbaihanji.view.layout.core.WorldTransform;
 import javafx.geometry.Point2D;
-import javafx.scene.canvas.GraphicsContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +57,7 @@ public class HyperbolaFunctionGeo extends FunctionGeo {
     protected void samplePoints(double viewMinX, double viewMaxX,
                                 double viewMinY, double viewMaxY,
                                 double scale) {
-        sampledPoints.clear();
+        clearSampleCache();
         leftBranchPoints.clear();
         rightBranchPoints.clear();
 
@@ -78,8 +76,7 @@ public class HyperbolaFunctionGeo extends FunctionGeo {
             double x = cx + a * Math.cosh(t);
             double y = cy + b * Math.sinh(t);
 
-            // 检查是否在视图范围内
-            if (x >= viewMinX && x <= viewMaxX && y >= viewMinY && y <= viewMaxY) {
+            if (Double.isFinite(x) && isDrawableFiniteY(y, viewMinY, viewMaxY)) {
                 rightBranchPoints.add(new Point2D(x, y));
             }
         }
@@ -90,8 +87,7 @@ public class HyperbolaFunctionGeo extends FunctionGeo {
             double x = cx - a * Math.cosh(t);
             double y = cy + b * Math.sinh(t);
 
-            // 检查是否在视图范围内
-            if (x >= viewMinX && x <= viewMaxX && y >= viewMinY && y <= viewMaxY) {
+            if (Double.isFinite(x) && isDrawableFiniteY(y, viewMinY, viewMaxY)) {
                 leftBranchPoints.add(new Point2D(x, y));
             }
         }
@@ -99,34 +95,11 @@ public class HyperbolaFunctionGeo extends FunctionGeo {
         // 合并两个分支(保持顺序,先右分支再左分支)
         sampledPoints.addAll(rightBranchPoints);
         sampledPoints.addAll(leftBranchPoints);
-    }
-
-    @Override
-    protected void drawCurve(GraphicsContext gc, WorldTransform transform) {
-        // 分别绘制两个分支,避免连接两个分支
-        drawBranch(gc, transform, rightBranchPoints);
-        drawBranch(gc, transform, leftBranchPoints);
-    }
-
-    /**
-     * 绘制单个分支
-     */
-    private void drawBranch(GraphicsContext gc, WorldTransform transform, List<Point2D> points) {
-        if (points.isEmpty()) {
-            return;
+        if (!rightBranchPoints.isEmpty()) {
+            sampledSegments.add(new ArrayList<>(rightBranchPoints));
         }
-
-        Point2D prevPoint = null;
-        for (Point2D point : points) {
-            if (prevPoint != null) {
-                double sx1 = transform.worldToScreenX(prevPoint.getX());
-                double sy1 = transform.worldToScreenY(prevPoint.getY());
-                double sx2 = transform.worldToScreenX(point.getX());
-                double sy2 = transform.worldToScreenY(point.getY());
-
-                gc.strokeLine(sx1, sy1, sx2, sy2);
-            }
-            prevPoint = point;
+        if (!leftBranchPoints.isEmpty()) {
+            sampledSegments.add(new ArrayList<>(leftBranchPoints));
         }
     }
 

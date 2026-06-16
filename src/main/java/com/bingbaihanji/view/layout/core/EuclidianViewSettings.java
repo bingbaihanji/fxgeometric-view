@@ -22,6 +22,10 @@ public class EuclidianViewSettings {
      */
     private final java.util.List<Runnable> settingsChangeListeners = new java.util.ArrayList<>();
     /**
+     * 批量更新深度。大于0时 setter 只修改值,由最外层 batchUpdate 统一通知。
+     */
+    private int batchUpdateDepth = 0;
+    /**
      * X轴缩放比例(像素/单位)
      */
     private double xScale = 50.0;
@@ -194,6 +198,7 @@ public class EuclidianViewSettings {
 
     public void setXScale(double xScale) {
         this.xScale = xScale;
+        notifySettingsChanged();
     }
 
     public double getYScale() {
@@ -202,6 +207,7 @@ public class EuclidianViewSettings {
 
     public void setYScale(double yScale) {
         this.yScale = yScale;
+        notifySettingsChanged();
     }
 
     public double getXMin() {
@@ -210,6 +216,7 @@ public class EuclidianViewSettings {
 
     public void setXMin(double xMin) {
         this.xMin = xMin;
+        notifySettingsChanged();
     }
 
     public double getXMax() {
@@ -218,6 +225,7 @@ public class EuclidianViewSettings {
 
     public void setXMax(double xMax) {
         this.xMax = xMax;
+        notifySettingsChanged();
     }
 
     public double getYMin() {
@@ -226,6 +234,7 @@ public class EuclidianViewSettings {
 
     public void setYMin(double yMin) {
         this.yMin = yMin;
+        notifySettingsChanged();
     }
 
     public double getYMax() {
@@ -234,6 +243,7 @@ public class EuclidianViewSettings {
 
     public void setYMax(double yMax) {
         this.yMax = yMax;
+        notifySettingsChanged();
     }
 
     public boolean isAutoXTickDistance() {
@@ -242,6 +252,7 @@ public class EuclidianViewSettings {
 
     public void setAutoXTickDistance(boolean autoXTickDistance) {
         this.autoXTickDistance = autoXTickDistance;
+        notifySettingsChanged();
     }
 
     public double getXTickDistance() {
@@ -250,6 +261,7 @@ public class EuclidianViewSettings {
 
     public void setXTickDistance(double xTickDistance) {
         this.xTickDistance = xTickDistance;
+        notifySettingsChanged();
     }
 
     public boolean isAutoYTickDistance() {
@@ -258,6 +270,7 @@ public class EuclidianViewSettings {
 
     public void setAutoYTickDistance(boolean autoYTickDistance) {
         this.autoYTickDistance = autoYTickDistance;
+        notifySettingsChanged();
     }
 
     public double getYTickDistance() {
@@ -266,6 +279,7 @@ public class EuclidianViewSettings {
 
     public void setYTickDistance(double yTickDistance) {
         this.yTickDistance = yTickDistance;
+        notifySettingsChanged();
     }
 
     public AxisTickStyle getXTickStyle() {
@@ -319,6 +333,7 @@ public class EuclidianViewSettings {
 
     public void setCustomUnitLabel(String customUnitLabel) {
         this.customUnitLabel = customUnitLabel;
+        notifySettingsChanged();
     }
 
     public Color getAxesColor() {
@@ -426,6 +441,7 @@ public class EuclidianViewSettings {
 
     public void setGridDistance(double gridDistance) {
         this.gridDistance = gridDistance;
+        notifySettingsChanged();
     }
 
     public double getPolarAngleStep() {
@@ -434,14 +450,16 @@ public class EuclidianViewSettings {
 
     public void setPolarAngleStep(double polarAngleStep) {
         this.polarAngleStep = polarAngleStep;
+        notifySettingsChanged();
     }
 
     public Set<SnapMode> getSnapModes() {
-        return snapModes;
+        return java.util.Collections.unmodifiableSet(snapModes);
     }
 
     public void setSnapModes(Set<SnapMode> snapModes) {
-        this.snapModes = snapModes;
+        this.snapModes = snapModes != null ? new HashSet<>(snapModes) : new HashSet<>();
+        notifySettingsChanged();
     }
 
     public double getSnapThreshold() {
@@ -450,6 +468,7 @@ public class EuclidianViewSettings {
 
     public void setSnapThreshold(double snapThreshold) {
         this.snapThreshold = snapThreshold;
+        notifySettingsChanged();
     }
 
     public double getGridDistanceFactor() {
@@ -476,6 +495,7 @@ public class EuclidianViewSettings {
 
     public void setXAxisPiUnit(boolean xAxisPiUnit) {
         this.xAxisPiUnit = xAxisPiUnit;
+        notifySettingsChanged();
     }
 
     public boolean isYAxisPiUnit() {
@@ -484,6 +504,7 @@ public class EuclidianViewSettings {
 
     public void setYAxisPiUnit(boolean yAxisPiUnit) {
         this.yAxisPiUnit = yAxisPiUnit;
+        notifySettingsChanged();
     }
 
     public boolean isGridSnapEnabled() {
@@ -494,6 +515,7 @@ public class EuclidianViewSettings {
 
     public void setGridSnapEnabled(boolean gridSnapEnabled) {
         this.gridSnapEnabled = gridSnapEnabled;
+        notifySettingsChanged();
     }
 
     /**
@@ -502,8 +524,27 @@ public class EuclidianViewSettings {
      * @param updater 批量更新函数，接收当前 settings 实例
      */
     public void batchUpdate(java.util.function.Consumer<EuclidianViewSettings> updater) {
-        updater.accept(this);
-        notifySettingsChanged();
+        batchUpdateDepth++;
+        try {
+            updater.accept(this);
+        } finally {
+            batchUpdateDepth--;
+        }
+        if (batchUpdateDepth == 0) {
+            notifySettingsChanged();
+        }
+    }
+
+    /**
+     * 在不触发监听器的情况下批量同步内部状态。
+     */
+    public void silentUpdate(java.util.function.Consumer<EuclidianViewSettings> updater) {
+        batchUpdateDepth++;
+        try {
+            updater.accept(this);
+        } finally {
+            batchUpdateDepth--;
+        }
     }
 
     /**
@@ -528,6 +569,9 @@ public class EuclidianViewSettings {
      * 通知所有监听器设置已变更
      */
     private void notifySettingsChanged() {
+        if (batchUpdateDepth > 0) {
+            return;
+        }
         for (Runnable listener : settingsChangeListeners) {
             try {
                 listener.run();

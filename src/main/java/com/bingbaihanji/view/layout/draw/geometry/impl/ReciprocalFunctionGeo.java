@@ -41,7 +41,7 @@ public class ReciprocalFunctionGeo extends FunctionGeo {
     protected void samplePoints(double viewMinX, double viewMaxX,
                                 double viewMinY, double viewMaxY,
                                 double scale) {
-        sampledPoints.clear();
+        clearSampleCache();
 
         // 应用定义域限制
         double[] domain = applyDomainLimits(viewMinX, viewMaxX);
@@ -53,6 +53,7 @@ public class ReciprocalFunctionGeo extends FunctionGeo {
         if (x1 < -DISCONTINUITY_EPSILON) {
             double leftEnd = Math.min(-DISCONTINUITY_EPSILON, x2);
             sampleSegment(x1, leftEnd, scale, viewMinY, viewMaxY);
+            startNewSampleSegment();
         }
 
         // 右分支：x > ε
@@ -80,9 +81,10 @@ public class ReciprocalFunctionGeo extends FunctionGeo {
 
             double y = evaluate(x);
 
-            // 使用基类方法检查y值范围
-            if (isYInViewRange(y, viewMinY, viewMaxY)) {
-                sampledPoints.add(new Point2D(x, y));
+            if (isDrawableFiniteY(y, viewMinY, viewMaxY)) {
+                addSamplePoint(new Point2D(x, y));
+            } else {
+                startNewSampleSegment();
             }
         }
     }

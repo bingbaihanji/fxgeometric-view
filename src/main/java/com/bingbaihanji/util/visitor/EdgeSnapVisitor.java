@@ -148,28 +148,33 @@ public class EdgeSnapVisitor implements GeometryVisitor<EdgeSnapVisitor.SnapResu
 
     @Override
     public SnapResult visitFunction(FunctionGeo function) {
-        List<Point2D> points = function.getSampledPoints();
-        if (points == null || points.size() < 2) {
+        List<List<Point2D>> segments = function.getSampledSegments();
+        if (segments == null || segments.isEmpty()) {
             return null;
         }
 
         Point2D nearestPoint = null;
         double minDistance = threshold;
 
-        for (int i = 0; i < points.size() - 1; i++) {
-            Point2D p1 = points.get(i);
-            Point2D p2 = points.get(i + 1);
-
-            if (!isValidPoint(p1) || !isValidPoint(p2)) {
+        for (List<Point2D> points : segments) {
+            if (points == null || points.size() < 2) {
                 continue;
             }
+            for (int i = 0; i < points.size() - 1; i++) {
+                Point2D p1 = points.get(i);
+                Point2D p2 = points.get(i + 1);
 
-            Point2D projected = projectPointOntoSegment(mouseX, mouseY, p1.getX(), p1.getY(), p2.getX(), p2.getY());
-            double distance = Math.hypot(projected.getX() - mouseX, projected.getY() - mouseY);
+                if (!isValidPoint(p1) || !isValidPoint(p2)) {
+                    continue;
+                }
 
-            if (distance < minDistance) {
-                minDistance = distance;
-                nearestPoint = projected;
+                Point2D projected = projectPointOntoSegment(mouseX, mouseY, p1.getX(), p1.getY(), p2.getX(), p2.getY());
+                double distance = Math.hypot(projected.getX() - mouseX, projected.getY() - mouseY);
+
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    nearestPoint = projected;
+                }
             }
         }
 

@@ -55,8 +55,7 @@ public class ParabolaConicFunctionGeo extends FunctionGeo {
             double x = p * t * t / 2;
             double y = p * t;
 
-            // 检查是否在视图范围内
-            if (x >= viewMinX && x <= viewMaxX) {
+            if (Double.isFinite(x) && isDrawableFiniteY(y, viewMinY, viewMaxY)) {
                 sampledPoints.add(new Point2D(x, y));
             }
         }

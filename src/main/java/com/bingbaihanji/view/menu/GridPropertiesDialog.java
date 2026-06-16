@@ -346,37 +346,39 @@ public class GridPropertiesDialog extends Dialog<ButtonType> {
      * 保存UI设置到配置
      */
     private void saveSettings() {
-        settings.setShowGrid(cbShowGrid.isSelected());
-        settings.setGridType(cmbGridType.getValue());
+        settings.batchUpdate(s -> {
+            s.setShowGrid(cbShowGrid.isSelected());
+            s.setGridType(cmbGridType.getValue());
 
-        // 新增：保存吸附设置
-        settings.setGridSnapEnabled(cbGridSnapEnabled.isSelected());
+            // 新增：保存吸附设置
+            s.setGridSnapEnabled(cbGridSnapEnabled.isSelected());
 
-        // 新增：保存同步设置
-        settings.setSyncGridWithAxes(cbSyncGridWithAxes.isSelected());
-        settings.setGridDistanceFactor(sliderGridDistFactor.getValue());
+            // 新增：保存同步设置
+            s.setSyncGridWithAxes(cbSyncGridWithAxes.isSelected());
+            s.setGridDistanceFactor(sliderGridDistFactor.getValue());
 
-        settings.setAutoGridDistance(cbAutoGridDistance.isSelected());
-        if (!cbAutoGridDistance.isSelected()) {
-            try {
-                settings.setGridDistance(Double.parseDouble(tfGridDistance.getText()));
-            } catch (NumberFormatException e) {
-                // 保持原值
+            s.setAutoGridDistance(cbAutoGridDistance.isSelected());
+            if (!cbAutoGridDistance.isSelected()) {
+                try {
+                    s.setGridDistance(Double.parseDouble(tfGridDistance.getText()));
+                } catch (NumberFormatException e) {
+                    // 保持原值
+                }
             }
-        }
 
-        // 保存极坐标角度步长(转换为弧度)
-        if (cmbGridType.getValue() == GridType.POLAR) {
-            try {
-                double angleDegrees = Double.parseDouble(tfPolarAngleStep.getText());
-                settings.setPolarAngleStep(Math.toRadians(angleDegrees));
-            } catch (NumberFormatException e) {
-                // 保持原值
+            // 保存极坐标角度步长(转换为弧度)
+            if (cmbGridType.getValue() == GridType.POLAR) {
+                try {
+                    double angleDegrees = Double.parseDouble(tfPolarAngleStep.getText());
+                    s.setPolarAngleStep(Math.toRadians(angleDegrees));
+                } catch (NumberFormatException e) {
+                    // 保持原值
+                }
             }
-        }
 
-        settings.setGridLineType(cmbLineType.getValue());
-        settings.setGridColor(gridColorPicker.getValue());
-        settings.setSubGridColor(subGridColorPicker.getValue());
+            s.setGridLineType(cmbLineType.getValue());
+            s.setGridColor(gridColorPicker.getValue());
+            s.setSubGridColor(subGridColorPicker.getValue());
+        });
     }
 }

@@ -238,15 +238,18 @@ public class IntersectionVisitor implements GeometryVisitor<List<Point2D>> {
 
     private List<Point2D> intersectEllipseWithFunction(EllipseGeo ellipse, FunctionGeo func) {
         List<Point2D> results = new ArrayList<>();
-        List<javafx.geometry.Point2D> points = func.getSampledPoints();
-        if (points == null || points.size() < 2) return results;
-        for (int i = 0; i < points.size() - 1; i++) {
-            javafx.geometry.Point2D p1 = points.get(i);
-            javafx.geometry.Point2D p2 = points.get(i + 1);
-            if (!Double.isFinite(p1.getX()) || !Double.isFinite(p1.getY())
-                    || !Double.isFinite(p2.getX()) || !Double.isFinite(p2.getY())) continue;
-            LineGeo seg = new LineGeo(p1.getX(), p1.getY(), p2.getX(), p2.getY());
-            results.addAll(IntersectionUtils.getEllipseLineIntersections(ellipse, seg));
+        List<List<javafx.geometry.Point2D>> segments = func.getSampledSegments();
+        if (segments == null || segments.isEmpty()) return results;
+        for (List<javafx.geometry.Point2D> points : segments) {
+            if (points == null || points.size() < 2) continue;
+            for (int i = 0; i < points.size() - 1; i++) {
+                javafx.geometry.Point2D p1 = points.get(i);
+                javafx.geometry.Point2D p2 = points.get(i + 1);
+                if (!Double.isFinite(p1.getX()) || !Double.isFinite(p1.getY())
+                        || !Double.isFinite(p2.getX()) || !Double.isFinite(p2.getY())) continue;
+                LineGeo seg = new LineGeo(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+                results.addAll(IntersectionUtils.getEllipseLineIntersections(ellipse, seg));
+            }
         }
         return results;
     }

@@ -96,7 +96,7 @@ public class CustomFunctionGeo extends FunctionGeo {
     protected void samplePoints(double viewMinX, double viewMaxX,
                                 double viewMinY, double viewMaxY,
                                 double scale) {
-        sampledPoints.clear();
+        clearSampleCache();
         if (!expressionValid) {
             return;
         }
@@ -111,13 +111,85 @@ public class CustomFunctionGeo extends FunctionGeo {
         int numSamples = calculateSampleCount(scale, x2 - x1);
         double dx = (x2 - x1) / numSamples;
 
+        Point2D previousRawPoint = null;
+        boolean previousVisible = false;
         for (int i = 0; i <= numSamples; i++) {
             double x = x1 + i * dx;
             double y = evaluate(x);
-            if (isYInViewRange(y, viewMinY, viewMaxY)) {
-                sampledPoints.add(new Point2D(x, y));
+            if (!Double.isFinite(y)) {
+                startNewSampleSegment();
+                previousRawPoint = null;
+                previousVisible = false;
+                continue;
             }
+
+            Point2D currentRawPoint = new Point2D(x, y);
+            boolean currentVisible = isDrawableFiniteY(y, viewMinY, viewMaxY);
+
+            if (previousRawPoint != null && hasDiscontinuityBetween(previousRawPoint, currentRawPoint)) {
+                startNewSampleSegment();
+                previousRawPoint = null;
+                previousVisible = false;
+            }
+
+            if (currentVisible) {
+                if (previousRawPoint != null && !previousVisible) {
+                    Point2D entryPoint = interpolateViewBoundaryPoint(
+                            previousRawPoint, currentRawPoint, viewMinY, viewMaxY);
+                    if (entryPoint != null) {
+                        addSamplePoint(entryPoint);
+                    }
+                }
+                addSamplePoint(currentRawPoint);
+            } else if (previousRawPoint != null && previousVisible) {
+                Point2D exitPoint = interpolateViewBoundaryPoint(
+                        previousRawPoint, currentRawPoint, viewMinY, viewMaxY);
+                if (exitPoint != null) {
+                    addSamplePoint(exitPoint);
+                }
+                startNewSampleSegment();
+            }
+
+            previousRawPoint = currentRawPoint;
+            previousVisible = currentVisible;
         }
+    }
+
+    /**
+     * 在两个相邻采样点之间估算曲线穿过视图垂直边界的位置。
+     */
+    private Point2D interpolateViewBoundaryPoint(Point2D p1, Point2D p2,
+                                                 double viewMinY, double viewMaxY) {
+        if (p1 == null || p2 == null) {
+            return null;
+        }
+
+        double y1 = p1.getY();
+        double y2 = p2.getY();
+        if (!Double.isFinite(y1) || !Double.isFinite(y2) || Math.abs(y2 - y1) < 1e-12) {
+            return null;
+        }
+
+        double boundaryY;
+        if (y1 < viewMinY && y2 >= viewMinY) {
+            boundaryY = viewMinY;
+        } else if (y1 > viewMaxY && y2 <= viewMaxY) {
+            boundaryY = viewMaxY;
+        } else if (y1 >= viewMinY && y2 < viewMinY) {
+            boundaryY = viewMinY;
+        } else if (y1 <= viewMaxY && y2 > viewMaxY) {
+            boundaryY = viewMaxY;
+        } else {
+            return null;
+        }
+
+        double t = (boundaryY - y1) / (y2 - y1);
+        if (t < 0 || t > 1 || !Double.isFinite(t)) {
+            return null;
+        }
+
+        double x = p1.getX() + t * (p2.getX() - p1.getX());
+        return new Point2D(x, boundaryY);
     }
 
     @Override
