@@ -131,7 +131,7 @@ public class InfiniteLineGeo extends AbstractWorldObject {
         LineStyleUtil.resetLineStyle(gc);
 
         gc.setFill(getEffectiveColor());
-        double pointRadius = hover ? 5 : 4;
+        double pointRadius = hover ? GeometryConfig.PointRendering.HOVER_POINT_RADIUS : GeometryConfig.PointRendering.DEFAULT_POINT_RADIUS;
 
         if (point1.isInternal()) {
             gc.fillOval(sx1 - pointRadius, sy1 - pointRadius, pointRadius * 2, pointRadius * 2);
@@ -160,7 +160,7 @@ public class InfiniteLineGeo extends AbstractWorldObject {
         double dx = sx2 - sx1;
         double dy = sy2 - sy1;
 
-        if (Math.abs(dx) < 1e-10 && Math.abs(dy) < 1e-10) {
+        if (Math.abs(dx) < GeometryConfig.Performance.MIN_VALID_DISTANCE && Math.abs(dy) < GeometryConfig.Performance.MIN_VALID_DISTANCE) {
             return new double[]{sx1, sy1, sx1, sy1};
         }
 

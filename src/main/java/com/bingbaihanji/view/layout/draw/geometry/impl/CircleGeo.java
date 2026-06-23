@@ -1,5 +1,6 @@
 package com.bingbaihanji.view.layout.draw.geometry.impl;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.ObjectType;
 import com.bingbaihanji.util.*;
 import com.bingbaihanji.view.layout.core.WorldTransform;
@@ -114,7 +115,7 @@ public class CircleGeo extends AbstractWorldObject {
 
         if (center.isInternal()) {
             gc.setFill(getEffectiveColor());
-            double pointRadius = hover ? 4 : 3;
+            double pointRadius = hover ? GeometryConfig.PointRendering.HOVER_POINT_RADIUS : GeometryConfig.PointRendering.SMALL_POINT_RADIUS;
             gc.fillOval(sx - pointRadius, sy - pointRadius, pointRadius * 2, pointRadius * 2);
             if (center.getName() != null && !center.getName().isEmpty()) {
                 LabelRenderer.renderLabel(gc, center.getName(), sx, sy);

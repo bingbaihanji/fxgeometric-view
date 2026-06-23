@@ -302,11 +302,13 @@ public class InitView {
     }
 
     /**
-     * 处理窗口关闭事件
+     * 处理窗口关闭事件（释放所有监听器，防止内存泄漏）
      */
     private void handleWindowClose() {
         if (drawingController != null) {
             drawingController.closeAllChildWindows();
+            // 释放 GridChartView 上的属性监听器
+            drawingController.getContext().getGridChartPane().dispose();
         }
     }
 

@@ -30,6 +30,10 @@ public class ClickHandler {
 
     public void install() {
         view.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+            // 绘制模式下不处理点击，避免与 DrawingController 的事件处理器冲突
+            if (view.isDrawModeActive()) {
+                return;
+            }
             double worldX = view.screenToWorldX(e.getX());
             double worldY = view.screenToWorldY(e.getY());
 

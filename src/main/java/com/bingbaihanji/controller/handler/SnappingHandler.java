@@ -161,12 +161,16 @@ public class SnappingHandler {
         // 1. 优先尝试点吸附
         SpecialPoint nearestPoint = findNearestSpecialPoint(x, y, context);
         if (nearestPoint != null) {
+            // 设置吸附视觉反馈（高亮圈），使绘制模式下也能看到吸附提示
+            context.getGridChartPane().setNearbySpecialPoint(nearestPoint);
+            context.getGridChartPane().setShowSnapGuideLines(true);
             return new double[]{nearestPoint.getX(), nearestPoint.getY()};
         }
 
         // 2. 如果没有点吸附,尝试边吸附
         EdgeSnapManager.EdgeSnapResult edgeSnap = findNearestEdge(x, y, context);
         if (edgeSnap != null) {
+            context.getGridChartPane().setNearbySpecialPoint(null);
             return new double[]{edgeSnap.getX(), edgeSnap.getY()};
         }
 
@@ -175,11 +179,13 @@ public class SnappingHandler {
         if (settings.isGridSnapEnabled()) {
             double[] gridSnapped = snapToGrid(x, y, context);
             if (gridSnapped != null) {
+                context.getGridChartPane().setNearbySpecialPoint(null);
                 return gridSnapped;
             }
         }
 
         // 4. 如果都没有,返回原始坐标
+        context.getGridChartPane().setNearbySpecialPoint(null);
         return new double[]{x, y};
     }
 

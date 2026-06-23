@@ -136,7 +136,7 @@ public class LineGeo extends AbstractWorldObject {
         LineStyleUtil.resetLineStyle(gc);
 
         gc.setFill(getEffectiveColor());
-        double pointRadius = hover ? 5 : 4;
+        double pointRadius = hover ? GeometryConfig.PointRendering.HOVER_POINT_RADIUS : GeometryConfig.PointRendering.DEFAULT_POINT_RADIUS;
 
         if (startPoint.isInternal()) {
             gc.fillOval(sx1 - pointRadius, sy1 - pointRadius, pointRadius * 2, pointRadius * 2);

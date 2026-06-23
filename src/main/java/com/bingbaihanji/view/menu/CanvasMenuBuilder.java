@@ -3,6 +3,7 @@ package com.bingbaihanji.view.menu;
 import com.bingbaihanji.constant.GridMode;
 import com.bingbaihanji.constant.GridType;
 import com.bingbaihanji.controller.DrawingController;
+import com.bingbaihanji.util.CommandHistory;
 import com.bingbaihanji.util.I18nUtil;
 import com.bingbaihanji.view.DetachedCanvasWindow;
 import com.bingbaihanji.view.layout.core.GridChartView;
@@ -152,7 +153,9 @@ public final class CanvasMenuBuilder {
 
         MenuItem detachItem = new MenuItem(I18nUtil.getString("geo.menu.detachWindow"));
         detachItem.setOnAction(e -> {
-            DetachedCanvasWindow detachedWindow = new DetachedCanvasWindow(canvas, parentWindow);
+            // 共享父窗口的命令历史，确保分离窗口的撤销/恢复与主窗口同步
+            CommandHistory sharedHistory = controller.getContext().getCommandHistory();
+            DetachedCanvasWindow detachedWindow = new DetachedCanvasWindow(canvas, parentWindow, sharedHistory);
             controller.addChildWindow(detachedWindow);
             detachedWindow.show();
         });

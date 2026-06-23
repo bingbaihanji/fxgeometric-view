@@ -156,6 +156,9 @@ public class DragHandler extends AbstractDrawingHandler {
             return false;
         }
 
+        // 拖动时刷新吸附缓存，确保 findNearestSpecialPoint 使用最新对象位置
+        context.getSnappingHandler().invalidateCache();
+
         // 拖动顶点时保持十字光标
         if (state.type == DragType.SINGLE_POINT) {
             context.getGridChartPane().setCursor(javafx.scene.Cursor.CROSSHAIR);

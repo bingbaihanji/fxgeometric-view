@@ -1,6 +1,7 @@
 package com.bingbaihanji.view;
 
 import com.bingbaihanji.controller.DrawingController;
+import com.bingbaihanji.util.CommandHistory;
 import com.bingbaihanji.util.FxTools;
 import com.bingbaihanji.util.I18nUtil;
 import com.bingbaihanji.view.layout.core.GridChartView;
@@ -50,7 +51,7 @@ public class DetachedCanvasWindow {
      * @param sourceView 源视图(主窗口的GridChartView)
      */
     public DetachedCanvasWindow(GridChartView sourceView) {
-        this(sourceView, null);
+        this(sourceView, null, null);
     }
 
     /**
@@ -60,6 +61,17 @@ public class DetachedCanvasWindow {
      * @param parent     父窗口(如果从其他独立窗口打开)
      */
     public DetachedCanvasWindow(GridChartView sourceView, DetachedCanvasWindow parent) {
+        this(sourceView, parent, null);
+    }
+
+    /**
+     * 构造独立窗口(带父窗口引用 + 共享命令历史)
+     *
+     * @param sourceView    源视图
+     * @param parent        父窗口
+     * @param sharedHistory 共享的命令历史(为 null 时创建独立的)
+     */
+    public DetachedCanvasWindow(GridChartView sourceView, DetachedCanvasWindow parent, CommandHistory sharedHistory) {
         this.stage = new Stage();
         this.parentWindow = parent;
 
@@ -74,8 +86,10 @@ public class DetachedCanvasWindow {
         // 创建工具栏
         ShapeToolPane toolPane = new ShapeToolPane();
 
-        // 创建绘制控制器(传递自身引用以支持子窗口层级管理)
-        this.drawingController = new DrawingController(detachedView, this);
+        // 创建绘制控制器(如有共享历史则使用,否则创建独立历史)
+        this.drawingController = sharedHistory != null
+                ? new DrawingController(detachedView, this, sharedHistory)
+                : new DrawingController(detachedView, this);
 
         // 绑定工具栏事件
         toolPane.drawModeProperty().addListener((obs, oldMode, newMode) -> {
@@ -218,10 +232,14 @@ public class DetachedCanvasWindow {
     }
 
     /**
-     * 关闭窗口
+     * 关闭窗口（释放监听器防止内存泄漏）
      */
     public void close() {
         closeAllChildWindows();
+        // 释放分离视图上的属性监听器
+        if (detachedView != null) {
+            detachedView.dispose();
+        }
         stage.close();
     }
 

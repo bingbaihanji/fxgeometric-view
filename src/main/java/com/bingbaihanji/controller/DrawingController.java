@@ -45,7 +45,11 @@ public class DrawingController {
     }
 
     public DrawingController(GridChartView gridChartPane, DetachedCanvasWindow parentWindow) {
-        this.context = new DrawingContext(gridChartPane, new CommandHistory());
+        this(gridChartPane, parentWindow, new CommandHistory());
+    }
+
+    public DrawingController(GridChartView gridChartPane, DetachedCanvasWindow parentWindow, CommandHistory sharedHistory) {
+        this.context = new DrawingContext(gridChartPane, sharedHistory);
         registerHandlers();
         initMouseHandlers();
 
@@ -168,6 +172,9 @@ public class DrawingController {
         context.setMoveMode(com.bingbaihanji.constant.MoveMode.MOVE_NONE);
         context.setDrawMode(mode);
         context.setState(DrawingState.IDLE);
+
+        // 通知 GridChartView 当前是否在绘制模式，防止 ClickHandler 冗余分派 onClick
+        context.getGridChartPane().setDrawModeActive(mode != DrawMode.NONE);
 
         if (mode == DrawMode.ROTATE) {
             context.setState(DrawingState.ROTATE_SELECT_SHAPE);

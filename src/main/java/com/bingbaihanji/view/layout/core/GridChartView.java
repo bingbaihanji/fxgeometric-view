@@ -67,6 +67,14 @@ public class GridChartView extends Pane implements I18nRefreshable {
      * 避免每次布局时都重置用户可能已经调整过的原点位置
      */
     private boolean initialized = false;
+    /**
+     * 绘制模式激活标识
+     * <p>
+     * 当 DrawingController 处于绘制模式时设为 true，
+     * ClickHandler 检查此标识以跳过 onClick 分派，避免与 DrawingController 事件处理器冲突。
+     * </p>
+     */
+    private boolean drawModeActive = false;
     // 当前鼠标附近的特殊点(用于视觉反馈)
     private SpecialPoint nearbySpecialPoint = null;
     private Runnable onTransformChanged;
@@ -94,6 +102,14 @@ public class GridChartView extends Pane implements I18nRefreshable {
      *
      * @param sharedObjects 共享的对象列表,用于多窗口同步
      */
+    /** 可释放的监听器引用，供 dispose() 清理 */
+    private javafx.beans.value.ChangeListener<Number> widthListener;
+    private javafx.beans.value.ChangeListener<Number> heightListener;
+    private final Runnable settingsListener = () -> {
+        invalidateBackground();
+        redraw();
+    };
+
     public GridChartView(List<WorldObject> sharedObjects) {
         this.objects = sharedObjects;
         circleTool = new CircleDrawingTool();
@@ -103,14 +119,16 @@ public class GridChartView extends Pane implements I18nRefreshable {
         canvasManager.bindToPane(this);
         canvasManager.bindSize(this);
 
-        widthProperty().addListener((obs, o, n) -> {
+        widthListener = (obs, o, n) -> {
             updateOffsetFromCenterWorld();
             redraw();
-        });
-        heightProperty().addListener((obs, o, n) -> {
+        };
+        heightListener = (obs, o, n) -> {
             updateOffsetFromCenterWorld();
             redraw();
-        });
+        };
+        widthProperty().addListener(widthListener);
+        heightProperty().addListener(heightListener);
 
         new ViewInteractionHandler(this, transform, snapCalculator, tooltipManager).install();
         viewportController = new ViewportController(this, transform, settings);
@@ -123,10 +141,7 @@ public class GridChartView extends Pane implements I18nRefreshable {
         applySettingsToTransform();
 
         // 注册设置变更监听器：任何视觉设置变更后自动标脏背景缓存
-        settings.addSettingsChangeListener(() -> {
-            invalidateBackground();
-            redraw();
-        });
+        settings.addSettingsChangeListener(settingsListener);
 
         setCustomCursorForPane(this, "/icon/mouseStyle.png");
 
@@ -195,6 +210,22 @@ public class GridChartView extends Pane implements I18nRefreshable {
     public void refreshI18n() {
         invalidateBackground();
         redraw();
+    }
+
+    /**
+     * 释放资源，移除所有属性监听器，防止内存泄漏
+     * <p>
+     * 在窗口关闭或视图销毁时调用。
+     * </p>
+     */
+    public void dispose() {
+        if (widthListener != null) {
+            widthProperty().removeListener(widthListener);
+        }
+        if (heightListener != null) {
+            heightProperty().removeListener(heightListener);
+        }
+        settings.removeSettingsChangeListener(settingsListener);
     }
 
     /**
@@ -551,6 +582,20 @@ public class GridChartView extends Pane implements I18nRefreshable {
      */
     public void setShowSnapGuideLines(boolean show) {
         this.showSnapGuideLines = show;
+    }
+
+    /**
+     * 获取绘制模式激活状态（供 ClickHandler 查询）
+     */
+    public boolean isDrawModeActive() {
+        return drawModeActive;
+    }
+
+    /**
+     * 设置绘制模式激活状态（由 DrawingController.setDrawMode 调用）
+     */
+    public void setDrawModeActive(boolean drawModeActive) {
+        this.drawModeActive = drawModeActive;
     }
 
     // 视口控制 (委托给 ViewportController)
