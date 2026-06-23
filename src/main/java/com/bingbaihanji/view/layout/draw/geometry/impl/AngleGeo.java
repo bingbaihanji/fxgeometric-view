@@ -87,26 +87,26 @@ public class AngleGeo extends AbstractWorldObject {
         double arx2 = svx + (srx2 - svx) / len2 * ARC_RADIUS;
         double ary2 = svy + (sry2 - svy) / len2 * ARC_RADIUS;
 
-        // 发光层
+        // 发光层（弧线先画，避免与射线重叠处变深）
         if (StyleManager.GLOW_ENABLED) {
             gc.save();
             LineStyleUtil.resetLineStyle(gc);
             gc.setGlobalAlpha(StyleManager.GLOW_ALPHA);
             gc.setLineWidth(getEffectiveLineWidth() + StyleManager.GLOW_WIDTH_BONUS);
             gc.setStroke(getEffectiveColor());
+            drawArc(gc, svx, svy, arx1, ary1, arx2, ary2);
             gc.strokeLine(svx, svy, srx1, sry1);
             gc.strokeLine(svx, svy, srx2, sry2);
-            drawArc(gc, svx, svy, arx1, ary1, arx2, ary2);
             gc.restore();
         }
 
-        // 主描边
+        // 主描边（弧线先画，射线覆盖弧线端点避免重叠变深）
         LineStyleUtil.applyLineStyle(gc, lineType);
         gc.setStroke(getEffectiveColor());
         gc.setLineWidth(getEffectiveLineWidth());
+        drawArc(gc, svx, svy, arx1, ary1, arx2, ary2);
         gc.strokeLine(svx, svy, srx1, sry1);
         gc.strokeLine(svx, svy, srx2, sry2);
-        drawArc(gc, svx, svy, arx1, ary1, arx2, ary2);
         LineStyleUtil.resetLineStyle(gc);
 
         // 顶点
@@ -116,11 +116,14 @@ public class AngleGeo extends AbstractWorldObject {
             gc.fillOval(svx - pr, svy - pr, pr * 2, pr * 2);
         }
 
-        // 角度值标签
+        // 角度值标签（显示在弧线外侧）
         if (labelVisible && label != null && !label.isEmpty()) {
-            double midX = (svx + arx1 + arx2) / 3;
-            double midY = (svy + ary1 + ary2) / 3;
-            LabelRenderer.renderLabel(gc, label, midX, midY, labelPosition, labelFontSize,
+            // 弧线中点方向，向外偏移
+            double midAngle = Math.atan2(-(ary1 + ary2 - 2 * svy), (arx1 + arx2 - 2 * svx));
+            double labelR = ARC_RADIUS + 15;
+            double lx = svx + Math.cos(midAngle) * labelR;
+            double ly = svy + Math.sin(midAngle) * labelR;
+            LabelRenderer.renderLabel(gc, label, lx, ly, labelPosition, labelFontSize,
                     labelColor != null ? labelColor : getEffectiveColor());
         }
     }

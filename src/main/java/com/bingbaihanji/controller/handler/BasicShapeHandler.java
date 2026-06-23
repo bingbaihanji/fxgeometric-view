@@ -429,6 +429,9 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
         if (context.getDrawMode() == DrawMode.ANGLE) {
             AngleGeo angle = new AngleGeo(firstPointX, firstPointY,
                     secondPointX, secondPointY, worldX, worldY);
+            // 设置标签显示度数
+            angle.setLabel(String.format("%.1f°", angle.getAngleDegrees()));
+            angle.setLabelVisible(true);
             context.executeCommand(new GeometryCommand(context, angle));
             reset();
             context.setState(DrawingState.IDLE);
@@ -613,7 +616,7 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             double[] ends2 = extendToScreen(vsx, vsy, r1sx, r1sy, w, h);
             gc.strokeLine(vsx, vsy, ends2[0], ends2[1]);
 
-            // 弧线：在 ARC_RADIUS 像素处
+            // 弧线：在 arcR 像素处
             double arcR = 20;
             double len1 = Math.hypot(ends1[0] - vsx, ends1[1] - vsy);
             double len2 = Math.hypot(ends2[0] - vsx, ends2[1] - vsy);
@@ -622,6 +625,20 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             double bx = vsx + (ends2[0] - vsx) / len2 * arcR;
             double by = vsy + (ends2[1] - vsy) / len2 * arcR;
             drawAngleArc(gc, vsx, vsy, ax, ay, bx, by);
+
+            // 显示预览角度值
+            double mx = transform.screenToWorldX(context.getCurrentMouseX());
+            double my = transform.screenToWorldY(context.getCurrentMouseY());
+            double dx1 = secondPointX - firstPointX, dy1 = secondPointY - firstPointY;
+            double dx2 = mx - firstPointX, dy2 = my - firstPointY;
+            double dot = dx1 * dx2 + dy1 * dy2;
+            double l1 = Math.hypot(dx1, dy1), l2 = Math.hypot(dx2, dy2);
+            if (l1 > 1e-10 && l2 > 1e-10) {
+                double deg = Math.toDegrees(Math.acos(Math.max(-1, Math.min(1, dot / (l1 * l2)))));
+                String text = String.format("%.1f°", deg);
+                gc.setFill(GeometryConfig.Colors.PREVIEW);
+                gc.fillText(text, vsx + 25, vsy - 10);
+            }
         }
         gc.setLineDashes(null);
     }
