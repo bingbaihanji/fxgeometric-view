@@ -9,10 +9,12 @@ import com.bingbaihanji.util.IntersectionUtils;
 import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
+import com.bingbaihanji.view.layout.draw.geometry.impl.AngleGeo;
 import com.bingbaihanji.view.layout.draw.geometry.impl.CircleGeo;
 import com.bingbaihanji.view.layout.draw.geometry.impl.InfiniteLineGeo;
 import com.bingbaihanji.view.layout.draw.geometry.impl.LineGeo;
 import com.bingbaihanji.view.layout.draw.geometry.impl.PointGeo;
+import java.util.List;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.MouseButton;
@@ -33,10 +35,6 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
      * 已选中的线段或直线(用于垂线和平行线)
      */
     private WorldObject selectedLine = null;
-    /** 角平分线工具：顶点坐标 */
-    private double bisectorVertexX, bisectorVertexY;
-    /** 角平分线工具：射线1上一点坐标 */
-    private double bisectorRay1X, bisectorRay1Y;
 
     @Override
     public boolean canHandle(DrawMode mode) {
@@ -612,33 +610,24 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
     }
 
     /**
-     * 处理角平分线绘制（三击流程：顶点→射线1→射线2）
+     * 处理角平分线（单击已有角度对象，自动绘制平分线）
      */
     private void handleAngleBisectorClick(double worldX, double worldY, IDrawingContext context) {
-        if (context.getState() == DrawingState.IDLE) {
-            // 第一次点击：顶点
-            bisectorVertexX = worldX;
-            bisectorVertexY = worldY;
-            context.setState(DrawingState.FIRST_CLICK);
-            context.redraw();
-        } else if (context.getState() == DrawingState.FIRST_CLICK) {
-            // 第二次点击：射线1上的点
-            bisectorRay1X = worldX;
-            bisectorRay1Y = worldY;
-            context.setState(DrawingState.SECOND_CLICK);
-            context.redraw();
-        } else if (context.getState() == DrawingState.SECOND_CLICK) {
-            // 第三次点击：射线2上的点 → 创建角平分线
-            double[] line = IntersectionUtils.getAngleBisectorLine(
-                    bisectorVertexX, bisectorVertexY,
-                    bisectorRay1X, bisectorRay1Y,
-                    worldX, worldY);
-            InfiniteLineGeo bisector = new InfiniteLineGeo(line[0], line[1], line[2], line[3]);
-            context.executeCommand(new GeometryCommand(context, bisector));
-            bisectorVertexX = 0; bisectorVertexY = 0;
-            bisectorRay1X = 0; bisectorRay1Y = 0;
-            context.setState(DrawingState.IDLE);
-            context.redraw();
+        double tolerance = GeometryConfig.Tolerance.HIT_TEST_PIXELS / context.getTransform().getScale();
+        List<WorldObject> objects = context.getObjects();
+        // 从后往前遍历，优先命中上层对象
+        for (int i = objects.size() - 1; i >= 0; i--) {
+            WorldObject obj = objects.get(i);
+            if (obj instanceof AngleGeo angle && obj.hitTest(worldX, worldY, tolerance)) {
+                double[] line = IntersectionUtils.getAngleBisectorLine(
+                        angle.getVertexX(), angle.getVertexY(),
+                        angle.getRay1X(), angle.getRay1Y(),
+                        angle.getRay2X(), angle.getRay2Y());
+                InfiniteLineGeo bisector = new InfiniteLineGeo(line[0], line[1], line[2], line[3]);
+                context.executeCommand(new GeometryCommand(context, bisector));
+                context.redraw();
+                return;
+            }
         }
     }
 }

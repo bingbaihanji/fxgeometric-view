@@ -198,6 +198,11 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             if (ellipsePreview != null) {
                 ellipsePreview.updatePreview(worldX, worldY);
             }
+        } else if (context.getDrawMode() == DrawMode.ANGLE) {
+            // 角度预览：FIRST_CLICK 时鼠标位置作为射线1终点，SECOND_CLICK 时作为射线2终点
+            if (linePreview != null) {
+                linePreview.updatePreview(worldX, worldY);
+            }
         } else if (context.getDrawMode() == DrawMode.LINE || context.getDrawMode() == DrawMode.INFINITE_LINE) {
             // 更新线段/直线预览
             if (linePreview != null) {
@@ -575,6 +580,49 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             gc.setFill(GeometryConfig.Colors.PREVIEW.deriveColor(0, 1, 1, 0.6));
             gc.fillOval(mouseScreenX - pointRadius, mouseScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
         }
+
+        // 角度预览：绘制从顶点出发的射线 + 角度弧线
+        if (context.getDrawMode() == DrawMode.ANGLE) {
+            double msx = transform.worldToScreenX(context.getCurrentMouseX());
+            double msy = transform.worldToScreenY(context.getCurrentMouseY());
+            double vsx = transform.worldToScreenX(firstPointX);
+            double vsy = transform.worldToScreenY(firstPointY);
+            gc.setStroke(GeometryConfig.Colors.PREVIEW);
+            gc.setLineWidth(1.5);
+            gc.setLineDashes(6);
+            // 第一条射线（顶点 → 鼠标）
+            gc.strokeLine(vsx, vsy, msx, msy);
+
+            if (context.getState() == DrawingState.SECOND_CLICK) {
+                // 第二条射线（顶点 → ray1点）
+                double r1sx = transform.worldToScreenX(secondPointX);
+                double r1sy = transform.worldToScreenY(secondPointY);
+                gc.strokeLine(vsx, vsy, r1sx, r1sy);
+                // 绘制角度弧线
+                drawAngleArc(gc, vsx, vsy, r1sx, r1sy, msx, msy);
+            }
+            gc.setLineDashes(null);
+        }
+    }
+
+    /**
+     * 绘制角度预览弧线（两条射线之间的弧）
+     */
+    private void drawAngleArc(GraphicsContext gc, double cx, double cy,
+                              double ax, double ay, double bx, double by) {
+        double startAngle = Math.toDegrees(Math.atan2(-(ay - cy), ax - cx));
+        double endAngle = Math.toDegrees(Math.atan2(-(by - cy), bx - cx));
+        if (startAngle < 0) startAngle += 360;
+        if (endAngle < 0) endAngle += 360;
+        double arcExtent = endAngle - startAngle;
+        if (Math.abs(arcExtent) > 180) {
+            double temp = startAngle; startAngle = endAngle; endAngle = temp;
+            arcExtent = endAngle - startAngle;
+        }
+        if (arcExtent < 0) arcExtent += 360;
+        double radius = 20;
+        gc.strokeArc(cx - radius, cy - radius, radius * 2, radius * 2,
+                startAngle, arcExtent, javafx.scene.shape.ArcType.OPEN);
     }
 
     /**
