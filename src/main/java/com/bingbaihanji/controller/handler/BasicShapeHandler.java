@@ -626,9 +626,9 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             double by = vsy + (ends2[1] - vsy) / len2 * arcR;
             drawAngleArc(gc, vsx, vsy, ax, ay, bx, by);
 
-            // 显示预览角度值
-            double mx = transform.screenToWorldX(context.getCurrentMouseX());
-            double my = transform.screenToWorldY(context.getCurrentMouseY());
+            // 显示预览角度值（currentMouse 已经是世界坐标）
+            double mx = context.getCurrentMouseX();
+            double my = context.getCurrentMouseY();
             double dx1 = secondPointX - firstPointX, dy1 = secondPointY - firstPointY;
             double dx2 = mx - firstPointX, dy2 = my - firstPointY;
             double dot = dx1 * dx2 + dy1 * dy2;
