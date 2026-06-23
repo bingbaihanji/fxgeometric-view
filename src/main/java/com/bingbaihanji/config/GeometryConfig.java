@@ -294,6 +294,19 @@ public final class GeometryConfig {
     }
 
     /**
+     * 撤销/恢复历史相关常量
+     */
+    public static class History {
+        /**
+         * 撤销栈最大容量（超出后移除最旧记录）
+         */
+        public static final int MAX_UNDO_SIZE = 50;
+
+        private History() {
+        }
+    }
+
+    /**
      * 数学计算相关常量
      */
     public static class Mathematics {

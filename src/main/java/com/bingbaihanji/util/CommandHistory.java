@@ -1,5 +1,6 @@
 package com.bingbaihanji.util;
 
+import com.bingbaihanji.config.GeometryConfig;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +31,10 @@ public class CommandHistory {
     public void execute(Command command) {
         command.execute();
         undoStack.add(command);
+        // 超过最大容量时移除最旧记录
+        while (undoStack.size() > GeometryConfig.History.MAX_UNDO_SIZE) {
+            undoStack.remove(0);
+        }
         // 执行新命令时,清空恢复栈
         redoStack.clear();
     }
@@ -41,6 +46,10 @@ public class CommandHistory {
      */
     public void addCommand(Command command) {
         undoStack.add(command);
+        // 超过最大容量时移除最旧记录
+        while (undoStack.size() > GeometryConfig.History.MAX_UNDO_SIZE) {
+            undoStack.remove(0);
+        }
         // 记录新命令时,清空恢复栈
         redoStack.clear();
     }

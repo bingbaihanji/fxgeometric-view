@@ -1,5 +1,6 @@
 package com.bingbaihanji.view.layout.draw.geometry.impl;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.util.constraint.HyperbolaFunctionConstraint;
 import com.bingbaihanji.util.constraint.PointConstraint;
 import javafx.geometry.Point2D;
@@ -65,7 +66,7 @@ public class HyperbolaFunctionGeo extends FunctionGeo {
         // 使用参数方程：x = cx ± a·cosh(t), y = cy + b·sinh(t)
 
         int numSamples = Math.max(MIN_SAMPLES / 2, (int) (scale * Math.max(a, b) * 5));
-        numSamples = Math.min(numSamples, MAX_SAMPLES / 2);
+        numSamples = Math.min(numSamples, GeometryConfig.FunctionSampling.MAX_SAMPLES / 2);
 
         // 确定参数范围(避免无穷远)
         double tMax = 3.0; // 这会给出较大但有限的值

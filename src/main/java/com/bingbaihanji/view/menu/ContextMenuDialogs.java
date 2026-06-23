@@ -132,6 +132,11 @@ public final class ContextMenuDialogs {
             try {
                 double newX = Double.parseDouble(xField.getText());
                 double newY = Double.parseDouble(yField.getText());
+                // 校验非有限值（NaN、Infinity），防止坐标异常
+                if (!Double.isFinite(newX) || !Double.isFinite(newY)) {
+                    showInvalidInputAlert();
+                    return;
+                }
                 final double oldX = point.getX();
                 final double oldY = point.getY();
 
@@ -149,14 +154,18 @@ public final class ContextMenuDialogs {
                     }
                 });
             } catch (NumberFormatException e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle(I18nUtil.getString("geo.dialog.position.error.title"));
-                alert.setHeaderText(null);
-                alert.setContentText(I18nUtil.getString("geo.dialog.position.error.invalid"));
-                FxTools.addEscapeKeyHandler(alert);
-                alert.showAndWait();
+                showInvalidInputAlert();
             }
         }
+    }
+
+    private static void showInvalidInputAlert() {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(I18nUtil.getString("geo.dialog.position.error.title"));
+        alert.setHeaderText(null);
+        alert.setContentText(I18nUtil.getString("geo.dialog.position.error.invalid"));
+        FxTools.addEscapeKeyHandler(alert);
+        alert.showAndWait();
     }
 
     /**
@@ -194,6 +203,11 @@ public final class ContextMenuDialogs {
             try {
                 double newX = Double.parseDouble(xField.getText());
                 double newY = Double.parseDouble(yField.getText());
+                // 校验非有限值（NaN、Infinity），防止坐标异常
+                if (!Double.isFinite(newX) || !Double.isFinite(newY)) {
+                    showInvalidInputAlert();
+                    return;
+                }
                 final double oldX = vertex.getX();
                 final double oldY = vertex.getY();
 
@@ -215,12 +229,7 @@ public final class ContextMenuDialogs {
                     }
                 });
             } catch (NumberFormatException e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle(I18nUtil.getString("geo.dialog.position.error.title"));
-                alert.setHeaderText(null);
-                alert.setContentText(I18nUtil.getString("geo.dialog.position.error.invalid"));
-                FxTools.addEscapeKeyHandler(alert);
-                alert.showAndWait();
+                showInvalidInputAlert();
             }
         }
     }

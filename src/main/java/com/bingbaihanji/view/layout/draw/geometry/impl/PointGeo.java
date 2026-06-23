@@ -249,7 +249,7 @@ public class PointGeo extends AbstractWorldObject {
 
     @Override
     public boolean hitTest(double wx, double wy, double tol) {
-        return Math.hypot(wx - x, wy - y) < tol;
+        return Math.hypot(wx - x, wy - y) <= tol;
     }
 
     @Override

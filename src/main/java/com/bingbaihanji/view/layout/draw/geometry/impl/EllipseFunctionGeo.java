@@ -1,5 +1,6 @@
 package com.bingbaihanji.view.layout.draw.geometry.impl;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.util.constraint.EllipseFunctionConstraint;
 import com.bingbaihanji.util.constraint.PointConstraint;
 import javafx.geometry.Point2D;
@@ -64,7 +65,7 @@ public class EllipseFunctionGeo extends FunctionGeo {
         // 使用参数方程采样
         // 根据椭圆大小和缩放级别调整采样点数
         int numSamples = Math.max(MIN_SAMPLES, (int) (scale * Math.max(a, b) * 10));
-        numSamples = Math.min(numSamples, MAX_SAMPLES);
+        numSamples = Math.min(numSamples, GeometryConfig.FunctionSampling.MAX_SAMPLES);
 
         for (int i = 0; i <= numSamples; i++) {
             double t = 2 * Math.PI * i / numSamples;

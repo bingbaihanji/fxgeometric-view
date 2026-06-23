@@ -98,34 +98,50 @@ public class DrawingController {
     }
 
     public void handleMouseMoved(MouseEvent e) {
-        for (DrawingHandler handler : handlers) {
-            if (handler.canHandle(context.getDrawMode()) && handler.handleMouseMoved(e, context)) {
-                break;
+        try {
+            for (DrawingHandler handler : handlers) {
+                if (handler.canHandle(context.getDrawMode()) && handler.handleMouseMoved(e, context)) {
+                    break;
+                }
             }
+        } catch (Exception ex) {
+            logger.error("处理鼠标移动事件时发生错误", ex);
         }
     }
 
     public void handleMousePressed(MouseEvent e) {
-        for (DrawingHandler handler : handlers) {
-            if (handler.canHandle(context.getDrawMode()) && handler.handleMousePressed(e, context)) {
-                break;
+        try {
+            for (DrawingHandler handler : handlers) {
+                if (handler.canHandle(context.getDrawMode()) && handler.handleMousePressed(e, context)) {
+                    break;
+                }
             }
+        } catch (Exception ex) {
+            logger.error("处理鼠标按下事件时发生错误", ex);
         }
     }
 
     public void handleMouseDragged(MouseEvent e) {
-        for (DrawingHandler handler : handlers) {
-            if (handler.canHandle(context.getDrawMode()) && handler.handleMouseDragged(e, context)) {
-                break;
+        try {
+            for (DrawingHandler handler : handlers) {
+                if (handler.canHandle(context.getDrawMode()) && handler.handleMouseDragged(e, context)) {
+                    break;
+                }
             }
+        } catch (Exception ex) {
+            logger.error("处理鼠标拖动事件时发生错误", ex);
         }
     }
 
     public void handleMouseReleased(MouseEvent e) {
-        for (DrawingHandler handler : handlers) {
-            if (handler.canHandle(context.getDrawMode()) && handler.handleMouseReleased(e, context)) {
-                break;
+        try {
+            for (DrawingHandler handler : handlers) {
+                if (handler.canHandle(context.getDrawMode()) && handler.handleMouseReleased(e, context)) {
+                    break;
+                }
             }
+        } catch (Exception ex) {
+            logger.error("处理鼠标释放事件时发生错误", ex);
         }
     }
 

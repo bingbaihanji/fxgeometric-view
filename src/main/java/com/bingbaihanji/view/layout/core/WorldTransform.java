@@ -1,5 +1,6 @@
 package com.bingbaihanji.view.layout.core;
 
+import com.bingbaihanji.config.GeometryConfig;
 
 /**
  * 世界坐标变换类
@@ -29,10 +30,16 @@ public final class WorldTransform {
     }
 
     public double screenToWorldX(double x) {
+        if (Math.abs(scaleX) < GeometryConfig.Performance.MIN_VALID_DISTANCE) {
+            return 0;
+        }
         return (x - offsetX) / scaleX;
     }
 
     public double screenToWorldY(double y) {
+        if (Math.abs(scaleY) < GeometryConfig.Performance.MIN_VALID_DISTANCE) {
+            return 0;
+        }
         return (offsetY - y) / scaleY;
     }
 
@@ -98,8 +105,11 @@ public final class WorldTransform {
      * @param yRatio Y轴比例系数
      */
     public void setAxisRatio(double xRatio, double yRatio) {
-        double avgScale = getScale();
         double totalRatio = xRatio + yRatio;
+        if (Math.abs(totalRatio) < GeometryConfig.Performance.MIN_VALID_DISTANCE) {
+            return;
+        }
+        double avgScale = getScale();
         this.scaleX = avgScale * 2.0 * (xRatio / totalRatio);
         this.scaleY = avgScale * 2.0 * (yRatio / totalRatio);
     }

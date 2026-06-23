@@ -1,5 +1,6 @@
 package com.bingbaihanji.view.layout.draw.geometry.impl;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.ObjectType;
 import com.bingbaihanji.util.LabelRenderer;
 import com.bingbaihanji.util.LineStyleUtil;
@@ -33,11 +34,6 @@ public abstract class FunctionGeo extends AbstractWorldObject {
      * 最小采样点数
      */
     protected static final int MIN_SAMPLES = 100;
-
-    /**
-     * 最大采样点数(防止性能问题)
-     */
-    protected static final int MAX_SAMPLES = 2000;
 
     private static final int CLIP_LEFT = 1;
     private static final int CLIP_RIGHT = 2;
@@ -318,7 +314,7 @@ public abstract class FunctionGeo extends AbstractWorldObject {
 
                 double dist = pointToSegmentDistance(worldX, worldY,
                         p1.getX(), p1.getY(), p2.getX(), p2.getY());
-                if (dist < tolerance) {
+                if (dist <= tolerance) {
                     return true;
                 }
             }
@@ -388,7 +384,7 @@ public abstract class FunctionGeo extends AbstractWorldObject {
      */
     protected int calculateSampleCount(double scale, double range) {
         int samples = (int) (scale * range * DEFAULT_SAMPLES_PER_UNIT);
-        return Math.max(MIN_SAMPLES, Math.min(samples, MAX_SAMPLES));
+        return Math.max(MIN_SAMPLES, Math.min(samples, GeometryConfig.FunctionSampling.MAX_SAMPLES));
     }
 
     /**

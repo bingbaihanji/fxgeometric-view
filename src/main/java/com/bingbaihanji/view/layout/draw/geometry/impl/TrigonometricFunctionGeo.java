@@ -1,5 +1,6 @@
 package com.bingbaihanji.view.layout.draw.geometry.impl;
 
+import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.FunctionType;
 import com.bingbaihanji.util.constraint.PointConstraint;
 import com.bingbaihanji.util.constraint.TrigonometricFunctionConstraint;
@@ -84,7 +85,7 @@ public class TrigonometricFunctionGeo extends FunctionGeo {
         // 智能采样：每个周期至少100个点
         double numPeriods = (viewMaxX - viewMinX) / period;
         int totalSamples = Math.max(MIN_SAMPLES * 2, (int) (numPeriods * 100));
-        totalSamples = Math.min(totalSamples, MAX_SAMPLES);
+        totalSamples = Math.min(totalSamples, GeometryConfig.FunctionSampling.MAX_SAMPLES);
 
         double[] domain = applyDomainLimits(viewMinX, viewMaxX);
         double x1 = domain[0];
