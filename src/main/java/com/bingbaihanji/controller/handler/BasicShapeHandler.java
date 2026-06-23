@@ -581,32 +581,64 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             gc.fillOval(mouseScreenX - pointRadius, mouseScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
         }
 
-        // 角度预览：绘制从顶点出发的射线 + 角度弧线
-        if (context.getDrawMode() == DrawMode.ANGLE) {
-            double msx = transform.worldToScreenX(context.getCurrentMouseX());
-            double msy = transform.worldToScreenY(context.getCurrentMouseY());
-            double vsx = transform.worldToScreenX(firstPointX);
-            double vsy = transform.worldToScreenY(firstPointY);
-            gc.setStroke(GeometryConfig.Colors.PREVIEW);
-            gc.setLineWidth(1.5);
-            gc.setLineDashes(6);
-            // 第一条射线（顶点 → 鼠标）
-            gc.strokeLine(vsx, vsy, msx, msy);
-
-            if (context.getState() == DrawingState.SECOND_CLICK) {
-                // 第二条射线（顶点 → ray1点）
-                double r1sx = transform.worldToScreenX(secondPointX);
-                double r1sy = transform.worldToScreenY(secondPointY);
-                gc.strokeLine(vsx, vsy, r1sx, r1sy);
-                // 绘制角度弧线
-                drawAngleArc(gc, vsx, vsy, r1sx, r1sy, msx, msy);
-            }
-            gc.setLineDashes(null);
+        // 角度预览：绘制从顶点出发的无限射线 + 角度弧线
+        if (context.getDrawMode() == DrawMode.ANGLE && context.getState() != DrawingState.IDLE) {
+            drawAnglePreview(gc, transform, context);
         }
     }
 
     /**
-     * 绘制角度预览弧线（两条射线之间的弧）
+     * 角度预览：无限射线 + 弧线
+     */
+    private void drawAnglePreview(GraphicsContext gc, WorldTransform transform, IDrawingContext context) {
+        double vsx = transform.worldToScreenX(firstPointX);
+        double vsy = transform.worldToScreenY(firstPointY);
+        double msx = transform.worldToScreenX(context.getCurrentMouseX());
+        double msy = transform.worldToScreenY(context.getCurrentMouseY());
+        double w = context.getGridChartPane().getWidth();
+        double h = context.getGridChartPane().getHeight();
+
+        gc.setStroke(GeometryConfig.Colors.PREVIEW);
+        gc.setLineWidth(1.5);
+        gc.setLineDashes(6);
+
+        // 射线1：从顶点出发，经过鼠标位置，延伸到屏幕边缘
+        double[] ends1 = extendToScreen(vsx, vsy, msx, msy, w, h);
+        gc.strokeLine(vsx, vsy, ends1[0], ends1[1]);
+
+        if (context.getState() == DrawingState.SECOND_CLICK) {
+            // 射线2：从顶点出发，经过 ray1 方向，延伸到屏幕边缘
+            double r1sx = transform.worldToScreenX(secondPointX);
+            double r1sy = transform.worldToScreenY(secondPointY);
+            double[] ends2 = extendToScreen(vsx, vsy, r1sx, r1sy, w, h);
+            gc.strokeLine(vsx, vsy, ends2[0], ends2[1]);
+
+            // 弧线：在 ARC_RADIUS 像素处
+            double arcR = 20;
+            double len1 = Math.hypot(ends1[0] - vsx, ends1[1] - vsy);
+            double len2 = Math.hypot(ends2[0] - vsx, ends2[1] - vsy);
+            double ax = vsx + (ends1[0] - vsx) / len1 * arcR;
+            double ay = vsy + (ends1[1] - vsy) / len1 * arcR;
+            double bx = vsx + (ends2[0] - vsx) / len2 * arcR;
+            double by = vsy + (ends2[1] - vsy) / len2 * arcR;
+            drawAngleArc(gc, vsx, vsy, ax, ay, bx, by);
+        }
+        gc.setLineDashes(null);
+    }
+
+    /**
+     * 从起点沿目标方向延伸到屏幕边缘
+     */
+    private double[] extendToScreen(double sx, double sy, double tx, double ty, double w, double h) {
+        double dx = tx - sx, dy = ty - sy;
+        if (Math.abs(dx) < 1e-6 && Math.abs(dy) < 1e-6) return new double[]{tx, ty};
+        double maxDim = Math.max(w, h) * 2;
+        double len = Math.hypot(dx, dy);
+        return new double[]{sx + dx / len * maxDim, sy + dy / len * maxDim};
+    }
+
+    /**
+     * 绘制角度预览弧线
      */
     private void drawAngleArc(GraphicsContext gc, double cx, double cy,
                               double ax, double ay, double bx, double by) {
@@ -615,11 +647,8 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
         if (startAngle < 0) startAngle += 360;
         if (endAngle < 0) endAngle += 360;
         double arcExtent = endAngle - startAngle;
-        if (Math.abs(arcExtent) > 180) {
-            double temp = startAngle; startAngle = endAngle; endAngle = temp;
-            arcExtent = endAngle - startAngle;
-        }
-        if (arcExtent < 0) arcExtent += 360;
+        if (Math.abs(arcExtent) > 180)
+            arcExtent = arcExtent > 0 ? arcExtent - 360 : arcExtent + 360;
         double radius = 20;
         gc.strokeArc(cx - radius, cy - radius, radius * 2, radius * 2,
                 startAngle, arcExtent, javafx.scene.shape.ArcType.OPEN);
