@@ -69,9 +69,11 @@ public class ShapeToolPane extends VBox implements I18nRefreshable {
                 createTool("geo.line", DrawMode.INFINITE_LINE, group),
                 createTool("geo.circle", DrawMode.CIRCLE, group),
                 createTool("geo.ellipse", DrawMode.ELLIPSE, group),
+                createTool("geo.angle", DrawMode.ANGLE, group),
                 createTool("geo.polygon", DrawMode.POLYGON, group),
                 createTool("geo.regularPolygon", DrawMode.REGULAR_POLYGON, group),
-                createTool("geo.handpainted", DrawMode.FREEHAND, group)
+                createTool("geo.handpainted", DrawMode.FREEHAND, group),
+                createTool("geo.text", DrawMode.TEXT, group)
         );
 
         content.getChildren().add(
@@ -100,6 +102,7 @@ public class ShapeToolPane extends VBox implements I18nRefreshable {
                 createTool("geo.perpendicularBisector", DrawMode.PERPENDICULAR_BISECTOR, group),
                 createTool("geo.parallel", DrawMode.PARALLEL, group),
                 createTool("geo.tangent", DrawMode.TANGENT, group),
+                createTool("geo.angleBisector", DrawMode.ANGLE_BISECTOR, group),
                 createTool("geo.rotating", DrawMode.ROTATE, group),
                 createActionButton("geo.function", this::handleFunctionClick)
         );
@@ -344,6 +347,9 @@ public class ShapeToolPane extends VBox implements I18nRefreshable {
             case "geo.tangent" -> "icon/tangent.png";
             case "geo.rotating" -> "icon/rotating.png";
             case "geo.function" -> "icon/function.png";
+            case "geo.angleBisector" -> "icon/angleBisector.png";
+            case "geo.angle" -> "icon/angle.png";
+            case "geo.text" -> "icon/text.png";
             default -> null;
         };
     }

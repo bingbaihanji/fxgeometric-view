@@ -55,6 +55,11 @@ public interface GeometryVisitor<T> {
     T visitEllipse(EllipseGeo ellipse);
 
     /**
+     * 访问角度对象
+     */
+    T visitAngle(AngleGeo angle);
+
+    /**
      * 访问手绘路径对象
      */
     T visitPath(PathGeo path);
@@ -63,6 +68,11 @@ public interface GeometryVisitor<T> {
      * 访问函数对象
      */
     T visitFunction(FunctionGeo function);
+
+    /**
+     * 访问文本对象
+     */
+    T visitText(TextGeo text);
 
     /**
      * 访问其他未知类型(默认处理)

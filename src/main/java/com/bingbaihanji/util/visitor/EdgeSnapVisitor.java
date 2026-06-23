@@ -147,6 +147,12 @@ public class EdgeSnapVisitor implements GeometryVisitor<EdgeSnapVisitor.SnapResu
     }
 
     @Override
+    public SnapResult visitAngle(AngleGeo angle) { return null; }
+
+    @Override
+    public SnapResult visitText(TextGeo text) { return null; }
+
+    @Override
     public SnapResult visitFunction(FunctionGeo function) {
         List<List<Point2D>> segments = function.getSampledSegments();
         if (segments == null || segments.isEmpty()) {

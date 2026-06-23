@@ -165,6 +165,12 @@ public class IntersectionVisitor implements GeometryVisitor<List<Point2D>> {
     }
 
     @Override
+    public List<Point2D> visitAngle(AngleGeo angle) { return List.of(); }
+
+    @Override
+    public List<Point2D> visitText(TextGeo text) { return List.of(); }
+
+    @Override
     public List<Point2D> visitFunction(FunctionGeo func) {
         if (other instanceof FunctionGeo f2) {
             return IntersectionUtils.getFunctionFunctionIntersections(func, f2);

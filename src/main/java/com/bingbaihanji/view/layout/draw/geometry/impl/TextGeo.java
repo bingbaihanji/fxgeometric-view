@@ -1,0 +1,134 @@
+package com.bingbaihanji.view.layout.draw.geometry.impl;
+
+import java.util.List;
+
+import com.bingbaihanji.constant.ObjectType;
+import com.bingbaihanji.util.FillRenderer;
+import com.bingbaihanji.util.LineStyleUtil;
+import com.bingbaihanji.util.StyleManager;
+import com.bingbaihanji.view.layout.core.WorldTransform;
+import com.bingbaihanji.view.layout.draw.geometry.GeometryVisitor;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+
+/**
+ * 自由文本标注
+ * <p>
+ * 单击定位后输入文本内容，支持背景填充、边框和旋转。
+ * </p>
+ *
+ * @author bingbaihanji
+ * @date 2026-06-23
+ */
+public class TextGeo extends AbstractWorldObject {
+
+    private double x;
+    private double y;
+    private double rotation = 0; // 旋转角度（度）
+
+    public TextGeo(double x, double y, String text) {
+        super(ObjectType.TEXT);
+        this.x = x;
+        this.y = y;
+        this.label = text;
+        this.labelVisible = true;
+    }
+
+    public double getX() { return x; }
+    public void setX(double x) { this.x = x; }
+    public double getY() { return y; }
+    public void setY(double y) { this.y = y; }
+    public double getRotation() { return rotation; }
+    public void setRotation(double rotation) { this.rotation = rotation; }
+
+    @Override
+    public void paint(GraphicsContext gc, WorldTransform transform, double w, double h) {
+        if (label == null || label.isEmpty()) return;
+
+        double sx = transform.worldToScreenX(x);
+        double sy = transform.worldToScreenY(y);
+
+        Font font = Font.font("Arial", labelFontSize > 0 ? labelFontSize : 16);
+        gc.save();
+        gc.translate(sx, sy);
+        if (rotation != 0) {
+            gc.rotate(rotation);
+        }
+
+        // 测量文本尺寸
+        Text temp = new Text(label);
+        temp.setFont(font);
+        double tw = temp.getLayoutBounds().getWidth();
+        double th = temp.getLayoutBounds().getHeight();
+        double padding = 4;
+
+        // 背景填充
+        if (fillType != null && fillType != com.bingbaihanji.constant.FillType.NONE) {
+            gc.setFill(fillColor != null ? fillColor : getEffectiveColor());
+            gc.fillRect(-padding, -th - padding, tw + padding * 2, th + padding * 2);
+        }
+
+        // 描边（发光层）
+        if (StyleManager.GLOW_ENABLED) {
+            gc.save();
+            LineStyleUtil.resetLineStyle(gc);
+            gc.setGlobalAlpha(StyleManager.GLOW_ALPHA);
+            gc.setLineWidth(getEffectiveLineWidth() + StyleManager.GLOW_WIDTH_BONUS);
+            gc.setStroke(getEffectiveColor());
+            gc.strokeRect(-padding, -th - padding, tw + padding * 2, th + padding * 2);
+            gc.restore();
+        }
+
+        // 边框
+        if (lineType != null && getEffectiveLineWidth() > 0) {
+            LineStyleUtil.applyLineStyle(gc, lineType);
+            gc.setLineWidth(getEffectiveLineWidth());
+            gc.setStroke(getEffectiveColor());
+            gc.strokeRect(-padding, -th - padding, tw + padding * 2, th + padding * 2);
+            LineStyleUtil.resetLineStyle(gc);
+        }
+
+        // 文本
+        gc.setFill(labelColor != null ? labelColor : getEffectiveColor());
+        gc.setFont(font);
+        gc.fillText(label, 0, 0);
+
+        gc.restore();
+    }
+
+    @Override
+    public boolean hitTest(double wx, double wy, double tolerance) {
+        double dx = wx - x;
+        double dy = wy - y;
+        // 文本大约 100px 宽
+        return Math.abs(dx) < 50 / 50.0 + tolerance && Math.abs(dy) < 20 / 50.0 + tolerance;
+    }
+
+    @Override
+    public List<DraggablePoint> getDraggablePoints() {
+        return List.of(new DraggablePoint(x, y, (nx, ny) -> {
+            x = nx;
+            y = ny;
+        }));
+    }
+
+    @Override
+    public void rotateAroundPoint(double cx, double cy, double angle) {
+        double dx = x - cx, dy = y - cy;
+        double cos = Math.cos(angle), sin = Math.sin(angle);
+        x = cx + dx * cos - dy * sin;
+        y = cy + dx * sin + dy * cos;
+        rotation += Math.toDegrees(angle);
+    }
+
+    @Override
+    public double[] getBoundingBox() {
+        return new double[]{x - 0.5, y - 0.2, x + 0.5, y + 0.2};
+    }
+
+    @Override
+    public <T> T accept(GeometryVisitor<T> visitor) {
+        return visitor.visitText(this);
+    }
+}

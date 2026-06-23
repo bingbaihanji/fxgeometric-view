@@ -67,7 +67,8 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
     public boolean canHandle(DrawMode mode) {
         return mode == DrawMode.POINT || mode == DrawMode.LINE ||
                 mode == DrawMode.INFINITE_LINE || mode == DrawMode.CIRCLE ||
-                mode == DrawMode.ELLIPSE;
+                mode == DrawMode.ELLIPSE || mode == DrawMode.ANGLE ||
+                mode == DrawMode.TEXT;
     }
 
     @Override
@@ -211,6 +212,24 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
 
 
     /**
+     * 处理文本模式的单次点击（弹出对话框后创建文本标注）
+     */
+    private void handleTextDrawing(double worldX, double worldY, IDrawingContext context) {
+        javafx.scene.control.TextInputDialog dialog = new javafx.scene.control.TextInputDialog();
+        dialog.setTitle("自由文本标注");
+        dialog.setHeaderText(null);
+        dialog.setContentText("请输入文本内容:");
+        dialog.showAndWait().ifPresent(text -> {
+            if (!text.isBlank()) {
+                TextGeo textGeo = new TextGeo(worldX, worldY, text.trim());
+                context.executeCommand(new GeometryCommand(context, textGeo));
+                context.redraw();
+            }
+        });
+        context.setState(DrawingState.IDLE);
+    }
+
+    /**
      * 处理点模式的绘制
      */
     private void handlePointDrawing(double worldX, double worldY, IDrawingContext context) {
@@ -295,6 +314,14 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             linePreview = new PreviewManager.LinePreview(true); // 无限直线
             linePreview.setStartPoint(firstPointX, firstPointY);
             context.getPreviewManager().addPreviewable(linePreview);
+        } else if (context.getDrawMode() == DrawMode.ANGLE) {
+            // 角度：第一次点击设置顶点，使用直线预览显示射线
+            linePreview = new PreviewManager.LinePreview(false);
+            linePreview.setStartPoint(firstPointX, firstPointY);
+            context.getPreviewManager().addPreviewable(linePreview);
+        } else if (context.getDrawMode() == DrawMode.TEXT) {
+            // 文本：单击后弹出对话框创建文本标注
+            handleTextDrawing(worldX, worldY, context);
         }
     }
 
@@ -332,6 +359,14 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                     circlePreview = null;
                 }
                 firstPointRef = null;
+            }
+            case ANGLE -> {
+                // 角度：第二次点击设置射线1上的点，进入三阶段模式
+                secondPointX = worldX;
+                secondPointY = worldY;
+                context.setState(DrawingState.SECOND_CLICK);
+                context.redraw();
+                return; // 不执行 setState(IDLE)
             }
             case ELLIPSE -> {
                 // 椭圆：第二次点击设置焦点2，进入三阶段模式
@@ -385,6 +420,17 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
      * 处理第三次点击（椭圆确认：确定椭圆上一点）
      */
     private void handleThirdClick(double worldX, double worldY, IDrawingContext context) {
+        // 角度：第三次点击设置射线2上的点，创建角度图形
+        if (context.getDrawMode() == DrawMode.ANGLE) {
+            AngleGeo angle = new AngleGeo(firstPointX, firstPointY,
+                    secondPointX, secondPointY, worldX, worldY);
+            context.executeCommand(new GeometryCommand(context, angle));
+            reset();
+            context.setState(DrawingState.IDLE);
+            context.redraw();
+            return;
+        }
+
         if (context.getDrawMode() != DrawMode.ELLIPSE || ellipsePreview == null) {
             context.setState(DrawingState.IDLE);
             return;
