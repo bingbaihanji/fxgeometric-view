@@ -33,12 +33,12 @@ public class FunctionFactory {
         }
 
         try {
-            Map<String, Double> params = input.getParameters();
-            FunctionType type = input.getType();
+            Map<String, Double> params = input.parameters();
+            FunctionType type = input.type();
 
             return createByType(input, type, params);
         } catch (Exception e) {
-            throw new FunctionCreationException(input.getType(), "函数创建失败", e);
+            throw new FunctionCreationException(input.type(), "函数创建失败", e);
         }
     }
 
@@ -159,7 +159,7 @@ public class FunctionFactory {
      * 创建自定义表达式函数 y = f(x)
      */
     private static CustomFunctionGeo createCustomFunction(FunctionInputResult input) {
-        String expr = input.getCustomExpression();
+        String expr = input.customExpression();
         if (expr == null || expr.isBlank()) {
             throw new FunctionCreationException(FunctionType.CUSTOM, "自定义函数表达式不能为空");
         }

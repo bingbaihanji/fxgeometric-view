@@ -10,10 +10,10 @@
 
     <!-- 文件输出 -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${user.home}/.fxgeometric/logs/application.log</file>
+        <file>${user.dir}/fxgeometric/logs/application.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- 每天滚动一次 -->
-            <fileNamePattern>${user.home}/.fxgeometric/logs/application.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>${user.dir}/fxgeometric/logs/application.%d{yyyy-MM-dd}.log</fileNamePattern>
             <!-- 保留30天的日志 -->
             <maxHistory>30</maxHistory>
             <!-- 日志文件总大小限制 -->
@@ -27,14 +27,14 @@
 
     <!-- 错误日志单独输出 -->
     <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${user.home}/.fxgeometric/logs/error.log</file>
+        <file>${user.dir}/fxgeometric/logs/error.log</file>
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>ERROR</level>
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${user.home}/.fxgeometric/logs/error.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>${user.dir}/fxgeometric/logs/error.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>90</maxHistory>
         </rollingPolicy>
         <encoder>

@@ -32,7 +32,13 @@
       "Bash(Select-Object -ExpandProperty FullName)",
       "Bash(mvn javafx:run *)",
       "Bash(git commit *)",
-      "Bash(Test-Path *)"
+      "Bash(Test-Path *)",
+      "Bash(Get-ChildItem -Path \"D:\\\\bingbaihanji\\\\FXGeometricView\" -Depth 2)",
+      "Bash(Select-Object FullName, Mode)",
+      "Bash(Sort-Object FullName)",
+      "Bash(git *)",
+      "Bash(sed 's/\\(.*//')",
+      "Bash(Select-String -Pattern \"ERROR\")"
     ]
   }
 }

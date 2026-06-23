@@ -92,6 +92,11 @@ public class InitView {
         // 绑定文件菜单事件
         bindFileMenuEvents(menuView, gridChartPane, drawingController);
 
+        // 8. 注册 I18nRefreshable 组件（语言切换时自动刷新文本，无需重建界面）
+        I18nUtil.addRefreshable(gridChartPane);
+        I18nUtil.addRefreshable(toolPane);
+        I18nUtil.addRefreshable(menuView);
+
         return root;
     }
 
@@ -282,18 +287,15 @@ public class InitView {
 
     /**
      * 设置语言变化监听器
+     * <p>
+     * 语言切换时仅更新窗口标题；菜单栏、工具栏、画布通过
+     * {@link com.bingbaihanji.util.I18nRefreshable} 机制自动刷新文本，
+     * 已绘制的几何图形不会丢失。
+     * </p>
      */
     private void setupLocaleChangeListener() {
         I18nUtil.addLocaleChangeListener(() -> {
             Platform.runLater(() -> {
-                // 重新初始化界面
-                Stage newStage = init();
-                // 保持窗口尺寸和位置
-                newStage.setX(stage.getX());
-                newStage.setY(stage.getY());
-                newStage.setWidth(stage.getWidth());
-                newStage.setHeight(stage.getHeight());
-                stage.setScene(newStage.getScene());
                 stage.setTitle(I18nUtil.getString("application.name"));
             });
         });

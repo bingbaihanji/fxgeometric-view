@@ -202,11 +202,10 @@ public class FillRenderer {
     private static void drawDiagonalHatch(GraphicsContext gc, int distance,
                                           double x, double y, double width, double height, double angleDeg) {
         double maxDim = Math.max(width, height);
-        double spacing = distance;
 
         if (angleDeg == 45) {
             // 从左下到右上
-            for (double offset = -maxDim; offset <= maxDim + width; offset += spacing) {
+            for (double offset = -maxDim; offset <= maxDim + width; offset += distance) {
                 double x1 = x + offset;
                 double y1 = y + height;
                 double x2 = x + offset + height;
@@ -216,7 +215,7 @@ public class FillRenderer {
             }
         } else {
             // 从左上到右下
-            for (double offset = -maxDim; offset <= maxDim + width; offset += spacing) {
+            for (double offset = -maxDim; offset <= maxDim + width; offset += distance) {
                 double x1 = x + offset;
                 double y1 = y;
                 double x2 = x + offset + height;

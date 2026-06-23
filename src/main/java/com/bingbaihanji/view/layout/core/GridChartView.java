@@ -4,6 +4,7 @@ import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.GridType;
 import com.bingbaihanji.constant.UnitLabelType;
 import com.bingbaihanji.controller.SnapCalculator;
+import com.bingbaihanji.util.I18nRefreshable;
 import com.bingbaihanji.util.SpecialPointManager.SpecialPoint;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import com.bingbaihanji.view.layout.draw.geometry.WorldPainter;
@@ -29,7 +30,7 @@ import java.util.function.BiConsumer;
  * @date 2025-12-20 16:12:42
  * @description 格点图视图
  */
-public class GridChartView extends Pane {
+public class GridChartView extends Pane implements I18nRefreshable {
 
     // 画布管理器
     private final CanvasManager canvasManager = new CanvasManager();
@@ -185,6 +186,15 @@ public class GridChartView extends Pane {
         double centerWorldX = transform.screenToWorldX(getWidth() / 2);
         double centerWorldY = transform.screenToWorldY(getHeight() / 2);
         transform.centerWorldAt(centerWorldX, centerWorldY, getWidth(), getHeight());
+    }
+
+    /**
+     * 语言切换时刷新所有文本（背景层标签 + 图形标签 + 对象层）
+     */
+    @Override
+    public void refreshI18n() {
+        invalidateBackground();
+        redraw();
     }
 
     /**

@@ -1,16 +1,34 @@
 package com.bingbaihanji.view.menu;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import com.bingbaihanji.util.I18nRefreshable;
 import com.bingbaihanji.util.I18nUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.control.*;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.RadioMenuItem;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.KeyCombination;
 
-public class MenuView extends MenuBar {
+/**
+ * 主菜单栏（实现 {@link I18nRefreshable}，语言切换时自动刷新文本）
+ *
+ * @author bingbaihanji
+ * @date 2025-12-20
+ * @updated 2026-06-23 实现 I18nRefreshable，语言切换时无需重建界面
+ */
+public class MenuView extends MenuBar implements I18nRefreshable {
 
     private final ObservableList<Menu> menus = FXCollections.observableArrayList();
 
-    // 菜单项声明,方便外部访问和添加事件监听
+    /** Menu / MenuItem → i18n key 映射，供 {@link #refreshI18n()} 使用 */
+    private final Map<Object, String> i18nKeyMap = new HashMap<>();
+
+    // 菜单项声明，方便外部访问和添加事件监听
     private MenuItem saveProjectItem;
     private MenuItem openProjectItem;
     private MenuItem screenshotItem;
@@ -19,100 +37,116 @@ public class MenuView extends MenuBar {
     private RadioMenuItem polarModeItem;
     private RadioMenuItem isometricModeItem;
 
-    private RadioMenuItem showAxis; // 显示坐标轴
-    private RadioMenuItem hideAxis; // 隐藏坐标轴
+    private RadioMenuItem showAxis;
+    private RadioMenuItem hideAxis;
 
-    private MenuItem systemSettingsItem; // 系统设置菜单项
-    private MenuItem drawingSettingsItem; // 绘制设置菜单项
-    private MenuItem lineStyleSettingsItem; // 线条样式设置菜单项
+    private MenuItem systemSettingsItem;
+    private MenuItem drawingSettingsItem;
+    private MenuItem lineStyleSettingsItem;
 
     public MenuView() {
         initializeMenus();
     }
 
+    // ======================== I18nRefreshable ========================
+
+    @Override
+    public void refreshI18n() {
+        for (var entry : i18nKeyMap.entrySet()) {
+            String text = I18nUtil.getString(entry.getValue());
+            if (entry.getKey() instanceof Menu menu) {
+                menu.setText(text);
+            } else if (entry.getKey() instanceof MenuItem item) {
+                item.setText(text);
+            }
+        }
+    }
+
+    // ======================== 构建 ========================
+
     private void initializeMenus() {
         // 0. 创建"文件"菜单
-        Menu fileMenu = new Menu(getMenuName("menu.file"));
-        saveProjectItem = new MenuItem(getMenuName("menu.file.saveProject"));
+        Menu fileMenu = new Menu();
+        registerMenu(fileMenu, "menu.file");
+        saveProjectItem = new MenuItem();
+        registerMenuItem(saveProjectItem, "menu.file.saveProject");
         saveProjectItem.setAccelerator(KeyCombination.keyCombination("Ctrl+S"));
-        openProjectItem = new MenuItem(getMenuName("menu.file.openProject"));
+        openProjectItem = new MenuItem();
+        registerMenuItem(openProjectItem, "menu.file.openProject");
         openProjectItem.setAccelerator(KeyCombination.keyCombination("Ctrl+O"));
         fileMenu.getItems().addAll(openProjectItem, saveProjectItem);
 
         // 1. 创建"工具"菜单
-        Menu toolMenu = new Menu(getMenuName("menu.view.tools"));
+        Menu toolMenu = new Menu();
+        registerMenu(toolMenu, "menu.view.tools");
 
-        // 创建"截图"菜单项
-        screenshotItem = new MenuItem(getMenuName("menu.view.tools.screenshots"));
-        // 可以为截图菜单项添加快捷键
-        screenshotItem.setAccelerator(
-                KeyCombination.keyCombination("Ctrl+Shift+P")
-        );
-
+        screenshotItem = new MenuItem();
+        registerMenuItem(screenshotItem, "menu.view.tools.screenshots");
+        screenshotItem.setAccelerator(KeyCombination.keyCombination("Ctrl+Shift+P"));
         toolMenu.getItems().add(screenshotItem);
 
         // 2. 创建"视图"菜单
-        Menu viewMenu = new Menu(getMenuName("menu.view.view"));
+        Menu viewMenu = new Menu();
+        registerMenu(viewMenu, "menu.view.view");
 
         // 创建"格点模式"子菜单
-        Menu gridModeMenu = new Menu(getMenuName("menu.view.view.gridsDotsMode"));
+        Menu gridModeMenu = new Menu();
+        registerMenu(gridModeMenu, "menu.view.view.gridsDotsMode");
 
-        // 创建单选按钮组,确保点模式和格子模式互斥
+        // 创建单选按钮组
         ToggleGroup gridModeGroup = new ToggleGroup();
 
-        // 创建"点模式"单选菜单项
-        dotModeItem = new RadioMenuItem(getMenuName("menu.view.view.dotsMode"));
+        dotModeItem = new RadioMenuItem();
+        registerMenuItem(dotModeItem, "menu.view.view.dotsMode");
         dotModeItem.setToggleGroup(gridModeGroup);
 
-        // 创建"格子模式"单选菜单项
-        gridModeItem = new RadioMenuItem(getMenuName("menu.view.view.gridsMode"));
+        gridModeItem = new RadioMenuItem();
+        registerMenuItem(gridModeItem, "menu.view.view.gridsMode");
         gridModeItem.setToggleGroup(gridModeGroup);
 
-        // 创建"极坐标模式"单选菜单项
-        polarModeItem = new RadioMenuItem(getMenuName("menu.view.view.polarMode"));
+        polarModeItem = new RadioMenuItem();
+        registerMenuItem(polarModeItem, "menu.view.view.polarMode");
         polarModeItem.setToggleGroup(gridModeGroup);
 
-        // 创建"等距网格模式"单选菜单项
-        isometricModeItem = new RadioMenuItem(getMenuName("menu.view.view.isometricMode"));
+        isometricModeItem = new RadioMenuItem();
+        registerMenuItem(isometricModeItem, "menu.view.view.isometricMode");
         isometricModeItem.setToggleGroup(gridModeGroup);
 
-        // 默认选择"点模式"
         dotModeItem.setSelected(true);
 
-        // 将所有模式添加到"格点模式"子菜单
         gridModeMenu.getItems().addAll(dotModeItem, gridModeItem,
                 polarModeItem, isometricModeItem);
 
-
         // 是否显示坐标轴
-        Menu axisMenu = new Menu(getMenuName("menu.view.axis"));
+        Menu axisMenu = new Menu();
+        registerMenu(axisMenu, "menu.view.axis");
         ToggleGroup iShowAxis = new ToggleGroup();
-        showAxis = new RadioMenuItem(getMenuName("menu.view.axis.showAxis"));
+        showAxis = new RadioMenuItem();
+        registerMenuItem(showAxis, "menu.view.axis.showAxis");
         showAxis.setToggleGroup(iShowAxis);
 
-        hideAxis = new RadioMenuItem(getMenuName("menu.view.axis.hideAxis"));
+        hideAxis = new RadioMenuItem();
+        registerMenuItem(hideAxis, "menu.view.axis.hideAxis");
         hideAxis.setToggleGroup(iShowAxis);
 
-        // 默认选择显示坐标轴
         showAxis.setSelected(true);
 
         axisMenu.getItems().addAll(showAxis, hideAxis);
 
-        // 将"格点模式"子菜单添加到"视图"菜单
         viewMenu.getItems().addAll(gridModeMenu, axisMenu);
 
-
         // 3. 创建"设置"菜单
-        Menu settingsMenu = new Menu(getMenuName("menu.settings"));
+        Menu settingsMenu = new Menu();
+        registerMenu(settingsMenu, "menu.settings");
 
-        // 创建"系统设置"菜单项
-        systemSettingsItem = new MenuItem(getMenuName("menu.settings.systemSettings"));
+        systemSettingsItem = new MenuItem();
+        registerMenuItem(systemSettingsItem, "menu.settings.systemSettings");
 
-        // 创建"绘制设置"菜单项
-        drawingSettingsItem = new MenuItem(getMenuName("menu.settings.drawingSettings"));
+        drawingSettingsItem = new MenuItem();
+        registerMenuItem(drawingSettingsItem, "menu.settings.drawingSettings");
 
-        // 创建"线条样式设置"菜单项
-        lineStyleSettingsItem = new MenuItem(getMenuName("menu.settings.lineStyleSettings"));
+        lineStyleSettingsItem = new MenuItem();
+        registerMenuItem(lineStyleSettingsItem, "menu.settings.lineStyleSettings");
 
         settingsMenu.getItems().addAll(systemSettingsItem, drawingSettingsItem, lineStyleSettingsItem);
 
@@ -121,13 +155,25 @@ public class MenuView extends MenuBar {
         this.getMenus().addAll(fileMenu, toolMenu, viewMenu, settingsMenu);
     }
 
+    // ======================== 辅助 ========================
 
-    private String getMenuName(String i18nKey) {
-        return I18nUtil.getString(i18nKey);
+    /**
+     * 为 Menu 设置 i18n 文本并记录 key
+     */
+    private void registerMenu(Menu menu, String i18nKey) {
+        menu.setText(I18nUtil.getString(i18nKey));
+        i18nKeyMap.put(menu, i18nKey);
     }
 
+    /**
+     * 为 MenuItem 设置 i18n 文本并记录 key
+     */
+    private void registerMenuItem(MenuItem item, String i18nKey) {
+        item.setText(I18nUtil.getString(i18nKey));
+        i18nKeyMap.put(item, i18nKey);
+    }
 
-    // Getter 方法,方便外部添加事件监听
+    // ======================== Getter / Setter ========================
 
     public MenuItem getSaveProjectItem() {
         return saveProjectItem;
@@ -157,10 +203,6 @@ public class MenuView extends MenuBar {
         return isometricModeItem;
     }
 
-    public ToggleGroup getGridModeGroup() {
-        return dotModeItem.getToggleGroup();
-    }
-
     public RadioMenuItem getShowAxis() {
         return showAxis;
     }
@@ -176,7 +218,12 @@ public class MenuView extends MenuBar {
     public MenuItem getDrawingSettingsItem() {
         return drawingSettingsItem;
     }
-    // 添加事件监听器的方法
+
+    public MenuItem getLineStyleSettingsItem() {
+        return lineStyleSettingsItem;
+    }
+
+    // ======================== 事件绑定 ========================
 
     public void setOnSaveProjectAction(Runnable action) {
         saveProjectItem.setOnAction(e -> action.run());
@@ -220,10 +267,6 @@ public class MenuView extends MenuBar {
 
     public void setOnDrawingSettingsAction(Runnable action) {
         drawingSettingsItem.setOnAction(e -> action.run());
-    }
-
-    public MenuItem getLineStyleSettingsItem() {
-        return lineStyleSettingsItem;
     }
 
     public void setOnLineStyleSettingsAction(Runnable action) {

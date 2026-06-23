@@ -209,8 +209,8 @@ public class DrawingController {
                 FunctionInputResult input = result.get();
                 try {
                     FunctionGeo function = com.bingbaihanji.factory.FunctionFactory.createFunction(input);
-                    if (!input.isAutoRange()) {
-                        function.setDomainRange(input.getDomainMin(), input.getDomainMax());
+                    if (!input.autoRange()) {
+                        function.setDomainRange(input.domainMin(), input.domainMax());
                     }
                     context.executeCommand(new CommandHistory.Command() {
                         @Override

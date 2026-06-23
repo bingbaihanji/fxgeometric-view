@@ -12,6 +12,7 @@ module FXGeometricView {
     requires commons.math3;
     requires exp4j;
     requires java.logging;
+    requires static lombok;
 
     // Lombok
 //    requires static lombok;

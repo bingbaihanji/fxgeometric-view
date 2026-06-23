@@ -1,6 +1,11 @@
 package com.bingbaihanji.view.layout.pane;
 
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.bingbaihanji.constant.DrawMode;
+import com.bingbaihanji.util.I18nRefreshable;
 import com.bingbaihanji.util.I18nUtil;
 import com.bingbaihanji.util.StyleManager;
 import javafx.beans.property.ObjectProperty;
@@ -8,58 +13,43 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.Label;
+import javafx.scene.control.Labeled;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
-
-import java.net.URL;
+import javafx.scene.control.Button;
 
 /**
- * 图形工具面板(左侧)
+ * 图形工具面板（左侧），实现 {@link I18nRefreshable} 支持语言切换
  *
  * @author bingbaihanji
+ * @date 2025-12-20
+ * @updated 2026-06-23 实现 I18nRefreshable，语言切换时无需重建界面
  */
-public class ShapeToolPane extends VBox {
+public class ShapeToolPane extends VBox implements I18nRefreshable {
 
-    /*状态属性*/
+    /** 组件 / Tooltip → i18n key 映射 */
+    private final Map<Object, String> i18nKeyMap = new HashMap<>();
 
     private final ObjectProperty<DrawMode> drawMode =
             new SimpleObjectProperty<>(DrawMode.NONE);
 
-    /**
-     * 撤销回调
-     */
     private Runnable onUndo;
-
-    /**
-     * 恢复回调
-     */
     private Runnable onRedo;
-
-    /**
-     * 清空回调
-     */
     private Runnable onClear;
-
-    /**
-     * 函数绘制回调
-     */
     private Runnable onFunctionClick;
-
-    /**
-     * 正多边形按钮点击回调
-     */
     private Runnable onRegularPolygonClick;
 
-
-
-    /*构造*/
+    /* 构造 */
 
     public ShapeToolPane() {
-
         setPrefWidth(200);
         setMinWidth(180);
         setPadding(new Insets(12));
@@ -112,7 +102,6 @@ public class ShapeToolPane extends VBox {
                 createTool("geo.tangent", DrawMode.TANGENT, group),
                 createTool("geo.rotating", DrawMode.ROTATE, group),
                 createActionButton("geo.function", this::handleFunctionClick)
-
         );
 
         content.getChildren().add(
@@ -131,43 +120,46 @@ public class ShapeToolPane extends VBox {
         getChildren().add(scrollPane);
     }
 
-    /**
-     * 获取图标文件路径
-     */
-    private String getIconPath(String textKey) {
-        return switch (textKey) {
-            case "geo.point" -> "icon/point.png";
-            case "geo.segment" -> "icon/segment.png";
-            case "geo.circle" -> "icon/circle.png";
-            case "geo.ellipse" -> "icon/elliptic.png";
-            case "geo.polygon" -> "icon/rectangle.png";
-            case "geo.regularPolygon" -> "icon/regularPolygons.png";
-            case "geo.restore" -> "icon/restore.png";
-            case "geo.revoke" -> "icon/revoke.png";
-            case "geo.empty" -> "icon/empty.png";
-            case "geo.line" -> "icon/line.png";
-            case "geo.handpainted" -> "icon/handpainted.png";
-            case "geo.constrainedPoint" -> "icon/point.png"; // 暂时使用普通点图标
-            case "geo.midpoint" -> "icon/midpoint.png";
-            case "geo.perpendicular" -> "icon/perpendicular.png";
-            case "geo.perpendicularBisector" -> "icon/perpendicularBisector.png";
-            case "geo.parallel" -> "icon/parallel.png";
-            case "geo.tangent" -> "icon/tangent.png";
-            case "geo.rotating" -> "icon/rotating.png";
-            case "geo.function" -> "icon/function.png";
-            default -> null;
-        };
+    // ======================== I18nRefreshable ========================
+
+    @Override
+    public void refreshI18n() {
+        for (var entry : i18nKeyMap.entrySet()) {
+            String text = I18nUtil.getString(entry.getValue());
+            if (entry.getKey() instanceof Labeled labeled) {
+                labeled.setText(text);
+            } else if (entry.getKey() instanceof Tooltip tooltip) {
+                tooltip.setText(text);
+            }
+        }
     }
 
+    // ======================== i18n 注册辅助 ========================
 
+    /**
+     * 为 Labeled（Label / Button 等）设置 i18n 文本并注册到刷新映射
+     */
+    private void registerI18n(Labeled labeled, String key) {
+        labeled.setText(I18nUtil.getString(key));
+        i18nKeyMap.put(labeled, key);
+    }
 
-    /*UI 构建方法*/
+    /**
+     * 为 Tooltip 设置 i18n 文本并注册
+     */
+    private void registerTooltip(Tooltip tooltip, String key) {
+        tooltip.setText(I18nUtil.getString(key));
+        i18nKeyMap.put(tooltip, key);
+    }
+
+    // ======================== UI 构建方法 ========================
 
     /**
      * 分组标题 + 内容
      */
     private VBox createSection(String titleKey, Node content) {
-        Label title = new Label(I18nUtil.getString(titleKey));
+        Label title = new Label();
+        registerI18n(title, titleKey);
         title.setStyle(StyleManager.getSectionTitleStyle());
 
         VBox separator = new VBox();
@@ -194,62 +186,13 @@ public class ShapeToolPane extends VBox {
     }
 
     /**
-     * 创建动作按钮(不是切换按钮)
+     * 单个工具按钮（图标 + 文本）
      */
-    private Button createActionButton(String textKey, Runnable action) {
-        String tooltipText = I18nUtil.getString(textKey);
+    private ToggleButton createTool(String textKey, DrawMode mode, ToggleGroup group) {
         Node iconNode = loadIconNode(textKey);
 
-        Label text = new Label(tooltipText);
-        text.setStyle(StyleManager.getTextLabelStyle());
-
-        VBox graphic = new VBox(3, iconNode, text);
-        graphic.setAlignment(Pos.CENTER);
-        graphic.setPrefSize(50, 50);
-
-        Button button = new Button();
-        button.setGraphic(graphic);
-        button.setPrefSize(60, 65);
-        button.setMinSize(60, 65);
-        button.setMaxSize(60, 65);
-        button.setFocusTraversable(false);
-
-        button.setStyle(StyleManager.getButtonStyle("normal"));
-
-        button.setOnMouseEntered(e -> {
-            button.setStyle(StyleManager.getButtonStyle("hover"));
-        });
-
-        button.setOnMouseExited(e -> {
-            button.setStyle(StyleManager.getButtonStyle("normal"));
-        });
-
-        button.setOnAction(e -> {
-            if (action != null) {
-                action.run();
-            }
-        });
-
-        Tooltip tooltip = new Tooltip(tooltipText);
-        tooltip.setStyle(StyleManager.getTooltipStyle());
-        Tooltip.install(button, tooltip);
-
-        return button;
-    }
-
-    /**
-     * 单个工具按钮(图标 + 文本)
-     */
-    private ToggleButton createTool(
-            String textKey,
-            DrawMode mode,
-            ToggleGroup group
-    ) {
-        String tooltipText = I18nUtil.getString(textKey);
-        Node iconNode = loadIconNode(textKey);
-
-        Label text = new Label(tooltipText);
-        text.setStyle(StyleManager.getTextLabelStyle());
+        Label text = new Label();
+        registerI18n(text, textKey);
 
         VBox graphic = new VBox(3, iconNode, text);
         graphic.setAlignment(Pos.CENTER);
@@ -262,7 +205,6 @@ public class ShapeToolPane extends VBox {
         button.setMinSize(60, 65);
         button.setMaxSize(60, 65);
         button.setFocusTraversable(false);
-
         button.setStyle(StyleManager.getButtonStyle("normal"));
 
         button.setOnMouseEntered(e -> {
@@ -285,13 +227,13 @@ public class ShapeToolPane extends VBox {
             }
         });
 
-        Tooltip tooltip = new Tooltip(tooltipText);
+        Tooltip tooltip = new Tooltip();
+        registerTooltip(tooltip, textKey);
         tooltip.setStyle(StyleManager.getTooltipStyle());
         Tooltip.install(button, tooltip);
 
         button.setOnAction(e -> {
             if (button.isSelected()) {
-                // 如果是正多边形模式,先触发回调
                 if (mode == DrawMode.REGULAR_POLYGON && onRegularPolygonClick != null) {
                     onRegularPolygonClick.run();
                 }
@@ -300,6 +242,49 @@ public class ShapeToolPane extends VBox {
                 drawMode.set(DrawMode.NONE);
             }
         });
+
+        return button;
+    }
+
+    /**
+     * 创建动作按钮（不是切换按钮）
+     */
+    private Button createActionButton(String textKey, Runnable action) {
+        Node iconNode = loadIconNode(textKey);
+
+        Label text = new Label();
+        registerI18n(text, textKey);
+
+        VBox graphic = new VBox(3, iconNode, text);
+        graphic.setAlignment(Pos.CENTER);
+        graphic.setPrefSize(50, 50);
+
+        Button button = new Button();
+        button.setGraphic(graphic);
+        button.setPrefSize(60, 65);
+        button.setMinSize(60, 65);
+        button.setMaxSize(60, 65);
+        button.setFocusTraversable(false);
+        button.setStyle(StyleManager.getButtonStyle("normal"));
+
+        button.setOnMouseEntered(e -> {
+            button.setStyle(StyleManager.getButtonStyle("hover"));
+        });
+
+        button.setOnMouseExited(e -> {
+            button.setStyle(StyleManager.getButtonStyle("normal"));
+        });
+
+        button.setOnAction(e -> {
+            if (action != null) {
+                action.run();
+            }
+        });
+
+        Tooltip tooltip = new Tooltip();
+        registerTooltip(tooltip, textKey);
+        tooltip.setStyle(StyleManager.getTooltipStyle());
+        Tooltip.install(button, tooltip);
 
         return button;
     }
@@ -335,6 +320,35 @@ public class ShapeToolPane extends VBox {
         return fallback;
     }
 
+    /**
+     * 获取图标文件路径
+     */
+    private String getIconPath(String textKey) {
+        return switch (textKey) {
+            case "geo.point" -> "icon/point.png";
+            case "geo.segment" -> "icon/segment.png";
+            case "geo.circle" -> "icon/circle.png";
+            case "geo.ellipse" -> "icon/elliptic.png";
+            case "geo.polygon" -> "icon/rectangle.png";
+            case "geo.regularPolygon" -> "icon/regularPolygons.png";
+            case "geo.restore" -> "icon/restore.png";
+            case "geo.revoke" -> "icon/revoke.png";
+            case "geo.empty" -> "icon/empty.png";
+            case "geo.line" -> "icon/line.png";
+            case "geo.handpainted" -> "icon/handpainted.png";
+            case "geo.constrainedPoint" -> "icon/point.png";
+            case "geo.midpoint" -> "icon/midpoint.png";
+            case "geo.perpendicular" -> "icon/perpendicular.png";
+            case "geo.perpendicularBisector" -> "icon/perpendicularBisector.png";
+            case "geo.parallel" -> "icon/parallel.png";
+            case "geo.tangent" -> "icon/tangent.png";
+            case "geo.rotating" -> "icon/rotating.png";
+            case "geo.function" -> "icon/function.png";
+            default -> null;
+        };
+    }
+
+    // ======================== 公开方法 ========================
 
     public ObjectProperty<DrawMode> drawModeProperty() {
         return drawMode;
@@ -344,76 +358,47 @@ public class ShapeToolPane extends VBox {
         return drawMode.get();
     }
 
-    /**
-     * 设置撤销回调
-     */
     public void setOnUndo(Runnable callback) {
         this.onUndo = callback;
     }
 
-    /**
-     * 设置恢复回调
-     */
     public void setOnRedo(Runnable callback) {
         this.onRedo = callback;
     }
 
-    /**
-     * 处理撤销
-     */
+    public void setOnClear(Runnable callback) {
+        this.onClear = callback;
+    }
+
+    public void setOnFunctionClick(Runnable callback) {
+        this.onFunctionClick = callback;
+    }
+
+    public void setOnRegularPolygonClick(Runnable callback) {
+        this.onRegularPolygonClick = callback;
+    }
+
     private void handleUndo() {
         if (onUndo != null) {
             onUndo.run();
         }
     }
 
-    /**
-     * 处理恢复
-     */
     private void handleRedo() {
         if (onRedo != null) {
             onRedo.run();
         }
     }
 
-    /**
-     * 设置清空回调
-     */
-    public void setOnClear(Runnable callback) {
-        this.onClear = callback;
-    }
-
-    /**
-     * 处理清空
-     */
     private void handleClear() {
         if (onClear != null) {
             onClear.run();
         }
     }
 
-    /**
-     * 设置函数绘制回调
-     */
-    public void setOnFunctionClick(Runnable callback) {
-        this.onFunctionClick = callback;
-    }
-
-    /**
-     * 设置正多边形按钮点击回调
-     */
-    public void setOnRegularPolygonClick(Runnable callback) {
-        this.onRegularPolygonClick = callback;
-    }
-
-    /**
-     * 处理函数点击
-     */
     private void handleFunctionClick() {
         if (onFunctionClick != null) {
             onFunctionClick.run();
         }
     }
-
-
 }

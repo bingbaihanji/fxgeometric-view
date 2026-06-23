@@ -53,8 +53,8 @@ public class FunctionHandler extends AbstractDrawingHandler {
                 try {
                     FunctionGeo function = com.bingbaihanji.factory.FunctionFactory.createFunction(input);
                     // 设置定义域
-                    if (!input.isAutoRange()) {
-                        function.setDomainRange(input.getDomainMin(), input.getDomainMax());
+                    if (!input.autoRange()) {
+                        function.setDomainRange(input.domainMin(), input.domainMax());
                     }
                     // 通过命令历史添加到画布(支持撤销)
                     context.executeCommand(new CommandHistory.Command() {
