@@ -798,4 +798,44 @@ public class IntersectionUtils {
         }
         return intersections;
     }
+
+    /**
+     * 计算角平分线（给定顶点和两条射线上的点）
+     * <p>
+     * 返回一个长度为 4 的数组 [x1, y1, x2, y2]，表示从顶点出发的平分线方向上的两个点，
+     * 适合构造 InfiniteLineGeo。
+     * </p>
+     *
+     * @param vx 顶点 X
+     * @param vy 顶点 Y
+     * @param p1x 射线1上一点 X
+     * @param p1y 射线1上一点 Y
+     * @param p2x 射线2上一点 X
+     * @param p2y 射线2上一点 Y
+     * @return [x1, y1, x2, y2] 平分线上的两点
+     */
+    public static double[] getAngleBisectorLine(double vx, double vy,
+            double p1x, double p1y, double p2x, double p2y) {
+        double dx1 = p1x - vx, dy1 = p1y - vy;
+        double dx2 = p2x - vx, dy2 = p2y - vy;
+        double len1 = Math.hypot(dx1, dy1);
+        double len2 = Math.hypot(dx2, dy2);
+        if (len1 < 1e-10 || len2 < 1e-10) {
+            return new double[]{vx, vy, vx + 1, vy};
+        }
+        double ux1 = dx1 / len1, uy1 = dy1 / len1;
+        double ux2 = dx2 / len2, uy2 = dy2 / len2;
+        double bx = ux1 + ux2, by = uy1 + uy2;
+        double blen = Math.hypot(bx, by);
+        if (blen < 1e-10) {
+            // 两射线相反方向，取垂直方向
+            bx = -uy1;
+            by = ux1;
+        } else {
+            bx /= blen;
+            by /= blen;
+        }
+        double ext = GeometryConfig.LineStyle.INFINITE_LINE_EXTENSION_FACTOR;
+        return new double[]{vx, vy, vx + bx * ext, vy + by * ext};
+    }
 }

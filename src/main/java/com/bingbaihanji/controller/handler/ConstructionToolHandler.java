@@ -33,12 +33,16 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
      * 已选中的线段或直线(用于垂线和平行线)
      */
     private WorldObject selectedLine = null;
+    /** 角平分线工具：顶点坐标 */
+    private double bisectorVertexX, bisectorVertexY;
+    /** 角平分线工具：射线1上一点坐标 */
+    private double bisectorRay1X, bisectorRay1Y;
 
     @Override
     public boolean canHandle(DrawMode mode) {
         return mode == DrawMode.MIDPOINT || mode == DrawMode.PERPENDICULAR ||
                 mode == DrawMode.PARALLEL || mode == DrawMode.PERPENDICULAR_BISECTOR ||
-                mode == DrawMode.TANGENT;
+                mode == DrawMode.TANGENT || mode == DrawMode.ANGLE_BISECTOR;
     }
 
     @Override
@@ -62,6 +66,7 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
             case PARALLEL -> handleParallelClick(worldX, worldY, context);
             case PERPENDICULAR_BISECTOR -> handlePerpendicularBisectorClick(worldX, worldY, context);
             case TANGENT -> handleTangentClick(worldX, worldY, context);
+            case ANGLE_BISECTOR -> handleAngleBisectorClick(worldX, worldY, context);
         }
 
         e.consume();
@@ -603,6 +608,37 @@ public class ConstructionToolHandler extends AbstractDrawingHandler {
                     return;
                 }
             }
+        }
+    }
+
+    /**
+     * 处理角平分线绘制（三击流程：顶点→射线1→射线2）
+     */
+    private void handleAngleBisectorClick(double worldX, double worldY, IDrawingContext context) {
+        if (context.getState() == DrawingState.IDLE) {
+            // 第一次点击：顶点
+            bisectorVertexX = worldX;
+            bisectorVertexY = worldY;
+            context.setState(DrawingState.FIRST_CLICK);
+            context.redraw();
+        } else if (context.getState() == DrawingState.FIRST_CLICK) {
+            // 第二次点击：射线1上的点
+            bisectorRay1X = worldX;
+            bisectorRay1Y = worldY;
+            context.setState(DrawingState.SECOND_CLICK);
+            context.redraw();
+        } else if (context.getState() == DrawingState.SECOND_CLICK) {
+            // 第三次点击：射线2上的点 → 创建角平分线
+            double[] line = IntersectionUtils.getAngleBisectorLine(
+                    bisectorVertexX, bisectorVertexY,
+                    bisectorRay1X, bisectorRay1Y,
+                    worldX, worldY);
+            InfiniteLineGeo bisector = new InfiniteLineGeo(line[0], line[1], line[2], line[3]);
+            context.executeCommand(new GeometryCommand(context, bisector));
+            bisectorVertexX = 0; bisectorVertexY = 0;
+            bisectorRay1X = 0; bisectorRay1Y = 0;
+            context.setState(DrawingState.IDLE);
+            context.redraw();
         }
     }
 }

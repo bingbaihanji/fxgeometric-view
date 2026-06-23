@@ -45,6 +45,24 @@ public class FillRenderer {
             // 标准填充：纯色填充
             gc.setFill(effectiveFillColor);
             gc.fillOval(centerX - radius, centerY - radius, radius * 2, radius * 2);
+        } else if (fillType == FillType.GRADIENT_RADIAL) {
+            javafx.scene.paint.RadialGradient gradient = new javafx.scene.paint.RadialGradient(
+                    0, 0, centerX, centerY, radius, false,
+                    javafx.scene.paint.CycleMethod.NO_CYCLE,
+                    new javafx.scene.paint.Stop(0, effectiveFillColor),
+                    new javafx.scene.paint.Stop(1, effectiveFillColor.deriveColor(0, 1, 1, 0.3))
+            );
+            gc.setFill(gradient);
+            gc.fillOval(centerX - radius, centerY - radius, radius * 2, radius * 2);
+        } else if (fillType == FillType.GRADIENT_LINEAR) {
+            javafx.scene.paint.LinearGradient gradient = new javafx.scene.paint.LinearGradient(
+                    centerX - radius, centerY - radius, centerX + radius, centerY + radius,
+                    false, javafx.scene.paint.CycleMethod.NO_CYCLE,
+                    new javafx.scene.paint.Stop(0, effectiveFillColor),
+                    new javafx.scene.paint.Stop(1, effectiveFillColor.deriveColor(0, 1, 1, 0.3))
+            );
+            gc.setFill(gradient);
+            gc.fillOval(centerX - radius, centerY - radius, radius * 2, radius * 2);
         } else {
             // 其他填充类型：使用图案填充
             // 先填充背景(可选)
@@ -98,6 +116,30 @@ public class FillRenderer {
         if (fillType == FillType.STANDARD) {
             // 标准填充：纯色填充
             gc.setFill(effectiveFillColor);
+            gc.fillPolygon(xPoints, yPoints, nPoints);
+        } else if (fillType == FillType.GRADIENT_LINEAR) {
+            double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE, maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
+            for (int i = 0; i < nPoints; i++) {
+                minX = Math.min(minX, xPoints[i]); maxX = Math.max(maxX, xPoints[i]);
+                minY = Math.min(minY, yPoints[i]); maxY = Math.max(maxY, yPoints[i]);
+            }
+            javafx.scene.paint.LinearGradient gradient = new javafx.scene.paint.LinearGradient(
+                    minX, minY, maxX, maxY, false, javafx.scene.paint.CycleMethod.NO_CYCLE,
+                    new javafx.scene.paint.Stop(0, effectiveFillColor),
+                    new javafx.scene.paint.Stop(1, effectiveFillColor.deriveColor(0, 1, 1, 0.3)));
+            gc.setFill(gradient);
+            gc.fillPolygon(xPoints, yPoints, nPoints);
+        } else if (fillType == FillType.GRADIENT_RADIAL) {
+            double midX = 0, midY = 0;
+            for (int i = 0; i < nPoints; i++) { midX += xPoints[i]; midY += yPoints[i]; }
+            midX /= nPoints; midY /= nPoints;
+            double r = 0;
+            for (int i = 0; i < nPoints; i++) { r = Math.max(r, Math.hypot(xPoints[i] - midX, yPoints[i] - midY)); }
+            javafx.scene.paint.RadialGradient gradient = new javafx.scene.paint.RadialGradient(
+                    0, 0, midX, midY, r, false, javafx.scene.paint.CycleMethod.NO_CYCLE,
+                    new javafx.scene.paint.Stop(0, effectiveFillColor),
+                    new javafx.scene.paint.Stop(1, effectiveFillColor.deriveColor(0, 1, 1, 0.3)));
+            gc.setFill(gradient);
             gc.fillPolygon(xPoints, yPoints, nPoints);
         } else {
             // 其他填充类型：使用图案填充

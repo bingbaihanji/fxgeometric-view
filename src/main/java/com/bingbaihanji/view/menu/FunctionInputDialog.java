@@ -35,6 +35,11 @@ public class FunctionInputDialog extends Dialog<FunctionInputResult> {
 
     // 自定义表达式输入
     private TextInputControl customExpressionField;
+    // 实时预览画布
+    private javafx.scene.canvas.Canvas previewCanvas;
+    private final WorldTransform previewTransform;
+    // 预览防抖
+    private javafx.animation.PauseTransition previewDebounce;
 
     /**
      * 构造函数
@@ -44,6 +49,10 @@ public class FunctionInputDialog extends Dialog<FunctionInputResult> {
      * @param canvasHeight 画布高度
      */
     public FunctionInputDialog(WorldTransform transform, double canvasWidth, double canvasHeight) {
+        this.previewTransform = new WorldTransform();
+        this.previewTransform.setScale(20);
+        this.previewTransform.centerWorldAt(0, 0, 300, 200);
+
         setTitle(I18nUtil.getString("function.dialog.title"));
         setHeaderText(I18nUtil.getString("function.dialog.header"));
 
@@ -74,9 +83,16 @@ public class FunctionInputDialog extends Dialog<FunctionInputResult> {
 
         mainContent.getChildren().addAll(typeSection, parametersPane, domainSection);
 
+        // 函数实时预览画布
+        previewCanvas = new javafx.scene.canvas.Canvas(300, 200);
+        Label previewLabel = new Label("预览");
+        previewLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+        mainContent.getChildren().addAll(previewLabel, previewCanvas);
+
         // 监听类型变化,动态更新参数输入区
         functionTypeCombo.valueProperty().addListener((obs, old, newVal) -> {
             updateParametersPane(newVal);
+            schedulePreviewRefresh();
         });
 
         // 初始化参数面板
@@ -347,5 +363,45 @@ public class FunctionInputDialog extends Dialog<FunctionInputResult> {
      */
     private void showError(String message) {
         FxTools.showErrorAlert(I18nUtil.getString("function.error.title"), message);
+    }
+
+    /**
+     * 防抖调度预览刷新（300ms 延迟）
+     */
+    private void schedulePreviewRefresh() {
+        if (previewDebounce == null) {
+            previewDebounce = new javafx.animation.PauseTransition(javafx.util.Duration.millis(300));
+            previewDebounce.setOnFinished(e -> refreshPreview());
+        }
+        previewDebounce.playFromStart();
+    }
+
+    /**
+     * 实时预览：创建临时函数并渲染到迷你画布
+     */
+    private void refreshPreview() {
+        if (previewCanvas == null) return;
+        javafx.scene.canvas.GraphicsContext gc = previewCanvas.getGraphicsContext2D();
+        gc.clearRect(0, 0, previewCanvas.getWidth(), previewCanvas.getHeight());
+
+        try {
+            var result = convertResult(ButtonType.OK);
+            if (result == null) return;
+            com.bingbaihanji.view.layout.draw.geometry.impl.FunctionGeo f = com.bingbaihanji.factory.FunctionFactory.createFunction(result);
+            if (!result.autoRange()) {
+                f.setDomainRange(result.domainMin(), result.domainMax());
+            }
+            // 绘制坐标轴
+            gc.setStroke(javafx.scene.paint.Color.GRAY);
+            gc.setLineWidth(0.5);
+            gc.strokeLine(0, previewTransform.worldToScreenY(0), previewCanvas.getWidth(), previewTransform.worldToScreenY(0));
+            gc.strokeLine(previewTransform.worldToScreenX(0), 0, previewTransform.worldToScreenX(0), previewCanvas.getHeight());
+            // 绘制函数曲线
+            gc.setStroke(javafx.scene.paint.Color.RED);
+            gc.setLineWidth(1.5);
+            f.paint(gc, previewTransform, previewCanvas.getWidth(), previewCanvas.getHeight());
+        } catch (Exception ignored) {
+            // 预览失败，静默忽略
+        }
     }
 }
