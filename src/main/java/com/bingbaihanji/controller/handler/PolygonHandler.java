@@ -9,6 +9,8 @@ import com.bingbaihanji.util.GeometryCommand;
 import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.util.PointReuseManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import com.bingbaihanji.view.layout.draw.geometry.impl.PointGeo;
 import com.bingbaihanji.view.layout.draw.geometry.impl.PolygonGeo;
 import javafx.scene.canvas.GraphicsContext;
@@ -273,5 +275,17 @@ public class PolygonHandler extends AbstractDrawingHandler {
         newCreatedPoints.clear();
         context.setState(DrawingState.IDLE);
         context.redraw();
+    }
+
+    @Override
+    public boolean handleKeyPressed(KeyEvent e, IDrawingContext context) {
+        if (!canHandle(context.getDrawMode())) return false;
+        // Enter 键完成多边形绘制（需至少 3 个顶点）
+        if (e.getCode() == KeyCode.ENTER && vertexPoints.size() >= 3) {
+            finishPolygon(context);
+            e.consume();
+            return true;
+        }
+        return false;
     }
 }

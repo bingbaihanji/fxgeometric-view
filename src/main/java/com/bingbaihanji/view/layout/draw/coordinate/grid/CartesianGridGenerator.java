@@ -58,10 +58,20 @@ public class CartesianGridGenerator {
         double step = getGridStep(transform, settings);
         double tickStepX = transform.getScaleX() * step;
         double tickStepY = transform.getScaleY() * step;
+
+        // LOD：极端缩放时自适应步长，避免渲染过量网格线
+        while (tickStepX < 4.0 && step * 2 * transform.getScaleX() <= viewWidth) {
+            step *= 2;
+            tickStepX = transform.getScaleX() * step;
+            tickStepY = transform.getScaleY() * step;
+        }
+
         double xZero = transform.worldToScreenX(0);
         double yZero = transform.worldToScreenY(0);
 
-        boolean withSubGrid = (settings.getGridType() == GridType.CARTESIAN_WITH_SUBGRID);
+        // LOD：主网格间距 < 10px 时跳过子网格渲染
+        boolean withSubGrid = (settings.getGridType() == GridType.CARTESIAN_WITH_SUBGRID)
+                && tickStepX >= 10.0 && tickStepY >= 10.0;
 
         if (withSubGrid) {
             generateSubGridLines(elements, viewWidth, viewHeight,

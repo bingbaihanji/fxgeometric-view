@@ -320,6 +320,12 @@ public class InitView {
             return;
         }
 
+        // 优先分发给 Handler 处理（如多边形 Enter 完成）
+        if (drawingController.handleKeyPressed(event)) {
+            event.consume();
+            return;
+        }
+
         // ESC键：优先取消当前绘制操作,如果没有绘制中则清除选择
         if (event.getCode() == KeyCode.ESCAPE) {
             if (drawingController.isDrawing()) {
@@ -342,8 +348,34 @@ public class InitView {
             }
         }
 
+        // 方向键微调（Shift 加速 10px）
+        double nudgeAmount = event.isShiftDown() ? 10.0 : 1.0;
+        switch (event.getCode()) {
+            case UP:
+                drawingController.nudgeSelection(0, -nudgeAmount);
+                event.consume();
+                return;
+            case DOWN:
+                drawingController.nudgeSelection(0, nudgeAmount);
+                event.consume();
+                return;
+            case LEFT:
+                drawingController.nudgeSelection(-nudgeAmount, 0);
+                event.consume();
+                return;
+            case RIGHT:
+                drawingController.nudgeSelection(nudgeAmount, 0);
+                event.consume();
+                return;
+        }
+
         if (event.isControlDown()) {
             switch (event.getCode()) {
+                case A:
+                    // Ctrl+A: 全选
+                    drawingController.selectAll();
+                    event.consume();
+                    break;
                 case Z:
                     // Ctrl+Z: 撤销
                     drawingController.undo();

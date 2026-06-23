@@ -190,7 +190,22 @@ public class SelectionManager {
         notifySelectionChanged();
     }
 
-    //   查询方法  
+    /**
+     * 全选所有可选且可见的对象
+     *
+     * @param allObjects 所有画布对象
+     */
+    public void selectAll(List<WorldObject> allObjects) {
+        clearSelection(false);
+        for (WorldObject obj : allObjects) {
+            if (obj.isSelectable() && obj.isVisible()) {
+                addSelectedObject(obj, false);
+            }
+        }
+        notifySelectionChanged();
+    }
+
+    //   查询方法
 
     /**
      * 获取所有选中对象(不可修改)

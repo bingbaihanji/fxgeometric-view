@@ -15,6 +15,7 @@ import com.bingbaihanji.view.menu.FunctionInputDialog;
 import javafx.application.Platform;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Alert;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 
 import java.util.ArrayList;
@@ -135,6 +136,20 @@ public class DrawingController {
         } catch (Exception ex) {
             logger.error("处理鼠标拖动事件时发生错误", ex);
         }
+    }
+
+    /**
+     * 键盘事件分发（先交给绘制 Handler 处理，如多边形 Enter 完成）
+     *
+     * @return true 表示已被 Handler 消费
+     */
+    public boolean handleKeyPressed(KeyEvent e) {
+        for (DrawingHandler handler : handlers) {
+            if (handler.canHandle(context.getDrawMode()) && handler.handleKeyPressed(e, context)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void handleMouseReleased(MouseEvent e) {
@@ -289,6 +304,60 @@ public class DrawingController {
 
     public void clearSelection() {
         context.getSelectionManager().clearSelection();
+        context.redraw();
+    }
+
+    /**
+     * 全选所有对象 (Ctrl+A)
+     */
+    public void selectAll() {
+        context.getSelectionManager().selectAll(context.getObjects());
+        context.redraw();
+    }
+
+    /**
+     * 方向键微调选中对象（屏幕像素 → 世界坐标，Ctrl+方向键可撤销）
+     *
+     * @param screenDx 屏幕 X 方向增量（正=向右，负=向左）
+     * @param screenDy 屏幕 Y 方向增量（正=向下，负=向上）
+     */
+    public void nudgeSelection(double screenDx, double screenDy) {
+        if (!context.getSelectionManager().hasSelection()) return;
+        WorldTransform t = context.getTransform();
+        double worldDx = screenDx / t.getScaleX();
+        double worldDy = -screenDy / t.getScaleY();
+
+        List<WorldObject> selected = new ArrayList<>(context.getSelectionManager().getSelectedObjects());
+        java.util.Map<WorldObject.DraggablePoint, double[]> initialPositions = new java.util.LinkedHashMap<>();
+        for (WorldObject obj : selected) {
+            for (WorldObject.DraggablePoint p : obj.getDraggablePoints()) {
+                initialPositions.putIfAbsent(p, new double[]{p.getX(), p.getY()});
+            }
+        }
+        final double dx = worldDx;
+        final double dy = worldDy;
+        context.executeCommand(new CommandHistory.Command() {
+            @Override
+            public void execute() {
+                for (var e : initialPositions.entrySet()) {
+                    double[] init = e.getValue();
+                    e.getKey().updatePosition(init[0] + dx, init[1] + dy);
+                }
+                context.getConstraintHandler().updateAllConstrainedPoints(context);
+                context.getIntersectionHandler().recalculateAllIntersections(context);
+                context.invalidateSnapCache();
+            }
+            @Override
+            public void undo() {
+                for (var e : initialPositions.entrySet()) {
+                    double[] init = e.getValue();
+                    e.getKey().updatePosition(init[0], init[1]);
+                }
+                context.getConstraintHandler().updateAllConstrainedPoints(context);
+                context.getIntersectionHandler().recalculateAllIntersections(context);
+                context.invalidateSnapCache();
+            }
+        });
         context.redraw();
     }
 

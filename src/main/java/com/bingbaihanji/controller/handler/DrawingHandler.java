@@ -4,6 +4,7 @@ import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.controller.IDrawingContext;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 
 /**
@@ -77,6 +78,17 @@ public interface DrawingHandler {
      * @return true 表示可以处理,false 表示不能处理
      */
     boolean canHandle(DrawMode mode);
+
+    /**
+     * 处理键盘事件（默认不处理）
+     *
+     * @param e       键盘事件
+     * @param context 绘制上下文
+     * @return true 表示已处理该事件
+     */
+    default boolean handleKeyPressed(KeyEvent e, IDrawingContext context) {
+        return false;
+    }
 
     /**
      * 重置 Handler 状态
