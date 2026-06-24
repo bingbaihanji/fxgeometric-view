@@ -56,40 +56,7 @@ public class TextGeo extends AbstractWorldObject {
             gc.rotate(rotation);
         }
 
-        // 测量文本尺寸
-        Text temp = new Text(label);
-        temp.setFont(font);
-        double tw = temp.getLayoutBounds().getWidth();
-        double th = temp.getLayoutBounds().getHeight();
-        double padding = 4;
-
-        // 背景填充
-        if (fillType != null && fillType != com.bingbaihanji.constant.FillType.NONE) {
-            gc.setFill(fillColor != null ? fillColor : getEffectiveColor());
-            gc.fillRect(-padding, -th - padding, tw + padding * 2, th + padding * 2);
-        }
-
-        // 描边（发光层）
-        if (StyleManager.GLOW_ENABLED) {
-            gc.save();
-            LineStyleUtil.resetLineStyle(gc);
-            gc.setGlobalAlpha(StyleManager.GLOW_ALPHA);
-            gc.setLineWidth(getEffectiveLineWidth() + StyleManager.GLOW_WIDTH_BONUS);
-            gc.setStroke(getEffectiveColor());
-            gc.strokeRect(-padding, -th - padding, tw + padding * 2, th + padding * 2);
-            gc.restore();
-        }
-
-        // 边框
-        if (lineType != null && getEffectiveLineWidth() > 0) {
-            LineStyleUtil.applyLineStyle(gc, lineType);
-            gc.setLineWidth(getEffectiveLineWidth());
-            gc.setStroke(getEffectiveColor());
-            gc.strokeRect(-padding, -th - padding, tw + padding * 2, th + padding * 2);
-            LineStyleUtil.resetLineStyle(gc);
-        }
-
-        // 文本
+        // 纯文本（无背景框、无边框）
         gc.setFill(labelColor != null ? labelColor : getEffectiveColor());
         gc.setFont(font);
         gc.fillText(label, 0, 0);

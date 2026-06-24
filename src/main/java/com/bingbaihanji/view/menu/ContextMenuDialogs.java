@@ -300,6 +300,20 @@ public final class ContextMenuDialogs {
                 function.setColor(props.getColor());
                 canvas.redraw();
             });
+        } else if (shape instanceof TextGeo text) {
+            dialog = new ShapePropertiesDialog(text.getColor());
+            Optional<ShapePropertiesResult> result = dialog.showAndWait();
+            result.ifPresent(props -> {
+                text.setColor(props.getColor());
+                canvas.redraw();
+            });
+        } else if (shape instanceof AngleGeo angle) {
+            dialog = new ShapePropertiesDialog(angle.getColor());
+            Optional<ShapePropertiesResult> result = dialog.showAndWait();
+            result.ifPresent(props -> {
+                angle.setColor(props.getColor());
+                canvas.redraw();
+            });
         }
     }
 
