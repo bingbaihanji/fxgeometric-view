@@ -156,7 +156,7 @@ public class FillRenderer {
 
             // 计算边界框
             double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
-            double maxX = Double.MIN_VALUE, maxY = Double.MIN_VALUE;
+            double maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
             for (int i = 0; i < nPoints; i++) {
                 minX = Math.min(minX, xPoints[i]);
                 maxX = Math.max(maxX, xPoints[i]);

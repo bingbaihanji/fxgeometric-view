@@ -369,6 +369,8 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                 // 角度：第二次点击设置射线1上的点，进入三阶段模式
                 secondPointX = worldX;
                 secondPointY = worldY;
+                this.secondPointRef = secondPointRef;
+                firstPointRef = null;
                 context.setState(DrawingState.SECOND_CLICK);
                 context.redraw();
                 return; // 不执行 setState(IDLE)
@@ -427,8 +429,12 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
     private void handleThirdClick(double worldX, double worldY, IDrawingContext context) {
         // 角度：第三次点击设置射线2上的点，创建角度图形
         if (context.getDrawMode() == DrawMode.ANGLE) {
-            AngleGeo angle = new AngleGeo(firstPointX, firstPointY,
-                    secondPointX, secondPointY, worldX, worldY);
+            // 支持点复用：如点击位置已有 PointGeo，则引用之
+            double scale = context.getTransform().getScale();
+            PointGeo ray2Ref = PointReuseManager.getExistingPointOrNull(worldX, worldY, context.getObjects(), scale);
+            AngleGeo angle = new AngleGeo(firstPointRef, firstPointX, firstPointY,
+                    secondPointRef, secondPointX, secondPointY,
+                    ray2Ref, worldX, worldY);
             // 设置标签显示度数
             angle.setLabel(String.format("%.1f°", angle.getAngleDegrees()));
             angle.setLabelVisible(true);

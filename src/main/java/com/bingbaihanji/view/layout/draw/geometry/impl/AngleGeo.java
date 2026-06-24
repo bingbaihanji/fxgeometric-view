@@ -38,6 +38,18 @@ public class AngleGeo extends AbstractWorldObject {
         this.ray2 = new ReusableCoordinate(bx, by, null);
     }
 
+    /**
+     * 支持点复用的构造函数（与 LineGeo/CircleGeo/EllipseGeo 一致）
+     */
+    public AngleGeo(PointGeo vertexRef, double ox, double oy,
+                    PointGeo ray1Ref, double ax, double ay,
+                    PointGeo ray2Ref, double bx, double by) {
+        super(ObjectType.ANGLE);
+        this.vertex = vertexRef != null ? new ReusableCoordinate(vertexRef, ox, oy) : new ReusableCoordinate(ox, oy, "O");
+        this.ray1 = ray1Ref != null ? new ReusableCoordinate(ray1Ref, ax, ay) : new ReusableCoordinate(ax, ay, null);
+        this.ray2 = ray2Ref != null ? new ReusableCoordinate(ray2Ref, bx, by) : new ReusableCoordinate(bx, by, null);
+    }
+
     public double getVertexX() { return vertex.getX(); }
     public double getVertexY() { return vertex.getY(); }
     public double getRay1X() { return ray1.getX(); }
@@ -118,29 +130,40 @@ public class AngleGeo extends AbstractWorldObject {
 
         // 角度值标签（显示在弧线外侧）
         if (labelVisible && label != null && !label.isEmpty()) {
-            // 弧线中点方向，向外偏移
+            // 弧线中点方向，向外偏移（屏幕 Y 向下，sin 取反）
             double midAngle = Math.atan2(-(ary1 + ary2 - 2 * svy), (arx1 + arx2 - 2 * svx));
             double labelR = ARC_RADIUS + 15;
             double lx = svx + Math.cos(midAngle) * labelR;
-            double ly = svy + Math.sin(midAngle) * labelR;
+            double ly = svy - Math.sin(midAngle) * labelR;
             LabelRenderer.renderLabel(gc, label, lx, ly, labelPosition, labelFontSize,
                     labelColor != null ? labelColor : getEffectiveColor());
         }
     }
 
     /**
-     * 将世界坐标方向向量延伸到屏幕边界（返回屏幕坐标终点）
+     * 从顶点沿世界方向延伸足够远后再转屏幕坐标（确保射线始终超出屏幕边界）
      */
     private double[] extendRayToScreenBounds(double svx, double svy,
             double dxWorld, double dyWorld, WorldTransform transform, double w, double h) {
-        // 沿方向延伸到足够远的距离
         double len = Math.hypot(dxWorld, dyWorld);
         if (len < 1e-12) return new double[]{svx + 1, svy};
         double ux = dxWorld / len, uy = dyWorld / len;
-        double far = 1e6;
-        double sx = transform.worldToScreenX(vertex.getX() + ux * far);
-        double sy = transform.worldToScreenY(vertex.getY() + uy * far);
-        return new double[]{sx, sy};
+        // 屏幕对角线长度作为最小延伸距离
+        double far = Math.max(w, h) * 3;
+        double sx = svx, sy = svy;
+        // 逐步延伸直到超出屏幕边界
+        for (int i = 0; i < 100; i++) {
+            double wx = transform.screenToWorldX(sx);
+            double wy = transform.screenToWorldY(sy);
+            double nx = wx + ux * far, ny = wy + uy * far;
+            double nsx = transform.worldToScreenX(nx);
+            double nsy = transform.worldToScreenY(ny);
+            if (nsx < -w || nsx > w * 2 || nsy < -h || nsy > h * 2) {
+                return new double[]{nsx, nsy};
+            }
+            far *= 2;
+        }
+        return new double[]{sx + ux * far, sy + uy * far};
     }
 
     /**

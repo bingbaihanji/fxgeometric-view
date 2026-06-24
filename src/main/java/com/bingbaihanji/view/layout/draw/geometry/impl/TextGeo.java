@@ -101,8 +101,11 @@ public class TextGeo extends AbstractWorldObject {
     public boolean hitTest(double wx, double wy, double tolerance) {
         double dx = wx - x;
         double dy = wy - y;
-        // 文本大约 100px 宽
-        return Math.abs(dx) < 50 / 50.0 + tolerance && Math.abs(dy) < 20 / 50.0 + tolerance;
+        // 基于字体大小的近似边界（世界坐标），加上容差
+        double fs = labelFontSize > 0 ? labelFontSize : 16;
+        double textW = (label != null ? label.length() : 1) * fs * 0.6 / 50.0;
+        double textH = fs / 50.0;
+        return Math.abs(dx) < textW + tolerance && Math.abs(dy) < textH + tolerance;
     }
 
     @Override

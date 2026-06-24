@@ -377,7 +377,7 @@ public class FunctionInputDialog extends Dialog<FunctionInputResult> {
     }
 
     /**
-     * 实时预览：创建临时函数并渲染到迷你画布
+     * 实时预览：创建临时函数并渲染到迷你画布（静默失败，不弹错误框）
      */
     private void refreshPreview() {
         if (previewCanvas == null) return;
@@ -385,7 +385,7 @@ public class FunctionInputDialog extends Dialog<FunctionInputResult> {
         gc.clearRect(0, 0, previewCanvas.getWidth(), previewCanvas.getHeight());
 
         try {
-            var result = convertResult(ButtonType.OK);
+            var result = buildResultSilent();
             if (result == null) return;
             com.bingbaihanji.view.layout.draw.geometry.impl.FunctionGeo f = com.bingbaihanji.factory.FunctionFactory.createFunction(result);
             if (!result.autoRange()) {
@@ -403,5 +403,49 @@ public class FunctionInputDialog extends Dialog<FunctionInputResult> {
         } catch (Exception ignored) {
             // 预览失败，静默忽略
         }
+    }
+
+    /**
+     * 静默构建结果（不弹出错误对话框，供预览使用）
+     */
+    private FunctionInputResult buildResultSilent() {
+        try {
+            FunctionType type = functionTypeCombo.getValue();
+            boolean autoRange = autoRangeCheckBox.isSelected();
+            double domainMin = autoRange ? Double.NEGATIVE_INFINITY : Double.parseDouble(domainMinField.getText());
+            double domainMax = autoRange ? Double.POSITIVE_INFINITY : Double.parseDouble(domainMaxField.getText());
+            if (!autoRange && domainMin >= domainMax) return null;
+
+            if (type == FunctionType.CUSTOM) {
+                String expr = customExpressionField == null ? "" : customExpressionField.getText().trim();
+                String error = com.bingbaihanji.view.layout.draw.geometry.impl.CustomFunctionGeo.validate(expr);
+                if (error != null) return null;
+                return new FunctionInputResult(type, new java.util.HashMap<>(), domainMin, domainMax, autoRange, expr);
+            }
+
+            java.util.Map<String, Double> parameters = new java.util.HashMap<>();
+            for (java.util.Map.Entry<String, TextField> entry : parameterFields.entrySet()) {
+                String value = entry.getValue().getText();
+                if (value == null || value.trim().isEmpty()) return null;
+                parameters.put(entry.getKey(), Double.parseDouble(value));
+            }
+            if (!validateParametersSilent(type, parameters)) return null;
+            return new FunctionInputResult(type, parameters, domainMin, domainMax, autoRange);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * 参数验证(静默版，不弹错误框)
+     */
+    private boolean validateParametersSilent(FunctionType type, java.util.Map<String, Double> params) {
+        switch (type) {
+            case QUADRATIC: { Double a = params.get("a"); if (a != null && Math.abs(a) < 1e-10) return false; break; }
+            case RECIPROCAL: { Double k = params.get("k"); if (k != null && Math.abs(k) < 1e-10) return false; break; }
+            case EXPONENTIAL:
+            case LOGARITHMIC: { Double base = params.get("a"); if (base != null && (base <= 0 || Math.abs(base - 1.0) < 1e-10)) return false; break; }
+        }
+        return true;
     }
 }

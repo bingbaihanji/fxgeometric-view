@@ -184,6 +184,15 @@ public class ProjectFileManager {
             case FUNCTION:
                 serializeFunction((FunctionGeo) obj, props);
                 break;
+            case ELLIPSE:
+                serializeEllipse((EllipseGeo) obj, props);
+                break;
+            case ANGLE:
+                serializeAngle((AngleGeo) obj, props);
+                break;
+            case TEXT:
+                serializeText((TextGeo) obj, props);
+                break;
             default:
                 logger.warn("未支持的序列化类型: {}", obj.getObjectType());
                 break;
@@ -306,6 +315,29 @@ public class ProjectFileManager {
         props.put("point2Name", line.getPoint2Name());
     }
 
+    private static void serializeEllipse(EllipseGeo ellipse, Map<String, Serializable> props) {
+        props.put("f1x", ellipse.getF1x());
+        props.put("f1y", ellipse.getF1y());
+        props.put("f2x", ellipse.getF2x());
+        props.put("f2y", ellipse.getF2y());
+        props.put("twoA", ellipse.getTwoA());
+    }
+
+    private static void serializeAngle(AngleGeo angle, Map<String, Serializable> props) {
+        props.put("vertexX", angle.getVertexX());
+        props.put("vertexY", angle.getVertexY());
+        props.put("ray1X", angle.getRay1X());
+        props.put("ray1Y", angle.getRay1Y());
+        props.put("ray2X", angle.getRay2X());
+        props.put("ray2Y", angle.getRay2Y());
+    }
+
+    private static void serializeText(TextGeo text, Map<String, Serializable> props) {
+        props.put("x", text.getX());
+        props.put("y", text.getY());
+        props.put("rotation", text.getRotation());
+    }
+
     // ============== 反序列化：ObjectData -> WorldObject ==============
 
     @SuppressWarnings("unchecked")
@@ -346,6 +378,15 @@ public class ProjectFileManager {
                 break;
             case FUNCTION:
                 obj = deserializeFunction(props);
+                break;
+            case ELLIPSE:
+                obj = deserializeEllipse(props);
+                break;
+            case ANGLE:
+                obj = deserializeAngle(props);
+                break;
+            case TEXT:
+                obj = deserializeText(props);
                 break;
             default:
                 logger.warn("未支持的反序列化类型: {}", type);
@@ -404,6 +445,34 @@ public class ProjectFileManager {
         CircleGeo circle = new CircleGeo(cx, cy, r, false);
         circle.setCenterName((String) props.getOrDefault("centerName", null));
         return circle;
+    }
+
+    private static EllipseGeo deserializeEllipse(Map<String, Serializable> props) {
+        double f1x = (Double) props.get("f1x");
+        double f1y = (Double) props.get("f1y");
+        double f2x = (Double) props.get("f2x");
+        double f2y = (Double) props.get("f2y");
+        double twoA = (Double) props.get("twoA");
+        return new EllipseGeo(f1x, f1y, f2x, f2y, twoA);
+    }
+
+    private static AngleGeo deserializeAngle(Map<String, Serializable> props) {
+        double vx = (Double) props.get("vertexX");
+        double vy = (Double) props.get("vertexY");
+        double r1x = (Double) props.get("ray1X");
+        double r1y = (Double) props.get("ray1Y");
+        double r2x = (Double) props.get("ray2X");
+        double r2y = (Double) props.get("ray2Y");
+        return new AngleGeo(vx, vy, r1x, r1y, r2x, r2y);
+    }
+
+    private static TextGeo deserializeText(Map<String, Serializable> props) {
+        double x = (Double) props.get("x");
+        double y = (Double) props.get("y");
+        double rot = (Double) props.getOrDefault("rotation", 0.0);
+        TextGeo text = new TextGeo(x, y, (String) props.getOrDefault("label", ""));
+        text.setRotation(rot);
+        return text;
     }
 
     @SuppressWarnings("unchecked")

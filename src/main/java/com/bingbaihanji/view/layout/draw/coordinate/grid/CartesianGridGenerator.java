@@ -60,10 +60,13 @@ public class CartesianGridGenerator {
         double tickStepY = transform.getScaleY() * step;
 
         // LOD：极端缩放时自适应步长，避免渲染过量网格线
-        while (tickStepX < 4.0 && step * 2 * transform.getScaleX() <= viewWidth) {
-            step *= 2;
-            tickStepX = transform.getScaleX() * step;
-            tickStepY = transform.getScaleY() * step;
+        double sclX = transform.getScaleX();
+        if (sclX > 0) {
+            while (tickStepX < 4.0 && step * 2 * sclX <= viewWidth) {
+                step *= 2;
+                tickStepX = sclX * step;
+                tickStepY = transform.getScaleY() * step;
+            }
         }
 
         double xZero = transform.worldToScreenX(0);
