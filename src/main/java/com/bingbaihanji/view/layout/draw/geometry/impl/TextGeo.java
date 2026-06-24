@@ -3,14 +3,11 @@ package com.bingbaihanji.view.layout.draw.geometry.impl;
 import java.util.List;
 
 import com.bingbaihanji.constant.ObjectType;
-import com.bingbaihanji.util.FillRenderer;
-import com.bingbaihanji.util.LineStyleUtil;
-import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.GeometryVisitor;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.scene.text.Text;
 
 /**
  * 自由文本标注
@@ -56,8 +53,11 @@ public class TextGeo extends AbstractWorldObject {
             gc.rotate(rotation);
         }
 
-        // 纯文本（无背景框、无边框）
-        gc.setFill(labelColor != null ? labelColor : getEffectiveColor());
+        // 纯文本（无背景框、无边框），颜色优先使用 labelColor
+        Color c = labelColor != null ? labelColor
+                : color != null ? color
+                : getEffectiveColor();
+        gc.setFill(c);
         gc.setFont(font);
         gc.fillText(label, 0, 0);
 
