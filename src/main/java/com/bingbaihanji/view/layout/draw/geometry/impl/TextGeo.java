@@ -6,7 +6,6 @@ import com.bingbaihanji.constant.ObjectType;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.GeometryVisitor;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
 /**
@@ -53,11 +52,8 @@ public class TextGeo extends AbstractWorldObject {
             gc.rotate(rotation);
         }
 
-        // 纯文本（无背景框、无边框），颜色优先使用 labelColor
-        Color c = labelColor != null ? labelColor
-                : color != null ? color
-                : getEffectiveColor();
-        gc.setFill(c);
+        // 纯文本（无背景框、无边框），颜色用 getEffectiveColor（受右键属性控制）
+        gc.setFill(getEffectiveColor());
         gc.setFont(font);
         gc.fillText(label, 0, 0);
 
