@@ -47,6 +47,10 @@ public class GridChartView extends Pane implements I18nRefreshable {
     private final HoverTooltipManager tooltipManager;
     private final ViewportController viewportController;
     /**
+     * 点击涟漪动效（顶层透明覆盖层）
+     */
+    private final ClickRippleEffect clickRippleEffect;
+    /**
      * 背景层离屏缓存，避免每帧重复绘制网格和坐标轴
      */
     private final BackgroundBuffer backgroundBuffer = new BackgroundBuffer();
@@ -92,6 +96,7 @@ public class GridChartView extends Pane implements I18nRefreshable {
     private boolean redrawScheduled = false;
     private int trigFunctionCount = 0;
 
+
     //  构造
     public GridChartView() {
         this(new ArrayList<>());
@@ -118,6 +123,10 @@ public class GridChartView extends Pane implements I18nRefreshable {
 
         canvasManager.bindToPane(this);
         canvasManager.bindSize(this);
+
+        // 点击涟漪覆盖层：置于三层画布之上，mouseTransparent 不拦截事件
+        clickRippleEffect = new ClickRippleEffect(this);
+        getChildren().add(clickRippleEffect.getCanvas());
 
         widthListener = (obs, o, n) -> {
             updateOffsetFromCenterWorld();
@@ -226,6 +235,7 @@ public class GridChartView extends Pane implements I18nRefreshable {
             heightProperty().removeListener(heightListener);
         }
         settings.removeSettingsChangeListener(settingsListener);
+        clickRippleEffect.stop();
     }
 
     /**
@@ -596,6 +606,18 @@ public class GridChartView extends Pane implements I18nRefreshable {
      */
     public void setDrawModeActive(boolean drawModeActive) {
         this.drawModeActive = drawModeActive;
+    }
+
+    // 点击涟漪
+
+    /**
+     * 在指定屏幕坐标生成点击涟漪（由 {@link RippleHandler} 调用）
+     *
+     * @param screenX 屏幕 X 坐标（相对画布）
+     * @param screenY 屏幕 Y 坐标（相对画布）
+     */
+    public void spawnClickRipple(double screenX, double screenY) {
+        clickRippleEffect.spawn(screenX, screenY);
     }
 
     // 视口控制 (委托给 ViewportController)
