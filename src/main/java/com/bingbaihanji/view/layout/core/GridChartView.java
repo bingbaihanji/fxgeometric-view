@@ -8,7 +8,6 @@ import com.bingbaihanji.util.I18nRefreshable;
 import com.bingbaihanji.util.I18nUtil;
 import com.bingbaihanji.geometry.SpecialPointManager.SpecialPoint;
 import com.bingbaihanji.geometry.WorldObject;
-import com.bingbaihanji.geometry.WorldPainter;
 import com.bingbaihanji.geometry.impl.TrigonometricFunctionGeo;
 import com.bingbaihanji.geometry.WorldTransform;
 import javafx.application.Platform;
@@ -37,7 +36,6 @@ public class GridChartView extends Pane implements I18nRefreshable {
     private final CanvasManager canvasManager = new CanvasManager();
     //  坐标系统
     private final WorldTransform transform = new WorldTransform();
-    private final List<WorldPainter> painters = new ArrayList<>();
     private final List<WorldObject> objects;
     /**
      * 对象列表的只读视图, 构造时建一次, 避免每次 getObjects() 都新建包装
@@ -156,8 +154,7 @@ public class GridChartView extends Pane implements I18nRefreshable {
 
         redraw();
 
-        // 网格和坐标轴由 CoordSystemRenderer 在 redrawBackground 中统⼀绘制
-        // 不再通过 painters 列表注册 GridPainter / AxesPainter
+        // 网格和坐标轴由 CoordSystemRenderer 在 redrawBackground 中统一绘制
 
         applySettingsToTransform();
 
@@ -167,10 +164,6 @@ public class GridChartView extends Pane implements I18nRefreshable {
         setCustomCursorForPane(this, "/icon/mouseStyle.png");
 
         tooltipManager.install(this);
-    }
-
-    public List<WorldPainter> getPainters() {
-        return painters;
     }
 
     public Runnable getOnTransformChanged() {
@@ -292,10 +285,6 @@ public class GridChartView extends Pane implements I18nRefreshable {
             gc.setFill(backgroundColor);
             gc.fillRect(0, 0, w, h);
             coordSystemRenderer.render(gc, transform, settings, w, h);
-            // painters 列表保留用于其他自定义背景绘制（向前兼容）
-            for (WorldPainter painter : painters) {
-                painter.paint(gc, transform, w, h);
-            }
             backgroundBuffer.endDraw();
         }
 
@@ -585,18 +574,6 @@ public class GridChartView extends Pane implements I18nRefreshable {
      */
     public SnapCalculator getSnapCalculator() {
         return snapCalculator;
-    }
-
-    public void addPainter(WorldPainter painter) {
-        painters.add(painter);
-        invalidateBackground();
-        redraw();
-    }
-
-    public void removePainter(WorldPainter painter) {
-        painters.remove(painter);
-        invalidateBackground();
-        redraw();
     }
 
     // 背景颜色
