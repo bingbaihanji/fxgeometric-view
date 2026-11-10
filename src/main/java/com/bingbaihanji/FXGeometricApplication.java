@@ -1,6 +1,6 @@
 package com.bingbaihanji;
 
-import com.bingbaihanji.view.FXGeometricView;
+
 
 
 /**

@@ -44,7 +44,7 @@ import java.util.Optional;
  * @date 2025-12-21(原始版本)
  * @date 2025-12-31(重构版本)
  */
-public class DrawingController {
+public class DrawingController implements com.bingbaihanji.view.DrawingWindowController {
 
     private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(DrawingController.class);
 

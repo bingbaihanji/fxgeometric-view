@@ -1,4 +1,4 @@
-package com.bingbaihanji.view;
+package com.bingbaihanji;
 
 import com.bingbaihanji.config.ConfigManager;
 import com.bingbaihanji.util.ExceptionHandler;

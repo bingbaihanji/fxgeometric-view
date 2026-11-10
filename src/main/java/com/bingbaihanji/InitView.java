@@ -1,4 +1,4 @@
-package com.bingbaihanji.view;
+package com.bingbaihanji;
 
 import com.bingbaihanji.controller.DrawingController;
 import com.bingbaihanji.io.ProjectData;

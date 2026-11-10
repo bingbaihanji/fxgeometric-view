@@ -1,6 +1,5 @@
 package com.bingbaihanji.view;
 
-import com.bingbaihanji.controller.DrawingController;
 import com.bingbaihanji.util.CommandHistory;
 import com.bingbaihanji.util.FxTools;
 import com.bingbaihanji.i18n.I18nUtil;
@@ -39,39 +38,23 @@ public class DetachedCanvasWindow {
 
     private final Stage stage;
     private final GridChartView detachedView;
-    private final DrawingController drawingController;
+    private final DrawingWindowController drawingController;
     // 存储从此窗口打开的所有子窗口
     private final List<DetachedCanvasWindow> childWindows = new ArrayList<>();
     // 父窗口引用(如果有)
     private DetachedCanvasWindow parentWindow;
 
     /**
-     * 构造独立窗口
-     *
-     * @param sourceView 源视图(主窗口的GridChartView)
-     */
-    public DetachedCanvasWindow(GridChartView sourceView) {
-        this(sourceView, null, null);
-    }
-
-    /**
-     * 构造独立窗口(带父窗口引用)
-     *
-     * @param sourceView 源视图(主窗口的GridChartView)
-     * @param parent     父窗口(如果从其他独立窗口打开)
-     */
-    public DetachedCanvasWindow(GridChartView sourceView, DetachedCanvasWindow parent) {
-        this(sourceView, parent, null);
-    }
-
-    /**
      * 构造独立窗口(带父窗口引用 + 共享命令历史)
      *
-     * @param sourceView    源视图
-     * @param parent        父窗口
-     * @param sharedHistory 共享的命令历史(为 null 时创建独立的)
+     * @param sourceView        源视图
+     * @param parent            父窗口
+     * @param sharedHistory     共享的命令历史(为 null 时创建独立的)
+     * @param controllerFactory 控制器工厂, 由组合根提供
      */
-    public DetachedCanvasWindow(GridChartView sourceView, DetachedCanvasWindow parent, CommandHistory sharedHistory) {
+    public DetachedCanvasWindow(GridChartView sourceView, DetachedCanvasWindow parent,
+                                CommandHistory sharedHistory,
+                                DrawingWindowControllerFactory controllerFactory) {
         this.stage = new Stage();
         this.parentWindow = parent;
 
@@ -86,10 +69,8 @@ public class DetachedCanvasWindow {
         // 创建工具栏
         ShapeToolPane toolPane = new ShapeToolPane();
 
-        // 创建绘制控制器(如有共享历史则使用,否则创建独立历史)
-        this.drawingController = sharedHistory != null
-                ? new DrawingController(detachedView, this, sharedHistory)
-                : new DrawingController(detachedView, this);
+        // 创建绘制控制器(由组合根注入, 视图包不直接依赖控制器类型)
+        this.drawingController = controllerFactory.create(detachedView, this, sharedHistory);
 
         // 绑定工具栏事件
         toolPane.drawModeProperty().addListener((obs, oldMode, newMode) -> {

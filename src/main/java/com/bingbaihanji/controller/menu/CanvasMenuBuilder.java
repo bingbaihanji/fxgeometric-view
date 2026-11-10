@@ -157,7 +157,10 @@ public final class CanvasMenuBuilder {
         detachItem.setOnAction(e -> {
             // 共享父窗口的命令历史，确保分离窗口的撤销/恢复与主窗口同步
             CommandHistory sharedHistory = controller.getContext().getCommandHistory();
-            DetachedCanvasWindow detachedWindow = new DetachedCanvasWindow(canvas, parentWindow, sharedHistory);
+            DetachedCanvasWindow detachedWindow = new DetachedCanvasWindow(canvas, parentWindow, sharedHistory,
+                    (view, window, history) -> history != null
+                            ? new DrawingController(view, window, history)
+                            : new DrawingController(view, window));
             controller.addChildWindow(detachedWindow);
             detachedWindow.show();
         });
