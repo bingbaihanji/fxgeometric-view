@@ -5,6 +5,7 @@ import com.bingbaihanji.constant.GridType;
 import com.bingbaihanji.constant.UnitLabelType;
 import com.bingbaihanji.controller.SnapCalculator;
 import com.bingbaihanji.util.I18nRefreshable;
+import com.bingbaihanji.util.I18nUtil;
 import com.bingbaihanji.util.SpecialPointManager.SpecialPoint;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import com.bingbaihanji.view.layout.draw.geometry.WorldPainter;
@@ -245,6 +246,8 @@ public class GridChartView extends Pane implements I18nRefreshable {
             heightProperty().removeListener(heightListener);
         }
         settings.removeSettingsChangeListener(settingsListener);
+        // 摘除全局 I18n 注册, 否则语言上下文会一直持有已销毁视图的强引用
+        I18nUtil.removeRefreshable(this);
         clickRippleEffect.stop();
     }
 
