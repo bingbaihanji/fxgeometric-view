@@ -200,7 +200,7 @@ public class CustomFunctionGeo extends FunctionGeo {
     @Override
     protected void updateExpression() {
         this.expression = "y = " + expressionStr;
-        this.label = expression;
+        setLabel(expression);
     }
 
     @Override

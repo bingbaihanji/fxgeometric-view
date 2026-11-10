@@ -53,7 +53,7 @@ public class RegularPolygonGeo extends AbstractWorldObject {
         this.startAngle = -Math.PI / 2;
         this.center = new ReusableCoordinate(cx, cy,
                 PointNameManager.getInstance().assignCenterName(cx, cy));
-        this.color = StyleManager.defaultLineColor;
+        setColor(StyleManager.defaultLineColor);
         this.cachedVertices = new ArrayList<>();
         this.vertexPoints = new ArrayList<>();
         createVertexPoints();
@@ -69,7 +69,7 @@ public class RegularPolygonGeo extends AbstractWorldObject {
         this.startAngle = -Math.PI / 2;
         this.center = new ReusableCoordinate(cx, cy,
                 autoNameCenter ? PointNameManager.getInstance().assignCenterName(cx, cy) : null);
-        this.color = StyleManager.defaultLineColor;
+        setColor(StyleManager.defaultLineColor);
         this.cachedVertices = new ArrayList<>();
         this.vertexPoints = new ArrayList<>();
         createVertexPoints();
@@ -94,7 +94,7 @@ public class RegularPolygonGeo extends AbstractWorldObject {
         if (centerPoint == null) {
             this.center.setName(PointNameManager.getInstance().assignCenterName(cx, cy));
         }
-        this.color = StyleManager.defaultLineColor;
+        setColor(StyleManager.defaultLineColor);
         this.cachedVertices = new ArrayList<>();
         this.vertexPoints = new ArrayList<>();
         createVertexPoints();
@@ -233,8 +233,8 @@ public class RegularPolygonGeo extends AbstractWorldObject {
             yPoints[i] = transform.worldToScreenY(vertex.getY());
         }
 
-        FillRenderer.fillPolygon(gc, fillType, fillColor, fillOpacity,
-                hatchAngle, hatchDistance, xPoints, yPoints, sideCount);
+        FillRenderer.fillPolygon(gc, getFillType(), getFillColor(), getFillOpacity(),
+                getHatchAngle(), getHatchDistance(), xPoints, yPoints, sideCount);
 
         // 发光通道（稍宽、半透明、实线）
         if (StyleManager.GLOW_ENABLED) {
@@ -248,7 +248,7 @@ public class RegularPolygonGeo extends AbstractWorldObject {
         }
 
         // 主描边
-        LineStyleUtil.applyLineStyle(gc, lineType);
+        LineStyleUtil.applyLineStyle(gc, getLineType());
         gc.setStroke(getEffectiveColor());
         gc.setLineWidth(getEffectiveLineWidth());
         gc.strokePolygon(xPoints, yPoints, sideCount);
@@ -289,7 +289,7 @@ public class RegularPolygonGeo extends AbstractWorldObject {
             if (dist < tolerance) return true;
         }
 
-        if (fillType != FillType.NONE) {
+        if (getFillType() != FillType.NONE) {
             return isPointInPolygon(x, y);
         }
         return false;

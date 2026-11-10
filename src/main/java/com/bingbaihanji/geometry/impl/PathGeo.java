@@ -49,7 +49,7 @@ public class PathGeo extends AbstractWorldObject {
             this.pathPoints.add(new Point(p.getX(), p.getY()));
         }
 
-        this.color = StyleManager.defaultLineColor;
+        setColor(StyleManager.defaultLineColor);
     }
 
     @Override
@@ -68,7 +68,7 @@ public class PathGeo extends AbstractWorldObject {
         }
 
         // 主描边
-        LineStyleUtil.applyLineStyle(gc, lineType);
+        LineStyleUtil.applyLineStyle(gc, getLineType());
         gc.setStroke(getEffectiveColor());
         gc.setLineWidth(getEffectiveLineWidth());
         drawPath(gc, transform);

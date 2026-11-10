@@ -94,7 +94,7 @@ public class EllipseFunctionGeo extends FunctionGeo {
             this.expression = String.format("(x-%.2f)²/%.2f² + (y-%.2f)²/%.2f² = 1",
                     cx, a, cy, b);
         }
-        this.label = expression;
+        setLabel(expression);
     }
 
     /**

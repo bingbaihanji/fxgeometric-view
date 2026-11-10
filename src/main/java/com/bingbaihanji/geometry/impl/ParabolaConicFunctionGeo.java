@@ -74,7 +74,7 @@ public class ParabolaConicFunctionGeo extends FunctionGeo {
     @Override
     protected void updateExpression() {
         this.expression = String.format("y² = %.2fx", 2 * p);
-        this.label = expression;
+        setLabel(expression);
     }
 
     /**

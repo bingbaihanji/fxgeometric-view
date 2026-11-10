@@ -87,7 +87,7 @@ public class LinearFunctionGeo extends FunctionGeo {
         }
 
         this.expression = sb.toString();
-        this.label = expression;
+        setLabel(expression);
     }
 
     @Override

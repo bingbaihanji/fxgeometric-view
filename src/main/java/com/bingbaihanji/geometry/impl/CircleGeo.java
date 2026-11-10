@@ -35,7 +35,7 @@ public class CircleGeo extends AbstractWorldObject {
         this.r = r;
         this.center = new ReusableCoordinate(cx, cy,
                 PointNameManager.getInstance().assignCenterName(cx, cy));
-        this.color = StyleManager.defaultLineColor;
+        setColor(StyleManager.defaultLineColor);
     }
 
     /**
@@ -46,7 +46,7 @@ public class CircleGeo extends AbstractWorldObject {
         this.r = r;
         this.center = new ReusableCoordinate(cx, cy,
                 autoNameCenter ? PointNameManager.getInstance().assignCenterName(cx, cy) : null);
-        this.color = StyleManager.defaultLineColor;
+        setColor(StyleManager.defaultLineColor);
     }
 
     /**
@@ -59,7 +59,7 @@ public class CircleGeo extends AbstractWorldObject {
         if (centerPoint == null) {
             this.center.setName(PointNameManager.getInstance().assignCenterName(cx, cy));
         }
-        this.color = StyleManager.defaultLineColor;
+        setColor(StyleManager.defaultLineColor);
     }
 
     public double getCx() {
@@ -97,8 +97,8 @@ public class CircleGeo extends AbstractWorldObject {
         double sy = transform.worldToScreenY(getCy());
         double sr = r * transform.getScale();
 
-        FillRenderer.fillOval(gc, fillType, fillColor, fillOpacity,
-                hatchAngle, hatchDistance, sx, sy, sr);
+        FillRenderer.fillOval(gc, getFillType(), getFillColor(), getFillOpacity(),
+                getHatchAngle(), getHatchDistance(), sx, sy, sr);
 
         // 发光通道（稍宽、半透明、实线）
         if (StyleManager.GLOW_ENABLED) {
@@ -112,7 +112,7 @@ public class CircleGeo extends AbstractWorldObject {
         }
 
         // 主描边
-        LineStyleUtil.applyLineStyle(gc, lineType);
+        LineStyleUtil.applyLineStyle(gc, getLineType());
         gc.setStroke(getEffectiveColor());
         gc.setLineWidth(getEffectiveLineWidth());
         gc.strokeOval(sx - sr, sy - sr, sr * 2, sr * 2);

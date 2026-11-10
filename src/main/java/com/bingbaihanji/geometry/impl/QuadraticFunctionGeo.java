@@ -122,7 +122,7 @@ public class QuadraticFunctionGeo extends FunctionGeo {
         }
 
         this.expression = sb.toString();
-        this.label = expression;
+        setLabel(expression);
     }
 
     @Override

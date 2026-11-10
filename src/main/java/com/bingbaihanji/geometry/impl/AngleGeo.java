@@ -113,7 +113,7 @@ public class AngleGeo extends AbstractWorldObject {
         }
 
         // 主描边（弧线先画，射线覆盖弧线端点避免重叠变深）
-        LineStyleUtil.applyLineStyle(gc, lineType);
+        LineStyleUtil.applyLineStyle(gc, getLineType());
         gc.setStroke(getEffectiveColor());
         gc.setLineWidth(getEffectiveLineWidth());
         drawArc(gc, svx, svy, arx1, ary1, arx2, ary2);
@@ -129,14 +129,14 @@ public class AngleGeo extends AbstractWorldObject {
         }
 
         // 角度值标签（显示在弧线外侧）
-        if (labelVisible && label != null && !label.isEmpty()) {
+        if (isLabelVisible() && getLabel() != null && !getLabel().isEmpty()) {
             // 弧线中点方向，向外偏移（屏幕 Y 向下，sin 取反）
             double midAngle = Math.atan2(-(ary1 + ary2 - 2 * svy), (arx1 + arx2 - 2 * svx));
             double labelR = ARC_RADIUS + 15;
             double lx = svx + Math.cos(midAngle) * labelR;
             double ly = svy - Math.sin(midAngle) * labelR;
-            LabelRenderer.renderLabel(gc, label, lx, ly, labelPosition, labelFontSize,
-                    labelColor != null ? labelColor : getEffectiveColor());
+            LabelRenderer.renderLabel(gc, getLabel(), lx, ly, getLabelPosition(), getLabelFontSize(),
+                    getLabelColor() != null ? getLabelColor() : getEffectiveColor());
         }
     }
 

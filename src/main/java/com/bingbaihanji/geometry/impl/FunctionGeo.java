@@ -93,9 +93,9 @@ public abstract class FunctionGeo extends AbstractWorldObject {
      */
     protected FunctionGeo() {
         super(ObjectType.FUNCTION);
-        this.color = StyleManager.defaultLineColor;
-        this.lineWidth = 2.0;
-        this.labelVisible = true;
+        setColor(StyleManager.defaultLineColor);
+        setLineWidth(2.0);
+        setLabelVisible(true);
     }
 
     /**
@@ -185,18 +185,18 @@ public abstract class FunctionGeo extends AbstractWorldObject {
         }
 
         // 应用线型
-        LineStyleUtil.applyLineStyle(gc, lineType);
+        LineStyleUtil.applyLineStyle(gc, getLineType());
         gc.setStroke(getEffectiveColor());
         // 悬停时增加线宽以提供视觉反馈
         double mainLineWidth = hover ? getEffectiveLineWidth() + 1.5 : getEffectiveLineWidth();
         gc.setLineWidth(mainLineWidth);
-        gc.setGlobalAlpha(opacity);
+        gc.setGlobalAlpha(getOpacity());
 
         // 发光通道（稍宽、半透明、实线）
         if (StyleManager.GLOW_ENABLED) {
             gc.save();
             LineStyleUtil.resetLineStyle(gc);
-            gc.setGlobalAlpha(opacity * StyleManager.GLOW_ALPHA);
+            gc.setGlobalAlpha(getOpacity() * StyleManager.GLOW_ALPHA);
             gc.setLineWidth(mainLineWidth + StyleManager.GLOW_WIDTH_BONUS);
             drawCurve(gc, transform);
             gc.restore();
@@ -210,7 +210,7 @@ public abstract class FunctionGeo extends AbstractWorldObject {
         LineStyleUtil.resetLineStyle(gc);
 
         // 绘制函数表达式标签
-        if (labelVisible && !sampledPoints.isEmpty()) {
+        if (isLabelVisible() && !sampledPoints.isEmpty()) {
             drawFunctionLabel(gc, transform);
         }
     }
@@ -657,9 +657,9 @@ public abstract class FunctionGeo extends AbstractWorldObject {
         if (selected) {
             return StyleManager.GEOMETRY_HOVER;
         } else if (hover) {
-            return color.brighter();
+            return getColor().brighter();
         } else {
-            return color;
+            return getColor();
         }
     }
 

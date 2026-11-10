@@ -49,8 +49,8 @@ public class PointGeo extends AbstractWorldObject {
         this.x = x;
         this.y = y;
         // 自动分配名称
-        this.label = PointNameManager.getInstance().assignName(x, y);
-        this.color = StyleManager.GEOMETRY_DEFAULT; // 默认颜色
+        setLabel(PointNameManager.getInstance().assignName(x, y));
+        setColor(StyleManager.GEOMETRY_DEFAULT); // 默认颜色
     }
 
     public PointGeo(ObjectType type, double x, double y, boolean autoName) {
@@ -58,9 +58,9 @@ public class PointGeo extends AbstractWorldObject {
         this.x = x;
         this.y = y;
         if (autoName) {
-            this.label = PointNameManager.getInstance().assignName(x, y);
+            setLabel(PointNameManager.getInstance().assignName(x, y));
         }
-        this.color = StyleManager.GEOMETRY_DEFAULT;
+        setColor(StyleManager.GEOMETRY_DEFAULT);
     }
 
     public PointGeo(double x, double y, boolean autoName) {
@@ -69,9 +69,9 @@ public class PointGeo extends AbstractWorldObject {
         this.y = y;
         // 根据参数决定是否自动命名
         if (autoName) {
-            this.label = PointNameManager.getInstance().assignName(x, y);
+            setLabel(PointNameManager.getInstance().assignName(x, y));
         }
-        this.color = StyleManager.GEOMETRY_DEFAULT;
+        setColor(StyleManager.GEOMETRY_DEFAULT);
     }
 
     // Getter methods
@@ -85,12 +85,12 @@ public class PointGeo extends AbstractWorldObject {
 
     // 获取点的名称(兼容旧代码)
     public String getName() {
-        return label;
+        return getLabel();
     }
 
     // 设置点的名称(兼容旧代码)
     public void setName(String name) {
-        this.label = name;
+        setLabel(name);
     }
 
     // 获取点的约束
@@ -142,7 +142,7 @@ public class PointGeo extends AbstractWorldObject {
         }
 
         // 如果该点有名称,更新PointNameManager中的映射
-        if (this.label != null && !this.label.isEmpty()) {
+        if (getLabel() != null && !getLabel().isEmpty()) {
             PointNameManager.getInstance().updatePosition(oldX, oldY, this.x, this.y);
         }
 
@@ -178,7 +178,7 @@ public class PointGeo extends AbstractWorldObject {
             }
 
             // 更新名称映射
-            if (this.label != null && !this.label.isEmpty()) {
+            if (getLabel() != null && !getLabel().isEmpty()) {
                 PointNameManager.getInstance().updatePosition(oldX, oldY, this.x, this.y);
             }
         } finally {

@@ -114,7 +114,7 @@ public class ReciprocalFunctionGeo extends FunctionGeo {
         } else {
             this.expression = String.format("y = %.2f/x", k);
         }
-        this.label = expression;
+        setLabel(expression);
     }
 
     @Override

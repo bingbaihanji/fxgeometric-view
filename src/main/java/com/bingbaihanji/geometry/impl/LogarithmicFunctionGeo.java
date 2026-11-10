@@ -87,7 +87,7 @@ public class LogarithmicFunctionGeo extends FunctionGeo {
         } else {
             this.expression = String.format("y = log_%.2f(x)", a);
         }
-        this.label = expression;
+        setLabel(expression);
     }
 
     @Override

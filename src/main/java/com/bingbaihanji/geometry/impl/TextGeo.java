@@ -27,8 +27,8 @@ public class TextGeo extends AbstractWorldObject {
         super(ObjectType.TEXT);
         this.x = x;
         this.y = y;
-        this.label = text;
-        this.labelVisible = true;
+        setLabel(text);
+        setLabelVisible(true);
     }
 
     public double getX() { return x; }
@@ -40,12 +40,12 @@ public class TextGeo extends AbstractWorldObject {
 
     @Override
     public void paint(GraphicsContext gc, WorldTransform transform, double w, double h) {
-        if (label == null || label.isEmpty()) return;
+        if (getLabel() == null || getLabel().isEmpty()) return;
 
         double sx = transform.worldToScreenX(x);
         double sy = transform.worldToScreenY(y);
 
-        Font font = Font.font("Arial", labelFontSize > 0 ? labelFontSize : 16);
+        Font font = Font.font("Arial", getLabelFontSize() > 0 ? getLabelFontSize() : 16);
         gc.save();
         gc.translate(sx, sy);
         if (rotation != 0) {
@@ -55,7 +55,7 @@ public class TextGeo extends AbstractWorldObject {
         // 纯文本（无背景框、无边框），颜色用 getEffectiveColor（受右键属性控制）
         gc.setFill(getEffectiveColor());
         gc.setFont(font);
-        gc.fillText(label, 0, 0);
+        gc.fillText(getLabel(), 0, 0);
 
         gc.restore();
     }
@@ -65,8 +65,8 @@ public class TextGeo extends AbstractWorldObject {
         double dx = wx - x;
         double dy = wy - y;
         // 基于字体大小的近似边界（世界坐标），加上容差
-        double fs = labelFontSize > 0 ? labelFontSize : 16;
-        double textW = (label != null ? label.length() : 1) * fs * 0.6 / 50.0;
+        double fs = getLabelFontSize() > 0 ? getLabelFontSize() : 16;
+        double textW = (getLabel() != null ? getLabel().length() : 1) * fs * 0.6 / 50.0;
         double textH = fs / 50.0;
         return Math.abs(dx) < textW + tolerance && Math.abs(dy) < textH + tolerance;
     }

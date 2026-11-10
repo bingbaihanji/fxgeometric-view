@@ -73,7 +73,7 @@ public class ExponentialFunctionGeo extends FunctionGeo {
         } else {
             this.expression = String.format("y = %.2f^x", a);
         }
-        this.label = expression;
+        setLabel(expression);
     }
 
     @Override
