@@ -2,7 +2,6 @@ package com.bingbaihanji.io;
 
 import com.bingbaihanji.constant.*;
 import com.bingbaihanji.util.PointNameManager;
-import com.bingbaihanji.view.layout.core.GridChartView;
 import com.bingbaihanji.geometry.WorldTransform;
 import com.bingbaihanji.geometry.WorldObject;
 import com.bingbaihanji.geometry.impl.*;
@@ -27,19 +26,27 @@ public class ProjectFileManager {
 
     /**
      * 保存工程到文件
+     * <p>
+     * 只接收保存所需的数据, 不依赖视图类型, 保证 io 层不反向依赖 view
+     *
+     * @param filePath        目标文件
+     * @param transform       当前坐标变换
+     * @param backgroundColor 画布背景色
+     * @param unitLabelType   坐标轴单位标签类型
+     * @param objects         要保存的对象列表
      */
-    public static void saveProject(Path filePath, GridChartView view, List<WorldObject> objects) {
+    public static void saveProject(Path filePath, WorldTransform transform, Color backgroundColor,
+                                   UnitLabelType unitLabelType, List<WorldObject> objects) {
         try (FileOutputStream fos = new FileOutputStream(filePath.toFile());
              DataOutputStream dos = new DataOutputStream(fos)) {
             // 1. 构建 ProjectData
             ProjectData data = new ProjectData();
-            WorldTransform transform = view.getTransform();
             data.setScaleX(transform.getScaleX());
             data.setScaleY(transform.getScaleY());
             data.setOffsetX(transform.getOffsetX());
             data.setOffsetY(transform.getOffsetY());
-            data.setBackgroundColor(colorToArgb(view.getBackgroundColor()));
-            data.setUnitLabelTypeOrdinal(view.getSettings().getUnitLabelType().ordinal());
+            data.setBackgroundColor(colorToArgb(backgroundColor));
+            data.setUnitLabelTypeOrdinal(unitLabelType.ordinal());
             data.setNextPointNameIndex(PointNameManager.getInstance().getNextIndex());
 
             List<ObjectData> objectDataList = new ArrayList<>();

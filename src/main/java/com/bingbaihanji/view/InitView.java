@@ -140,7 +140,9 @@ public class InitView {
                     }
                     ProjectFileManager.saveProject(
                             new File(path).toPath(),
-                            gridChartPane,
+                            gridChartPane.getTransform(),
+                            gridChartPane.getBackgroundColor(),
+                            gridChartPane.getSettings().getUnitLabelType(),
                             controller.getContext().getObjects()
                     );
                     showInfoAlert("保存成功", "工程已保存到:\n" + path);
