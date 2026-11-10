@@ -143,7 +143,7 @@ public class DrawingController {
                 }
             }
         } catch (Exception ex) {
-            logger.error("分发鼠标事件时发生错误", ex);
+            logger.error("分发鼠标事件时发生错误: {}", event.getEventType(), ex);
         }
     }
 
