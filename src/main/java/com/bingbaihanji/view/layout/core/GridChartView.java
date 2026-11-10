@@ -9,7 +9,6 @@ import com.bingbaihanji.util.SpecialPointManager.SpecialPoint;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
 import com.bingbaihanji.view.layout.draw.geometry.WorldPainter;
 import com.bingbaihanji.view.layout.draw.geometry.impl.TrigonometricFunctionGeo;
-import com.bingbaihanji.view.layout.draw.tools.CircleDrawingTool;
 import javafx.application.Platform;
 import javafx.scene.Cursor;
 import javafx.scene.ImageCursor;
@@ -38,7 +37,6 @@ public class GridChartView extends Pane implements I18nRefreshable {
     private final WorldTransform transform = new WorldTransform();
     private final List<WorldPainter> painters = new ArrayList<>();
     private final List<WorldObject> objects;
-    private final CircleDrawingTool circleTool;
     //  视图配置
     private final EuclidianViewSettings settings = new EuclidianViewSettings();
     // 对象变化监听器列表(观察者模式)
@@ -117,7 +115,6 @@ public class GridChartView extends Pane implements I18nRefreshable {
 
     public GridChartView(List<WorldObject> sharedObjects) {
         this.objects = sharedObjects;
-        circleTool = new CircleDrawingTool();
         snapCalculator = new SnapCalculator(settings, transform, this);
         tooltipManager = new HoverTooltipManager(this, snapCalculator, transform, () -> objects, this::redrawInteraction);
 
@@ -335,10 +332,6 @@ public class GridChartView extends Pane implements I18nRefreshable {
 
         if (previewPainter != null) {
             previewPainter.accept(gc, transform);
-        }
-
-        if (circleTool != null) {
-            circleTool.paintPreview(gc, transform);
         }
 
         if (nearbySpecialPoint != null) {
