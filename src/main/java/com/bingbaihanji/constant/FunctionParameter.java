@@ -1,4 +1,4 @@
-package com.bingbaihanji.model;
+package com.bingbaihanji.constant;
 
 /**
  * 函数参数描述类

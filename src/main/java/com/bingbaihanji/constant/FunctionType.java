@@ -1,7 +1,5 @@
 package com.bingbaihanji.constant;
 
-import com.bingbaihanji.model.FunctionParameter;
-
 /**
  * 函数类型枚举
  * <p>

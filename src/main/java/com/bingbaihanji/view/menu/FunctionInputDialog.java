@@ -1,8 +1,8 @@
 package com.bingbaihanji.view.menu;
 
+import com.bingbaihanji.constant.FunctionParameter;
 import com.bingbaihanji.constant.FunctionType;
 import com.bingbaihanji.model.FunctionInputResult;
-import com.bingbaihanji.model.FunctionParameter;
 import com.bingbaihanji.util.FxTools;
 import com.bingbaihanji.util.I18nUtil;
 import com.bingbaihanji.view.layout.core.WorldTransform;
