@@ -442,20 +442,20 @@ public class DrawingController {
     }
 
     // 层级管理（委托给 LayerController）
-    public void bringSelectionForward() {
-        layerController.bringSelectionForward();
+    public void bringForward(WorldObject target) {
+        layerController.bringForward(target);
     }
 
-    public void sendSelectionBackward() {
-        layerController.sendSelectionBackward();
+    public void sendBackward(WorldObject target) {
+        layerController.sendBackward(target);
     }
 
-    public void bringSelectionToFront() {
-        layerController.bringSelectionToFront();
+    public void bringToFront(WorldObject target) {
+        layerController.bringToFront(target);
     }
 
-    public void sendSelectionToBack() {
-        layerController.sendSelectionToBack();
+    public void sendToBack(WorldObject target) {
+        layerController.sendToBack(target);
     }
 
     // 窗口管理
