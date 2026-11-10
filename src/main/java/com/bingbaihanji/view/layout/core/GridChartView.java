@@ -69,14 +69,6 @@ public class GridChartView extends Pane implements I18nRefreshable {
      * 避免每次布局时都重置用户可能已经调整过的原点位置
      */
     private boolean initialized = false;
-    /**
-     * 绘制模式激活标识
-     * <p>
-     * 当 DrawingController 处于绘制模式时设为 true，
-     * ClickHandler 检查此标识以跳过 onClick 分派，避免与 DrawingController 事件处理器冲突。
-     * </p>
-     */
-    private boolean drawModeActive = false;
     // 当前鼠标附近的特殊点(用于视觉反馈)
     private SpecialPoint nearbySpecialPoint = null;
     private Runnable onTransformChanged;
@@ -556,6 +548,13 @@ public class GridChartView extends Pane implements I18nRefreshable {
         return transform;
     }
 
+    /**
+     * 获取吸附计算器
+     */
+    public SnapCalculator getSnapCalculator() {
+        return snapCalculator;
+    }
+
     public void addPainter(WorldPainter painter) {
         painters.add(painter);
         invalidateBackground();
@@ -585,20 +584,6 @@ public class GridChartView extends Pane implements I18nRefreshable {
      */
     public void setShowSnapGuideLines(boolean show) {
         this.showSnapGuideLines = show;
-    }
-
-    /**
-     * 获取绘制模式激活状态（供 ClickHandler 查询）
-     */
-    public boolean isDrawModeActive() {
-        return drawModeActive;
-    }
-
-    /**
-     * 设置绘制模式激活状态（由 DrawingController.setDrawMode 调用）
-     */
-    public void setDrawModeActive(boolean drawModeActive) {
-        this.drawModeActive = drawModeActive;
     }
 
     // 点击涟漪

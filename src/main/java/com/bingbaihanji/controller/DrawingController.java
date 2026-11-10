@@ -79,6 +79,7 @@ public class DrawingController {
         handlers.add(new ConstructionToolHandler());
         handlers.add(new RotationHandler());
         handlers.add(new FunctionHandler());
+        handlers.add(new ObjectClickHandler());
     }
 
     private void initMouseHandlers() {
@@ -187,9 +188,6 @@ public class DrawingController {
         context.setMoveMode(com.bingbaihanji.constant.MoveMode.MOVE_NONE);
         context.setDrawMode(mode);
         context.setState(DrawingState.IDLE);
-
-        // 通知 GridChartView 当前是否在绘制模式，防止 ClickHandler 冗余分派 onClick
-        context.getGridChartPane().setDrawModeActive(mode != DrawMode.NONE);
 
         if (mode == DrawMode.ROTATE) {
             context.setState(DrawingState.ROTATE_SELECT_SHAPE);

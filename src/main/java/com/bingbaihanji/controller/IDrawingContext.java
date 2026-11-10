@@ -52,6 +52,11 @@ public interface IDrawingContext {
 
     WorldTransform getTransform();
 
+    /**
+     * 获取吸附计算器
+     */
+    SnapCalculator getSnapCalculator();
+
     void addObject(WorldObject obj);
 
     void removeObject(WorldObject obj);
