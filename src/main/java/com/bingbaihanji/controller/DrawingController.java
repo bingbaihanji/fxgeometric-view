@@ -79,6 +79,8 @@ public class DrawingController {
         handlers.add(new ConstructionToolHandler());
         handlers.add(new RotationHandler());
         handlers.add(new FunctionHandler());
+        // 必须放在链尾: SelectionHandler/DragHandler 同样匹配 NONE 模式, 但它们不处理点击事件,
+        // 若将来实现 handleMouseClicked 并返回 true, 会静默吞掉对象点击
         handlers.add(new ObjectClickHandler());
     }
 

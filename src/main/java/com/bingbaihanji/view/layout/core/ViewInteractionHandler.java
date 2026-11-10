@@ -5,8 +5,8 @@ import com.bingbaihanji.controller.SnapCalculator;
 /**
  * 视图交互处理器(协调器)
  * <p>
- * 协调四个视口级子处理器: 缩放、平移、悬停、点击涟漪。
- * 点击语义(选中/onClick)属于控制器层, 由 ObjectClickHandler 负责。
+ * 协调四个视口级子处理器: 缩放, 平移, 悬停, 点击涟漪.
+ * 点击语义(选中/onClick)属于控制器层, 由 ObjectClickHandler 负责.
  */
 public class ViewInteractionHandler {
 

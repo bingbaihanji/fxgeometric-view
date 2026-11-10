@@ -16,8 +16,8 @@ import java.util.List;
 /**
  * 对象点击处理器
  * <p>
- * 非绘制模式下的点击语义: 吸附计算 -> 命中测试 -> 分派 onClick 或记录坐标。
- * 绘制模式由 canHandle 天然隔离, 因此不再需要视图层的 drawModeActive 标志。
+ * 非绘制模式下的点击语义: 吸附计算 -> 命中测试 -> 分派 onClick 或记录坐标.
+ * 绘制模式由 canHandle 天然隔离, 因此不再需要视图层的模式标志.
  *
  * @author bingbaihanji
  * @date 2026-11-10
@@ -49,7 +49,7 @@ public class ObjectClickHandler extends AbstractDrawingHandler {
         worldX = snapped.x;
         worldY = snapped.y;
 
-        // 由上到下做命中测试，命中最上层对象即分派
+        // 由上到下做命中测试, 命中最上层对象即分派
         double tolerance = GeometryConfig.Tolerance.HIT_TEST_PIXELS / transform.getScale();
         List<WorldObject> objects = view.getObjects();
         for (int i = objects.size() - 1; i >= 0; i--) {

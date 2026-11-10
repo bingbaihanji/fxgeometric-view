@@ -178,7 +178,7 @@ public class DrawingContext implements IDrawingContext {
     }
 
     /**
-     * 获取吸附计算器，由画布持有
+     * 获取吸附计算器, 由画布持有
      */
     @Override
     public SnapCalculator getSnapCalculator() {
