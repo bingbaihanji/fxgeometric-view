@@ -25,6 +25,16 @@ public class SnapCalculator {
     private final WorldTransform transform;
     private final Region host;
 
+    /**
+     * 特殊点缓存, 避免每次鼠标移动都全量重算
+     */
+    private List<SpecialPoint> cachedSpecialPoints;
+
+    /**
+     * 缓存对应的对象数量, 用于检测其它窗口对共享列表的新增/删除
+     */
+    private int cachedObjectCount = -1;
+
     public SnapCalculator(EuclidianViewSettings settings, WorldTransform transform) {
         this(settings, transform, null);
     }
@@ -113,9 +123,35 @@ public class SnapCalculator {
      * @param objects 对象列表
      * @return 最近的特殊点,如果没有找到则返回null
      */
+    /**
+     * 使特殊点缓存失效
+     * <p>
+     * 几何对象新增/删除/移动后调用
+     */
+    public void invalidateSpecialPointCache() {
+        cachedSpecialPoints = null;
+        cachedObjectCount = -1;
+    }
+
+    /**
+     * 获取特殊点, 命中缓存时直接返回
+     * <p>
+     * 除显式失效外还比对对象数量, 以覆盖多窗口共享同一列表时的跨窗口增删
+     *
+     * @param objects 对象列表
+     * @return 特殊点列表
+     */
+    private List<SpecialPoint> specialPoints(List<WorldObject> objects) {
+        if (cachedSpecialPoints == null || cachedObjectCount != objects.size()) {
+            cachedSpecialPoints = SpecialPointManager.extractSpecialPoints(objects);
+            cachedObjectCount = objects.size();
+        }
+        return cachedSpecialPoints;
+    }
+
     private SpecialPoint findNearestSpecialPoint(double x, double y, List<WorldObject> objects) {
         // 获取所有特殊点
-        List<SpecialPoint> specialPoints = SpecialPointManager.extractSpecialPoints(objects);
+        List<SpecialPoint> specialPoints = specialPoints(objects);
 
         // 计算吸附阈值(像素距离转换为世界坐标距离)
         double scale = transform.getScale();

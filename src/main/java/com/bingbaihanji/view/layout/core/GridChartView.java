@@ -378,6 +378,7 @@ public class GridChartView extends Pane implements I18nRefreshable {
 
     public void addObject(WorldObject obj) {
         objects.add(obj);
+        snapCalculator.invalidateSpecialPointCache();
         incrementTrigCountIfApplicable(obj);
         updateAxisUnitTypeBasedOnFunctions();
         notifyObjectChange();
@@ -386,6 +387,7 @@ public class GridChartView extends Pane implements I18nRefreshable {
 
     public void removeObject(WorldObject obj) {
         objects.remove(obj);
+        snapCalculator.invalidateSpecialPointCache();
         decrementTrigCountIfApplicable(obj);
         updateAxisUnitTypeBasedOnFunctions();
         notifyObjectChange();
@@ -397,6 +399,7 @@ public class GridChartView extends Pane implements I18nRefreshable {
      */
     public void clearAllObjects() {
         objects.clear();
+        snapCalculator.invalidateSpecialPointCache();
         trigFunctionCount = 0;
         updateAxisUnitTypeBasedOnFunctions();
         redraw();

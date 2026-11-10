@@ -241,6 +241,8 @@ public class DrawingContext implements IDrawingContext {
         if (snappingHandler != null) {
             snappingHandler.invalidateCache();
         }
+        // 悬停与点击走 SnapCalculator, 它有自己的特殊点缓存
+        gridChartPane.getSnapCalculator().invalidateSpecialPointCache();
     }
 
     // 命令历史管理
