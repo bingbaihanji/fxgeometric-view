@@ -1,4 +1,4 @@
-package com.bingbaihanji.view.menu;
+package com.bingbaihanji.controller.menu;
 
 import com.bingbaihanji.controller.DrawingController;
 import com.bingbaihanji.i18n.I18nUtil;

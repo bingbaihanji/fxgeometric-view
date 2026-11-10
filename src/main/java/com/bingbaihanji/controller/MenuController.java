@@ -5,7 +5,7 @@ import com.bingbaihanji.view.DetachedCanvasWindow;
 import com.bingbaihanji.view.layout.core.GridChartView;
 import com.bingbaihanji.geometry.WorldObject;
 import com.bingbaihanji.geometry.impl.PointGeo;
-import com.bingbaihanji.view.menu.GeometryContextMenu;
+import com.bingbaihanji.controller.menu.GeometryContextMenu;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.input.ContextMenuEvent;
 

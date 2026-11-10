@@ -1,4 +1,4 @@
-package com.bingbaihanji.view.menu;
+package com.bingbaihanji.controller.menu;
 
 import com.bingbaihanji.constant.GridMode;
 import com.bingbaihanji.constant.GridType;
@@ -7,6 +7,8 @@ import com.bingbaihanji.util.CommandHistory;
 import com.bingbaihanji.i18n.I18nUtil;
 import com.bingbaihanji.view.DetachedCanvasWindow;
 import com.bingbaihanji.view.layout.core.GridChartView;
+import com.bingbaihanji.view.menu.AxesPropertiesDialog;
+import com.bingbaihanji.view.menu.GridPropertiesDialog;
 import javafx.scene.control.*;
 import javafx.scene.paint.Color;
 

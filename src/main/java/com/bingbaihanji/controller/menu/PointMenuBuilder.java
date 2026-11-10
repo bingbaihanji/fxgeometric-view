@@ -1,4 +1,4 @@
-package com.bingbaihanji.view.menu;
+package com.bingbaihanji.controller.menu;
 
 import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.controller.ConstraintUtils;

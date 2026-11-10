@@ -1,4 +1,4 @@
-package com.bingbaihanji.view.menu;
+package com.bingbaihanji.controller.menu;
 
 import com.bingbaihanji.controller.DrawingController;
 import com.bingbaihanji.util.CommandHistory;
@@ -7,6 +7,8 @@ import com.bingbaihanji.i18n.I18nUtil;
 import com.bingbaihanji.view.layout.core.GridChartView;
 import com.bingbaihanji.geometry.WorldObject;
 import com.bingbaihanji.geometry.impl.*;
+import com.bingbaihanji.view.menu.ShapePropertiesDialog;
+import com.bingbaihanji.view.menu.ShapePropertiesResult;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
