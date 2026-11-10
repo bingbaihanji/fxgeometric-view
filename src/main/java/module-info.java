@@ -1,7 +1,6 @@
 module FXGeometricView {
     // JavaFX 模块
     requires javafx.controls;
-    requires javafx.fxml;
     requires javafx.swing;
     requires javafx.graphics;
 
