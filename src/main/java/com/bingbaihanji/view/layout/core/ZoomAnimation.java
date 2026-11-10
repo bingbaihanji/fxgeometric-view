@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 /**
  * 缩放动画
  * <p>
- * 在 15 帧内（约 400ms）平滑插值 xZero/yZero/xscale/yscale，
+ * 在 24 帧内（约 400ms）平滑插值 xZero/yZero/xscale/yscale，
  * 使用 easeInOutCubic 缓动函数。
  * 参考 GeoGebra 的 CoordSystemAnimation。
  *
@@ -21,7 +21,7 @@ public class ZoomAnimation {
     /**
      * 动画帧数
      */
-    private static final int FRAMES = 15;
+    private static final int FRAMES = 24;
 
     /**
      * 总时长
@@ -48,14 +48,15 @@ public class ZoomAnimation {
         WorldTransform interp = new WorldTransform();
 
         for (int i = 0; i <= FRAMES; i++) {
-            final int frame = i;
-            double t = easeInOutCubic((double) frame / FRAMES);
+            // 时间轴用线性进度, 插值值用缓动进度, 否则两者会互相抵消成匀速
+            final double progress = (double) i / FRAMES;
+            final double eased = easeInOutCubic(progress);
 
-            KeyFrame kf = new KeyFrame(DURATION.multiply(t), e -> {
-                double xz = lerp(from.xZero(), to.xZero(), t);
-                double yz = lerp(from.yZero(), to.yZero(), t);
-                double xs = lerp(from.xScale(), to.xScale(), t);
-                double ys = lerp(from.yScale(), to.yScale(), t);
+            KeyFrame kf = new KeyFrame(DURATION.multiply(progress), e -> {
+                double xz = lerp(from.xZero(), to.xZero(), eased);
+                double yz = lerp(from.yZero(), to.yZero(), eased);
+                double xs = lerp(from.xScale(), to.xScale(), eased);
+                double ys = lerp(from.yScale(), to.yScale(), eased);
 
                 interp.setOffset(xz, yz);
                 interp.setScaleX(xs);

@@ -248,6 +248,8 @@ public class GridChartView extends Pane implements I18nRefreshable {
         settings.removeSettingsChangeListener(settingsListener);
         // 摘除全局 I18n 注册, 否则语言上下文会一直持有已销毁视图的强引用
         I18nUtil.removeRefreshable(this);
+        // 停掉可能在跑的缩放动画, 它的回调会继续驱动已销毁的视图
+        viewportController.stopZoomAnimation();
         clickRippleEffect.stop();
     }
 
@@ -628,6 +630,13 @@ public class GridChartView extends Pane implements I18nRefreshable {
     }
 
     // 视口控制 (委托给 ViewportController)
+
+    /**
+     * 停止正在进行的缩放动画
+     */
+    public void stopZoomAnimation() {
+        viewportController.stopZoomAnimation();
+    }
 
     public void zoomToPercent(double percent) {
         viewportController.zoomToPercent(percent);

@@ -27,6 +27,8 @@ public class PanHandler {
         view.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> {
             tooltipManager.cancel();
             if (e.isMiddleButtonDown()) {
+                // 开始平移时中断尚未结束的缩放动画, 避免动画覆盖平移结果
+                view.stopZoomAnimation();
                 panning = true;
                 lastMouseX = e.getX();
                 lastMouseY = e.getY();

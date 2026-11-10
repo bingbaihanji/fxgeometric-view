@@ -30,6 +30,9 @@ public class ZoomHandler {
     private void handleZoom(ScrollEvent e) {
         tooltipManager.cancel();
 
+        // 用户主动滚轮缩放时中断尚未结束的动画, 避免两者互相拉扯
+        view.stopZoomAnimation();
+
         double newScale = transform.getScale();
         if (e.getDeltaY() > 0) {
             newScale *= 1.1;
