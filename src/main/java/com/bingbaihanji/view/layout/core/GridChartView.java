@@ -29,11 +29,6 @@ import java.util.function.BiConsumer;
 public class GridChartView extends Pane implements I18nRefreshable {
 
     /**
-     * 画布管理器
-     */
-    private final CanvasManager canvasManager = new CanvasManager();
-
-    /**
      * 坐标系统
      */
     private final WorldTransform transform = new WorldTransform();
@@ -59,7 +54,6 @@ public class GridChartView extends Pane implements I18nRefreshable {
     private final ViewCursor cursor = new ViewCursor();
 
     private final SnapCalculator snapCalculator;
-    private final HoverTooltipManager tooltipManager;
     private final ViewportController viewportController;
 
     /**
@@ -71,8 +65,6 @@ public class GridChartView extends Pane implements I18nRefreshable {
      * 悬停对象
      */
     private WorldObject hoverObject;
-
-    private Runnable onTransformChanged;
 
     /**
      * 初始化状态标志: 首次布局时只居中一次
@@ -114,12 +106,13 @@ public class GridChartView extends Pane implements I18nRefreshable {
      */
     public GridChartView(List<WorldObject> sharedObjects) {
         this.objects = new ObjectCollection(sharedObjects);
+        this.snapCalculator = new SnapCalculator(settings, transform, this);
+        HoverTooltipManager tooltipManager = new HoverTooltipManager(
+                this, snapCalculator, transform, objects::get, this::redrawInteraction);
+
+        CanvasManager canvasManager = new CanvasManager();
         this.renderer = new ViewRenderer(canvasManager, new BackgroundBuffer(),
                 new CoordSystemRenderer(), transform, settings, objects::get);
-
-        snapCalculator = new SnapCalculator(settings, transform, this);
-        tooltipManager = new HoverTooltipManager(this, snapCalculator, transform,
-                objects::get, this::redrawInteraction);
 
         canvasManager.bindToPane(this);
         canvasManager.bindSize(this);
@@ -152,19 +145,6 @@ public class GridChartView extends Pane implements I18nRefreshable {
         cursor.install(this, "/icon/mouseStyle.png");
 
         tooltipManager.install(this);
-    }
-
-    public Runnable getOnTransformChanged() {
-        return onTransformChanged;
-    }
-
-    /**
-     * 设置变换变化回调
-     *
-     * @param runnable 回调
-     */
-    public void setOnTransformChanged(Runnable runnable) {
-        this.onTransformChanged = runnable;
     }
 
     /**
@@ -245,20 +225,6 @@ public class GridChartView extends Pane implements I18nRefreshable {
     }
 
     /**
-     * 立即重绘(不经过防抖)
-     */
-    public void redrawImmediate() {
-        renderer.redrawImmediate();
-    }
-
-    /**
-     * 仅重绘背景层
-     */
-    public void redrawBackground() {
-        renderer.redrawBackground();
-    }
-
-    /**
      * 仅重绘对象层
      */
     public void redrawObjects() {
@@ -313,31 +279,10 @@ public class GridChartView extends Pane implements I18nRefreshable {
     }
 
     /**
-     * 获取所有图形对象的副本
-     */
-    public List<WorldObject> getObjectsCopy() {
-        return objects.copy();
-    }
-
-    /**
      * 根据是否存在三角函数自动调整坐标轴单位标签
      */
     private void updateAxisUnitTypeBasedOnFunctions() {
         settings.setUnitLabelType(objects.hasTrigonometricFunction() ? UnitLabelType.PI : UnitLabelType.NUMERIC);
-    }
-
-    /**
-     * 添加对象变化监听器
-     */
-    public void addObjectChangeListener(Runnable listener) {
-        objects.addChangeListener(listener);
-    }
-
-    /**
-     * 移除对象变化监听器
-     */
-    public void removeObjectChangeListener(Runnable listener) {
-        objects.removeChangeListener(listener);
     }
 
     // 悬停与吸附状态
@@ -382,10 +327,6 @@ public class GridChartView extends Pane implements I18nRefreshable {
 
     public void setPreviewPainter(BiConsumer<GraphicsContext, WorldTransform> previewPainter) {
         renderer.setPreviewPainter(previewPainter);
-    }
-
-    public void setBoundingBoxPainter(BiConsumer<GraphicsContext, WorldTransform> boundingBoxPainter) {
-        renderer.setBoundingBoxPainter(boundingBoxPainter);
     }
 
     // 视图配置

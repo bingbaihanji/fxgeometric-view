@@ -46,11 +46,6 @@ public class ViewRenderer {
     private BiConsumer<GraphicsContext, WorldTransform> previewPainter;
 
     /**
-     * BoundingBox 绘制器
-     */
-    private BiConsumer<GraphicsContext, WorldTransform> boundingBoxPainter;
-
-    /**
      * 当前鼠标附近的特殊点(用于视觉反馈)
      */
     private SpecialPoint nearbySpecialPoint;
@@ -108,16 +103,6 @@ public class ViewRenderer {
     }
 
     /**
-     * 立即重绘(不经过防抖)
-     */
-    public void redrawImmediate() {
-        redrawScheduled = false;
-        redrawBackground();
-        redrawObjects();
-        redrawInteraction();
-    }
-
-    /**
      * 仅重绘背景层(网格 + 坐标轴), 使用离屏缓存
      */
     public void redrawBackground() {
@@ -168,9 +153,6 @@ public class ViewRenderer {
         GraphicsContext gc = canvasManager.getInteractionGC();
         gc.clearRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
 
-        if (boundingBoxPainter != null) {
-            boundingBoxPainter.accept(gc, transform);
-        }
         if (previewPainter != null) {
             previewPainter.accept(gc, transform);
         }
@@ -198,7 +180,7 @@ public class ViewRenderer {
 
         gc.setStroke(GeometryConfig.Colors.SNAP_HINT);
         gc.setLineWidth(2);
-        gc.setLineDashes(null);
+        gc.setLineDashes();
 
         double radius1 = 8;
         double radius2 = 12;
@@ -223,7 +205,7 @@ public class ViewRenderer {
         gc.setLineDashes(5, 5);
         gc.strokeLine(axisSnapInfo.lineStartX, axisSnapInfo.lineStartY,
                 axisSnapInfo.lineEndX, axisSnapInfo.lineEndY);
-        gc.setLineDashes(null);
+        gc.setLineDashes();
     }
 
     /**
@@ -251,15 +233,6 @@ public class ViewRenderer {
      */
     public void setPreviewPainter(BiConsumer<GraphicsContext, WorldTransform> previewPainter) {
         this.previewPainter = previewPainter;
-    }
-
-    /**
-     * 设置包围盒绘制器
-     *
-     * @param boundingBoxPainter 包围盒绘制器
-     */
-    public void setBoundingBoxPainter(BiConsumer<GraphicsContext, WorldTransform> boundingBoxPainter) {
-        this.boundingBoxPainter = boundingBoxPainter;
     }
 
     /**

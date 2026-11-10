@@ -3,7 +3,6 @@ package com.bingbaihanji.view.layout.core;
 import com.bingbaihanji.geometry.WorldObject;
 import com.bingbaihanji.geometry.impl.TrigonometricFunctionGeo;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -25,11 +24,6 @@ public class ObjectCollection {
      * 只读视图, 构造时创建一次
      */
     private final List<WorldObject> readOnlyView;
-
-    /**
-     * 对象变化监听器
-     */
-    private final List<Runnable> changeListeners = new ArrayList<>();
 
     /**
      * 当前三角函数对象数量, 用于自动切换坐标轴单位标签
@@ -62,15 +56,6 @@ public class ObjectCollection {
     }
 
     /**
-     * 获取对象列表副本
-     *
-     * @return 新的可变列表
-     */
-    public List<WorldObject> copy() {
-        return new ArrayList<>(objects);
-    }
-
-    /**
      * 获取列表本体, 仅供同包的多窗口构造共享使用
      * <p>
      * 调用方不得直接修改结构, 增删必须走 {@link #add} / {@link #remove} / {@link #clear},
@@ -92,7 +77,6 @@ public class ObjectCollection {
         if (obj instanceof TrigonometricFunctionGeo) {
             trigFunctionCount++;
         }
-        notifyChanged();
     }
 
     /**
@@ -105,7 +89,6 @@ public class ObjectCollection {
         if (obj instanceof TrigonometricFunctionGeo) {
             trigFunctionCount--;
         }
-        notifyChanged();
     }
 
     /**
@@ -114,7 +97,6 @@ public class ObjectCollection {
     public void clear() {
         objects.clear();
         trigFunctionCount = 0;
-        notifyChanged();
     }
 
     /**
@@ -124,32 +106,5 @@ public class ObjectCollection {
      */
     public boolean hasTrigonometricFunction() {
         return trigFunctionCount > 0;
-    }
-
-    /**
-     * 添加对象变化监听器
-     *
-     * @param listener 监听器
-     */
-    public void addChangeListener(Runnable listener) {
-        changeListeners.add(listener);
-    }
-
-    /**
-     * 移除对象变化监听器
-     *
-     * @param listener 监听器
-     */
-    public void removeChangeListener(Runnable listener) {
-        changeListeners.remove(listener);
-    }
-
-    /**
-     * 通知所有监听器对象已变化
-     */
-    private void notifyChanged() {
-        for (Runnable listener : changeListeners) {
-            listener.run();
-        }
     }
 }
