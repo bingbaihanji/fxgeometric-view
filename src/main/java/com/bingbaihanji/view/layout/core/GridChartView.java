@@ -3,7 +3,6 @@ package com.bingbaihanji.view.layout.core;
 import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.GridType;
 import com.bingbaihanji.constant.UnitLabelType;
-import com.bingbaihanji.controller.SnapCalculator;
 import com.bingbaihanji.i18n.I18nRefreshable;
 import com.bingbaihanji.i18n.I18nUtil;
 import com.bingbaihanji.geometry.SpecialPointManager.SpecialPoint;

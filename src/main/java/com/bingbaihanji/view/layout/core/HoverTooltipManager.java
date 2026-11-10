@@ -1,7 +1,6 @@
 package com.bingbaihanji.view.layout.core;
 
 import com.bingbaihanji.constant.GridType;
-import com.bingbaihanji.controller.SnapCalculator;
 import com.bingbaihanji.geometry.WorldObject;
 import com.bingbaihanji.geometry.WorldTransform;
 import javafx.animation.PauseTransition;

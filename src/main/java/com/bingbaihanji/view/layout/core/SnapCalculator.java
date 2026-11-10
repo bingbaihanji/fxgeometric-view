@@ -1,4 +1,4 @@
-package com.bingbaihanji.controller;
+package com.bingbaihanji.view.layout.core;
 
 import com.bingbaihanji.constant.GridType;
 import com.bingbaihanji.constant.SnapMode;

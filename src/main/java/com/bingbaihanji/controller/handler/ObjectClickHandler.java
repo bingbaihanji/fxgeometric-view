@@ -3,7 +3,7 @@ package com.bingbaihanji.controller.handler;
 import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.controller.IDrawingContext;
-import com.bingbaihanji.controller.SnapCalculator;
+import com.bingbaihanji.view.layout.core.SnapCalculator;
 import com.bingbaihanji.view.layout.core.GridChartView;
 import com.bingbaihanji.geometry.WorldTransform;
 import com.bingbaihanji.geometry.WorldObject;

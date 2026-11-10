@@ -11,6 +11,7 @@ import com.bingbaihanji.util.CursorManager;
 import com.bingbaihanji.view.layout.core.GridChartView;
 import com.bingbaihanji.geometry.WorldTransform;
 import com.bingbaihanji.geometry.WorldObject;
+import com.bingbaihanji.view.layout.core.SnapCalculator;
 
 import java.util.List;
 
