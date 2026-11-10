@@ -81,7 +81,7 @@ public class DetachedCanvasWindow {
         }
 
         // 使用共享的对象列表创建新视图(关键：两个窗口共享同一个对象列表)
-        this.detachedView = new GridChartView(sourceView.getObjects());
+        this.detachedView = new GridChartView(sourceView);
 
         // 创建工具栏
         ShapeToolPane toolPane = new ShapeToolPane();

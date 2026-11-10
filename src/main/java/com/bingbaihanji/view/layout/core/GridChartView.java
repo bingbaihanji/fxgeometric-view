@@ -38,6 +38,10 @@ public class GridChartView extends Pane implements I18nRefreshable {
     private final List<WorldPainter> painters = new ArrayList<>();
     private final List<WorldObject> objects;
     /**
+     * 对象列表的只读视图, 构造时建一次, 避免每次 getObjects() 都新建包装
+     */
+    private final List<WorldObject> objectsView;
+    /**
      * 按图层排序的绘制缓冲, 复用避免每帧分配
      */
     private final List<WorldObject> sortedObjectsBuffer = new ArrayList<>();
@@ -97,6 +101,18 @@ public class GridChartView extends Pane implements I18nRefreshable {
     }
 
     /**
+     * 构造函数(与另一个视图共享对象列表)
+     * <p>
+     * 直接共享列表本体, 两个窗口的增删互相同步。
+     * 注意不能传 {@link #getObjects()} 的只读视图, 否则新增对象会抛 UnsupportedOperationException。
+     *
+     * @param sourceView 源视图
+     */
+    public GridChartView(GridChartView sourceView) {
+        this(sourceView.objects);
+    }
+
+    /**
      * 构造函数(支持共享对象列表)
      *
      * @param sharedObjects 共享的对象列表,用于多窗口同步
@@ -111,6 +127,7 @@ public class GridChartView extends Pane implements I18nRefreshable {
 
     public GridChartView(List<WorldObject> sharedObjects) {
         this.objects = sharedObjects;
+        this.objectsView = Collections.unmodifiableList(objects);
         snapCalculator = new SnapCalculator(settings, transform, this);
         tooltipManager = new HoverTooltipManager(this, snapCalculator, transform, () -> objects, this::redrawInteraction);
 
@@ -415,7 +432,7 @@ public class GridChartView extends Pane implements I18nRefreshable {
      * 获取所有图形对象的只读视图(零分配)
      */
     public List<WorldObject> getObjects() {
-        return Collections.unmodifiableList(objects);
+        return objectsView;
     }
 
     /**
