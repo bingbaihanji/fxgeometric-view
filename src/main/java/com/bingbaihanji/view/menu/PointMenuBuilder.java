@@ -1,8 +1,8 @@
 package com.bingbaihanji.view.menu;
 
 import com.bingbaihanji.config.GeometryConfig;
+import com.bingbaihanji.controller.ConstraintUtils;
 import com.bingbaihanji.controller.DrawingController;
-import com.bingbaihanji.util.ConstraintUtils;
 import com.bingbaihanji.util.I18nUtil;
 import com.bingbaihanji.util.PointReuseGroup;
 import com.bingbaihanji.util.PointReuseManager;
@@ -76,7 +76,7 @@ public final class PointMenuBuilder {
             menu.getItems().add(removeConstraintItem);
         } else {
             Menu addConstraintMenu = new Menu(I18nUtil.getString("geo.menu.addConstraint"));
-            List<WorldObject> nearbyShapes = ConstraintUtils.findNearbyConstrainableShapes(point, canvas, controller);
+            List<WorldObject> nearbyShapes = ConstraintUtils.findNearbyConstrainableShapes(point, canvas);
 
             if (nearbyShapes.isEmpty()) {
                 MenuItem noShapeItem = new MenuItem(I18nUtil.getString("geo.menu.noConstraintTarget"));
@@ -86,7 +86,7 @@ public final class PointMenuBuilder {
                 for (WorldObject shape : nearbyShapes) {
                     String shapeName = ConstraintUtils.getShapeDisplayName(shape);
                     MenuItem shapeItem = new MenuItem(shapeName);
-                    shapeItem.setOnAction(e -> ConstraintUtils.addConstraintToPoint(point, shape, controller, canvas));
+                    shapeItem.setOnAction(e -> ConstraintUtils.addConstraintToPoint(point, shape, controller.getContext(), canvas));
                     addConstraintMenu.getItems().add(shapeItem);
                 }
             }
@@ -202,7 +202,7 @@ public final class PointMenuBuilder {
             menu.getItems().add(removeConstraintItem);
         } else {
             Menu addConstraintMenu = new Menu(I18nUtil.getString("geo.menu.addConstraint"));
-            List<WorldObject> nearbyShapes = ConstraintUtils.findNearbyConstrainableShapes(point, canvas, controller);
+            List<WorldObject> nearbyShapes = ConstraintUtils.findNearbyConstrainableShapes(point, canvas);
 
             if (nearbyShapes.isEmpty()) {
                 MenuItem noShapeItem = new MenuItem(I18nUtil.getString("geo.menu.noConstraintTarget"));
@@ -212,7 +212,7 @@ public final class PointMenuBuilder {
                 for (WorldObject shape : nearbyShapes) {
                     String shapeName = ConstraintUtils.getShapeDisplayName(shape);
                     MenuItem shapeItem = new MenuItem(shapeName);
-                    shapeItem.setOnAction(e -> ConstraintUtils.addConstraintToPoint(point, shape, controller, canvas));
+                    shapeItem.setOnAction(e -> ConstraintUtils.addConstraintToPoint(point, shape, controller.getContext(), canvas));
                     addConstraintMenu.getItems().add(shapeItem);
                 }
             }

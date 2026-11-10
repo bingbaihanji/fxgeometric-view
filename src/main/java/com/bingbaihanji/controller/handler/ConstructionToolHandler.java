@@ -4,7 +4,7 @@ import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.constant.DrawingState;
 import com.bingbaihanji.controller.IDrawingContext;
-import com.bingbaihanji.util.GeometryCommand;
+import com.bingbaihanji.controller.GeometryCommand;
 import com.bingbaihanji.util.IntersectionUtils;
 import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.view.layout.core.WorldTransform;

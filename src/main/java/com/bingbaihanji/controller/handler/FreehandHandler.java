@@ -2,7 +2,7 @@ package com.bingbaihanji.controller.handler;
 
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.controller.IDrawingContext;
-import com.bingbaihanji.util.GeometryCommand;
+import com.bingbaihanji.controller.GeometryCommand;
 import com.bingbaihanji.view.layout.core.WorldTransform;
 import com.bingbaihanji.view.layout.draw.geometry.impl.PathGeo;
 import com.bingbaihanji.view.layout.draw.tools.FreehandDrawingTool;

@@ -5,7 +5,7 @@ import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.constant.DrawingState;
 import com.bingbaihanji.controller.IDrawingContext;
 import com.bingbaihanji.controller.PreviewManager;
-import com.bingbaihanji.util.GeometryCommand;
+import com.bingbaihanji.controller.GeometryCommand;
 import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.util.PointReuseManager;
 import com.bingbaihanji.view.layout.core.WorldTransform;

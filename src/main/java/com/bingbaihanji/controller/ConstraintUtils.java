@@ -1,7 +1,7 @@
-package com.bingbaihanji.util;
+package com.bingbaihanji.controller;
 
-import com.bingbaihanji.controller.DrawingController;
-import com.bingbaihanji.controller.IDrawingContext;
+import com.bingbaihanji.util.I18nUtil;
+import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.util.constraint.PointConstraint;
 import com.bingbaihanji.view.layout.core.GridChartView;
 import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
@@ -79,7 +79,7 @@ public final class ConstraintUtils {
      * 查找附近可以作为约束对象的几何图形
      */
     public static List<WorldObject> findNearbyConstrainableShapes(
-            PointGeo point, GridChartView canvas, DrawingController controller) {
+            PointGeo point, GridChartView canvas) {
         List<WorldObject> result = new ArrayList<>();
         double scale = canvas.getTransform().getScale();
         double threshold = 20.0 / scale;
@@ -123,9 +123,8 @@ public final class ConstraintUtils {
      * 为点添加约束
      */
     public static void addConstraintToPoint(PointGeo point, WorldObject shape,
-                                            DrawingController controller, GridChartView canvas) {
+                                            IDrawingContext context, GridChartView canvas) {
         try {
-            IDrawingContext context = controller.getContext();
             PointConstraint constraint = context.getConstraintHandler().createConstraint(shape, point);
 
             if (!constraint.isVertexConstraint()) {
