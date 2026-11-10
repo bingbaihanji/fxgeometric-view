@@ -1,7 +1,5 @@
 package com.bingbaihanji.constant;
 
-import com.bingbaihanji.i18n.I18nUtil;
-
 /**
  * 坐标轴箭头类型枚举
  *
@@ -36,9 +34,9 @@ public enum AxisArrowType {
     TWO_ARROWS_FILLED;
 
     /**
-     * 获取国际化显示名称
+     * 获取国际化 key
      */
-    public String getDisplayName() {
+    public String getDisplayKey() {
         // Convert ARROW_FILLED -> arrowFilled, TWO_ARROWS -> twoArrows, TWO_ARROWS_FILLED -> twoArrowsFilled
         String key;
         if (this == ARROW_FILLED) {
@@ -51,11 +49,6 @@ public enum AxisArrowType {
             key = "axisArrowType." + name().substring(0, 1).toLowerCase() +
                     name().substring(1).toLowerCase();
         }
-        return I18nUtil.getString(key);
-    }
-
-    @Override
-    public String toString() {
-        return getDisplayName();
+        return key;
     }
 }

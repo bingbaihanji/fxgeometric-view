@@ -133,6 +133,7 @@ public class GridPropertiesDialog extends Dialog<ButtonType> {
         Label lblType = new Label(I18nUtil.getString("grid.gridType") + ":");
         cmbGridType = new ComboBox<>();
         cmbGridType.getItems().addAll(GridType.values());
+        EnumComboSupport.localize(cmbGridType, GridType::getDisplayKey);
         cmbGridType.setPrefWidth(200);
 
         grid.add(lblType, 0, 0);
@@ -269,6 +270,7 @@ public class GridPropertiesDialog extends Dialog<ButtonType> {
         Label lblLineType = new Label(I18nUtil.getString("grid.lineType") + ":");
         cmbLineType = new ComboBox<>();
         cmbLineType.getItems().addAll(LineType.values());
+        EnumComboSupport.localize(cmbLineType, LineType::getDisplayKey);
         cmbLineType.setPrefWidth(150);
 
         grid.add(lblLineType, 0, 0);

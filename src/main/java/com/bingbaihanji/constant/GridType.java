@@ -1,7 +1,5 @@
 package com.bingbaihanji.constant;
 
-import com.bingbaihanji.i18n.I18nUtil;
-
 /**
  * 网格类型枚举
  *
@@ -71,9 +69,9 @@ public enum GridType {
     }
 
     /**
-     * 获取国际化显示名称
+     * 获取国际化 key
      */
-    public String getDisplayName() {
+    public String getDisplayKey() {
         String key = "gridType." + this.name().substring(0, 1).toLowerCase() +
                 this.name().substring(1).toLowerCase().replace("_", "");
         // Convert CARTESIAN_WITH_SUBGRID -> cartesianWithSubgrid
@@ -83,11 +81,6 @@ public enum GridType {
             key = "gridType." + name().substring(0, 1).toLowerCase() +
                     name().substring(1).toLowerCase();
         }
-        return I18nUtil.getString(key);
-    }
-
-    @Override
-    public String toString() {
-        return getDisplayName();
+        return key;
     }
 }

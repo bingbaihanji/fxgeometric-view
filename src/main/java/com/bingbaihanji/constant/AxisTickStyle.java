@@ -1,7 +1,5 @@
 package com.bingbaihanji.constant;
 
-import com.bingbaihanji.i18n.I18nUtil;
-
 /**
  * 坐标轴刻度样式枚举
  *
@@ -26,9 +24,9 @@ public enum AxisTickStyle {
     NONE;
 
     /**
-     * 获取国际化显示名称
+     * 获取国际化 key
      */
-    public String getDisplayName() {
+    public String getDisplayKey() {
         // Convert MAJOR_MINOR -> majorMinor, MAJOR_ONLY -> majorOnly
         String key;
         if (this == MAJOR_MINOR) {
@@ -39,11 +37,6 @@ public enum AxisTickStyle {
             key = "axisTickStyle." + name().substring(0, 1).toLowerCase() +
                     name().substring(1).toLowerCase();
         }
-        return I18nUtil.getString(key);
-    }
-
-    @Override
-    public String toString() {
-        return getDisplayName();
+        return key;
     }
 }

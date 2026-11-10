@@ -158,6 +158,7 @@ public class AxesPropertiesDialog extends Dialog<ButtonType> {
 
         cmbXTickStyle = new ComboBox<>();
         cmbXTickStyle.getItems().addAll(AxisTickStyle.values());
+        EnumComboSupport.localize(cmbXTickStyle, AxisTickStyle::getDisplayKey);
         cmbXTickStyle.setPrefWidth(150);
 
         // 自动模式时禁用距离输入
@@ -180,6 +181,7 @@ public class AxesPropertiesDialog extends Dialog<ButtonType> {
 
         cmbYTickStyle = new ComboBox<>();
         cmbYTickStyle.getItems().addAll(AxisTickStyle.values());
+        EnumComboSupport.localize(cmbYTickStyle, AxisTickStyle::getDisplayKey);
         cmbYTickStyle.setPrefWidth(150);
 
         cbAutoYTick.selectedProperty().addListener((obs, old, val) -> {
@@ -214,11 +216,13 @@ public class AxesPropertiesDialog extends Dialog<ButtonType> {
         Label lblXArrow = new Label(I18nUtil.getString("axes.xArrow") + ":");
         cmbXArrowType = new ComboBox<>();
         cmbXArrowType.getItems().addAll(AxisArrowType.values());
+        EnumComboSupport.localize(cmbXArrowType, AxisArrowType::getDisplayKey);
         cmbXArrowType.setPrefWidth(150);
 
         Label lblYArrow = new Label(I18nUtil.getString("axes.yArrow") + ":");
         cmbYArrowType = new ComboBox<>();
         cmbYArrowType.getItems().addAll(AxisArrowType.values());
+        EnumComboSupport.localize(cmbYArrowType, AxisArrowType::getDisplayKey);
         cmbYArrowType.setPrefWidth(150);
 
         grid.add(lblXArrow, 0, 0);
@@ -230,6 +234,7 @@ public class AxesPropertiesDialog extends Dialog<ButtonType> {
         Label lblUnit = new Label(I18nUtil.getString("axes.unitLabel") + ":");
         cmbUnitLabelType = new ComboBox<>();
         cmbUnitLabelType.getItems().addAll(UnitLabelType.values());
+        EnumComboSupport.localize(cmbUnitLabelType, UnitLabelType::getDisplayKey);
         cmbUnitLabelType.setPrefWidth(150);
 
         grid.add(lblUnit, 0, 2);
@@ -239,6 +244,7 @@ public class AxesPropertiesDialog extends Dialog<ButtonType> {
         Label lblLineType = new Label(I18nUtil.getString("axes.lineType") + ":");
         cmbLineType = new ComboBox<>();
         cmbLineType.getItems().addAll(LineType.values());
+        EnumComboSupport.localize(cmbLineType, LineType::getDisplayKey);
         cmbLineType.setPrefWidth(150);
 
         grid.add(lblLineType, 0, 3);
