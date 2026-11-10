@@ -33,7 +33,6 @@ support      util / constant / model / config / i18n / io / factory
 | 债务 | 影响 | 触发条件 |
 |---|---|---|
 | `GridChartView` 约 660 行、`DrawingController` 约 40 个公开方法 | 职责偏多, 新增功能容易继续往上堆 | 再次出现"往 GridChartView 加字段"的改动时, 先拆职责 |
-| `AbstractWorldObject` 25 个可变字段 | 胖基类, 所有图形继承全套属性 | 出现第三种样式组合需求时, 抽 `ShapeStyle`/`LabelStyle` 值对象 |
 | 点击语义(`ObjectClickHandler`)无自动化覆盖 | 等价性只能靠源码对照 | 下次改动点击链路前, 先补一个用伪造 `IDrawingContext` 的 handler 级测试 |
 | 全局单例 `ConfigManager` / `PointNameManager` / `I18nContext` | 多窗口与单测隔离困难 | 做多文档窗口时改为实例注入 |
 | `constant` 的枚举内嵌展示文案并调用 `I18nUtil` | 常量层依赖 i18n, 严格说是层内泄漏 | 需要非 UI 场景复用枚举时, 改为暴露 key 由 UI 解析 |
@@ -50,5 +49,6 @@ support      util / constant / model / config / i18n / io / factory
 - `I18nUtil` / `I18nContext` / `I18nRefreshable`: 已抽成独立的 `com.bingbaihanji.i18n`。
 - `GridChartView.painters` 扩展点: 无实现者, 已删除。
 - `PreviewManager`(636 行): 两套预览机制已合并, 所有预览由各 Handler 在 `paintPreview` 中自绘。
+- `AbstractWorldObject` 的 14 个样式字段: 已收敛为 `geometry.style.ShapeStyle` 与 `LabelStyle`, 取值校验随之集中。
 - `SnapCalculator`: 从 controller 迁入 `view.layout.core`。
 - 动作型右键菜单 / 组合根: 分别迁入 `controller.menu` 与基包 `com.bingbaihanji`。
