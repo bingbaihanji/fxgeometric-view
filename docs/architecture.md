@@ -31,7 +31,7 @@ view (渲染/视口手势)  ->  controller (交互语义/命令)  ->  util / con
 | 债务 | 影响 | 触发条件 |
 |---|---|---|
 | `view.layout.draw.geometry` 同时承载领域模型与 JavaFX 绘制 | `util`/`io`/`factory` 反向依赖 `view`，核心算法无法脱离 JavaFX 单测 | 做序列化格式升级 或 多窗口状态隔离时，整体迁移到 `com.bingbaihanji.geometry` |
-| `GridChartView` 643 行、`DrawingController` 约 40 个公开方法 | 职责偏多，新增功能容易继续往上堆 | 再次出现"往 GridChartView 加字段"的改动时，先拆 `ViewportController` 之外的职责 |
+| `GridChartView` 681 行、`DrawingController` 约 40 个公开方法 | 职责偏多，新增功能容易继续往上堆 | 再次出现"往 GridChartView 加字段"的改动时，先拆 `ViewportController` 之外的职责 |
 | `GridChartView.painters` 扩展点已无任何实现者与调用者 | 死扩展点, 增加阅读成本 | 下次改动 `redrawBackground()` 时一并删除 |
 | 点击语义(`ObjectClickHandler`)无自动化覆盖 | 等价性只能靠源码对照, 改点击链路时无法快速回归 | 下次改动点击链路前, 先补一个用伪造 `IDrawingContext` 的 handler 级测试 |
 | `AbstractWorldObject` 25 个可变字段 | 胖基类，所有图形继承全套属性 | 出现第三种样式组合需求时，抽 `ShapeStyle`/`LabelStyle` 值对象 |
@@ -45,3 +45,5 @@ view (渲染/视口手势)  ->  controller (交互语义/命令)  ->  util / con
 - `CircleDrawingTool`: 从未被鼠标事件驱动。
 - `PerformanceMonitor` / `BoundingBoxTransform`: 零引用。
 - `ClickHandler` + `GridChartView.drawModeActive`: 点击语义已下沉到 `controller.handler.ObjectClickHandler`。
+- `SnapController` / `GeometryCache` / `LabelClipper` / `LabelPositionTracker`: 零引用, 共 490 行。
+- `ZoomAnimation`: 原本零引用, 已接线到 `ViewportController` 的缩放/自适应/重置。
