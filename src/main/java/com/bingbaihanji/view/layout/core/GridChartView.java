@@ -1,100 +1,96 @@
 package com.bingbaihanji.view.layout.core;
 
-import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.GridType;
 import com.bingbaihanji.constant.UnitLabelType;
-import com.bingbaihanji.i18n.I18nRefreshable;
-import com.bingbaihanji.i18n.I18nUtil;
 import com.bingbaihanji.geometry.SpecialPointManager.SpecialPoint;
 import com.bingbaihanji.geometry.WorldObject;
-import com.bingbaihanji.geometry.impl.TrigonometricFunctionGeo;
 import com.bingbaihanji.geometry.WorldTransform;
-import javafx.application.Platform;
+import com.bingbaihanji.i18n.I18nRefreshable;
+import com.bingbaihanji.i18n.I18nUtil;
 import javafx.scene.Cursor;
-import javafx.scene.ImageCursor;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 
 /**
+ * 格点图视图
+ * <p>
+ * 作为画布的协调者: 组合画布层, 坐标变换, 对象集合, 渲染器与各交互控制器.
+ * 具体的绘制调度交给 {@link ViewRenderer}, 对象集合管理交给 {@link ObjectCollection},
+ * 光标交给 {@link ViewCursor}, 视口操作委托给 {@link ViewportController}.
  *
  * @author bingbaihanji
  * @date 2025-12-20 16:12:42
- * @description 格点图视图
  */
 public class GridChartView extends Pane implements I18nRefreshable {
 
-    // 画布管理器
+    /**
+     * 画布管理器
+     */
     private final CanvasManager canvasManager = new CanvasManager();
-    //  坐标系统
+
+    /**
+     * 坐标系统
+     */
     private final WorldTransform transform = new WorldTransform();
-    private final List<WorldObject> objects;
+
     /**
-     * 对象列表的只读视图, 构造时建一次, 避免每次 getObjects() 都新建包装
+     * 对象集合
      */
-    private final List<WorldObject> objectsView;
+    private final ObjectCollection objects;
+
     /**
-     * 按图层排序的绘制缓冲, 复用避免每帧分配
+     * 视图配置
      */
-    private final List<WorldObject> sortedObjectsBuffer = new ArrayList<>();
-    //  视图配置
     private final EuclidianViewSettings settings = new EuclidianViewSettings();
-    // 对象变化监听器列表(观察者模式)
-    private final List<Runnable> objectChangeListeners = new ArrayList<>();
+
+    /**
+     * 三层画布渲染器
+     */
+    private final ViewRenderer renderer;
+
+    /**
+     * 光标管理
+     */
+    private final ViewCursor cursor = new ViewCursor();
+
     private final SnapCalculator snapCalculator;
     private final HoverTooltipManager tooltipManager;
     private final ViewportController viewportController;
+
     /**
-     * 点击涟漪动效（顶层透明覆盖层）
+     * 点击涟漪动效(顶层透明覆盖层)
      */
     private final ClickRippleEffect clickRippleEffect;
+
     /**
-     * 背景层离屏缓存，避免每帧重复绘制网格和坐标轴
+     * 悬停对象
      */
-    private final BackgroundBuffer backgroundBuffer = new BackgroundBuffer();
-    /**
-     * 坐标系统统一渲染器（替代 GridPainter + AxesPainter）
-     */
-    private final CoordSystemRenderer coordSystemRenderer = new CoordSystemRenderer();
-    private WorldObject hoverObject = null;
-    // 预览绘制器
-    private BiConsumer<GraphicsContext, WorldTransform> previewPainter;
-    // BoundingBox 绘制器
-    private BiConsumer<GraphicsContext, WorldTransform> boundingBoxPainter;
-    /**
-     * 初始化状态标志
-     * <p>
-     * 用于跟踪组件是否已完成首次坐标初始化
-     * 确保layoutChildren()中的初始化逻辑只执行一次
-     * 避免每次布局时都重置用户可能已经调整过的原点位置
-     */
-    private boolean initialized = false;
-    // 当前鼠标附近的特殊点(用于视觉反馈)
-    private SpecialPoint nearbySpecialPoint = null;
+    private WorldObject hoverObject;
+
     private Runnable onTransformChanged;
-    // 轴向吸附状态(用于视觉反馈)
-    private SnapCalculator.AxisSnapInfo axisSnapInfo = null;
+
     /**
-     * 是否显示吸附辅助线(默认false,只在绘制模式下显示)
+     * 初始化状态标志: 首次布局时只居中一次
      */
-    private boolean showSnapGuideLines = false;
-    // 画布背景颜色
-    private Color backgroundColor = Color.WHITE;
-    // 自定义默认光标
-    private Cursor customDefaultCursor = null;
-    // 重绘防抖标记：避免同帧内多次redraw()导致重复绘制
-    private boolean redrawScheduled = false;
-    private int trigFunctionCount = 0;
+    private boolean initialized;
 
+    // 监听器引用, 供 dispose() 清理
+    private javafx.beans.value.ChangeListener<Number> widthListener;
+    private javafx.beans.value.ChangeListener<Number> heightListener;
 
-    //  构造
+    private final Runnable settingsListener = () -> {
+        invalidateBackground();
+        redraw();
+    };
+
+    /**
+     * 构造函数
+     */
     public GridChartView() {
         this(new ArrayList<>());
     }
@@ -108,32 +104,27 @@ public class GridChartView extends Pane implements I18nRefreshable {
      * @param sourceView 源视图
      */
     public GridChartView(GridChartView sourceView) {
-        this(sourceView.objects);
+        this(sourceView.objects.sharedList());
     }
 
     /**
      * 构造函数(支持共享对象列表)
      *
-     * @param sharedObjects 共享的对象列表,用于多窗口同步
+     * @param sharedObjects 共享的对象列表, 用于多窗口同步
      */
-    /** 可释放的监听器引用，供 dispose() 清理 */
-    private javafx.beans.value.ChangeListener<Number> widthListener;
-    private javafx.beans.value.ChangeListener<Number> heightListener;
-    private final Runnable settingsListener = () -> {
-        invalidateBackground();
-        redraw();
-    };
-
     public GridChartView(List<WorldObject> sharedObjects) {
-        this.objects = sharedObjects;
-        this.objectsView = Collections.unmodifiableList(objects);
+        this.objects = new ObjectCollection(sharedObjects);
+        this.renderer = new ViewRenderer(canvasManager, new BackgroundBuffer(),
+                new CoordSystemRenderer(), transform, settings, objects::get);
+
         snapCalculator = new SnapCalculator(settings, transform, this);
-        tooltipManager = new HoverTooltipManager(this, snapCalculator, transform, () -> objects, this::redrawInteraction);
+        tooltipManager = new HoverTooltipManager(this, snapCalculator, transform,
+                objects::get, this::redrawInteraction);
 
         canvasManager.bindToPane(this);
         canvasManager.bindSize(this);
 
-        // 点击涟漪覆盖层：置于三层画布之上，mouseTransparent 不拦截事件
+        // 点击涟漪覆盖层: 置于三层画布之上, mouseTransparent 不拦截事件
         clickRippleEffect = new ClickRippleEffect(this);
         getChildren().add(clickRippleEffect.getCanvas());
 
@@ -153,14 +144,12 @@ public class GridChartView extends Pane implements I18nRefreshable {
 
         redraw();
 
-        // 网格和坐标轴由 CoordSystemRenderer 在 redrawBackground 中统一绘制
-
         applySettingsToTransform();
 
-        // 注册设置变更监听器：任何视觉设置变更后自动标脏背景缓存
+        // 注册设置变更监听器: 任何视觉设置变更后自动标脏背景缓存
         settings.addSettingsChangeListener(settingsListener);
 
-        setCustomCursorForPane(this, "/icon/mouseStyle.png");
+        cursor.install(this, "/icon/mouseStyle.png");
 
         tooltipManager.install(this);
     }
@@ -169,13 +158,17 @@ public class GridChartView extends Pane implements I18nRefreshable {
         return onTransformChanged;
     }
 
-    // 回掉接口
-    public void setOnTransformChanged(Runnable runable) {
-        this.onTransformChanged = runable;
+    /**
+     * 设置变换变化回调
+     *
+     * @param runnable 回调
+     */
+    public void setOnTransformChanged(Runnable runnable) {
+        this.onTransformChanged = runnable;
     }
 
     /**
-     * 布局子节点方法 - 在JavaFX布局系统中自动调用
+     * JavaFX 布局回调: 首次拿到非零尺寸时把世界原点居中
      */
     @Override
     protected void layoutChildren() {
@@ -189,6 +182,7 @@ public class GridChartView extends Pane implements I18nRefreshable {
     }
 
     //  坐标变换
+
     public double worldToScreenX(double x) {
         return transform.worldToScreenX(x);
     }
@@ -205,10 +199,8 @@ public class GridChartView extends Pane implements I18nRefreshable {
         return transform.screenToWorldY(y);
     }
 
-    //  重绘
-
     /**
-     * 保证窗口尺寸变化时,视图中心的世界点不发生跳变
+     * 窗口尺寸变化时保持视图中心的世界点不跳变
      */
     private void updateOffsetFromCenterWorld() {
         double centerWorldX = transform.screenToWorldX(getWidth() / 2);
@@ -217,7 +209,7 @@ public class GridChartView extends Pane implements I18nRefreshable {
     }
 
     /**
-     * 语言切换时刷新所有文本（背景层标签 + 图形标签 + 对象层）
+     * 语言切换时刷新所有文本(背景层标签 + 图形标签 + 对象层)
      */
     @Override
     public void refreshI18n() {
@@ -226,10 +218,7 @@ public class GridChartView extends Pane implements I18nRefreshable {
     }
 
     /**
-     * 释放资源，移除所有属性监听器，防止内存泄漏
-     * <p>
-     * 在窗口关闭或视图销毁时调用。
-     * </p>
+     * 释放资源, 移除所有监听器, 防止内存泄漏
      */
     public void dispose() {
         if (widthListener != null) {
@@ -246,168 +235,63 @@ public class GridChartView extends Pane implements I18nRefreshable {
         clickRippleEffect.stop();
     }
 
+    //  重绘(委托给 ViewRenderer)
+
     /**
-     * 重绘整个画布(防抖：同帧内多次调用只触发一次实际重绘)
+     * 重绘整个画布(防抖)
      */
     public void redraw() {
-        if (redrawScheduled) {
-            return;
-        }
-        redrawScheduled = true;
-        Platform.runLater(() -> {
-            redrawScheduled = false;
-            redrawBackground();
-            redrawObjects();
-            redrawInteraction();
-        });
+        renderer.redraw();
     }
 
     /**
-     * 立即重绘(不经过防抖，用于需要同步绘制结果的场景)
+     * 立即重绘(不经过防抖)
      */
     public void redrawImmediate() {
-        redrawScheduled = false;
-        redrawBackground();
-        redrawObjects();
-        redrawInteraction();
+        renderer.redrawImmediate();
     }
 
     /**
-     * 仅重绘背景层（网格 + 坐标轴），使用离屏缓存和 CoordSystemRenderer
+     * 仅重绘背景层
      */
     public void redrawBackground() {
-        double w = canvasManager.getWidth();
-        double h = canvasManager.getHeight();
-
-        if (!backgroundBuffer.isValid(w, h)) {
-            GraphicsContext gc = backgroundBuffer.beginDraw(w, h);
-            gc.setFill(backgroundColor);
-            gc.fillRect(0, 0, w, h);
-            coordSystemRenderer.render(gc, transform, settings, w, h);
-            backgroundBuffer.endDraw();
-        }
-
-        // 统一屏幕复制（缓存命中或重绘后都执行）
-        GraphicsContext screenGc = canvasManager.getBackgroundGC();
-        screenGc.clearRect(0, 0, w, h);
-        screenGc.setFill(backgroundColor);
-        screenGc.fillRect(0, 0, w, h);
-        backgroundBuffer.copyTo(screenGc);
-    }
-
-    /**
-     * 标脏背景缓存，坐标变换或设置变更后调用
-     */
-    public void invalidateBackground() {
-        backgroundBuffer.invalidate();
+        renderer.redrawBackground();
     }
 
     /**
      * 仅重绘对象层
-     * <p>
-     * 按图层（layer）升序排列后绘制，确保高图层对象在低图层对象之上。
-     * 参考 GeoGebra 的 DrawableList —— 所有 Drawable 按 z-order 排序后遍历绘制。
      */
     public void redrawObjects() {
-        GraphicsContext gc = canvasManager.getObjectGC();
-        gc.clearRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
-
-        double w = canvasManager.getWidth();
-        double h = canvasManager.getHeight();
-
-        // 按图层排序：低 layer 先绘制（在底层），高 layer 后绘制（在上层）
-        // 复用缓冲列表，避免拖拽/悬停时每帧都分配一个新的 ArrayList
-        sortedObjectsBuffer.clear();
-        sortedObjectsBuffer.addAll(objects);
-        sortedObjectsBuffer.sort((a, b) -> Integer.compare(a.getLayer(), b.getLayer()));
-
-        for (WorldObject obj : sortedObjectsBuffer) {
-            if (obj.isVisible()) {
-                obj.paint(gc, transform, w, h);
-            }
-        }
+        renderer.redrawObjects();
     }
 
     /**
-     * 仅重绘交互层（预览、吸附提示、BoundingBox）
+     * 仅重绘交互层
      */
     public void redrawInteraction() {
-        GraphicsContext gc = canvasManager.getInteractionGC();
-        gc.clearRect(0, 0, canvasManager.getWidth(), canvasManager.getHeight());
-
-        if (boundingBoxPainter != null) {
-            boundingBoxPainter.accept(gc, transform);
-        }
-
-        if (previewPainter != null) {
-            previewPainter.accept(gc, transform);
-        }
-
-        if (nearbySpecialPoint != null) {
-            drawSpecialPointHint(gc);
-        }
-
-        if (axisSnapInfo != null) {
-            drawAxisSnapGuideLine(gc);
-        }
+        renderer.redrawInteraction();
     }
 
     /**
-     * 绘制特殊点吸附提示(高亮圈)
+     * 标脏背景缓存
      */
-    private void drawSpecialPointHint(GraphicsContext gc) {
-        double sx = transform.worldToScreenX(nearbySpecialPoint.getX());
-        double sy = transform.worldToScreenY(nearbySpecialPoint.getY());
-
-        gc.setStroke(GeometryConfig.Colors.SNAP_HINT);
-        gc.setLineWidth(2);
-        gc.setLineDashes(null);
-
-        double radius1 = 8;
-        double radius2 = 12;
-        gc.strokeOval(sx - radius1, sy - radius1, radius1 * 2, radius1 * 2);
-        gc.strokeOval(sx - radius2, sy - radius2, radius2 * 2, radius2 * 2);
-
-        gc.setFill(GeometryConfig.Colors.SNAP_HINT_FILL);
-        double centerRadius = 3;
-        gc.fillOval(sx - centerRadius, sy - centerRadius, centerRadius * 2, centerRadius * 2);
+    public void invalidateBackground() {
+        renderer.invalidateBackground();
     }
 
-    // 对象管理
-
-    /**
-     * 绘制轴向吸附辅助线
-     */
-    private void drawAxisSnapGuideLine(GraphicsContext gc) {
-        if (!showSnapGuideLines || axisSnapInfo == null) {
-            return;
-        }
-
-        gc.setStroke(GeometryConfig.Colors.SNAP_GUIDE_LINE);
-        gc.setLineWidth(1.5);
-        gc.setLineDashes(5, 5);
-
-        gc.strokeLine(axisSnapInfo.lineStartX, axisSnapInfo.lineStartY,
-                axisSnapInfo.lineEndX, axisSnapInfo.lineEndY);
-
-        gc.setLineDashes(null);
-    }
+    // 对象管理(委托给 ObjectCollection)
 
     public void addObject(WorldObject obj) {
         objects.add(obj);
         snapCalculator.invalidateSpecialPointCache();
-        incrementTrigCountIfApplicable(obj);
         updateAxisUnitTypeBasedOnFunctions();
-        notifyObjectChange();
         redraw();
     }
 
     public void removeObject(WorldObject obj) {
         objects.remove(obj);
         snapCalculator.invalidateSpecialPointCache();
-        decrementTrigCountIfApplicable(obj);
         updateAxisUnitTypeBasedOnFunctions();
-        notifyObjectChange();
         redraw();
     }
 
@@ -417,7 +301,6 @@ public class GridChartView extends Pane implements I18nRefreshable {
     public void clearAllObjects() {
         objects.clear();
         snapCalculator.invalidateSpecialPointCache();
-        trigFunctionCount = 0;
         updateAxisUnitTypeBasedOnFunctions();
         redraw();
     }
@@ -426,62 +309,38 @@ public class GridChartView extends Pane implements I18nRefreshable {
      * 获取所有图形对象的只读视图(零分配)
      */
     public List<WorldObject> getObjects() {
-        return objectsView;
+        return objects.get();
     }
 
     /**
-     * 获取所有图形对象的副本(需要修改列表时使用)
+     * 获取所有图形对象的副本
      */
     public List<WorldObject> getObjectsCopy() {
-        return new ArrayList<>(objects);
+        return objects.copy();
     }
 
     /**
-     * 根据当前对象列表中是否有三角函数来自动调整坐标轴单位类型
-     * 增量更新模式：通过计数器避免每次O(n)扫描
+     * 根据是否存在三角函数自动调整坐标轴单位标签
      */
     private void updateAxisUnitTypeBasedOnFunctions() {
-        settings.setUnitLabelType(trigFunctionCount > 0 ? UnitLabelType.PI : UnitLabelType.NUMERIC);
+        settings.setUnitLabelType(objects.hasTrigonometricFunction() ? UnitLabelType.PI : UnitLabelType.NUMERIC);
     }
-
-    private void incrementTrigCountIfApplicable(WorldObject obj) {
-        if (obj instanceof TrigonometricFunctionGeo) {
-            trigFunctionCount++;
-        }
-    }
-
-    private void decrementTrigCountIfApplicable(WorldObject obj) {
-        if (obj instanceof TrigonometricFunctionGeo) {
-            trigFunctionCount--;
-        }
-    }
-
-    // 监听器
 
     /**
-     * 添加对象变化监听器(观察者模式)
+     * 添加对象变化监听器
      */
     public void addObjectChangeListener(Runnable listener) {
-        objectChangeListeners.add(listener);
+        objects.addChangeListener(listener);
     }
 
     /**
      * 移除对象变化监听器
      */
     public void removeObjectChangeListener(Runnable listener) {
-        objectChangeListeners.remove(listener);
+        objects.removeChangeListener(listener);
     }
 
-    /**
-     * 通知所有监听器对象已变化
-     */
-    private void notifyObjectChange() {
-        for (Runnable listener : objectChangeListeners) {
-            listener.run();
-        }
-    }
-
-    // Hover / Snap 状态 getter/setter (供 ViewInteractionHandler 使用)
+    // 悬停与吸附状态
 
     public WorldObject getHoverObject() {
         return hoverObject;
@@ -491,37 +350,46 @@ public class GridChartView extends Pane implements I18nRefreshable {
         this.hoverObject = hoverObject;
     }
 
+    /**
+     * 获取当前特殊点吸附提示
+     */
     public SpecialPoint getNearbySpecialPoint() {
-        return nearbySpecialPoint;
+        return renderer.getNearbySpecialPoint();
     }
 
+    /**
+     * 设置特殊点吸附提示
+     */
     public void setNearbySpecialPoint(SpecialPoint nearbySpecialPoint) {
-        this.nearbySpecialPoint = nearbySpecialPoint;
+        renderer.setNearbySpecialPoint(nearbySpecialPoint);
     }
 
+    /**
+     * 获取当前轴向吸附状态
+     */
     public SnapCalculator.AxisSnapInfo getAxisSnapInfo() {
-        return axisSnapInfo;
+        return renderer.getAxisSnapInfo();
     }
 
+    /**
+     * 设置轴向吸附状态
+     */
     public void setAxisSnapInfo(SnapCalculator.AxisSnapInfo axisSnapInfo) {
-        this.axisSnapInfo = axisSnapInfo;
+        renderer.setAxisSnapInfo(axisSnapInfo);
     }
 
-    // 预览 / BoundingBox 绘制器
+    // 预览与包围盒绘制器
 
     public void setPreviewPainter(BiConsumer<GraphicsContext, WorldTransform> previewPainter) {
-        this.previewPainter = previewPainter;
+        renderer.setPreviewPainter(previewPainter);
     }
 
     public void setBoundingBoxPainter(BiConsumer<GraphicsContext, WorldTransform> boundingBoxPainter) {
-        this.boundingBoxPainter = boundingBoxPainter;
+        renderer.setBoundingBoxPainter(boundingBoxPainter);
     }
 
     // 视图配置
 
-    /**
-     * 获取视图配置
-     */
     public EuclidianViewSettings getSettings() {
         return settings;
     }
@@ -536,13 +404,13 @@ public class GridChartView extends Pane implements I18nRefreshable {
     }
 
     /**
-     * 将配置同步到 Transform
+     * 将配置同步到坐标变换
      */
     private void applySettingsToTransform() {
         transform.setScaleX(settings.getXScale());
         transform.setScaleY(settings.getYScale());
 
-        // 极坐标系统要求 X/Y 轴比例锁定为 1:1，确保极轴保持水平
+        // 极坐标要求 X/Y 轴比例锁定为 1:1, 确保极轴保持水平
         if (settings.getGridType() == GridType.POLAR) {
             double avgScale = (transform.getScaleX() + transform.getScaleY()) / 2;
             transform.setScaleX(avgScale);
@@ -578,11 +446,11 @@ public class GridChartView extends Pane implements I18nRefreshable {
     // 背景颜色
 
     public Color getBackgroundColor() {
-        return backgroundColor;
+        return renderer.getBackgroundColor();
     }
 
     public void setBackgroundColor(Color color) {
-        this.backgroundColor = color;
+        renderer.setBackgroundColor(color);
         invalidateBackground();
         redraw();
     }
@@ -591,22 +459,22 @@ public class GridChartView extends Pane implements I18nRefreshable {
      * 设置是否显示吸附辅助线
      */
     public void setShowSnapGuideLines(boolean show) {
-        this.showSnapGuideLines = show;
+        renderer.setShowSnapGuideLines(show);
     }
 
     // 点击涟漪
 
     /**
-     * 在指定屏幕坐标生成点击涟漪（由 {@link RippleHandler} 调用）
+     * 在指定屏幕坐标生成点击涟漪(由 RippleHandler 调用)
      *
-     * @param screenX 屏幕 X 坐标（相对画布）
-     * @param screenY 屏幕 Y 坐标（相对画布）
+     * @param screenX 屏幕 X 坐标(相对画布)
+     * @param screenY 屏幕 Y 坐标(相对画布)
      */
     public void spawnClickRipple(double screenX, double screenY) {
         clickRippleEffect.spawn(screenX, screenY);
     }
 
-    // 视口控制 (委托给 ViewportController)
+    // 视口控制(委托给 ViewportController)
 
     /**
      * 停止正在进行的缩放动画
@@ -633,26 +501,10 @@ public class GridChartView extends Pane implements I18nRefreshable {
 
     // 光标
 
-    private void setCustomCursorForPane(Pane pane, String imagePath) {
-        URL url = getClass().getResource(imagePath);
-        if (url == null) {
-            pane.setCursor(Cursor.HAND);
-            customDefaultCursor = Cursor.HAND;
-            return;
-        }
-
-        Image cursorImage = new Image(url.toExternalForm());
-        Cursor customCursor = new ImageCursor(cursorImage, 0, 0);
-        customDefaultCursor = customCursor;
-
-        pane.setOnMouseEntered(e -> pane.setCursor(customCursor));
-        pane.setOnMouseExited(e -> pane.setCursor(customCursor));
-    }
-
     /**
-     * 获取默认的自定义光标
+     * 获取默认光标
      */
     public Cursor getDefaultCursor() {
-        return customDefaultCursor != null ? customDefaultCursor : Cursor.DEFAULT;
+        return cursor.getDefaultCursor();
     }
 }
