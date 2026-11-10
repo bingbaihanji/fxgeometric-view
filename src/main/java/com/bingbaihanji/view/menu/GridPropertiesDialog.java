@@ -3,7 +3,7 @@ package com.bingbaihanji.view.menu;
 import com.bingbaihanji.constant.GridType;
 import com.bingbaihanji.constant.LineType;
 import com.bingbaihanji.util.FxTools;
-import com.bingbaihanji.util.I18nUtil;
+import com.bingbaihanji.i18n.I18nUtil;
 import com.bingbaihanji.view.layout.core.EuclidianViewSettings;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;

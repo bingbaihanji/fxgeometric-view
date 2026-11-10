@@ -1,4 +1,4 @@
-package com.bingbaihanji.util;
+package com.bingbaihanji.i18n;
 
 import java.text.MessageFormat;
 import java.util.Arrays;

@@ -4,7 +4,7 @@ import com.bingbaihanji.constant.GridMode;
 import com.bingbaihanji.constant.GridType;
 import com.bingbaihanji.controller.DrawingController;
 import com.bingbaihanji.util.CommandHistory;
-import com.bingbaihanji.util.I18nUtil;
+import com.bingbaihanji.i18n.I18nUtil;
 import com.bingbaihanji.view.DetachedCanvasWindow;
 import com.bingbaihanji.view.layout.core.GridChartView;
 import javafx.scene.control.*;

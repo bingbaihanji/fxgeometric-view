@@ -3,7 +3,7 @@ package com.bingbaihanji.view.menu;
 import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.controller.ConstraintUtils;
 import com.bingbaihanji.controller.DrawingController;
-import com.bingbaihanji.util.I18nUtil;
+import com.bingbaihanji.i18n.I18nUtil;
 import com.bingbaihanji.geometry.PointReuseGroup;
 import com.bingbaihanji.geometry.PointReuseManager;
 import com.bingbaihanji.view.layout.core.GridChartView;

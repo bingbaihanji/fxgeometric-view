@@ -3,8 +3,8 @@ package com.bingbaihanji.view.menu;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.bingbaihanji.util.I18nRefreshable;
-import com.bingbaihanji.util.I18nUtil;
+import com.bingbaihanji.i18n.I18nRefreshable;
+import com.bingbaihanji.i18n.I18nUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Menu;

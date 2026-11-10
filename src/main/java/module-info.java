@@ -20,6 +20,7 @@ module FXGeometricView {
     exports com.bingbaihanji;
     exports com.bingbaihanji.view;
     exports com.bingbaihanji.util;
+    exports com.bingbaihanji.i18n;
     exports com.bingbaihanji.geometry;
     exports com.bingbaihanji.view.layout.draw.tools;
     exports com.bingbaihanji.view.layout.draw.coordinate;

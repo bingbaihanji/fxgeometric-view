@@ -4,7 +4,7 @@ import com.bingbaihanji.controller.DrawingController;
 import com.bingbaihanji.io.ProjectData;
 import com.bingbaihanji.io.ProjectFileManager;
 import com.bingbaihanji.util.FxTools;
-import com.bingbaihanji.util.I18nUtil;
+import com.bingbaihanji.i18n.I18nUtil;
 import com.bingbaihanji.util.PointNameManager;
 import com.bingbaihanji.view.layout.core.GridChartView;
 import com.bingbaihanji.geometry.WorldObject;
@@ -291,7 +291,7 @@ public class InitView {
      * 设置语言变化监听器
      * <p>
      * 语言切换时仅更新窗口标题；菜单栏、工具栏、画布通过
-     * {@link com.bingbaihanji.util.I18nRefreshable} 机制自动刷新文本，
+     * {@link com.bingbaihanji.i18n.I18nRefreshable} 机制自动刷新文本，
      * 已绘制的几何图形不会丢失。
      * </p>
      */

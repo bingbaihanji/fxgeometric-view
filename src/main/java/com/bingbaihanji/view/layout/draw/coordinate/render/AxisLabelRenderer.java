@@ -1,6 +1,6 @@
 package com.bingbaihanji.view.layout.draw.coordinate.render;
 
-import com.bingbaihanji.util.I18nUtil;
+import com.bingbaihanji.i18n.I18nUtil;
 import com.bingbaihanji.view.layout.core.EuclidianViewSettings;
 import com.bingbaihanji.geometry.WorldTransform;
 import javafx.scene.canvas.GraphicsContext;

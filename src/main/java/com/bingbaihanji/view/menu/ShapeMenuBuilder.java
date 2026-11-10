@@ -1,7 +1,7 @@
 package com.bingbaihanji.view.menu;
 
 import com.bingbaihanji.controller.DrawingController;
-import com.bingbaihanji.util.I18nUtil;
+import com.bingbaihanji.i18n.I18nUtil;
 import com.bingbaihanji.view.layout.core.GridChartView;
 import com.bingbaihanji.geometry.WorldObject;
 import javafx.scene.control.ContextMenu;

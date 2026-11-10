@@ -1,7 +1,7 @@
 package com.bingbaihanji.view.menu;
 
 import com.bingbaihanji.util.FxTools;
-import com.bingbaihanji.util.I18nUtil;
+import com.bingbaihanji.i18n.I18nUtil;
 import com.bingbaihanji.util.StyleManager;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

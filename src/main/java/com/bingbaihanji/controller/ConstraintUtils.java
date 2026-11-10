@@ -1,6 +1,6 @@
 package com.bingbaihanji.controller;
 
-import com.bingbaihanji.util.I18nUtil;
+import com.bingbaihanji.i18n.I18nUtil;
 import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.geometry.constraint.PointConstraint;
 import com.bingbaihanji.view.layout.core.GridChartView;

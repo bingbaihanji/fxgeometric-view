@@ -1,4 +1,4 @@
-package com.bingbaihanji.util;
+package com.bingbaihanji.i18n;
 
 /**
  * 国际化可刷新接口

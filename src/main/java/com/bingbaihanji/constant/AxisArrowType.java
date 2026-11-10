@@ -1,6 +1,6 @@
 package com.bingbaihanji.constant;
 
-import com.bingbaihanji.util.I18nUtil;
+import com.bingbaihanji.i18n.I18nUtil;
 
 /**
  * 坐标轴箭头类型枚举

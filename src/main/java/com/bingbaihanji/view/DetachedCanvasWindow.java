@@ -3,7 +3,7 @@ package com.bingbaihanji.view;
 import com.bingbaihanji.controller.DrawingController;
 import com.bingbaihanji.util.CommandHistory;
 import com.bingbaihanji.util.FxTools;
-import com.bingbaihanji.util.I18nUtil;
+import com.bingbaihanji.i18n.I18nUtil;
 import com.bingbaihanji.view.layout.core.GridChartView;
 import com.bingbaihanji.view.layout.pane.ShapeToolPane;
 import javafx.application.Platform;

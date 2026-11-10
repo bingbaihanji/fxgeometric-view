@@ -6,7 +6,7 @@ import com.bingbaihanji.constant.DrawingState;
 import com.bingbaihanji.controller.IDrawingContext;
 import com.bingbaihanji.util.CommandHistory;
 import com.bingbaihanji.util.FxTools;
-import com.bingbaihanji.util.I18nUtil;
+import com.bingbaihanji.i18n.I18nUtil;
 import com.bingbaihanji.geometry.WorldObject;
 import com.bingbaihanji.geometry.impl.PointGeo;
 import javafx.geometry.Insets;

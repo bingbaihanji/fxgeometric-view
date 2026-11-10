@@ -1,6 +1,6 @@
 package com.bingbaihanji.constant;
 
-import com.bingbaihanji.util.I18nUtil;
+import com.bingbaihanji.i18n.I18nUtil;
 
 /**
  * 网格类型枚举

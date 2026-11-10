@@ -1,4 +1,4 @@
-package com.bingbaihanji.util;
+package com.bingbaihanji.i18n;
 
 import java.io.File;
 import java.io.FileInputStream;
