@@ -50,5 +50,6 @@ support      util / constant / model / config / i18n / io / factory
 - `GridChartView.painters` 扩展点: 无实现者, 已删除。
 - `PreviewManager`(636 行): 两套预览机制已合并, 所有预览由各 Handler 在 `paintPreview` 中自绘。
 - `AbstractWorldObject` 的 14 个样式字段: 已收敛为 `geometry.style.ShapeStyle` 与 `LabelStyle`, 取值校验随之集中。
+- `GeometryData` 的 42 个 default 实现: 与基类重复, 已改为纯声明, 默认值只由基类与样式对象决定。
 - `SnapCalculator`: 从 controller 迁入 `view.layout.core`。
 - 动作型右键菜单 / 组合根: 分别迁入 `controller.menu` 与基包 `com.bingbaihanji`。

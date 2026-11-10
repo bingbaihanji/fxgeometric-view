@@ -1,6 +1,5 @@
 package com.bingbaihanji.geometry;
 
-import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.FillType;
 import com.bingbaihanji.constant.LabelPosition;
 import com.bingbaihanji.constant.LineType;
@@ -9,8 +8,11 @@ import javafx.scene.paint.Color;
 /**
  * 几何数据接口
  * <p>
- * 定义几何对象的所有数据属性(getter/setter)，
- * 与行为接口({@link WorldPainter})分离，便于序列化、属性编辑等场景使用
+ * 定义几何对象的所有数据属性(getter/setter),
+ * 与行为接口({@link WorldPainter})分离, 便于序列化, 属性编辑等场景使用.
+ * <p>
+ * 这里只声明契约, 不提供默认实现: 默认值统一由 {@code AbstractWorldObject}
+ * 及其样式对象(ShapeStyle/LabelStyle)决定, 避免两处默认值各自漂移.
  *
  * @author bingbaihanji
  * @date 2026-05-22
@@ -19,162 +21,228 @@ public interface GeometryData {
 
     // === 标识 ===
 
+    /**
+     * 对象唯一 ID
+     */
     long getId();
 
     // === 标签 ===
 
-    default String getLabel() {
-        return "";
-    }
+    /**
+     * 获取标签文本
+     */
+    String getLabel();
 
-    default void setLabel(String label) {
-    }
+    /**
+     * 设置标签文本
+     */
+    void setLabel(String label);
 
-    default boolean isLabelVisible() {
-        return true;
-    }
+    /**
+     * 标签是否可见
+     */
+    boolean isLabelVisible();
 
-    default void setLabelVisible(boolean visible) {
-    }
+    /**
+     * 设置标签可见性
+     */
+    void setLabelVisible(boolean visible);
 
-    default LabelPosition getLabelPosition() {
-        return LabelPosition.AUTO;
-    }
+    /**
+     * 获取标签位置
+     */
+    LabelPosition getLabelPosition();
 
-    default void setLabelPosition(LabelPosition position) {
-    }
+    /**
+     * 设置标签位置
+     */
+    void setLabelPosition(LabelPosition position);
 
-    default double getLabelFontSize() {
-        return 12.0;
-    }
+    /**
+     * 获取标签字号
+     */
+    double getLabelFontSize();
 
-    default void setLabelFontSize(double fontSize) {
-    }
+    /**
+     * 设置标签字号
+     */
+    void setLabelFontSize(double fontSize);
 
-    default Color getLabelColor() {
-        return GeometryConfig.Colors.LABEL_TEXT;
-    }
+    /**
+     * 获取标签颜色
+     */
+    Color getLabelColor();
 
-    default void setLabelColor(Color color) {
-    }
+    /**
+     * 设置标签颜色
+     */
+    void setLabelColor(Color color);
 
     // === 交互状态 ===
 
-    default boolean isHover() {
-        return false;
-    }
+    /**
+     * 是否处于悬停状态
+     */
+    boolean isHover();
 
-    default void setHover(boolean hover) {
-    }
+    /**
+     * 设置悬停状态
+     */
+    void setHover(boolean hover);
 
-    default boolean isSelected() {
-        return false;
-    }
+    /**
+     * 是否处于选中状态
+     */
+    boolean isSelected();
 
-    default void setSelected(boolean selected) {
-    }
+    /**
+     * 设置选中状态
+     */
+    void setSelected(boolean selected);
 
     // === 视觉属性 ===
 
-    default Color getColor() {
-        return GeometryConfig.Colors.LABEL_TEXT;
-    }
+    /**
+     * 获取描边颜色
+     */
+    Color getColor();
 
-    default void setColor(Color color) {
-    }
+    /**
+     * 设置描边颜色
+     */
+    void setColor(Color color);
 
-    default LineType getLineType() {
-        return LineType.FULL;
-    }
+    /**
+     * 获取线型
+     */
+    LineType getLineType();
 
-    default void setLineType(LineType lineType) {
-    }
+    /**
+     * 设置线型
+     */
+    void setLineType(LineType lineType);
 
-    default double getLineWidth() {
-        return 2.0;
-    }
+    /**
+     * 获取线宽
+     */
+    double getLineWidth();
 
-    default void setLineWidth(double lineWidth) {
-    }
+    /**
+     * 设置线宽
+     */
+    void setLineWidth(double lineWidth);
 
-    default double getOpacity() {
-        return 1.0;
-    }
+    /**
+     * 获取透明度
+     */
+    double getOpacity();
 
-    default void setOpacity(double opacity) {
-    }
+    /**
+     * 设置透明度
+     */
+    void setOpacity(double opacity);
 
-    default int getLayer() {
-        return 0;
-    }
+    /**
+     * 获取图层
+     */
+    int getLayer();
 
-    default void setLayer(int layer) {
-    }
+    /**
+     * 设置图层
+     */
+    void setLayer(int layer);
 
     // === 填充属性 ===
 
-    default FillType getFillType() {
-        return FillType.NONE;
-    }
+    /**
+     * 获取填充类型
+     */
+    FillType getFillType();
 
-    default void setFillType(FillType fillType) {
-    }
+    /**
+     * 设置填充类型
+     */
+    void setFillType(FillType fillType);
 
-    default Color getFillColor() {
-        return getColor();
-    }
+    /**
+     * 获取填充颜色
+     */
+    Color getFillColor();
 
-    default void setFillColor(Color fillColor) {
-    }
+    /**
+     * 设置填充颜色
+     */
+    void setFillColor(Color fillColor);
 
-    default double getFillOpacity() {
-        return 0.3;
-    }
+    /**
+     * 获取填充透明度
+     */
+    double getFillOpacity();
 
-    default void setFillOpacity(double fillOpacity) {
-    }
+    /**
+     * 设置填充透明度
+     */
+    void setFillOpacity(double fillOpacity);
 
-    default int getHatchAngle() {
-        return 45;
-    }
+    /**
+     * 获取填充角度
+     */
+    int getHatchAngle();
 
-    default void setHatchAngle(int angle) {
-    }
+    /**
+     * 设置填充角度
+     */
+    void setHatchAngle(int angle);
 
-    default int getHatchDistance() {
-        return 10;
-    }
+    /**
+     * 获取填充间距
+     */
+    int getHatchDistance();
 
-    default void setHatchDistance(int distance) {
-    }
+    /**
+     * 设置填充间距
+     */
+    void setHatchDistance(int distance);
 
     // === 可见性和锁定 ===
 
-    default boolean isVisible() {
-        return true;
-    }
+    /**
+     * 是否可见
+     */
+    boolean isVisible();
 
-    default void setVisible(boolean visible) {
-    }
+    /**
+     * 设置可见性
+     */
+    void setVisible(boolean visible);
 
-    default boolean isLocked() {
-        return false;
-    }
+    /**
+     * 是否锁定
+     */
+    boolean isLocked();
 
-    default void setLocked(boolean locked) {
-    }
+    /**
+     * 设置锁定状态
+     */
+    void setLocked(boolean locked);
 
-    default boolean isFixed() {
-        return false;
-    }
+    /**
+     * 是否固定
+     */
+    boolean isFixed();
 
-    default void setFixed(boolean fixed) {
-    }
+    /**
+     * 设置固定状态
+     */
+    void setFixed(boolean fixed);
 
-    default boolean isSelectable() {
-        return true;
-    }
+    /**
+     * 是否可选择
+     */
+    boolean isSelectable();
 
-    default void setSelectable(boolean selectable) {
-    }
+    /**
+     * 设置可选择状态
+     */
+    void setSelectable(boolean selectable);
 }
