@@ -11,12 +11,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author bingbaihanji
  * @description 系统设置对话框
  */
 public class SystemSettingsDialog extends Dialog<ButtonType> {
+
+    private static final Logger logger = LoggerFactory.getLogger(SystemSettingsDialog.class);
 
     private ComboBox<LanguageItem> languageComboBox;
     private Locale selectedLocale;
@@ -93,7 +97,7 @@ public class SystemSettingsDialog extends Dialog<ButtonType> {
                 languages.add(new LanguageItem(displayName, locale));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("加载语言列表失败", e);
         }
 
 
@@ -309,7 +313,7 @@ public class SystemSettingsDialog extends Dialog<ButtonType> {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("扫描 classpath 语言文件失败", e);
         }
     }
 

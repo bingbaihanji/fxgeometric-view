@@ -25,6 +25,8 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.scene.control.Button;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 图形工具面板（左侧），实现 {@link I18nRefreshable} 支持语言切换
@@ -34,6 +36,8 @@ import javafx.scene.control.Button;
  * @updated 2026-06-23 实现 I18nRefreshable，语言切换时无需重建界面
  */
 public class ShapeToolPane extends VBox implements I18nRefreshable {
+
+    private static final Logger logger = LoggerFactory.getLogger(ShapeToolPane.class);
 
     /** 组件 / Tooltip → i18n key 映射 */
     private final Map<Object, String> i18nKeyMap = new HashMap<>();
@@ -311,10 +315,10 @@ public class ShapeToolPane extends VBox implements I18nRefreshable {
                     iconView.setImage(new Image(url.toExternalForm()));
                     return iconView;
                 } else {
-                    System.err.println("Icon not found: /" + iconPath);
+                    logger.warn("Icon not found: /{}", iconPath);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("加载工具图标失败", e);
             }
         }
 
