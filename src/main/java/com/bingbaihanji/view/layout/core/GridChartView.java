@@ -37,6 +37,10 @@ public class GridChartView extends Pane implements I18nRefreshable {
     private final WorldTransform transform = new WorldTransform();
     private final List<WorldPainter> painters = new ArrayList<>();
     private final List<WorldObject> objects;
+    /**
+     * 按图层排序的绘制缓冲, 复用避免每帧分配
+     */
+    private final List<WorldObject> sortedObjectsBuffer = new ArrayList<>();
     //  视图配置
     private final EuclidianViewSettings settings = new EuclidianViewSettings();
     // 对象变化监听器列表(观察者模式)
@@ -301,10 +305,12 @@ public class GridChartView extends Pane implements I18nRefreshable {
         double h = canvasManager.getHeight();
 
         // 按图层排序：低 layer 先绘制（在底层），高 layer 后绘制（在上层）
-        List<WorldObject> sortedObjects = new ArrayList<>(objects);
-        sortedObjects.sort((a, b) -> Integer.compare(a.getLayer(), b.getLayer()));
+        // 复用缓冲列表，避免拖拽/悬停时每帧都分配一个新的 ArrayList
+        sortedObjectsBuffer.clear();
+        sortedObjectsBuffer.addAll(objects);
+        sortedObjectsBuffer.sort((a, b) -> Integer.compare(a.getLayer(), b.getLayer()));
 
-        for (WorldObject obj : sortedObjects) {
+        for (WorldObject obj : sortedObjectsBuffer) {
             if (obj.isVisible()) {
                 obj.paint(gc, transform, w, h);
             }
