@@ -93,7 +93,7 @@ public abstract class FunctionGeo extends AbstractWorldObject {
      */
     protected FunctionGeo() {
         super(ObjectType.FUNCTION);
-        setColor(StyleManager.defaultLineColor);
+        setColor(StyleManager.getDefaultLineColor());
         setLineWidth(2.0);
         setLabelVisible(true);
     }
@@ -193,11 +193,11 @@ public abstract class FunctionGeo extends AbstractWorldObject {
         gc.setGlobalAlpha(getOpacity());
 
         // 发光通道（稍宽、半透明、实线）
-        if (StyleManager.GLOW_ENABLED) {
+        if (StyleManager.isGlowEnabled()) {
             gc.save();
             LineStyleUtil.resetLineStyle(gc);
-            gc.setGlobalAlpha(getOpacity() * StyleManager.GLOW_ALPHA);
-            gc.setLineWidth(mainLineWidth + StyleManager.GLOW_WIDTH_BONUS);
+            gc.setGlobalAlpha(getOpacity() * StyleManager.getGlowAlpha());
+            gc.setLineWidth(mainLineWidth + StyleManager.getGlowWidthBonus());
             drawCurve(gc, transform);
             gc.restore();
         }

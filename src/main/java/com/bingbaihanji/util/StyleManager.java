@@ -41,13 +41,65 @@ public class StyleManager {
     public static final Color BOUNDARY_AXES_COLOR = Color.valueOf("#4287f5");
     public static final Color GRID_DOT_COLOR = Color.rgb(126, 126, 126);
     public static final Color GRID_LINE_COLOR = Color.rgb(153, 153, 153);
-    // 可配置的线条样式默认值
-    public static Color defaultLineColor = Color.LIGHTSLATEGRAY;  // 默认线条颜色
-    public static double defaultLineWidth = 0.8;                   // 默认线宽（像素）
-    // 描边发光效果（可运行时调整）
-    public static boolean GLOW_ENABLED = true;
-    public static double GLOW_ALPHA = 0.3;   // 发光透明度
-    public static double GLOW_WIDTH_BONUS = 3.2; // 发光额外线宽（像素）
+    // 可配置的线条样式默认值(由线条样式设置写入, 新建图形读取)
+    private static Color defaultLineColor = Color.LIGHTSLATEGRAY;
+    private static double defaultLineWidth = 0.8;
+    private static boolean glowEnabled = true;
+    private static double glowAlpha = 0.3;
+    private static double glowWidthBonus = 3.2;
+
+    /**
+     * 获取默认线条颜色
+     */
+    public static Color getDefaultLineColor() {
+        return defaultLineColor;
+    }
+
+    /**
+     * 获取默认线宽
+     */
+    public static double getDefaultLineWidth() {
+        return defaultLineWidth;
+    }
+
+    /**
+     * 是否启用描边发光
+     */
+    public static boolean isGlowEnabled() {
+        return glowEnabled;
+    }
+
+    /**
+     * 获取发光透明度
+     */
+    public static double getGlowAlpha() {
+        return glowAlpha;
+    }
+
+    /**
+     * 获取发光额外线宽
+     */
+    public static double getGlowWidthBonus() {
+        return glowWidthBonus;
+    }
+
+    /**
+     * 统一更新线条样式默认值
+     *
+     * @param lineColor      默认线条颜色
+     * @param lineWidth      默认线宽
+     * @param enableGlow     是否启用发光
+     * @param alpha          发光透明度
+     * @param widthBonus     发光额外线宽
+     */
+    public static void applyLineDefaults(Color lineColor, double lineWidth,
+                                         boolean enableGlow, double alpha, double widthBonus) {
+        defaultLineColor = lineColor;
+        defaultLineWidth = lineWidth;
+        glowEnabled = enableGlow;
+        glowAlpha = alpha;
+        glowWidthBonus = widthBonus;
+    }
 
     // CSS样式生成方法
 

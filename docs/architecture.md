@@ -34,7 +34,7 @@ support      util / constant / model / config / i18n / io / factory
 |---|---|---|
 | `GridChartView` 约 660 行、`DrawingController` 约 40 个公开方法 | 职责偏多, 新增功能容易继续往上堆 | 再次出现"往 GridChartView 加字段"的改动时, 先拆职责 |
 | 点击语义(`ObjectClickHandler`)无自动化覆盖 | 等价性只能靠源码对照 | 下次改动点击链路前, 先补一个用伪造 `IDrawingContext` 的 handler 级测试 |
-| 全局单例 `ConfigManager` / `PointNameManager` / `I18nContext` | 多窗口与单测隔离困难 | 做多文档窗口时改为实例注入 |
+| `ConfigManager` / `PointNameManager` / `I18nContext` 为应用级单例 | 全局状态, 单测需重置; 对本应用是合理形态 | 做多文档(每文档独立命名空间)时, 把 `PointNameManager` 改为随文档实例 |
 
 ## 已删除 / 已迁移的历史包袱
 
@@ -51,6 +51,7 @@ support      util / constant / model / config / i18n / io / factory
 - `AbstractWorldObject` 的 14 个样式字段: 已收敛为 `geometry.style.ShapeStyle` 与 `LabelStyle`, 取值校验随之集中。
 - `GeometryData` 的 42 个 default 实现: 与基类重复, 已改为纯声明, 默认值只由基类与样式对象决定。
 - 枚举内嵌文案: 5 个枚举改为只暴露 `getDisplayKey()`, 显示文案由 `view.menu.EnumComboSupport` 解析, constant 不再依赖 i18n。
+- `StyleManager` 的 5 个公开可变静态字段: 已封装为 getter + `applyLineDefaults(...)`, 消除公开可变全局状态。
 - `GridChartView` 职责拆分: 渲染调度, 对象集合, 光标分别独立成类。
 - `SnapCalculator`: 从 controller 迁入 `view.layout.core`。
 - 动作型右键菜单 / 组合根: 分别迁入 `controller.menu` 与基包 `com.bingbaihanji`。

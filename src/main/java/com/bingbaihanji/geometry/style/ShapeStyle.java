@@ -27,7 +27,7 @@ public class ShapeStyle {
     /**
      * 线宽
      */
-    private double lineWidth = StyleManager.defaultLineWidth;
+    private double lineWidth = StyleManager.getDefaultLineWidth();
 
     /**
      * 透明度 (0.0-1.0)

@@ -39,9 +39,9 @@ public class LineStyleSettingsDialog extends Dialog<LineStyleSettingsDialog.Sett
     private Label glowWidthValueLabel;
 
     public LineStyleSettingsDialog() {
-        this(StyleManager.defaultLineColor, StyleManager.defaultLineWidth,
-                StyleManager.GLOW_ENABLED, StyleManager.GLOW_ALPHA,
-                StyleManager.GLOW_WIDTH_BONUS);
+        this(StyleManager.getDefaultLineColor(), StyleManager.getDefaultLineWidth(),
+                StyleManager.isGlowEnabled(), StyleManager.getGlowAlpha(),
+                StyleManager.getGlowWidthBonus());
     }
 
     public LineStyleSettingsDialog(Color color, double lineWidth,

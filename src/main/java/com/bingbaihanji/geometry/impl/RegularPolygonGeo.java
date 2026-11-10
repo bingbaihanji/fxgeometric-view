@@ -53,7 +53,7 @@ public class RegularPolygonGeo extends AbstractWorldObject {
         this.startAngle = -Math.PI / 2;
         this.center = new ReusableCoordinate(cx, cy,
                 PointNameManager.getInstance().assignCenterName(cx, cy));
-        setColor(StyleManager.defaultLineColor);
+        setColor(StyleManager.getDefaultLineColor());
         this.cachedVertices = new ArrayList<>();
         this.vertexPoints = new ArrayList<>();
         createVertexPoints();
@@ -69,7 +69,7 @@ public class RegularPolygonGeo extends AbstractWorldObject {
         this.startAngle = -Math.PI / 2;
         this.center = new ReusableCoordinate(cx, cy,
                 autoNameCenter ? PointNameManager.getInstance().assignCenterName(cx, cy) : null);
-        setColor(StyleManager.defaultLineColor);
+        setColor(StyleManager.getDefaultLineColor());
         this.cachedVertices = new ArrayList<>();
         this.vertexPoints = new ArrayList<>();
         createVertexPoints();
@@ -94,7 +94,7 @@ public class RegularPolygonGeo extends AbstractWorldObject {
         if (centerPoint == null) {
             this.center.setName(PointNameManager.getInstance().assignCenterName(cx, cy));
         }
-        setColor(StyleManager.defaultLineColor);
+        setColor(StyleManager.getDefaultLineColor());
         this.cachedVertices = new ArrayList<>();
         this.vertexPoints = new ArrayList<>();
         createVertexPoints();
@@ -237,11 +237,11 @@ public class RegularPolygonGeo extends AbstractWorldObject {
                 getHatchAngle(), getHatchDistance(), xPoints, yPoints, sideCount);
 
         // 发光通道（稍宽、半透明、实线）
-        if (StyleManager.GLOW_ENABLED) {
+        if (StyleManager.isGlowEnabled()) {
             gc.save();
             LineStyleUtil.resetLineStyle(gc);
-            gc.setGlobalAlpha(StyleManager.GLOW_ALPHA);
-            gc.setLineWidth(getEffectiveLineWidth() + StyleManager.GLOW_WIDTH_BONUS);
+            gc.setGlobalAlpha(StyleManager.getGlowAlpha());
+            gc.setLineWidth(getEffectiveLineWidth() + StyleManager.getGlowWidthBonus());
             gc.setStroke(getEffectiveColor());
             gc.strokePolygon(xPoints, yPoints, sideCount);
             gc.restore();

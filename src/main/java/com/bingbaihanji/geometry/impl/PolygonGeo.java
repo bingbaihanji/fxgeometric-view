@@ -60,7 +60,7 @@ public class PolygonGeo extends AbstractWorldObject {
         }
 
         this.vertexPoints = new ArrayList<>();
-        setColor(StyleManager.defaultLineColor);
+        setColor(StyleManager.getDefaultLineColor());
 
         // 为每个坐标创建内部顶点点对象(不显示名称,作为多边形内部顶点)
         for (int i = 0; i < vertices.length; i += 2) {
@@ -83,7 +83,7 @@ public class PolygonGeo extends AbstractWorldObject {
         }
 
         this.vertexPoints = new ArrayList<>(pointRefs);
-        setColor(StyleManager.defaultLineColor);
+        setColor(StyleManager.getDefaultLineColor());
     }
 
     @Override
@@ -105,11 +105,11 @@ public class PolygonGeo extends AbstractWorldObject {
                 getHatchAngle(), getHatchDistance(), xPoints, yPoints, vertexPoints.size());
 
         // 发光通道（稍宽、半透明、实线）
-        if (StyleManager.GLOW_ENABLED) {
+        if (StyleManager.isGlowEnabled()) {
             gc.save();
             LineStyleUtil.resetLineStyle(gc);
-            gc.setGlobalAlpha(StyleManager.GLOW_ALPHA);
-            gc.setLineWidth(getEffectiveLineWidth() + StyleManager.GLOW_WIDTH_BONUS);
+            gc.setGlobalAlpha(StyleManager.getGlowAlpha());
+            gc.setLineWidth(getEffectiveLineWidth() + StyleManager.getGlowWidthBonus());
             gc.setStroke(getEffectiveColor());
             gc.strokePolygon(xPoints, yPoints, vertexPoints.size());
             gc.restore();

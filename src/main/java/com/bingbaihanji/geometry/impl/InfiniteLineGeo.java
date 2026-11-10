@@ -41,7 +41,7 @@ public class InfiniteLineGeo extends AbstractWorldObject {
                 autoName ? manager.assignName(point1X, point1Y) : null);
         this.point2 = new ReusableCoordinate(point2X, point2Y,
                 autoName ? manager.assignName(point2X, point2Y) : null);
-        setColor(StyleManager.defaultLineColor);
+        setColor(StyleManager.getDefaultLineColor());
     }
 
     /**
@@ -59,7 +59,7 @@ public class InfiniteLineGeo extends AbstractWorldObject {
         if (point2Ref == null) {
             this.point2.setName(manager.assignName(point2X, point2Y));
         }
-        setColor(StyleManager.defaultLineColor);
+        setColor(StyleManager.getDefaultLineColor());
     }
 
     public double getPoint1X() {
@@ -113,11 +113,11 @@ public class InfiniteLineGeo extends AbstractWorldObject {
         double[] endpoints = calculateLineScreenIntersection(sx1, sy1, sx2, sy2, w, h);
 
         // 发光通道（稍宽、半透明、实线）
-        if (StyleManager.GLOW_ENABLED) {
+        if (StyleManager.isGlowEnabled()) {
             gc.save();
             LineStyleUtil.resetLineStyle(gc);
-            gc.setGlobalAlpha(StyleManager.GLOW_ALPHA);
-            gc.setLineWidth(getEffectiveLineWidth() + StyleManager.GLOW_WIDTH_BONUS);
+            gc.setGlobalAlpha(StyleManager.getGlowAlpha());
+            gc.setLineWidth(getEffectiveLineWidth() + StyleManager.getGlowWidthBonus());
             gc.setStroke(getEffectiveColor());
             gc.strokeLine(endpoints[0], endpoints[1], endpoints[2], endpoints[3]);
             gc.restore();

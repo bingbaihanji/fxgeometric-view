@@ -49,7 +49,7 @@ public class PathGeo extends AbstractWorldObject {
             this.pathPoints.add(new Point(p.getX(), p.getY()));
         }
 
-        setColor(StyleManager.defaultLineColor);
+        setColor(StyleManager.getDefaultLineColor());
     }
 
     @Override
@@ -57,11 +57,11 @@ public class PathGeo extends AbstractWorldObject {
         if (!visible || pathPoints.size() < 2) return;
 
         // 发光通道（稍宽、半透明、实线）
-        if (StyleManager.GLOW_ENABLED) {
+        if (StyleManager.isGlowEnabled()) {
             gc.save();
             LineStyleUtil.resetLineStyle(gc);
-            gc.setGlobalAlpha(StyleManager.GLOW_ALPHA);
-            gc.setLineWidth(getEffectiveLineWidth() + StyleManager.GLOW_WIDTH_BONUS);
+            gc.setGlobalAlpha(StyleManager.getGlowAlpha());
+            gc.setLineWidth(getEffectiveLineWidth() + StyleManager.getGlowWidthBonus());
             gc.setStroke(getEffectiveColor());
             drawPath(gc, transform);
             gc.restore();

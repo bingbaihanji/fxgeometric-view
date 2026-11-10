@@ -100,11 +100,11 @@ public class AngleGeo extends AbstractWorldObject {
         double ary2 = svy + (sry2 - svy) / len2 * ARC_RADIUS;
 
         // 发光层（弧线先画，避免与射线重叠处变深）
-        if (StyleManager.GLOW_ENABLED) {
+        if (StyleManager.isGlowEnabled()) {
             gc.save();
             LineStyleUtil.resetLineStyle(gc);
-            gc.setGlobalAlpha(StyleManager.GLOW_ALPHA);
-            gc.setLineWidth(getEffectiveLineWidth() + StyleManager.GLOW_WIDTH_BONUS);
+            gc.setGlobalAlpha(StyleManager.getGlowAlpha());
+            gc.setLineWidth(getEffectiveLineWidth() + StyleManager.getGlowWidthBonus());
             gc.setStroke(getEffectiveColor());
             drawArc(gc, svx, svy, arx1, ary1, arx2, ary2);
             gc.strokeLine(svx, svy, srx1, sry1);

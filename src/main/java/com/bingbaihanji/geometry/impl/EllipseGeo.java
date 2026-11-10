@@ -57,7 +57,7 @@ public class EllipseGeo extends AbstractWorldObject {
         this.focus1 = new ReusableCoordinate(f1x, f1y, "F₁");
         this.focus2 = new ReusableCoordinate(f2x, f2y, "F₂");
         this.twoA = twoA;
-        setColor(StyleManager.defaultLineColor);
+        setColor(StyleManager.getDefaultLineColor());
     }
 
     /**
@@ -75,7 +75,7 @@ public class EllipseGeo extends AbstractWorldObject {
             this.focus2.setName("F₂");
         }
         this.twoA = twoA;
-        setColor(StyleManager.defaultLineColor);
+        setColor(StyleManager.getDefaultLineColor());
     }
 
     // ---- 访问器 ----
@@ -190,11 +190,11 @@ public class EllipseGeo extends AbstractWorldObject {
                 getHatchAngle(), getHatchDistance(), sx, sy, n);
 
         // 发光通道（稍宽、半透明、实线）
-        if (StyleManager.GLOW_ENABLED) {
+        if (StyleManager.isGlowEnabled()) {
             gc.save();
             LineStyleUtil.resetLineStyle(gc);
-            gc.setGlobalAlpha(StyleManager.GLOW_ALPHA);
-            gc.setLineWidth(getEffectiveLineWidth() + StyleManager.GLOW_WIDTH_BONUS);
+            gc.setGlobalAlpha(StyleManager.getGlowAlpha());
+            gc.setLineWidth(getEffectiveLineWidth() + StyleManager.getGlowWidthBonus());
             gc.setStroke(getEffectiveColor());
             gc.strokePolygon(sx, sy, n);
             gc.restore();
