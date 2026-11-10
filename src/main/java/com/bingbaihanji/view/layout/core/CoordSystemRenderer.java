@@ -5,6 +5,7 @@ import com.bingbaihanji.constant.GridType;
 import com.bingbaihanji.view.layout.draw.coordinate.*;
 import com.bingbaihanji.view.layout.draw.coordinate.grid.GridElement;
 import com.bingbaihanji.view.layout.draw.coordinate.render.*;
+import com.bingbaihanji.geometry.WorldTransform;
 import javafx.scene.canvas.GraphicsContext;
 
 import java.util.List;

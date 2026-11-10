@@ -4,7 +4,7 @@ import com.bingbaihanji.constant.AxisTickStyle;
 import com.bingbaihanji.constant.GridType;
 import com.bingbaihanji.util.AxisTickCalculator;
 import com.bingbaihanji.view.layout.core.EuclidianViewSettings;
-import com.bingbaihanji.view.layout.core.WorldTransform;
+import com.bingbaihanji.geometry.WorldTransform;
 import com.bingbaihanji.view.layout.draw.coordinate.grid.CartesianGridGenerator;
 import com.bingbaihanji.view.layout.draw.coordinate.grid.DotGridGenerator;
 import com.bingbaihanji.view.layout.draw.coordinate.grid.GridElement;

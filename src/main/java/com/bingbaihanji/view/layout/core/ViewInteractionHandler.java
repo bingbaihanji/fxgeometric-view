@@ -1,6 +1,7 @@
 package com.bingbaihanji.view.layout.core;
 
 import com.bingbaihanji.controller.SnapCalculator;
+import com.bingbaihanji.geometry.WorldTransform;
 
 /**
  * 视图交互处理器(协调器)

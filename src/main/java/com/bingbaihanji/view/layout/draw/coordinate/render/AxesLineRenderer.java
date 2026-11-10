@@ -4,7 +4,7 @@ import com.bingbaihanji.constant.AxisArrowType;
 import com.bingbaihanji.util.LineStyleUtil;
 import com.bingbaihanji.util.StyleManager;
 import com.bingbaihanji.view.layout.core.EuclidianViewSettings;
-import com.bingbaihanji.view.layout.core.WorldTransform;
+import com.bingbaihanji.geometry.WorldTransform;
 import javafx.scene.canvas.GraphicsContext;
 
 /**

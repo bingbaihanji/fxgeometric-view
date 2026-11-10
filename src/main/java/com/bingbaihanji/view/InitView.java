@@ -7,7 +7,7 @@ import com.bingbaihanji.util.FxTools;
 import com.bingbaihanji.util.I18nUtil;
 import com.bingbaihanji.util.PointNameManager;
 import com.bingbaihanji.view.layout.core.GridChartView;
-import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
+import com.bingbaihanji.geometry.WorldObject;
 import com.bingbaihanji.view.layout.pane.ShapeToolPane;
 import com.bingbaihanji.view.menu.MenuEvent;
 import com.bingbaihanji.view.menu.MenuView;

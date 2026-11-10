@@ -1,7 +1,7 @@
 package com.bingbaihanji.view.layout.draw.coordinate.grid;
 
 import com.bingbaihanji.view.layout.core.EuclidianViewSettings;
-import com.bingbaihanji.view.layout.core.WorldTransform;
+import com.bingbaihanji.geometry.WorldTransform;
 import javafx.geometry.Point2D;
 
 import java.util.ArrayList;

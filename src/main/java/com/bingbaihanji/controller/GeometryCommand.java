@@ -1,8 +1,8 @@
 package com.bingbaihanji.controller;
 
 import com.bingbaihanji.util.CommandHistory;
-import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
-import com.bingbaihanji.view.layout.draw.geometry.impl.PointGeo;
+import com.bingbaihanji.geometry.WorldObject;
+import com.bingbaihanji.geometry.impl.PointGeo;
 
 import java.util.List;
 

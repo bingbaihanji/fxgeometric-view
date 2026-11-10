@@ -9,8 +9,8 @@ import com.bingbaihanji.controller.handler.SnappingHandler;
 import com.bingbaihanji.util.CommandHistory;
 import com.bingbaihanji.util.CursorManager;
 import com.bingbaihanji.view.layout.core.GridChartView;
-import com.bingbaihanji.view.layout.core.WorldTransform;
-import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
+import com.bingbaihanji.geometry.WorldTransform;
+import com.bingbaihanji.geometry.WorldObject;
 
 import java.util.List;
 

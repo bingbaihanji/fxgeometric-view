@@ -4,7 +4,7 @@ import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.controller.IDrawingContext;
 import com.bingbaihanji.model.FunctionInputResult;
 import com.bingbaihanji.util.CommandHistory;
-import com.bingbaihanji.view.layout.draw.geometry.impl.FunctionGeo;
+import com.bingbaihanji.geometry.impl.FunctionGeo;
 import com.bingbaihanji.view.menu.FunctionInputDialog;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;

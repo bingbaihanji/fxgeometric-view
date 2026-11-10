@@ -5,7 +5,7 @@ import com.bingbaihanji.constant.FunctionType;
 import com.bingbaihanji.model.FunctionInputResult;
 import com.bingbaihanji.util.FxTools;
 import com.bingbaihanji.util.I18nUtil;
-import com.bingbaihanji.view.layout.core.WorldTransform;
+import com.bingbaihanji.geometry.WorldTransform;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -263,7 +263,7 @@ public class FunctionInputDialog extends Dialog<FunctionInputResult> {
             // 自定义表达式类型单独处理
             if (type == FunctionType.CUSTOM) {
                 String expr = customExpressionField == null ? "" : customExpressionField.getText().trim();
-                String error = com.bingbaihanji.view.layout.draw.geometry.impl.CustomFunctionGeo.validate(expr);
+                String error = com.bingbaihanji.geometry.impl.CustomFunctionGeo.validate(expr);
                 if (error != null) {
                     showError(error);
                     return null;
@@ -387,7 +387,7 @@ public class FunctionInputDialog extends Dialog<FunctionInputResult> {
         try {
             var result = buildResultSilent();
             if (result == null) return;
-            com.bingbaihanji.view.layout.draw.geometry.impl.FunctionGeo f = com.bingbaihanji.factory.FunctionFactory.createFunction(result);
+            com.bingbaihanji.geometry.impl.FunctionGeo f = com.bingbaihanji.factory.FunctionFactory.createFunction(result);
             if (!result.autoRange()) {
                 f.setDomainRange(result.domainMin(), result.domainMax());
             }
@@ -418,7 +418,7 @@ public class FunctionInputDialog extends Dialog<FunctionInputResult> {
 
             if (type == FunctionType.CUSTOM) {
                 String expr = customExpressionField == null ? "" : customExpressionField.getText().trim();
-                String error = com.bingbaihanji.view.layout.draw.geometry.impl.CustomFunctionGeo.validate(expr);
+                String error = com.bingbaihanji.geometry.impl.CustomFunctionGeo.validate(expr);
                 if (error != null) return null;
                 return new FunctionInputResult(type, new java.util.HashMap<>(), domainMin, domainMax, autoRange, expr);
             }

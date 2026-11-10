@@ -1,6 +1,6 @@
 package com.bingbaihanji.controller;
 
-import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
+import com.bingbaihanji.geometry.WorldObject;
 
 import java.util.List;
 

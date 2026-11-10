@@ -3,7 +3,7 @@ package com.bingbaihanji.view.menu;
 import com.bingbaihanji.controller.DrawingController;
 import com.bingbaihanji.util.I18nUtil;
 import com.bingbaihanji.view.layout.core.GridChartView;
-import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
+import com.bingbaihanji.geometry.WorldObject;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;

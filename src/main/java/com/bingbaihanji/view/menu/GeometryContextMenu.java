@@ -3,8 +3,8 @@ package com.bingbaihanji.view.menu;
 import com.bingbaihanji.controller.DrawingController;
 import com.bingbaihanji.view.DetachedCanvasWindow;
 import com.bingbaihanji.view.layout.core.GridChartView;
-import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
-import com.bingbaihanji.view.layout.draw.geometry.impl.PointGeo;
+import com.bingbaihanji.geometry.WorldObject;
+import com.bingbaihanji.geometry.impl.PointGeo;
 import javafx.scene.control.ContextMenu;
 
 /**

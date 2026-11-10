@@ -2,7 +2,8 @@ package com.bingbaihanji.view.layout.core;
 
 import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.controller.SnapCalculator;
-import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
+import com.bingbaihanji.geometry.WorldObject;
+import com.bingbaihanji.geometry.WorldTransform;
 import javafx.scene.input.MouseEvent;
 
 import java.util.List;

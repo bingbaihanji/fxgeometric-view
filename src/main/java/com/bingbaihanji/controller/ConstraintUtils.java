@@ -2,10 +2,10 @@ package com.bingbaihanji.controller;
 
 import com.bingbaihanji.util.I18nUtil;
 import com.bingbaihanji.util.MathCalculationUtils;
-import com.bingbaihanji.util.constraint.PointConstraint;
+import com.bingbaihanji.geometry.constraint.PointConstraint;
 import com.bingbaihanji.view.layout.core.GridChartView;
-import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
-import com.bingbaihanji.view.layout.draw.geometry.impl.*;
+import com.bingbaihanji.geometry.WorldObject;
+import com.bingbaihanji.geometry.impl.*;
 import javafx.scene.control.Alert;
 
 import java.util.ArrayList;

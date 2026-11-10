@@ -3,6 +3,7 @@ package com.bingbaihanji.view.menu;
 import com.bingbaihanji.constant.GridType;
 import com.bingbaihanji.util.FxTools;
 import com.bingbaihanji.view.layout.core.GridChartView;
+import com.bingbaihanji.util.StyleManager;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.stage.Stage;

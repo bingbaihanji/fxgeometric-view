@@ -3,13 +3,13 @@ package com.bingbaihanji.controller.handler;
 import com.bingbaihanji.constant.GridType;
 import com.bingbaihanji.controller.IDrawingContext;
 import com.bingbaihanji.util.AxisTickCalculator;
-import com.bingbaihanji.util.EdgeSnapManager;
-import com.bingbaihanji.util.SpecialPointManager;
-import com.bingbaihanji.util.SpecialPointManager.SpecialPoint;
+import com.bingbaihanji.geometry.EdgeSnapManager;
+import com.bingbaihanji.geometry.SpecialPointManager;
+import com.bingbaihanji.geometry.SpecialPointManager.SpecialPoint;
 import com.bingbaihanji.view.layout.core.EuclidianViewSettings;
-import com.bingbaihanji.view.layout.core.WorldTransform;
+import com.bingbaihanji.geometry.WorldTransform;
 import com.bingbaihanji.view.layout.draw.coordinate.grid.CartesianGridGenerator;
-import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
+import com.bingbaihanji.geometry.WorldObject;
 
 import java.util.List;
 

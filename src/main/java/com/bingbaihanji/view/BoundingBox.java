@@ -1,8 +1,8 @@
 package com.bingbaihanji.view;
 
 import com.bingbaihanji.config.GeometryConfig;
-import com.bingbaihanji.view.layout.core.WorldTransform;
-import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
+import com.bingbaihanji.geometry.WorldTransform;
+import com.bingbaihanji.geometry.WorldObject;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 

@@ -2,9 +2,9 @@ package com.bingbaihanji.controller.handler;
 
 import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.controller.IDrawingContext;
-import com.bingbaihanji.util.visitor.IntersectionVisitor;
-import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
-import com.bingbaihanji.view.layout.draw.geometry.impl.PointGeo;
+import com.bingbaihanji.geometry.visitor.IntersectionVisitor;
+import com.bingbaihanji.geometry.WorldObject;
+import com.bingbaihanji.geometry.impl.PointGeo;
 import javafx.geometry.Point2D;
 
 import java.util.*;

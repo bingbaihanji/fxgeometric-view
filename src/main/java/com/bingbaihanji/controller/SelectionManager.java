@@ -2,7 +2,7 @@ package com.bingbaihanji.controller;
 
 import com.bingbaihanji.constant.ObjectType;
 import com.bingbaihanji.util.MathCalculationUtils;
-import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
+import com.bingbaihanji.geometry.WorldObject;
 
 import java.util.ArrayList;
 import java.util.Collections;

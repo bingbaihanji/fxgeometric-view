@@ -2,7 +2,7 @@ package com.bingbaihanji.view.layout.draw.coordinate;
 
 import com.bingbaihanji.util.AxisTickCalculator;
 import com.bingbaihanji.view.layout.core.EuclidianViewSettings;
-import com.bingbaihanji.view.layout.core.WorldTransform;
+import com.bingbaihanji.geometry.WorldTransform;
 import com.bingbaihanji.view.layout.draw.coordinate.grid.GridElement;
 import com.bingbaihanji.view.layout.draw.coordinate.grid.IsometricGridGenerator;
 

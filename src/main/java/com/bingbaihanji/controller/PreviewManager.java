@@ -1,7 +1,7 @@
 package com.bingbaihanji.controller;
 
 import com.bingbaihanji.config.GeometryConfig;
-import com.bingbaihanji.view.layout.core.WorldTransform;
+import com.bingbaihanji.geometry.WorldTransform;
 import javafx.scene.canvas.GraphicsContext;
 
 import java.util.ArrayList;

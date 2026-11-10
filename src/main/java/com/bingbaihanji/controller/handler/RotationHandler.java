@@ -7,8 +7,8 @@ import com.bingbaihanji.controller.IDrawingContext;
 import com.bingbaihanji.util.CommandHistory;
 import com.bingbaihanji.util.FxTools;
 import com.bingbaihanji.util.I18nUtil;
-import com.bingbaihanji.view.layout.draw.geometry.WorldObject;
-import com.bingbaihanji.view.layout.draw.geometry.impl.PointGeo;
+import com.bingbaihanji.geometry.WorldObject;
+import com.bingbaihanji.geometry.impl.PointGeo;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
@@ -83,7 +83,7 @@ public class RotationHandler extends AbstractDrawingHandler {
     }
 
     @Override
-    public void paintPreview(javafx.scene.canvas.GraphicsContext gc, com.bingbaihanji.view.layout.core.WorldTransform transform, IDrawingContext context) {
+    public void paintPreview(javafx.scene.canvas.GraphicsContext gc, com.bingbaihanji.geometry.WorldTransform transform, IDrawingContext context) {
         if (!canHandle(context.getDrawMode())) {
             return;
         }
