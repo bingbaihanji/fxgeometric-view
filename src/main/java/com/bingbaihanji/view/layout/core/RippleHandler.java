@@ -7,7 +7,7 @@ import javafx.scene.input.MouseEvent;
  * 点击涟漪处理器
  * <p>
  * 鼠标左键按下时在点击位置生成涟漪动效。
- * 纯视觉反馈，绘制模式下同样生效，与 {@link ClickHandler} 的语义分派互不影响。
+ * 纯视觉反馈, 绘制模式下同样生效, 与控制器层的点击语义分派互不影响.
  *
  * @author bingbaihanji
  * @date 2026-11-02
