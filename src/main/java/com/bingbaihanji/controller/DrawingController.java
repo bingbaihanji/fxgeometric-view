@@ -2,7 +2,20 @@ package com.bingbaihanji.controller;
 
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.constant.DrawingState;
-import com.bingbaihanji.controller.handler.*;
+import com.bingbaihanji.controller.handler.BasicShapeHandler;
+import com.bingbaihanji.controller.handler.ConstraintHandler;
+import com.bingbaihanji.controller.handler.ConstructionToolHandler;
+import com.bingbaihanji.controller.handler.DragHandler;
+import com.bingbaihanji.controller.handler.DrawingHandler;
+import com.bingbaihanji.controller.handler.FreehandHandler;
+import com.bingbaihanji.controller.handler.FunctionHandler;
+import com.bingbaihanji.controller.handler.IntersectionHandler;
+import com.bingbaihanji.controller.handler.ObjectClickHandler;
+import com.bingbaihanji.controller.handler.PolygonHandler;
+import com.bingbaihanji.controller.handler.RegularPolygonHandler;
+import com.bingbaihanji.controller.handler.RotationHandler;
+import com.bingbaihanji.controller.handler.SelectionHandler;
+import com.bingbaihanji.controller.handler.SnappingHandler;
 import com.bingbaihanji.model.FunctionInputResult;
 import com.bingbaihanji.util.CommandHistory;
 import com.bingbaihanji.util.PointNameManager;
@@ -41,6 +54,11 @@ public class DrawingController {
     private final MenuController menuController;
     private final LayerController layerController;
 
+    /**
+     * 正多边形处理器, 供菜单直接调用其对话框
+     */
+    private RegularPolygonHandler regularPolygonHandler;
+
     public DrawingController(GridChartView gridChartPane) {
         this(gridChartPane, null);
     }
@@ -74,7 +92,8 @@ public class DrawingController {
         handlers.add(new DragHandler());
         handlers.add(new FreehandHandler());
         handlers.add(new BasicShapeHandler());
-        handlers.add(new RegularPolygonHandler());
+        regularPolygonHandler = new RegularPolygonHandler();
+        handlers.add(regularPolygonHandler);
         handlers.add(new PolygonHandler());
         handlers.add(new ConstructionToolHandler());
         handlers.add(new RotationHandler());
@@ -93,52 +112,67 @@ public class DrawingController {
         pane.setOnMouseReleased(this::handleMouseReleased);
     }
 
+    /**
+     * 鼠标事件分派动作
+     */
+    @FunctionalInterface
+    private interface MouseEventAction {
+
+        /**
+         * 把事件交给指定的 Handler 方法
+         *
+         * @param handler 目标 Handler
+         * @param event   鼠标事件
+         * @param context 绘制上下文
+         * @return true 表示已处理
+         */
+        boolean handle(DrawingHandler handler, MouseEvent event, IDrawingContext context);
+    }
+
+    /**
+     * 按注册顺序把事件交给第一个能处理当前绘制模式的 Handler
+     *
+     * @param event  鼠标事件
+     * @param action 分派动作
+     */
+    private void dispatch(MouseEvent event, MouseEventAction action) {
+        try {
+            for (DrawingHandler handler : handlers) {
+                if (handler.canHandle(context.getDrawMode()) && action.handle(handler, event, context)) {
+                    return;
+                }
+            }
+        } catch (Exception ex) {
+            logger.error("分发鼠标事件时发生错误", ex);
+        }
+    }
+
+    /**
+     * 分派鼠标点击事件
+     */
     public void handleMouseClicked(MouseEvent e) {
-        try {
-            for (DrawingHandler handler : handlers) {
-                if (handler.canHandle(context.getDrawMode()) && handler.handleMouseClicked(e, context)) {
-                    break;
-                }
-            }
-        } catch (Exception ex) {
-            logger.error("处理鼠标点击事件时发生错误", ex);
-        }
+        dispatch(e, DrawingHandler::handleMouseClicked);
     }
 
+    /**
+     * 分派鼠标移动事件
+     */
     public void handleMouseMoved(MouseEvent e) {
-        try {
-            for (DrawingHandler handler : handlers) {
-                if (handler.canHandle(context.getDrawMode()) && handler.handleMouseMoved(e, context)) {
-                    break;
-                }
-            }
-        } catch (Exception ex) {
-            logger.error("处理鼠标移动事件时发生错误", ex);
-        }
+        dispatch(e, DrawingHandler::handleMouseMoved);
     }
 
+    /**
+     * 分派鼠标按下事件
+     */
     public void handleMousePressed(MouseEvent e) {
-        try {
-            for (DrawingHandler handler : handlers) {
-                if (handler.canHandle(context.getDrawMode()) && handler.handleMousePressed(e, context)) {
-                    break;
-                }
-            }
-        } catch (Exception ex) {
-            logger.error("处理鼠标按下事件时发生错误", ex);
-        }
+        dispatch(e, DrawingHandler::handleMousePressed);
     }
 
+    /**
+     * 分派鼠标拖动事件
+     */
     public void handleMouseDragged(MouseEvent e) {
-        try {
-            for (DrawingHandler handler : handlers) {
-                if (handler.canHandle(context.getDrawMode()) && handler.handleMouseDragged(e, context)) {
-                    break;
-                }
-            }
-        } catch (Exception ex) {
-            logger.error("处理鼠标拖动事件时发生错误", ex);
-        }
+        dispatch(e, DrawingHandler::handleMouseDragged);
     }
 
     /**
@@ -155,16 +189,11 @@ public class DrawingController {
         return false;
     }
 
+    /**
+     * 分派鼠标释放事件
+     */
     public void handleMouseReleased(MouseEvent e) {
-        try {
-            for (DrawingHandler handler : handlers) {
-                if (handler.canHandle(context.getDrawMode()) && handler.handleMouseReleased(e, context)) {
-                    break;
-                }
-            }
-        } catch (Exception ex) {
-            logger.error("处理鼠标释放事件时发生错误", ex);
-        }
+        dispatch(e, DrawingHandler::handleMouseReleased);
     }
 
     public void paintPreview(GraphicsContext gc, WorldTransform transform) {
@@ -274,12 +303,7 @@ public class DrawingController {
     }
 
     public void showRegularPolygonDialog() {
-        for (DrawingHandler handler : handlers) {
-            if (handler instanceof com.bingbaihanji.controller.handler.RegularPolygonHandler) {
-                ((com.bingbaihanji.controller.handler.RegularPolygonHandler) handler).showSidesSelectionDialog();
-                break;
-            }
-        }
+        regularPolygonHandler.showSidesSelectionDialog();
     }
 
     public boolean canUndo() {
