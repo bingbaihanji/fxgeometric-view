@@ -4,7 +4,6 @@ import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.constant.DrawingState;
 import com.bingbaihanji.controller.IDrawingContext;
-import com.bingbaihanji.controller.PreviewManager;
 import com.bingbaihanji.controller.GeometryCommand;
 import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.geometry.PointReuseManager;
@@ -33,7 +32,23 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
     /**
      * 正多边形预览对象
      */
-    private PreviewManager.RegularPolygonPreview polygonPreview = null;
+    /**
+     * 正多边形预览是否激活
+     */
+    private boolean polygonPreviewActive;
+    /**
+     * 预览半径(世界坐标), 由中心到鼠标顶点距离决定
+     */
+    private double previewRadius;
+    /**
+     * 预览边数
+     */
+    private int previewSideCount = 6;
+    /**
+     * 预览鼠标位置(决定第一个顶点的方向)
+     */
+    private double previewMouseX;
+    private double previewMouseY;
 
     /**
      * 中心点的世界坐标
@@ -108,11 +123,11 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
         context.setCurrentMouseX(worldX);
         context.setCurrentMouseY(worldY);
 
-        // 如果在预览状态,更新预览
-        if (context.getState() == DrawingState.FIRST_CLICK && polygonPreview != null) {
-            // 鼠标位置就是第一个顶点的位置
-            // 更新正多边形预览(鼠标位置作为顶点位置)
-            polygonPreview.updatePreviewWithVertex(worldX, worldY);
+        // 如果在预览状态,更新预览(鼠标位置就是第一个顶点的位置)
+        if (context.getState() == DrawingState.FIRST_CLICK && polygonPreviewActive) {
+            previewMouseX = worldX;
+            previewMouseY = worldY;
+            previewRadius = Math.hypot(worldX - centerX, worldY - centerY);
         }
 
         // 重绘以显示预览
@@ -133,11 +148,12 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
         double scale = context.getTransform().getScale();
         centerPointRef = PointReuseManager.getExistingPointOrNull(worldX, worldY, context.getObjects(), scale);
 
-        // 创建预览对象并注册到 PreviewManager
-        polygonPreview = new PreviewManager.RegularPolygonPreview();
-        polygonPreview.setCenterPoint(centerX, centerY);
-        polygonPreview.setSideCount(selectedSides);
-        context.getPreviewManager().addPreviewable(polygonPreview);
+        // 进入预览状态
+        polygonPreviewActive = true;
+        previewSideCount = Math.max(3, Math.min(10, selectedSides));
+        previewMouseX = centerX;
+        previewMouseY = centerY;
+        previewRadius = 0;
     }
 
     /**
@@ -170,10 +186,8 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
      * 清理预览对象
      */
     private void cleanupPreview(IDrawingContext context) {
-        if (polygonPreview != null) {
-            context.getPreviewManager().removePreviewable(polygonPreview);
-            polygonPreview = null;
-        }
+        polygonPreviewActive = false;
+        previewRadius = 0;
     }
 
     @Override
@@ -201,6 +215,11 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
 
         // 在 FIRST_CLICK 状态下,绘制中心点和鼠标位置点(顶点预览)
         if (context.getState() == DrawingState.FIRST_CLICK) {
+            // 正多边形轮廓与半径线
+            if (polygonPreviewActive && previewRadius > 1e-6) {
+                paintRegularPolygonOutline(gc, transform);
+            }
+
             // 绘制中心点
             double centerScreenX = transform.worldToScreenX(centerX);
             double centerScreenY = transform.worldToScreenY(centerY);
@@ -213,5 +232,39 @@ public class RegularPolygonHandler extends AbstractDrawingHandler {
             gc.setFill(GeometryConfig.Colors.PREVIEW);
             gc.fillOval(mouseScreenX - pointRadius, mouseScreenY - pointRadius, pointRadius * 2, pointRadius * 2);
         }
+    }
+
+    /**
+     * 绘制正多边形预览轮廓与半径线
+     *
+     * @param gc        图形上下文
+     * @param transform 坐标变换
+     */
+    private void paintRegularPolygonOutline(GraphicsContext gc, WorldTransform transform) {
+        // 第一个顶点指向鼠标方向
+        double angleToMouse = Math.atan2(previewMouseY - centerY, previewMouseX - centerX);
+        double angleStep = 2 * Math.PI / previewSideCount;
+
+        double[] xPoints = new double[previewSideCount];
+        double[] yPoints = new double[previewSideCount];
+        for (int i = 0; i < previewSideCount; i++) {
+            double angle = angleToMouse + i * angleStep;
+            double worldX = centerX + previewRadius * Math.cos(angle);
+            double worldY = centerY + previewRadius * Math.sin(angle);
+            xPoints[i] = transform.worldToScreenX(worldX);
+            yPoints[i] = transform.worldToScreenY(worldY);
+        }
+
+        gc.save();
+        gc.setStroke(GeometryConfig.Colors.PREVIEW_TRANSPARENT);
+        gc.setLineWidth(1.5);
+        gc.setLineDashes(6);
+        gc.strokePolygon(xPoints, yPoints, previewSideCount);
+
+        // 半径线: 中心指向鼠标顶点
+        gc.setLineDashes(2);
+        gc.strokeLine(transform.worldToScreenX(centerX), transform.worldToScreenY(centerY),
+                transform.worldToScreenX(previewMouseX), transform.worldToScreenY(previewMouseY));
+        gc.restore();
     }
 }

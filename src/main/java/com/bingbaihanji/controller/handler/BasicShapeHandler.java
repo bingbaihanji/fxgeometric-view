@@ -4,7 +4,6 @@ import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.constant.DrawingState;
 import com.bingbaihanji.controller.IDrawingContext;
-import com.bingbaihanji.controller.PreviewManager;
 import com.bingbaihanji.geometry.EdgeSnapManager;
 import com.bingbaihanji.controller.GeometryCommand;
 import com.bingbaihanji.util.MathCalculationUtils;
@@ -28,20 +27,60 @@ import javafx.scene.input.MouseEvent;
  */
 public class BasicShapeHandler extends AbstractDrawingHandler {
 
-    /**
-     * 圆形预览对象
-     */
-    private PreviewManager.CirclePreview circlePreview = null;
+    // ==== 预览状态 ====
 
     /**
-     * 线段/直线预览对象
+     * 线段/直线/角度射线预览是否激活
      */
-    private PreviewManager.LinePreview linePreview = null;
+    private boolean linePreviewActive;
+    /**
+     * 线段预览是否为无限直线
+     */
+    private boolean linePreviewInfinite;
+    /**
+     * 射线起点
+     */
+    private double linePreviewStartX;
+    private double linePreviewStartY;
+    /**
+     * 射线跟随鼠标的终点
+     */
+    private double linePreviewEndX;
+    private double linePreviewEndY;
 
     /**
-     * 椭圆预览对象
+     * 圆预览是否激活
      */
-    private PreviewManager.EllipsePreview ellipsePreview = null;
+    private boolean circlePreviewActive;
+    /**
+     * 圆心
+     */
+    private double circlePreviewCenterX;
+    private double circlePreviewCenterY;
+    /**
+     * 鼠标位置与对应半径
+     */
+    private double circlePreviewMouseX;
+    private double circlePreviewMouseY;
+    private double circlePreviewRadius;
+
+    /**
+     * 椭圆预览是否激活
+     */
+    private boolean ellipsePreviewActive;
+    /**
+     * 椭圆焦点2是否已确定
+     */
+    private boolean ellipsePreviewF2Set;
+    private double ellipsePreviewF1x;
+    private double ellipsePreviewF1y;
+    private double ellipsePreviewF2x;
+    private double ellipsePreviewF2y;
+    /**
+     * 鼠标位置(用于计算 2a)
+     */
+    private double ellipsePreviewMouseX;
+    private double ellipsePreviewMouseY;
 
     /**
      * 第一个点的世界坐标(用于绘制圆、线段、椭圆焦点1等)
@@ -190,23 +229,28 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                 previewRadius = tangentResult.getRadius();
             }
 
-            // 更新圆形预览
-            if (circlePreview != null) {
-                circlePreview.updatePreview(worldX, worldY);
+            // 更新圆形预览状态
+            if (circlePreviewActive) {
+                circlePreviewMouseX = worldX;
+                circlePreviewMouseY = worldY;
+                circlePreviewRadius = previewRadius;
             }
         } else if (context.getDrawMode() == DrawMode.ELLIPSE) {
-            if (ellipsePreview != null) {
-                ellipsePreview.updatePreview(worldX, worldY);
+            if (ellipsePreviewActive) {
+                ellipsePreviewMouseX = worldX;
+                ellipsePreviewMouseY = worldY;
             }
         } else if (context.getDrawMode() == DrawMode.ANGLE) {
             // 角度预览：FIRST_CLICK 时鼠标位置作为射线1终点，SECOND_CLICK 时作为射线2终点
-            if (linePreview != null) {
-                linePreview.updatePreview(worldX, worldY);
+            if (linePreviewActive) {
+                linePreviewEndX = worldX;
+                linePreviewEndY = worldY;
             }
         } else if (context.getDrawMode() == DrawMode.LINE || context.getDrawMode() == DrawMode.INFINITE_LINE) {
             // 更新线段/直线预览
-            if (linePreview != null) {
-                linePreview.updatePreview(worldX, worldY);
+            if (linePreviewActive) {
+                linePreviewEndX = worldX;
+                linePreviewEndY = worldY;
             }
         }
 
@@ -302,28 +346,18 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
         double scale = context.getTransform().getScale();
         firstPointRef = PointReuseManager.getExistingPointOrNull(worldX, worldY, context.getObjects(), scale);
 
-        // 创建预览对象并注册到 PreviewManager
+        // 进入预览状态
         if (context.getDrawMode() == DrawMode.CIRCLE) {
-            circlePreview = new PreviewManager.CirclePreview();
-            circlePreview.setCenterPoint(firstPointX, firstPointY);
-            context.getPreviewManager().addPreviewable(circlePreview);
+            startCirclePreview(firstPointX, firstPointY);
         } else if (context.getDrawMode() == DrawMode.ELLIPSE) {
-            ellipsePreview = new PreviewManager.EllipsePreview();
-            ellipsePreview.setFocus1(firstPointX, firstPointY);
-            context.getPreviewManager().addPreviewable(ellipsePreview);
+            startEllipsePreview(firstPointX, firstPointY);
         } else if (context.getDrawMode() == DrawMode.LINE) {
-            linePreview = new PreviewManager.LinePreview(false); // 普通线段
-            linePreview.setStartPoint(firstPointX, firstPointY);
-            context.getPreviewManager().addPreviewable(linePreview);
+            startLinePreview(firstPointX, firstPointY, false);
         } else if (context.getDrawMode() == DrawMode.INFINITE_LINE) {
-            linePreview = new PreviewManager.LinePreview(true); // 无限直线
-            linePreview.setStartPoint(firstPointX, firstPointY);
-            context.getPreviewManager().addPreviewable(linePreview);
+            startLinePreview(firstPointX, firstPointY, true);
         } else if (context.getDrawMode() == DrawMode.ANGLE) {
             // 角度：第一次点击设置顶点，使用直线预览显示射线
-            linePreview = new PreviewManager.LinePreview(false);
-            linePreview.setStartPoint(firstPointX, firstPointY);
-            context.getPreviewManager().addPreviewable(linePreview);
+            startLinePreview(firstPointX, firstPointY, false);
         } else if (context.getDrawMode() == DrawMode.TEXT) {
             // 文本：单击后弹出对话框创建文本标注
             handleTextDrawing(worldX, worldY, context);
@@ -358,11 +392,8 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
 
                 context.executeCommand(new GeometryCommand(context, newCircle));
 
-                // 清除预览对象
-                if (circlePreview != null) {
-                    context.getPreviewManager().removePreviewable(circlePreview);
-                    circlePreview = null;
-                }
+                // 清除预览状态
+                stopCirclePreview();
                 firstPointRef = null;
             }
             case ANGLE -> {
@@ -381,8 +412,8 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
                 secondPointY = worldY;
                 secondPointRef = PointReuseManager.getExistingPointOrNull(worldX, worldY, context.getObjects(), scale);
 
-                if (ellipsePreview != null) {
-                    ellipsePreview.setFocus2(worldX, worldY);
+                if (ellipsePreviewActive) {
+                    setEllipsePreviewFocus2(worldX, worldY);
                 }
                 firstPointRef = null;
                 context.setState(DrawingState.SECOND_CLICK);
@@ -396,11 +427,8 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
 
                 context.executeCommand(new GeometryCommand(context, newLine));
 
-                // 清除预览对象
-                if (linePreview != null) {
-                    context.getPreviewManager().removePreviewable(linePreview);
-                    linePreview = null;
-                }
+                // 清除预览状态
+                stopLinePreview();
                 firstPointRef = null;
             }
             case INFINITE_LINE -> {
@@ -410,11 +438,8 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
 
                 context.executeCommand(new GeometryCommand(context, newLine));
 
-                // 清除预览对象
-                if (linePreview != null) {
-                    context.getPreviewManager().removePreviewable(linePreview);
-                    linePreview = null;
-                }
+                // 清除预览状态
+                stopLinePreview();
                 firstPointRef = null;
             }
         }
@@ -445,12 +470,12 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
             return;
         }
 
-        if (context.getDrawMode() != DrawMode.ELLIPSE || ellipsePreview == null) {
+        if (context.getDrawMode() != DrawMode.ELLIPSE || !ellipsePreviewActive) {
             context.setState(DrawingState.IDLE);
             return;
         }
 
-        double twoA = ellipsePreview.getTwoA();
+        double twoA = ellipsePreviewTwoA();
         if (twoA <= 0) {
             context.setState(DrawingState.IDLE);
             return;
@@ -469,11 +494,8 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
 
         context.executeCommand(new GeometryCommand(context, ellipse));
 
-        // 清除预览对象
-        if (ellipsePreview != null) {
-            context.getPreviewManager().removePreviewable(ellipsePreview);
-            ellipsePreview = null;
-        }
+        // 清除预览状态
+        stopEllipsePreview();
         firstPointRef = null;
         secondPointRef = null;
 
@@ -519,18 +541,254 @@ public class BasicShapeHandler extends AbstractDrawingHandler {
         secondPointY = 0;
         secondPointRef = null;
 
-        // 清除预览对象
-        circlePreview = null;
-        linePreview = null;
-        ellipsePreview = null;
+        // 清除预览状态
+        stopCirclePreview();
+        stopLinePreview();
+        stopEllipsePreview();
+    }
+
+    // ==== 预览状态与绘制 ====
+
+    /**
+     * 开始线段/直线/射线预览
+     *
+     * @param x        起点 X
+     * @param y        起点 Y
+     * @param infinite 是否为无限直线
+     */
+    private void startLinePreview(double x, double y, boolean infinite) {
+        linePreviewActive = true;
+        linePreviewInfinite = infinite;
+        linePreviewStartX = x;
+        linePreviewStartY = y;
+        linePreviewEndX = x;
+        linePreviewEndY = y;
+    }
+
+    /**
+     * 结束线段/直线/射线预览
+     */
+    private void stopLinePreview() {
+        linePreviewActive = false;
+    }
+
+    /**
+     * 开始圆预览
+     *
+     * @param x 圆心 X
+     * @param y 圆心 Y
+     */
+    private void startCirclePreview(double x, double y) {
+        circlePreviewActive = true;
+        circlePreviewCenterX = x;
+        circlePreviewCenterY = y;
+        circlePreviewMouseX = x;
+        circlePreviewMouseY = y;
+        circlePreviewRadius = 0;
+    }
+
+    /**
+     * 结束圆预览
+     */
+    private void stopCirclePreview() {
+        circlePreviewActive = false;
+        circlePreviewRadius = 0;
+    }
+
+    /**
+     * 开始椭圆预览
+     *
+     * @param f1x 焦点1 X
+     * @param f1y 焦点1 Y
+     */
+    private void startEllipsePreview(double f1x, double f1y) {
+        ellipsePreviewActive = true;
+        ellipsePreviewF2Set = false;
+        ellipsePreviewF1x = f1x;
+        ellipsePreviewF1y = f1y;
+        ellipsePreviewMouseX = f1x;
+        ellipsePreviewMouseY = f1y;
+    }
+
+    /**
+     * 确定椭圆焦点2
+     *
+     * @param x 焦点2 X
+     * @param y 焦点2 Y
+     */
+    private void setEllipsePreviewFocus2(double x, double y) {
+        ellipsePreviewF2x = x;
+        ellipsePreviewF2y = y;
+        ellipsePreviewF2Set = true;
+    }
+
+    /**
+     * 结束椭圆预览
+     */
+    private void stopEllipsePreview() {
+        ellipsePreviewActive = false;
+        ellipsePreviewF2Set = false;
+    }
+
+    /**
+     * 当前 2a 值 = 鼠标到两焦点距离之和
+     *
+     * @return 2a, 焦点2未确定时为 0
+     */
+    private double ellipsePreviewTwoA() {
+        if (!ellipsePreviewF2Set) {
+            return 0;
+        }
+        return Math.hypot(ellipsePreviewMouseX - ellipsePreviewF1x, ellipsePreviewMouseY - ellipsePreviewF1y)
+                + Math.hypot(ellipsePreviewMouseX - ellipsePreviewF2x, ellipsePreviewMouseY - ellipsePreviewF2y);
+    }
+
+    /**
+     * 绘制线段/直线/射线预览
+     */
+    private void paintLinePreview(GraphicsContext gc, WorldTransform transform) {
+        if (!linePreviewActive) {
+            return;
+        }
+
+        double sx1 = transform.worldToScreenX(linePreviewStartX);
+        double sy1 = transform.worldToScreenY(linePreviewStartY);
+        double sx2 = transform.worldToScreenX(linePreviewEndX);
+        double sy2 = transform.worldToScreenY(linePreviewEndY);
+
+        gc.save();
+        gc.setStroke(GeometryConfig.Colors.PREVIEW_TRANSPARENT);
+        gc.setLineWidth(1.5);
+        gc.setLineDashes(6);
+
+        if (linePreviewInfinite) {
+            // 扩展直线到画布边缘
+            double dx = sx2 - sx1;
+            double dy = sy2 - sy1;
+            double length = Math.sqrt(dx * dx + dy * dy);
+            if (length > 1e-6) {
+                double t = 10000 / length;
+                sx1 = sx1 - t * dx;
+                sy1 = sy1 - t * dy;
+                sx2 = sx1 + 2 * t * dx;
+                sy2 = sy1 + 2 * t * dy;
+            }
+        }
+
+        gc.strokeLine(sx1, sy1, sx2, sy2);
+        gc.restore();
+    }
+
+    /**
+     * 绘制圆预览(圆环 + 半径线)
+     */
+    private void paintCirclePreview(GraphicsContext gc, WorldTransform transform) {
+        if (!circlePreviewActive || circlePreviewRadius < 1e-6) {
+            return;
+        }
+
+        double screenCx = transform.worldToScreenX(circlePreviewCenterX);
+        double screenCy = transform.worldToScreenY(circlePreviewCenterY);
+        double screenRadius = circlePreviewRadius * transform.getScale();
+
+        gc.save();
+        gc.setStroke(GeometryConfig.Colors.PREVIEW_TRANSPARENT);
+        gc.setLineWidth(1.5);
+        gc.setLineDashes(6);
+        gc.strokeOval(screenCx - screenRadius, screenCy - screenRadius,
+                screenRadius * 2, screenRadius * 2);
+
+        // 半径线：从圆心指向鼠标位置
+        gc.setLineDashes(2);
+        gc.strokeLine(screenCx, screenCy,
+                transform.worldToScreenX(circlePreviewMouseX),
+                transform.worldToScreenY(circlePreviewMouseY));
+
+        gc.restore();
+    }
+
+    /**
+     * 绘制椭圆预览(焦点、连线、椭圆轮廓、跟随点)
+     */
+    private void paintEllipsePreview(GraphicsContext gc, WorldTransform transform) {
+        if (!ellipsePreviewActive) {
+            return;
+        }
+
+        gc.save();
+        gc.setStroke(GeometryConfig.Colors.PREVIEW_TRANSPARENT);
+        gc.setLineWidth(1.5);
+
+        // 焦点 1
+        drawPreviewFocusDot(gc, transform, ellipsePreviewF1x, ellipsePreviewF1y);
+
+        if (ellipsePreviewF2Set) {
+            // 焦点 2 与焦点连线
+            drawPreviewFocusDot(gc, transform, ellipsePreviewF2x, ellipsePreviewF2y);
+            gc.setLineDashes(2);
+            gc.strokeLine(
+                    transform.worldToScreenX(ellipsePreviewF1x), transform.worldToScreenY(ellipsePreviewF1y),
+                    transform.worldToScreenX(ellipsePreviewF2x), transform.worldToScreenY(ellipsePreviewF2y));
+
+            double a = ellipsePreviewTwoA() / 2.0;
+            double c = Math.hypot(ellipsePreviewF2x - ellipsePreviewF1x, ellipsePreviewF2y - ellipsePreviewF1y) / 2.0;
+            if (a > c && a > 1e-9) {
+                double b = Math.sqrt(a * a - c * c);
+                double cx = (ellipsePreviewF1x + ellipsePreviewF2x) / 2.0;
+                double cy = (ellipsePreviewF1y + ellipsePreviewF2y) / 2.0;
+                double angle = Math.atan2(ellipsePreviewF2y - ellipsePreviewF1y,
+                        ellipsePreviewF2x - ellipsePreviewF1x);
+                double cos = Math.cos(angle);
+                double sin = Math.sin(angle);
+
+                gc.setLineDashes(6);
+                int n = 128;
+                double[] sx = new double[n];
+                double[] sy = new double[n];
+                for (int i = 0; i < n; i++) {
+                    double t = 2 * Math.PI * i / n;
+                    double xt = a * Math.cos(t);
+                    double yt = b * Math.sin(t);
+                    sx[i] = transform.worldToScreenX(cx + xt * cos - yt * sin);
+                    sy[i] = transform.worldToScreenY(cy + xt * sin + yt * cos);
+                }
+                gc.strokePolygon(sx, sy, n);
+            }
+        }
+
+        // 跟随鼠标的半透明点
+        double mouseSx = transform.worldToScreenX(ellipsePreviewMouseX);
+        double mouseSy = transform.worldToScreenY(ellipsePreviewMouseY);
+        gc.setStroke(GeometryConfig.Colors.PREVIEW.deriveColor(0, 1, 1, 0.5));
+        gc.setLineWidth(1.5);
+        gc.setLineDashes(null);
+        gc.strokeOval(mouseSx - 6, mouseSy - 6, 12, 12);
+        gc.setFill(GeometryConfig.Colors.PREVIEW.deriveColor(0, 1, 1, 0.6));
+        gc.fillOval(mouseSx - 4, mouseSy - 4, 8, 8);
+
+        gc.restore();
+    }
+
+    /**
+     * 绘制椭圆预览的焦点圆点
+     */
+    private void drawPreviewFocusDot(GraphicsContext gc, WorldTransform transform, double wx, double wy) {
+        double sx = transform.worldToScreenX(wx);
+        double sy = transform.worldToScreenY(wy);
+        gc.setFill(GeometryConfig.Colors.PREVIEW);
+        gc.fillOval(sx - 4, sy - 4, 8, 8);
     }
 
     @Override
     public void paintPreview(GraphicsContext gc, WorldTransform transform, IDrawingContext context) {
-        // PreviewManager 统一管理,此处只绘制补充效果(吸附预览点)
         if (!canHandle(context.getDrawMode())) {
             return;
         }
+
+        // 图形轮廓预览(线段/圆/椭圆)
+        paintLinePreview(gc, transform);
+        paintCirclePreview(gc, transform);
+        paintEllipsePreview(gc, transform);
 
         double pointRadius = 4;
 

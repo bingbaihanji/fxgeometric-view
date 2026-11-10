@@ -197,7 +197,6 @@ public class DrawingController implements com.bingbaihanji.view.DrawingWindowCon
     }
 
     public void paintPreview(GraphicsContext gc, WorldTransform transform) {
-        context.getPreviewManager().paintAll(gc, transform);
         for (DrawingHandler handler : handlers) {
             if (handler.canHandle(context.getDrawMode())) {
                 handler.paintPreview(gc, transform, context);
@@ -215,7 +214,6 @@ public class DrawingController implements com.bingbaihanji.view.DrawingWindowCon
         for (DrawingHandler handler : handlers) {
             handler.reset();
         }
-        context.getPreviewManager().resetAll();
         context.setMoveMode(com.bingbaihanji.constant.MoveMode.MOVE_NONE);
         context.setDrawMode(mode);
         context.setState(DrawingState.IDLE);
@@ -433,7 +431,6 @@ public class DrawingController implements com.bingbaihanji.view.DrawingWindowCon
         for (DrawingHandler handler : handlers) {
             handler.reset();
         }
-        context.getPreviewManager().clearAll();
         context.setState(DrawingState.IDLE);
         context.setMoveMode(com.bingbaihanji.constant.MoveMode.MOVE_NONE);
         context.getGridChartPane().setCursor(context.getGridChartPane().getDefaultCursor());

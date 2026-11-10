@@ -37,7 +37,6 @@ public class DrawingContext implements IDrawingContext {
     /**
      * 预览管理器
      */
-    private final PreviewManager previewManager;
     /**
      * 光标管理器
      */
@@ -86,7 +85,6 @@ public class DrawingContext implements IDrawingContext {
         this.gridChartPane = gridChartPane;
         this.commandHistory = commandHistory;
         this.selectionManager = new SelectionManager();
-        this.previewManager = new PreviewManager();
         this.cursorManager = new CursorManager();
     }
 
@@ -329,15 +327,6 @@ public class DrawingContext implements IDrawingContext {
      */
     public void setSelectionManager(SelectionManager selectionManager) {
         this.selectionManager = selectionManager;
-    }
-
-    // PreviewManager 管理
-
-    /**
-     * 获取预览管理器
-     */
-    public PreviewManager getPreviewManager() {
-        return previewManager;
     }
 
     // CursorManager 管理

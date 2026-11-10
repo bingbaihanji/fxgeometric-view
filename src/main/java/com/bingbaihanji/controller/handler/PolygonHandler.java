@@ -4,7 +4,6 @@ import com.bingbaihanji.config.GeometryConfig;
 import com.bingbaihanji.constant.DrawMode;
 import com.bingbaihanji.constant.DrawingState;
 import com.bingbaihanji.controller.IDrawingContext;
-import com.bingbaihanji.controller.PreviewManager;
 import com.bingbaihanji.controller.GeometryCommand;
 import com.bingbaihanji.util.MathCalculationUtils;
 import com.bingbaihanji.geometry.PointReuseManager;
@@ -41,11 +40,6 @@ public class PolygonHandler extends AbstractDrawingHandler {
      * 多边形内部创建的新点列表(用于撤销时删除)
      */
     private final List<PointGeo> newCreatedPoints = new ArrayList<>();
-
-    /**
-     * 多边形预览对象
-     */
-    private PreviewManager.PolygonPreview polygonPreview = null;
 
     @Override
     public boolean canHandle(DrawMode mode) {
@@ -91,11 +85,6 @@ public class PolygonHandler extends AbstractDrawingHandler {
         context.setCurrentMouseX(worldX);
         context.setCurrentMouseY(worldY);
 
-        // 更新多边形预览
-        if (polygonPreview != null && polygonPreview.isActive()) {
-            polygonPreview.updatePreview(worldX, worldY);
-        }
-
         // 重绘以显示预览(IDLE 和 POLYGON_DRAWING 状态都需要重绘)
         context.redraw();
         return true;
@@ -103,7 +92,7 @@ public class PolygonHandler extends AbstractDrawingHandler {
 
     @Override
     public void paintPreview(GraphicsContext gc, WorldTransform transform, IDrawingContext context) {
-        // PreviewManager 统一管理,此处只绘制补充效果(吸附预览点、顶点高亮)
+        // 绘制多边形边、顶点、吸附预览点与闭合高亮
         if (!canHandle(context.getDrawMode())) {
             return;
         }
@@ -133,6 +122,39 @@ public class PolygonHandler extends AbstractDrawingHandler {
         if (vertexPoints.isEmpty()) {
             return;
         }
+
+        // 绘制已确定的边与跟随鼠标的边
+        gc.save();
+        gc.setStroke(GeometryConfig.Colors.PREVIEW_TRANSPARENT);
+        gc.setLineWidth(1.5);
+        gc.setLineDashes(6);
+
+        for (int i = 0; i < vertexPoints.size(); i++) {
+            PointGeo from = vertexPoints.get(i);
+            double worldX2;
+            double worldY2;
+            if (i < vertexPoints.size() - 1) {
+                PointGeo next = vertexPoints.get(i + 1);
+                worldX2 = next.getX();
+                worldY2 = next.getY();
+            } else {
+                worldX2 = context.getCurrentMouseX();
+                worldY2 = context.getCurrentMouseY();
+            }
+            gc.strokeLine(transform.worldToScreenX(from.getX()), transform.worldToScreenY(from.getY()),
+                    transform.worldToScreenX(worldX2), transform.worldToScreenY(worldY2));
+        }
+
+        // 两个点以上时, 用浅色虚线提示闭合
+        if (vertexPoints.size() >= 2) {
+            PointGeo first = vertexPoints.get(0);
+            gc.setLineDashes(2);
+            gc.setStroke(GeometryConfig.Colors.PREVIEW_LIGHT_TRANSPARENT);
+            gc.strokeLine(transform.worldToScreenX(context.getCurrentMouseX()),
+                    transform.worldToScreenY(context.getCurrentMouseY()),
+                    transform.worldToScreenX(first.getX()), transform.worldToScreenY(first.getY()));
+        }
+        gc.restore();
 
         // 绘制顶点(小圆点)
         gc.setFill(GeometryConfig.Colors.PREVIEW);
@@ -197,9 +219,6 @@ public class PolygonHandler extends AbstractDrawingHandler {
     public void reset() {
         vertexPoints.clear();
         newCreatedPoints.clear();
-
-        // 清除预览对象
-        polygonPreview = null;
     }
 
     /**
@@ -235,15 +254,6 @@ public class PolygonHandler extends AbstractDrawingHandler {
             newCreatedPoints.add(newPoint); // 记录新创建的点,用于撤销
         }
 
-        // 创建或更新预览对象
-        if (polygonPreview == null) {
-            // 第一个点：创建预览对象并注册
-            polygonPreview = new PreviewManager.PolygonPreview();
-            context.getPreviewManager().addPreviewable(polygonPreview);
-        }
-        // 添加点到预览对象
-        polygonPreview.addPoint(worldX, worldY);
-
         // 进入多边形绘制状态
         context.setState(DrawingState.POLYGON_DRAWING);
 
@@ -263,12 +273,6 @@ public class PolygonHandler extends AbstractDrawingHandler {
         PolygonGeo polygon = new PolygonGeo(new ArrayList<>(vertexPoints));
 
         context.executeCommand(new GeometryCommand(context, polygon, newCreatedPoints));
-
-        // 清除预览对象
-        if (polygonPreview != null) {
-            context.getPreviewManager().removePreviewable(polygonPreview);
-            polygonPreview = null;
-        }
 
         // 重置状态
         vertexPoints.clear();

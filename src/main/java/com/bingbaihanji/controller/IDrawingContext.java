@@ -96,7 +96,6 @@ public interface IDrawingContext {
 
     void setSelectionManager(SelectionManager selectionManager);
 
-    PreviewManager getPreviewManager();
 
     CursorManager getCursorManager();
 }
